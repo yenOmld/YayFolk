@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
 import Notification from './components/Notification.vue'
+import 'boxicons/css/boxicons.min.css'
 
 const app = createApp(App)
 
