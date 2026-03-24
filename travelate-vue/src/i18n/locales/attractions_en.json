@@ -1,0 +1,103 @@
+{
+  "attractions": {
+    "wuhanHuangHeLou": {
+      "id": 4,
+      "name": "Yellow Crane Tower",
+      "rating": "AAAAA Scenic Area",
+      "duration": "Day: 08:30-18:00; Night: 19:30-22:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "The Yellow Crane Tower stands atop Snake Hill in Wuhan, overlooking the Yangtze River. It is one of the Three Great Towers of Jiangnan. Originally built in 223 AD during the Three Kingdoms period as a military watchtower, the current tower was reconstructed in 1985 based on the Qing Dynasty design, standing 51.4 meters tall with five stories.",
+      "story": "The Yellow Crane Tower became famous through the Tang Dynasty poet Cui Hao's poem: 'The ancients have ridden the yellow crane away, leaving only the Yellow Crane Tower here. Once the yellow crane is gone, it never returns; for a thousand years, the white clouds drift aimlessly.' Li Bai, Bai Juyi, Su Shi, and other literary figures throughout history have left countless poems here. The tower houses models of Yellow Crane Towers from various dynasties and famous calligraphy and paintings."
+    },
+    "beijingGuGong": {
+      "id": 5,
+      "name": "Forbidden City",
+      "rating": "AAAAA Scenic Area",
+      "duration": "08:30-16:30",
+      "bestSeason": "All seasons (Autumn best)",
+      "intro": "The Forbidden City, formerly known as the Imperial Palace, is located at the center of Beijing's central axis. It served as the imperial palace during the Ming and Qing dynasties. Construction began in 1406 and was completed in 1420. Covering 720,000 square meters with approximately 150,000 square meters of floor space, it contains over 70 palaces and 9,000 rooms.",
+      "story": "The Forbidden City is the world's largest and best-preserved wooden architectural complex. It housed 24 emperors. After the 1911 Revolution, Puyi abdicated but remained in the Inner Court. The Palace Museum was established on October 10, 1925. It was listed as a UNESCO World Heritage Site in 1987."
+    },
+    "beijingYiHeYuan": {
+      "id": 6,
+      "name": "Summer Palace",
+      "rating": "AAAAA Scenic Area",
+      "duration": "06:30-19:00",
+      "bestSeason": "All seasons (Summer & Autumn best)",
+      "intro": "The Summer Palace is China's largest and best-preserved imperial garden, located in the northwest suburbs of Beijing. The entire garden covers 3.009 square kilometers, with water accounting for about three-quarters. Built on the foundation of Longevity Hill and Kunming Lake, it incorporates design techniques from southern Chinese gardens.",
+      "story": "The Summer Palace was originally called the Garden of Clear Ripples, built in 1750 during the Qing Dynasty. It was burned by British and French forces in 1860. In 1886, Empress Dowager Cixi rebuilt it using naval funds and renamed it the Summer Palace. It was damaged again by the Eight-Nation Alliance in 1900. It became one of the first National Key Cultural Relics Protection Units in 1961."
+    },
+    "beijingTianTan": {
+      "id": 7,
+      "name": "Temple of Heaven",
+      "rating": "AAAAA Scenic Area",
+      "duration": "06:30-22:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "The Temple of Heaven was where Ming and Qing emperors offered sacrifices to heaven, prayed for good harvests, and sought rain. Built in 1420, it covers approximately 2.73 million square meters, making it China's largest ancient sacrificial architectural complex.",
+      "story": "The most famous building is the Hall of Prayer for Good Harvests, a circular hall with a gilded pinnacle, blue tiles, and red pillars, featuring three tiers of eaves. The unique Circular Mound Altar and Imperial Vault of Heaven embody the ancient Chinese cosmological concept of 'round heaven and square earth.' The Echo Wall's acoustic phenomena are truly remarkable. It was listed as a UNESCO World Heritage Site in 1998."
+    },
+    "hangzhouXiHuSanTanYinYue": {
+      "id": 8,
+      "name": "Three Pools Mirroring the Moon",
+      "rating": "AAAAA Scenic Area (West Lake)",
+      "duration": "08:00-17:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "Three Pools Mirroring the Moon is one of the Ten Scenes of West Lake, located on Xiaoyingzhou Island and the surrounding waters in the southwest of West Lake's outer lake. The island features the Shrine of Worthies, Nine-Bend Bridge, and other structures. Three stone pagodas stand in the lake, each 2.5 meters tall with elegant designs.",
+      "story": "Three Pools Mirroring the Moon was established in 1090 during the Northern Song Dynasty when Su Shi dredged West Lake and placed three pagodas as markers, prohibiting the planting of water chestnuts within their boundary. In 1607, Qiantang County Magistrate Nie Xintang built Xiaoyingzhou Island using mud from the lake. The current stone pagodas were rebuilt during the Tianqi era of the Ming Dynasty."
+    },
+    "xianDaYanTa": {
+      "id": 9,
+      "name": "Big Wild Goose Pagoda",
+      "rating": "AAAAA Scenic Area",
+      "duration": "09:00-21:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "The Big Wild Goose Pagoda is located within Da Ci'en Temple in Xi'an. Built in 652 AD during the Tang Dynasty, it was constructed by the monk Xuanzang to house Buddhist scriptures and images brought from India. Originally five stories, it was later expanded to seven stories, reaching a height of 64.5 meters.",
+      "story": "The Big Wild Goose Pagoda is the earliest and largest existing Tang Dynasty square brick pagoda. Monk Xuanzang translated 75 Buddhist scriptures here, totaling 1,335 volumes. The pagoda preserves exquisite Tang Dynasty line carvings. During the Tang Dynasty, new imperial examination graduates had the custom of 'inscribing their names on the Wild Goose Pagoda.' It became one of the first National Key Cultural Relics Protection Units in 1961."
+    },
+    "kaifengTieTa": {
+      "id": 10,
+      "name": "Iron Pagoda of Kaifeng",
+      "rating": "AAAA Scenic Area",
+      "duration": "08:30-21:00",
+      "bestSeason": "All seasons (Autumn best)",
+      "intro": "The Iron Pagoda, originally named Kaibao Temple Pagoda, is located in the northeast corner of Kaifeng. Built in 1049 during the Northern Song Dynasty, it stands 55.88 meters tall with an octagonal, thirteen-story design. The entire pagoda is constructed of brown glazed bricks, giving it an iron-like appearance from a distance, hence the name 'Iron Pagoda.'",
+      "story": "The Iron Pagoda has withstood 37 earthquakes, 18 major storms, and 15 floods, yet still stands tall. The glazed bricks are carved with patterns of flying apsaras, qilin, and bodhisattvas. In 1938, it was shelled by Japanese forces, sustaining dozens of hits, but remained standing, earning it the title 'First Pagoda Under Heaven.'"
+    },
+    "wuhanDongHu": {
+      "id": 12,
+      "name": "East Lake of Wuhan",
+      "rating": "AAAAA Scenic Area",
+      "duration": "Open all day (Inner attractions: 8:30-17:00)",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "Wuhan East Lake is China's largest urban lake, with a water area of 33 square kilometers, six times the size of West Lake. The East Lake Greenway spans 101.98 kilometers, making it the longest 5A-level scenic greenway in China.",
+      "story": "East Lake has been a tourist destination since ancient times. The poet Qu Yuan once 'chanted by the waterside' here. Mao Zedong stayed at the East Lake Guesthouse multiple times, calling East Lake 'the place of white clouds and yellow cranes.' The Moshan Cherry Garden at East Lake is one of the world's three largest cherry gardens."
+    },
+    "hangzhouLeiFengTa": {
+      "id": 13,
+      "name": "Leifeng Pagoda",
+      "rating": "AAAA Scenic Area",
+      "duration": "08:00-20:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "Leifeng Pagoda is located on Sunset Hill on the south bank of West Lake in Hangzhou. Built in 977 AD during the Northern Song Dynasty, it was constructed by Qian Chu, the King of Wuyue, to enshrine hair relics of the Buddha.",
+      "story": "Leifeng Pagoda became a household name through the Legend of the White Snake. The original pagoda collapsed in 1924 and was rebuilt in 2002. The new pagoda preserves the original site, uses a steel structure, and is equipped with an elevator. Visitors can enjoy a panoramic view of West Lake from the top."
+    },
+    "xianZhongLou": {
+      "id": 14,
+      "name": "Bell Tower of Xi'an",
+      "rating": "AAAA Scenic Area",
+      "duration": "08:30-20:30",
+      "bestSeason": "All seasons",
+      "intro": "The Xi'an Bell Tower is located in the center of Xi'an. Built in 1384 during the Ming Dynasty, it was originally located at the current Guangji Street intersection on West Street and later moved to its present location. It is the largest and best-preserved bell tower in China.",
+      "story": "In ancient times, a large bell hung in the tower for timekeeping. The structure is brick and wood, standing 36 meters tall with a square base and arched openings on all four sides. The tower houses Ming and Qing Dynasty porcelain, calligraphy, and paintings."
+    },
+    "kaifengKaiFengFu": {
+      "id": 15,
+      "name": "Kaifeng Fu (Kaifeng Government Office)",
+      "rating": "AAAA Scenic Area",
+      "duration": "07:30-19:00",
+      "bestSeason": "All seasons (Spring & Autumn best)",
+      "intro": "Kaifeng Fu is located on the east bank of Baogong Lake in Kaifeng. It was the administrative and judicial office of the Northern Song Dynasty capital. The reconstructed Kaifeng Fu covers over 60 mu (about 4 hectares) with a building area of 13,600 square meters.",
+      "story": "Kaifeng Fu is famous for Judge Bao (Bao Zheng) presiding over cases here. The site features daily live performances including 'Opening Ceremony' and 'Judge Bao Trying Cases.' Main attractions include the Ceremonial Gate, Main Hall, Council Hall, and Plum Blossom Hall."
+    }
+  }
+}

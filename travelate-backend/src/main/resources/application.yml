@@ -1,0 +1,76 @@
+# GitHub OAuth 配置（请替换为您的配置）
+GITHUB_CLIENT_ID: YOUR_GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET: YOUR_GITHUB_CLIENT_SECRET
+GITHUB_REDIRECT_URI: http://YOUR_SERVER_IP/api/oauth/github/callback
+
+# 前端地址配置
+FRONTEND_BASE_URL: http://YOUR_SERVER_IP
+
+spring:
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: YOUR_EMAIL@163.com
+    password: YOUR_EMAIL_PASSWORD
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            required: false
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  web:
+    resources:
+      static-locations: classpath:/static/,file:/path/to/your/static/files/
+
+landmark:
+  model:
+    url: http://localhost:5000
+
+baidu:
+  ai:
+    app-id: YOUR_BAIDU_APP_ID
+    api-key: YOUR_BAIDU_API_KEY
+    secret-key: YOUR_BAIDU_SECRET_KEY
+    ocr:
+      url: https://aip.baidubce.com/rest/2.0/ocr/v1/general
+    translate:
+      url: https://fanyi-api.baidu.com/api/trans/vip/translate
+  translate:
+    app-id: YOUR_BAIDU_TRANSLATE_APP_ID
+    secret-key: YOUR_BAIDU_TRANSLATE_SECRET_KEY
+    api-key: YOUR_BAIDU_TRANSLATE_API_KEY
+    text-translate-url: https://fanyi-api.baidu.com/api/trans/vip/translate
+    image-translate-url: https://fanyi-api.baidu.com/api/trans/sdk/picture
+    speech-translate-url: https://fanyi-api.baidu.com/api/trans/v2/voicetrans
+    tts-url: https://fanyi-api.baidu.com/api/trans/vip/tts
+
+tencent:
+  translate:
+    secret-id: YOUR_TENCENT_SECRET_ID
+    secret-key: YOUR_TENCENT_SECRET_KEY
+    endpoint: tmt.tencentcloudapi.com
+    region: ap-beijing
+
+aliyun:
+  oss:
+    endpoint: oss-cn-wuhan-lr.aliyuncs.com
+    access-key-id: YOUR_ALIYUN_ACCESS_KEY_ID
+    access-key-secret: YOUR_ALIYUN_ACCESS_KEY_SECRET
+    bucket-name: travelate
+    base-url: https://travelate.oss-cn-wuhan-lr.aliyuncs.com/
