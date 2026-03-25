@@ -81,7 +81,7 @@
     "translationComplete": "翻訳完了",
     "camera": "カメラ翻訳",
     "voice": "音声翻訳",
-    "landmark": "ランドマーク認識",
+
     "commonPhrases": "よく使うフレーズ",
     "chinese": "中国語",
     "autoDetect": "自動検出",
@@ -284,33 +284,7 @@
     "commentedYourPost": "あなたの投稿にコメントしました",
     "collectedYourPost": "あなたの投稿をコレクションしました"
   },
-  "landmark": {
-    "title": "ランドマーク認識",
-    "clickUpload": "クリックしてランドマーク画像をアップロード",
-    "supportPhoto": "カメラまたはギャラリーに対応",
-    "useLocation": "位置情報で検索範囲を絞る",
-    "radiusKm": "{km}キロ",
-    "takePhoto": "写真を撮る",
-    "fromGallery": "ギャラリーから選択",
-    "capture": "撮影",
-    "changeImage": "画像を変更",
-    "recognizing": "認識中...",
-    "confidence": "信頼度",
-    "rating": "景勝地評価",
-    "openTime": "営業時間",
-    "bestSeason": "最適な季節",
-    "intro": "スポット紹介",
-    "story": "スポットストーリー",
-    "images": "スポット画像",
-    "nearbyAttractions": "周辺スポット",
-    "distance": "距離",
-    "noIntro": "紹介なし",
-    "cameraAccessFailed": "カメラにアクセスできません、権限設定を確認するかギャラリーから選択してください",
-    "locationFailed": "位置情報の取得に失敗しました、グローバル認識を使用します",
-    "recognitionFailed": "認識に失敗しました",
-    "unknown": "不明",
-    "networkError": "ネットワークエラー、接続を確認して再試行してください"
-  },
+
   "share": {
     "unknownUser": "不明なユーザー",
     "unknown": "不明",

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import ToolsView from '../views/Tools.vue'
+import TextTranslate from '../views/TextTranslate.vue'
 import DiscoverView from '../views/DiscoverView.vue'
 import PersonalCenter from '../views/PersonalCenter.vue'
 import Settings from '../views/Settings.vue'
@@ -67,11 +68,12 @@ const routes = [
       }
     ]
   },
+
   {
-    path: '/landmark-recognition',
-    name: 'landmark-recognition',
-    component: () => import('../views/LandmarkRecognition.vue'),
-    meta: { title: '地标识别 - YayFolk', requiresAuth: true }
+    path: '/text-translate',
+    name: 'text-translate',
+    component: TextTranslate,
+    meta: { title: '文本翻译 - YayFolk', requiresAuth: true }
   },
   {
     path: '/camera-translate',
@@ -84,6 +86,12 @@ const routes = [
     name: 'voice-translate',
     component: VoiceTranslate,
     meta: { title: '语音翻译 - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/ai-heritage-route',
+    name: 'ai-heritage-route',
+    component: () => import('../views/AIHeritageRoute.vue'),
+    meta: { title: 'AI 非遗体验路线规划 - YayFolk', requiresAuth: true }
   },
   {
     path: '/conversation',

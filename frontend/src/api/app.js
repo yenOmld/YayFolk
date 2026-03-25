@@ -189,3 +189,9 @@ export const uploadPostImage = (formData, postId, index) => {
     }
   })
 }
+
+export const generateHeritageRoute = (data) => {
+  return request.post('/ai/heritage-route', data, {
+    timeout: 60000
+  })
+}
