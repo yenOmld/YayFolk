@@ -53,6 +53,7 @@ onMounted(() => {
       // 保存token和用户信息到localStorage
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('userInfo', JSON.stringify(user))
       // 清除URL参数
       window.history.replaceState({}, document.title, window.location.pathname)
       // 跳转到主页面

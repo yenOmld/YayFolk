@@ -159,7 +159,7 @@
     "myCollections": "我的收藏",
     "browseHistory": "浏览历史",
     "appSettings": "应用设置",
-    "settings": "设置",
+    "general": "通用",
     "aboutUs": "关于我们",
     "about": "关于我们",
     "logout": "退出登录",
@@ -382,7 +382,9 @@
     "deleteFailedRetry": "删除失败，请稍后重试",
     "cannotChatWithSelf": "不能与自己聊天",
     "sharePost": "分享帖子",
-    "linkCopied": "链接已复制到剪贴板"
+    "linkCopied": "链接已复制到剪贴板",
+    "followSuccess": "关注成功",
+    "unfollowSuccess": "取消关注成功"
   },
   "settings": {
     "title": "设置",

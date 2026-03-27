@@ -334,7 +334,6 @@ onMounted(async () => {
 <style scoped>
 .edit-profile-page {
   min-height: 100vh;
-  //background-color: #f5f5f5;
   width: 100%;
   margin: 0 auto;
 }

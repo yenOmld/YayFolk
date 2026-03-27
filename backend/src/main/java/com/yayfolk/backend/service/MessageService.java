@@ -7,6 +7,7 @@ import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.ConversationRepository;
 import com.yayfolk.backend.repository.MessageRepository;
 import com.yayfolk.backend.repository.NotificationRepository;
+import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserRepository;
 import com.yayfolk.backend.service.TranslateService;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,6 +25,7 @@ public class MessageService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final NotificationRepository notificationRepository;
+    private final UserFollowRepository userFollowRepository;
     private final UserRepository userRepository;
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
@@ -31,12 +33,14 @@ public class MessageService {
     public MessageService(ConversationRepository conversationRepository,
                           MessageRepository messageRepository,
                           NotificationRepository notificationRepository,
+                          UserFollowRepository userFollowRepository,
                           UserRepository userRepository,
                           StringRedisTemplate redisTemplate,
                           TranslateService translateService) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.notificationRepository = notificationRepository;
+        this.userFollowRepository = userFollowRepository;
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
         this.translateService = translateService;
@@ -107,6 +111,8 @@ public class MessageService {
             throw new RuntimeException("不能与自己创建会话");
         }
 
+        ensureFollowing(userId, otherUserId);
+
         Conversation conversation = conversationRepository.findChatConversation(userId, otherUserId)
             .orElseGet(() -> {
                 Conversation newConv = new Conversation();
@@ -137,6 +143,7 @@ public class MessageService {
         }
 
         Long receiverId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
+        ensureFollowing(userId, receiverId);
 
         Message message = new Message();
         message.setConversationId(conversationId);
@@ -300,6 +307,18 @@ public class MessageService {
     private Long findUserId(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("用户不存在"));
         return user.getId();
+    }
+
+    private void ensureFollowing(Long followerId, Long followingId) {
+        if (followerId == null || followingId == null) {
+            throw new RuntimeException("Invalid contact target");
+        }
+        if (followerId.equals(followingId)) {
+            return;
+        }
+        if (!userFollowRepository.existsByFollowerIdAndFollowingId(followerId, followingId)) {
+            throw new RuntimeException("Please follow this user before contacting them");
+        }
     }
 
     private String displayName(User user) {

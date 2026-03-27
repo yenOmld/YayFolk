@@ -47,7 +47,7 @@ public class OAuth2Config {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/landmark/**", "/api/ocr/**", "/api/translate/**").permitAll()
+                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/landmark/**", "/api/ocr/**", "/api/translate/**", "/api/public/**").permitAll()
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2Login -> {

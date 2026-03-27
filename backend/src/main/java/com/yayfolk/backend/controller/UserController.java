@@ -1,6 +1,7 @@
 package com.yayfolk.backend.controller;
 
 import com.yayfolk.backend.entity.User;
+import com.yayfolk.backend.service.UserCenterService;
 import com.yayfolk.backend.service.UserService;
 import com.yayfolk.backend.dto.ResponseDto;
 import com.yayfolk.backend.util.OssUtil;
@@ -18,12 +19,18 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserCenterService userCenterService;
     private final OssUtil ossUtil;
     private final DiscoverPostRepository postRepository;
     private final ObjectMapper objectMapper;
 
-    public UserController(UserService userService, OssUtil ossUtil, DiscoverPostRepository postRepository, ObjectMapper objectMapper) {
+    public UserController(UserService userService,
+                          UserCenterService userCenterService,
+                          OssUtil ossUtil,
+                          DiscoverPostRepository postRepository,
+                          ObjectMapper objectMapper) {
         this.userService = userService;
+        this.userCenterService = userCenterService;
         this.ossUtil = ossUtil;
         this.postRepository = postRepository;
         this.objectMapper = objectMapper;
@@ -47,6 +54,137 @@ public class UserController {
     }
 
     // 更新用户信息
+    @GetMapping("/homepage/{userId}")
+    public ResponseDto getUserHomepage(@PathVariable("userId") Long userId, HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            String viewerUsername = usernameObj == null ? null : usernameObj.toString();
+            return ResponseDto.success(userCenterService.getUserHomepage(viewerUsername, userId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/homepage-settings")
+    public ResponseDto getHomepageSettings(HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            String username = usernameObj.toString();
+            User user = userService.findByUsername(username);
+            return ResponseDto.success(userCenterService.getHomepageSettings(user));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/homepage-settings")
+    public ResponseDto updateHomepageSettings(@RequestBody Map<String, Object> updateData, HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            String username = usernameObj.toString();
+            User user = userService.findByUsername(username);
+
+            if (updateData.containsKey("bio")) {
+                String bio = (String) updateData.get("bio");
+                if (bio != null && bio.length() > 200) {
+                    return ResponseDto.error(400, "涓婚〉绠€浠嬩笉鑳借秴杩?200 涓瓧绗?");
+                }
+                user.setBio(bio);
+            }
+            if (updateData.containsKey("location")) {
+                String location = (String) updateData.get("location");
+                if (location != null && location.length() > 100) {
+                    return ResponseDto.error(400, "涓婚〉鍦板尯涓嶈兘瓒呰繃 100 涓瓧绗?");
+                }
+                user.setLocation(location);
+            }
+            if (updateData.containsKey("shopName")) {
+                String shopName = (String) updateData.get("shopName");
+                if (shopName != null && shopName.length() > 100) {
+                    return ResponseDto.error(400, "涓婚〉鏍囬涓嶈兘瓒呰繃 100 涓瓧绗?");
+                }
+                user.setShopName(shopName);
+            }
+            if (updateData.containsKey("shopIntro")) {
+                String shopIntro = (String) updateData.get("shopIntro");
+                if (shopIntro != null && shopIntro.length() > 500) {
+                    return ResponseDto.error(400, "涓婚〉璇︽儏涓嶈兘瓒呰繃 500 涓瓧绗?");
+                }
+                user.setShopIntro(shopIntro);
+            }
+            if (updateData.containsKey("shopCover")) {
+                String shopCover = (String) updateData.get("shopCover");
+                if (shopCover != null && shopCover.length() > 255) {
+                    return ResponseDto.error(400, "涓婚〉灏侀潰鍦板潃杩囬暱");
+                }
+                user.setShopCover(shopCover);
+            }
+
+            userService.save(user);
+            return ResponseDto.success(userCenterService.getHomepageSettings(user));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/follow/{userId}")
+    public ResponseDto followUser(@PathVariable("userId") Long userId, HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            return ResponseDto.success(userCenterService.followUser(usernameObj.toString(), userId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/follow/{userId}")
+    public ResponseDto unfollowUser(@PathVariable("userId") Long userId, HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            return ResponseDto.success(userCenterService.unfollowUser(usernameObj.toString(), userId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/follow/{userId}/status")
+    public ResponseDto getFollowStatus(@PathVariable("userId") Long userId, HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            return ResponseDto.success(userCenterService.getFollowStatus(usernameObj.toString(), userId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/visitor-records")
+    public ResponseDto getVisitorRecords(HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "閺堫亝宸块弶鍐跨礉鐠囧嘲鍘涢惂璇茬秿");
+            }
+            return ResponseDto.success(userCenterService.getVisitorRecords(usernameObj.toString()));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     @PutMapping("/profile")
     public ResponseDto updateUserProfile(@RequestBody Map<String, Object> updateData, HttpServletRequest request) {
         try {
@@ -256,6 +394,20 @@ public class UserController {
             userService.save(user);
 
             return ResponseDto.success("密码修改成功");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/achievements")
+    public ResponseDto getAchievements(HttpServletRequest request) {
+        try {
+            Object usernameObj = request.getAttribute("username");
+            if (usernameObj == null) {
+                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+            }
+            String username = usernameObj.toString();
+            return ResponseDto.success(userCenterService.getAchievements(username));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

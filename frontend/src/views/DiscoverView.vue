@@ -89,6 +89,14 @@
             </div>
           </div>
           <div class="action-buttons">
+            <button
+              class="partner-filter-btn"
+              :class="{ active: activeCategory === 'partner' }"
+              @click="handleCategoryChange('partner')"
+            >
+              <i class='bx bx-group'></i>
+              <span>搭子专区</span>
+            </button>
             <div class="sort-dropdown" @click.stop>
               <button class="sort-btn" @click="toggleSortMenu">
                 <i class='bx bx-sort-alt-2'></i>
@@ -139,7 +147,7 @@
               v-else
               v-for="post in displayPosts" 
               :key="post.id"
-              class="post-card"
+              :class="['post-card', { 'partner-card': isPartnerPost(post) }]"
               @click="openPostModal(post)"
             >
             <!-- 图片网格 -->
@@ -156,12 +164,17 @@
 
             <!-- 帖子内容 -->
             <div class="post-content">
+              <div v-if="isPartnerPost(post)" class="partner-banner">组团搭子帖</div>
+              <h3 v-if="post.title" class="post-title">{{ post.title }}</h3>
+              <div v-if="isPartnerPost(post)" class="partner-summary">
+                {{ buildPartnerSummary(post) }}
+              </div>
               <p>{{ post.content }}</p>
             </div>
 
             <!-- 作者信息和互动栏 -->
             <div class="post-footer">
-              <div class="author-info">
+              <div class="author-info" @click.stop="goToUserHomepage(post.author?.id)">
                 <img :src="post.author.avatar" alt="Avatar" class="author-avatar" />
                 <span class="author-name">{{ post.author.name }}</span>
               </div>
@@ -207,6 +220,9 @@
                     {{ category.name }}
                   </option>
                 </select>
+                <p v-if="postForm.category === 'partner'" class="partner-tip">
+                  搭子帖建议写清楚时间、城市、人数、预算和联系方式，方便其他用户快速组团。
+                </p>
               </div>
             </div>
             
@@ -418,13 +434,29 @@ const presetTags = computed(() => [
   t('discover.presetTags.scenery'),
   t('discover.presetTags.guide'),
   t('discover.presetTags.hotel'),
-  t('discover.presetTags.transport')
+  t('discover.presetTags.transport'),
+  '搭子',
+  '组团'
 ])
 const selectedImages = computed(() => postForm.value.images)
 const displayPosts = computed(() => posts.value)
 const draggedIndex = ref(null)
 const showImagePreview = ref(false)
 const previewImageSrc = ref('')
+
+const isPartnerPost = (post) => post?.category === 'partner'
+
+const buildPartnerSummary = (post) => {
+  const title = (post?.title || '').trim()
+  const tagSummary = Array.isArray(post?.tags)
+    ? post.tags.filter(Boolean).slice(0, 3).map((tag) => `#${tag}`).join(' / ')
+    : ''
+  const content = (post?.content || '').replace(/\s+/g, ' ').trim()
+  const fallback = content
+    ? `招募信息：${content}`
+    : '建议补充时间、地点、人数和预算，方便其他用户快速组队。'
+  return [title, tagSummary, fallback].filter(Boolean).join(' · ')
+}
 
 // 触摸事件相关变量
 const touchStartX = ref(0)
@@ -514,6 +546,11 @@ const openPostModal = async (post) => {
   } catch (error) {
     notify.error(t('discover.loadDetailFailedRetry'))
   }
+}
+
+const goToUserHomepage = (userId) => {
+  if (!userId) return
+  router.push(`/user-homepage/${userId}`)
 }
 
 const closePostModal = () => {
@@ -742,12 +779,21 @@ const submitPost = async () => {
   }
   submittingPost.value = true
   try {
+    const finalTags = [...postForm.value.tags]
+    if (postForm.value.category === 'partner') {
+      if (!finalTags.includes('搭子')) {
+        finalTags.push('搭子')
+      }
+      if (!finalTags.includes('组团')) {
+        finalTags.push('组团')
+      }
+    }
     // 第一步：创建帖子（不提交图片）
     const createResponse = await createDiscoverPost({
       title: postForm.value.title.trim(),
       content: postForm.value.content.trim(),
       category: postForm.value.category,
-      tags: postForm.value.tags,
+      tags: finalTags,
       images: []
     })
     if (createResponse.code !== 200) {
@@ -779,7 +825,7 @@ const submitPost = async () => {
       title: postForm.value.title.trim(),
       content: postForm.value.content.trim(),
       category: postForm.value.category,
-      tags: postForm.value.tags,
+      tags: finalTags,
       images: ossUrls
     })
     if (updateResponse.code === 200) {
@@ -1167,6 +1213,34 @@ body {
   margin-left: 20px;
 }
 
+.partner-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #f2d6b3;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff7ed, #fffbeb);
+  color: #b45309;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.partner-filter-btn:hover {
+  border-color: #f59e0b;
+  color: #92400e;
+  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.16);
+}
+
+.partner-filter-btn.active {
+  border-color: #d97706;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(217, 119, 6, 0.24);
+}
+
 .sort-dropdown {
   position: relative;
 }
@@ -1340,6 +1414,18 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
+.partner-card {
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.16), transparent 32%),
+    linear-gradient(180deg, #fffdf8 0%, #ffffff 48%);
+  box-shadow: 0 10px 28px rgba(249, 115, 22, 0.12);
+}
+
+.partner-card:hover {
+  box-shadow: 0 16px 36px rgba(249, 115, 22, 0.18);
+}
+
 /* 图片网格 */
 .image-grid {
   position: relative;
@@ -1389,6 +1475,41 @@ body {
   flex: 1;
 }
 
+.post-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1f2937;
+}
+
+.partner-banner {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.partner-summary {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 247, 237, 0.95);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .post-content p {
   margin: 0;
   font-size: 14px;
@@ -1413,6 +1534,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
 }
 
 .author-avatar {
@@ -1502,7 +1624,16 @@ body {
     font-size: 12px;
   }
 
+  .partner-filter-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
   .sort-btn span {
+    display: none;
+  }
+
+  .partner-filter-btn span {
     display: none;
   }
 
@@ -1629,6 +1760,16 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: #666;
+}
+
+.partner-tip {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .form-group input,

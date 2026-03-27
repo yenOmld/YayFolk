@@ -195,3 +195,70 @@ export const generateHeritageRoute = (data) => {
     timeout: 60000
   })
 }
+
+// ========== 公开内容（用户端无需登录） ==========
+export const getPublicActivities = (params) => request.get('/public/activities', { params })
+export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
+export const getPublicProducts = (params) => request.get('/public/products', { params })
+export const getPublicProductDetail = (id) => request.get(`/public/products/${id}`)
+export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
+
+// ========== 商家端 ==========
+export const applyMerchant = (data) => request.post('/merchant/apply', data)
+export const getMyApplication = () => request.get('/merchant/apply/status')
+
+export const getMerchantActivities = () => request.get('/merchant/activities')
+export const createMerchantActivity = (data) => request.post('/merchant/activities', data)
+export const updateMerchantActivity = (id, data) => request.put(`/merchant/activities/${id}`, data)
+export const deleteMerchantActivity = (id) => request.delete(`/merchant/activities/${id}`)
+export const getMerchantActivityBookings = (id) => request.get(`/merchant/activities/${id}/bookings`)
+export const checkinBooking = (id) => request.post(`/merchant/bookings/${id}/checkin`)
+export const rejectBooking = (id) => request.post(`/merchant/bookings/${id}/reject`)
+
+export const getMerchantProducts = () => request.get('/merchant/products')
+export const createMerchantProduct = (data) => request.post('/merchant/products', data)
+export const updateMerchantProduct = (id, data) => request.put(`/merchant/products/${id}`, data)
+export const deleteMerchantProduct = (id) => request.delete(`/merchant/products/${id}`)
+
+export const getMerchantOrders = () => request.get('/merchant/orders')
+
+// ========== 管理员端 ==========
+export const getAdminMerchants = (status) => request.get('/admin/merchants', { params: { status } })
+export const auditMerchant = (id, approve, remark) => request.post(`/admin/merchants/${id}/audit`, { approve, remark })
+export const getAdminActivities = (auditStatus) => request.get('/admin/activities', { params: { auditStatus } })
+export const auditAdminActivity = (id, approve, remark) => request.post(`/admin/activities/${id}/audit`, { approve, remark })
+export const getAdminPendingPosts = (page = 0, size = 20) => request.get('/admin/posts/pending', { params: { page, size } })
+export const auditPost = (id, pass) => request.post(`/admin/posts/${id}/audit`, { pass })
+export const getAdminUsers = (page = 0, size = 20, keyword) => request.get('/admin/users', { params: { page, size, keyword } })
+export const banUser = (id) => request.post(`/admin/users/${id}/ban`)
+export const unbanUser = (id) => request.post(`/admin/users/${id}/unban`)
+export const getAdminOfficial = () => request.get('/admin/official')
+export const createOfficialContent = (data) => request.post('/admin/official', data)
+export const deleteOfficialContent = (id) => request.delete(`/admin/official/${id}`)
+export const getAdminAdmins = () => request.get('/admin/admins')
+export const createAdminAccount = (data) => request.post('/admin/admins', data)
+export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}`, data)
+export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
+export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
+
+// ========== 用户侧订单 & 报名 ==========
+export const createOrder = (data) => request.post('/orders', data)
+export const getMyOrders = () => request.get('/orders')
+export const getMyOrderOverview = () => request.get('/orders/overview')
+export const cancelOrder = (id) => request.post(`/orders/${id}/cancel`)
+export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
+export const cancelActivityBooking = (id) => request.post(`/orders/bookings/${id}/cancel`)
+export const deleteActivityBooking = (id) => request.delete(`/orders/bookings/${id}`)
+export const getMyAchievements = () => request.get('/user/achievements')
+export const getUserHomepage = (userId) => request.get(`/user/homepage/${userId}`)
+export const getHomepageSettings = () => request.get('/user/homepage-settings')
+export const updateHomepageSettings = (data) => request.put('/user/homepage-settings', data)
+export const followUser = (userId) => request.post(`/user/follow/${userId}`)
+export const unfollowUser = (userId) => request.delete(`/user/follow/${userId}`)
+export const getFollowStatus = (userId) => request.get(`/user/follow/${userId}/status`)
+export const getVisitorRecords = () => request.get('/user/visitor-records')
+export const uploadImage = (formData, folder = 'images') => request.post(`/upload/image?folder=${encodeURIComponent(folder)}`, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})

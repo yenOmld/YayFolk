@@ -29,6 +29,9 @@ public class DiscoverPost {
     @Column(name = "category", length = 30)
     private String category;
 
+    @Column(name = "audit_status", length = 20)
+    private String auditStatus;
+
     @Column(name = "images", columnDefinition = "MEDIUMTEXT")
     private String images;
 
@@ -43,6 +46,9 @@ public class DiscoverPost {
 
     @Column(name = "collect_count")
     private Integer collectCount;
+
+    @Column(name = "collection_count")
+    private Integer collectionCount;
 
     @Column(name = "comment_count")
     private Integer commentCount;
@@ -67,8 +73,14 @@ public class DiscoverPost {
         if (collectCount == null) {
             collectCount = 0;
         }
+        if (collectionCount == null) {
+            collectionCount = 0;
+        }
         if (commentCount == null) {
             commentCount = 0;
+        }
+        if (auditStatus == null) {
+            auditStatus = "passed";
         }
     }
 

@@ -1,110 +1,106 @@
 <template>
-  <div class="ai-heritage-route">
-    <div class="route-header">
-      <h1>AI 非遗体验路线规划</h1>
-      <p>基于 NLP + RAG 技术的智能非遗文化体验路线规划</p>
-    </div>
-    
-    <div class="route-content">
-      <div class="input-section">
-        <div class="form-group">
-          <label>输入你的需求</label>
-          <textarea 
-            v-model="userInput" 
-            placeholder="例如：我想去北京，玩3天，喜欢传统工艺和美食" 
-            rows="4"
-          ></textarea>
-        </div>
-        <div v-if="error" class="error-message">{{ error }}</div>
-        <button class="generate-btn" @click="generateRoute" :disabled="loading">
-          {{ loading ? '生成中...' : '生成路线' }}
-        </button>
+  <div class="ai-route-page">
+    <section class="hero">
+      <div>
+        <h1>AI 非遗路线规划</h1>
+        <p>输入你的城市、出行天数和兴趣偏好，系统会结合官方内容、活动与商家数据生成可执行路线。</p>
       </div>
-      
-      <div class="result-section" v-if="routeResult">
-        <h2>推荐路线</h2>
-        
-        <!-- 路线概览 -->
-        <div class="route-overview">
-          <div class="overview-item">
-            <span class="label">目的地：</span>
-            <span class="value">{{ routeResult.destination }}</span>
-          </div>
-          <div class="overview-item">
-            <span class="label">旅行天数：</span>
-            <span class="value">{{ routeResult.days }}天</span>
-          </div>
-          <div class="overview-item">
-            <span class="label">兴趣偏好：</span>
-            <span class="value">{{ routeResult.preferences.join('、') }}</span>
-          </div>
+    </section>
+
+    <section class="planner-card">
+      <label for="route-input">输入你的需求</label>
+      <textarea
+        id="route-input"
+        v-model="userInput"
+        rows="4"
+        placeholder="例如：我想去杭州玩2天，喜欢传统工艺、茶文化，想安排可以报名的线下体验"
+      />
+      <div class="prompt-row">
+        <button v-for="prompt in prompts" :key="prompt" class="prompt-chip" @click="userInput = prompt">{{ prompt }}</button>
+      </div>
+      <p v-if="error" class="error-message">{{ error }}</p>
+      <button class="generate-btn" @click="generateRoute" :disabled="loading">
+        {{ loading ? '生成中...' : '生成路线' }}
+      </button>
+    </section>
+
+    <section v-if="routeResult" class="result-section">
+      <div class="overview-card">
+        <h2>{{ routeResult.destination }} · {{ routeResult.days }}天路线</h2>
+        <p>{{ routeResult.summary }}</p>
+        <div class="tag-row">
+          <span v-for="preference in routeResult.preferences" :key="preference" class="tag">{{ preference }}</span>
         </div>
-        
-        <!-- 每日路线 -->
-        <div class="daily-routes">
-          <div class="day-route" v-for="(day, index) in routeResult.itinerary" :key="index">
-            <h3>第 {{ index + 1 }} 天</h3>
-            
-            <div class="day-activities">
-              <div class="activity" v-for="(activity, actIndex) in day.activities" :key="actIndex">
-                <div class="activity-time">{{ activity.time }}</div>
-                <div class="activity-info">
+      </div>
+
+      <div class="layout">
+        <div class="main-column">
+          <article v-for="day in routeResult.itinerary" :key="day.day" class="day-card">
+            <div class="day-head">
+              <div>
+                <h3>第 {{ day.day }} 天</h3>
+                <p>{{ day.theme }}</p>
+              </div>
+            </div>
+            <div class="timeline">
+              <div v-for="activity in day.activities" :key="`${day.day}-${activity.time}-${activity.name}`" class="timeline-item">
+                <div class="time">{{ activity.time }}</div>
+                <div class="content">
                   <h4>{{ activity.name }}</h4>
-                  <p class="activity-description">{{ activity.description }}</p>
-                  
-                  <!-- 商家/店铺信息 -->
-                  <div class="business-info" v-if="activity.business">
-                    <div class="business-name">{{ activity.business.name }}</div>
-                    <div class="business-address">{{ activity.business.address }}</div>
-                    <div class="business-phone">{{ activity.business.phone }}</div>
+                  <p>{{ activity.description }}</p>
+                  <div v-if="activity.details?.length" class="detail-list">
+                    <span v-for="detail in activity.details" :key="`${activity.name}-${detail.label}`">
+                      {{ detail.label }}：{{ detail.value }}
+                    </span>
                   </div>
-                  
-                  <!-- 活动信息 -->
-                  <div class="activity-details" v-if="activity.details">
-                    <div class="detail-item" v-for="(detail, detailIndex) in activity.details" :key="detailIndex">
-                      <span class="detail-label">{{ detail.label }}：</span>
-                      <span class="detail-value">{{ detail.value }}</span>
-                    </div>
+                  <div v-if="activity.business" class="business-box">
+                    <strong>{{ activity.business.name }}</strong>
+                    <span>{{ activity.business.address }}</span>
+                    <span>{{ activity.business.phone }}</span>
                   </div>
-                  
-                  <div class="activity-tags">
-                    <span class="tag" v-for="(tag, tagIndex) in activity.tags" :key="tagIndex">{{ tag }}</span>
+                  <div class="tag-row">
+                    <span v-for="tag in activity.tags || []" :key="`${activity.name}-${tag}`" class="tag">{{ tag }}</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         </div>
-        
-        <!-- 推荐商家 -->
-        <div class="recommended-businesses" v-if="routeResult.recommendedBusinesses">
-          <h3>推荐商家</h3>
-          <div class="business-list">
-            <div class="business-card" v-for="(business, index) in routeResult.recommendedBusinesses" :key="index">
+
+        <aside class="side-column">
+          <div class="side-card" v-if="routeResult.recommendedBusinesses?.length">
+            <h3>推荐商家</h3>
+            <article v-for="business in routeResult.recommendedBusinesses" :key="business.name" class="side-item">
               <h4>{{ business.name }}</h4>
-              <p class="business-address">{{ business.address }}</p>
-              <p class="business-description">{{ business.description }}</p>
-              <div class="business-tags">
-                <span class="tag" v-for="(tag, tagIndex) in business.tags" :key="tagIndex">{{ tag }}</span>
+              <p>{{ business.description }}</p>
+              <span>{{ business.address }}</span>
+              <div class="tag-row">
+                <span v-for="tag in business.tags || []" :key="`${business.name}-${tag}`" class="tag">{{ tag }}</span>
               </div>
-            </div>
+            </article>
           </div>
-        </div>
-        
-        <!-- 活动信息 -->
-        <div class="activities-section" v-if="routeResult.activities">
-          <h3>相关活动</h3>
-          <div class="activity-list">
-            <div class="activity-card" v-for="(activity, index) in routeResult.activities" :key="index">
+
+          <div class="side-card" v-if="routeResult.activities?.length">
+            <h3>相关活动</h3>
+            <article v-for="activity in routeResult.activities" :key="activity.id || activity.title" class="side-item">
               <h4>{{ activity.title }}</h4>
-              <p class="activity-date">{{ activity.date }}</p>
-              <p class="activity-description">{{ activity.description }}</p>
-              <div class="activity-location">{{ activity.location }}</div>
-            </div>
+              <p>{{ activity.description }}</p>
+              <span>{{ activity.date }}</span>
+              <span>{{ activity.location }}</span>
+            </article>
           </div>
-        </div>
+
+          <div class="side-card" v-if="routeResult.officialHighlights?.length">
+            <h3>官方导读</h3>
+            <article v-for="item in routeResult.officialHighlights" :key="item.title" class="side-item">
+              <h4>{{ item.title }}</h4>
+              <p>{{ item.summary }}</p>
+              <span>{{ item.category }}</span>
+            </article>
+          </div>
+        </aside>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -117,23 +113,29 @@ const routeResult = ref(null)
 const loading = ref(false)
 const error = ref('')
 
+const prompts = [
+  '我想去北京玩3天，重点看戏曲和传统工艺',
+  '我想在杭州安排2天茶文化和手作体验',
+  '我想找适合亲子体验的非遗活动'
+]
+
 const generateRoute = async () => {
   if (!userInput.value.trim()) {
     error.value = '请输入你的需求'
     return
   }
-  
+
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await generateHeritageRoute({
       userInput: userInput.value
     })
-    
+
     routeResult.value = response.data
   } catch (err) {
-    error.value = '生成路线失败，请稍后重试'
+    error.value = err.response?.data?.message || '生成路线失败，请稍后重试'
     console.error('路线生成失败:', err)
   } finally {
     loading.value = false
@@ -142,346 +144,41 @@ const generateRoute = async () => {
 </script>
 
 <style scoped>
-.ai-heritage-route {
-  min-height: 100vh;
-  padding: 20px;
-  background: #f5f5f5;
-}
-
-.route-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding: 20px 0;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.route-header h1 {
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.route-header p {
-  color: #666;
-  font-size: 16px;
-}
-
-.route-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.input-section {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group textarea {
-  width: 100%;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.generate-btn {
-  width: 100%;
-  padding: 12px;
-  background: #7494ec;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.generate-btn:hover {
-  background: #5a78d1;
-}
-
-.generate-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.error-message {
-  color: #ff4d4f;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.result-section {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.result-section h2 {
-  color: #333;
-  margin-bottom: 20px;
-}
-
-.result-section h3 {
-  color: #5a78d1;
-  margin-bottom: 15px;
-  font-size: 18px;
-}
-
-/* 路线概览 */
-.route-overview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.overview-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.overview-item .label {
-  font-weight: 500;
-  color: #666;
-}
-
-.overview-item .value {
-  color: #333;
-}
-
-/* 每日路线 */
-.daily-routes {
-  margin-bottom: 40px;
-}
-
-.day-route {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.day-route:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.day-activities {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.activity {
-  display: flex;
-  gap: 15px;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.activity-time {
-  min-width: 120px;
-  font-weight: 500;
-  color: #5a78d1;
-}
-
-.activity-info h4 {
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.activity-description {
-  margin-bottom: 10px;
-  color: #666;
-  font-size: 14px;
-}
-
-/* 商家信息 */
-.business-info {
-  margin: 10px 0;
-  padding: 10px;
-  background: #e6ecff;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.business-name {
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #5a78d1;
-}
-
-.business-address,
-.business-phone {
-  margin-bottom: 3px;
-  color: #666;
-}
-
-/* 活动详情 */
-.activity-details {
-  margin: 10px 0;
-  font-size: 14px;
-}
-
-.detail-item {
-  margin-bottom: 5px;
-}
-
-.detail-label {
-  font-weight: 500;
-  color: #666;
-}
-
-.detail-value {
-  color: #333;
-}
-
-/* 标签 */
-.activity-tags {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.tag {
-  padding: 3px 8px;
-  background: #e6ecff;
-  color: #5a78d1;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-/* 推荐商家 */
-.recommended-businesses {
-  margin-top: 40px;
-  margin-bottom: 40px;
-}
-
-.business-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.business-card {
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.business-card h4 {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.business-card .business-address {
-  margin-bottom: 10px;
-  color: #666;
-  font-size: 14px;
-}
-
-.business-card .business-description {
-  margin-bottom: 15px;
-  color: #666;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.business-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* 活动信息 */
-.activities-section {
-  margin-top: 40px;
-}
-
-.activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.activity-card {
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.activity-card h4 {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.activity-date {
-  margin-bottom: 10px;
-  color: #5a78d1;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.activity-card .activity-description {
-  margin-bottom: 15px;
-  color: #666;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.activity-location {
-  color: #666;
-  font-size: 14px;
-}
-
-@media (max-width: 768px) {
-  .input-section,
-  .result-section {
-    padding: 20px;
-  }
-  
-  .route-overview {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .activity {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .activity-time {
-    min-width: auto;
-  }
-  
-  .business-list {
-    grid-template-columns: 1fr;
-  }
+.ai-route-page { min-height: 100vh; background: #f5f7fa; padding: 20px 20px 90px; }
+.hero { max-width: 1200px; margin: 0 auto 20px; padding: 28px; border-radius: 18px; background: linear-gradient(135deg, #7c2d12, #ea580c); color: #fff; }
+.hero h1 { margin: 0 0 8px; font-size: 30px; }
+.hero p { margin: 0; max-width: 720px; line-height: 1.7; color: rgba(255,255,255,0.88); }
+.planner-card, .overview-card, .day-card, .side-card { background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; }
+.planner-card { max-width: 1200px; margin: 0 auto 20px; padding: 24px; }
+.planner-card label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #111827; }
+.planner-card textarea { width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 12px; padding: 14px; font-size: 15px; resize: vertical; font-family: inherit; }
+.prompt-row, .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.prompt-row { margin-top: 14px; }
+.prompt-chip { border: 1px solid #fed7aa; background: #fff7ed; color: #c2410c; padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 13px; }
+.generate-btn { margin-top: 16px; width: 100%; padding: 12px 18px; border: none; border-radius: 12px; background: #ea580c; color: #fff; cursor: pointer; font-size: 15px; font-weight: 600; }
+.error-message { margin-top: 12px; color: #dc2626; }
+.result-section { max-width: 1200px; margin: 0 auto; }
+.overview-card { padding: 24px; margin-bottom: 20px; }
+.overview-card h2 { margin: 0 0 10px; font-size: 24px; color: #111827; }
+.overview-card p { margin: 0 0 14px; color: #4b5563; line-height: 1.7; }
+.tag { padding: 4px 10px; border-radius: 999px; background: #fff7ed; color: #c2410c; font-size: 12px; font-weight: 500; }
+.layout { display: grid; grid-template-columns: 1.4fr 0.9fr; gap: 20px; }
+.main-column, .side-column { display: flex; flex-direction: column; gap: 16px; }
+.day-card, .side-card { padding: 20px; }
+.day-head h3, .side-card h3 { margin: 0 0 6px; color: #111827; }
+.day-head p { margin: 0 0 14px; color: #6b7280; }
+.timeline { display: flex; flex-direction: column; gap: 16px; }
+.timeline-item { display: grid; grid-template-columns: 90px 1fr; gap: 14px; }
+.time { font-size: 13px; font-weight: 600; color: #c2410c; padding-top: 2px; }
+.content h4, .side-item h4 { margin: 0 0 8px; color: #111827; }
+.content p, .side-item p { margin: 0 0 10px; color: #4b5563; line-height: 1.7; }
+.detail-list { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 10px; font-size: 13px; color: #6b7280; }
+.business-box { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 12px; background: #fff7ed; margin-bottom: 10px; font-size: 13px; color: #7c2d12; }
+.side-item { padding: 14px 0; border-bottom: 1px solid #f3f4f6; display: flex; flex-direction: column; gap: 6px; }
+.side-item:last-child { border-bottom: none; padding-bottom: 0; }
+.side-item span { font-size: 13px; color: #9ca3af; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .timeline-item { grid-template-columns: 1fr; }
 }
 </style>

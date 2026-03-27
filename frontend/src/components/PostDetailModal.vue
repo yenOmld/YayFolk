@@ -46,12 +46,12 @@
         
         <div class="modal-right">
           <div class="modal-header">
-            <img :src="post?.author.avatar" alt="Avatar" class="modal-author-avatar" />
-            <div class="modal-author-info">
+            <img :src="post?.author.avatar" alt="Avatar" class="modal-author-avatar clickable-user" @click="goToUserHomepage(post?.author?.id)" />
+            <div class="modal-author-info clickable-user" @click="goToUserHomepage(post?.author?.id)">
               <h4>{{ post?.author.name }}</h4>
               <p>{{ post?.time }} · {{ post?.author.location || $t('postDetail.unknown') }}</p>
             </div>
-            <button class="contact-btn" @click="contactAuthor">{{ $t('postDetail.contact') }}</button>
+            <button v-if="currentUser && post?.author?.id !== currentUser.id" class="contact-btn" :class="{ active: isFollowing }" :disabled="followSubmitting" @click="toggleFollow">{{ followSubmitting ? '处理中...' : (isFollowing ? '已关注' : '关注') }}</button>
           </div>
             <div class="modal-post-view">
               <div class="modal-post-content">
@@ -82,10 +82,10 @@
                   :ref="el => { if (el) commentRefs[comment.id] = el }"
                   :class="{ 'reply-comment': comment.parentId, 'comment-highlight': highlightCommentId === String(comment.id) }"
                 >
-                  <img :src="comment.avatar" alt="Comment avatar" class="comment-avatar" />
+                  <img :src="comment.avatar" alt="Comment avatar" class="comment-avatar clickable-user" @click="goToUserHomepage(comment.userId)" />
                   <div class="comment-content">
                     <div class="comment-header">
-                      <span class="comment-author">{{ comment.author }}</span>
+                      <span class="comment-author clickable-user" @click="goToUserHomepage(comment.userId)">{{ comment.author }}</span>
                       <span class="comment-time">{{ comment.time }}</span>
                     </div>
                     <p class="comment-text">
@@ -247,7 +247,10 @@ import {
   translateDiscoverComment,
   translateDiscoverPost,
   toggleDiscoverCommentLike,
-  toggleDiscoverPostCollect
+  toggleDiscoverPostCollect,
+  followUser,
+  unfollowUser,
+  getFollowStatus
 } from '../api/app'
 
 // 获取通知实例
@@ -287,6 +290,8 @@ const highlightCommentId = ref(null)
 const commentRefs = ref({})
 
 const shareUrl = ref('')
+const isFollowing = ref(false)
+const followSubmitting = ref(false)
 
 const getCurrentUser = () => {
   const userStr = localStorage.getItem('user')
@@ -320,6 +325,18 @@ watch(() => props.post, async (newPost) => {
   showPostTranslation.value = false
   commentTranslationState.value = {}
   preferredLanguage.value = getPreferredLanguage()
+  
+  // 获取关注状态
+  if (newPost.author?.id && currentUser) {
+    try {
+      const response = await getFollowStatus(newPost.author.id)
+      if (response.code === 200) {
+        isFollowing.value = response.data
+      }
+    } catch (error) {
+      console.error('获取关注状态失败:', error)
+    }
+  }
   
   // 检查是否需要高亮评论
   if (newPost.highlightCommentId) {
@@ -633,17 +650,34 @@ const getAllDescendantIds = (parentId, comments) => {
   return ids
 }
 
-const contactAuthor = () => {
+const goToUserHomepage = (userId) => {
+  if (!userId) return
+  emit('close')
+  router.push(`/user-homepage/${userId}`)
+}
+
+const toggleFollow = async () => {
   if (!props.post || !props.post.author) return
   const authorId = props.post.author.id
   if (currentUser && authorId === currentUser.id) {
     notify.warning(t('postDetail.cannotChatWithSelf'))
     return
   }
-  router.push({
-    path: '/notification',
-    query: { userId: authorId }
-  })
+  
+  followSubmitting.value = true
+  try {
+    const response = isFollowing.value ? await unfollowUser(authorId) : await followUser(authorId)
+    if (response.code === 200) {
+      isFollowing.value = !isFollowing.value
+      notify.success(isFollowing.value ? t('postDetail.followSuccess') : t('postDetail.unfollowSuccess'))
+    } else {
+      notify.error(response.message || t('postDetail.operationFailed'))
+    }
+  } catch (error) {
+    notify.error(t('postDetail.operationFailed'))
+  } finally {
+    followSubmitting.value = false
+  }
 }
 
 const openShareModal = () => {
@@ -860,6 +894,10 @@ const copyLink = async () => {
   color: #999;
 }
 
+.clickable-user {
+  cursor: pointer;
+}
+
 .contact-btn {
   padding: 6px 14px;
   background: #ff2442;
@@ -877,6 +915,16 @@ const copyLink = async () => {
   background: #ff3a56;
   box-shadow: 0 4px 8px rgba(255, 36, 66, 0.4);
   transform: translateY(-1px);
+}
+
+.contact-btn.active {
+  background: #2f6bff;
+  box-shadow: 0 2px 4px rgba(47, 107, 255, 0.3);
+}
+
+.contact-btn.active:hover {
+  background: #2454ce;
+  box-shadow: 0 4px 8px rgba(47, 107, 255, 0.4);
 }
 
 .modal-post-view{

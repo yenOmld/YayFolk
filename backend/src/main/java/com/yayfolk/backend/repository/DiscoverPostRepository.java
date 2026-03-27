@@ -13,4 +13,6 @@ public interface DiscoverPostRepository extends JpaRepository<DiscoverPost, Long
     List<DiscoverPost> findByUserId(Long userId);
 
     long countByUserIdAndStatus(Long userId, Integer status);
+
+    List<DiscoverPost> findByAuditStatusOrderByCreateTimeDesc(String auditStatus);
 }
