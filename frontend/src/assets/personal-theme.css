@@ -1,0 +1,783 @@
+.personal-center,
+.settings-page,
+.edit-profile-page,
+.edit-homepage-page,
+.user-homepage-page,
+.discover-page,
+.tools-page,
+.my-posts-page,
+.my-collections-page,
+.activities-page,
+.orders-page,
+.achievements-page,
+.history-page {
+  --pc-bg: #f8f5f0;
+  --pc-paper: rgba(255, 255, 255, 0.92);
+  --pc-paper-strong: rgba(255, 255, 255, 0.97);
+  --pc-border: #d9cfc1;
+  --pc-ink: #2c2c2c;
+  --pc-soft: #6f6255;
+  --pc-muted: #8b8074;
+  --pc-accent: #9d2929;
+  --pc-accent-deep: #b33030;
+  --pc-success: #588157;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top left, rgba(157, 41, 41, 0.1), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(180, 144, 103, 0.18), transparent 28%),
+    var(--pc-bg) !important;
+  color: var(--pc-ink);
+}
+
+.settings-page,
+.edit-profile-page,
+.edit-homepage-page,
+.user-homepage-page,
+.tools-page,
+.my-posts-page,
+.my-collections-page,
+.history-page {
+  width: min(1180px, calc(100% - 32px)) !important;
+  margin: 0 auto !important;
+  padding: 18px 0 48px !important;
+}
+
+.personal-center {
+  padding: 24px 20px 48px !important;
+}
+
+.activities-page,
+.orders-page,
+.achievements-page {
+  max-width: 1200px !important;
+  padding: 24px 20px 48px !important;
+}
+
+.personal-center .page-header,
+.settings-page .settings-header,
+.edit-profile-page .settings-header,
+.edit-homepage-page .settings-header,
+.user-homepage-page .page-topbar,
+.discover-page .top-nav,
+.tools-page .welcome-section,
+.my-posts-page .settings-header,
+.my-collections-page .settings-header,
+.history-page .settings-header,
+.activities-page .hero-card,
+.orders-page .hero-card,
+.achievements-page .hero-card {
+  border: 1px solid var(--pc-border) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.8)),
+    var(--pc-paper) !important;
+  box-shadow: 0 16px 40px rgba(44, 44, 44, 0.07) !important;
+}
+
+.settings-page .settings-header,
+.edit-profile-page .settings-header,
+.edit-homepage-page .settings-header,
+.user-homepage-page .page-topbar,
+.my-posts-page .settings-header,
+.my-collections-page .settings-header,
+.history-page .settings-header {
+  position: sticky;
+  top: 12px;
+  padding: 18px 22px !important;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--pc-border) !important;
+}
+
+.personal-center .page-header {
+  padding: 22px 24px !important;
+}
+
+.activities-page .hero-card,
+.orders-page .hero-card,
+.achievements-page .hero-card {
+  padding: 28px !important;
+  background:
+    radial-gradient(circle at top right, rgba(157, 41, 41, 0.08), transparent 24%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 245, 240, 0.92)) !important;
+}
+
+.personal-center h1,
+.settings-page .settings-header h1,
+.edit-profile-page .settings-header h1,
+.edit-homepage-page .settings-header h1,
+.user-homepage-page h1,
+.discover-page h2,
+.tools-page .welcome-text h1,
+.my-posts-page .settings-header h1,
+.my-collections-page .settings-header h1,
+.history-page .settings-header h1,
+.activities-page .hero-card h1,
+.orders-page .hero-card h1,
+.achievements-page .hero-card h1,
+.activities-page .panel-header h2,
+.orders-page .panel-header h2 {
+  color: var(--pc-ink) !important;
+}
+
+.personal-center .page-eyebrow,
+.activities-page .eyebrow,
+.orders-page .eyebrow,
+.achievements-page .eyebrow {
+  color: var(--pc-accent) !important;
+}
+
+.personal-center .page-subtitle,
+.settings-page .setting-item span,
+.settings-page .version,
+.edit-profile-page .hint,
+.edit-homepage-page .hint,
+.my-posts-page .post-time,
+.my-collections-page .card-time,
+.history-page .card-time,
+.activities-page .hero-card p,
+.orders-page .hero-card p,
+.achievements-page .hero-card p,
+.activities-page .meta-line,
+.orders-page .meta-line,
+.activities-page .panel-header span,
+.orders-page .panel-header span {
+  color: var(--pc-soft) !important;
+}
+
+.personal-center .overview-card,
+.personal-center .section-card,
+.settings-page .setting-section,
+.edit-profile-page .avatar-section,
+.edit-profile-page .form-section,
+.edit-homepage-page .preview-card,
+.edit-homepage-page .form-card,
+.user-homepage-page .hero-card,
+.user-homepage-page .stat-card,
+.user-homepage-page .section-card,
+.user-homepage-page .badge-card,
+.user-homepage-page .post-card,
+.discover-page .nav-content,
+.discover-page .category-tabs-wrapper,
+.discover-page .post-card,
+.discover-page .post-container,
+.discover-page .notification-container,
+.discover-page .notification-item,
+.discover-page .sort-menu,
+.discover-page .image-preview-modal .modal-content,
+.tools-page .feature-card,
+.my-posts-page .empty-state,
+.my-posts-page .post-item,
+.my-posts-page .modal-content,
+.my-collections-page .empty-state,
+.my-collections-page .collection-card,
+.history-page .empty-state,
+.history-page .history-card,
+.activities-page .summary-card,
+.activities-page .panel,
+.activities-page .booking-card,
+.orders-page .summary-card,
+.orders-page .panel,
+.orders-page .order-card,
+.achievements-page .summary-card,
+.achievements-page .badge-card {
+  border: 1px solid var(--pc-border) !important;
+  border-radius: 22px !important;
+  background: var(--pc-paper-strong) !important;
+  box-shadow: 0 14px 34px rgba(44, 44, 44, 0.06) !important;
+}
+
+.personal-center .metric-card,
+.personal-center .content-card,
+.personal-center .social-item,
+.activities-page .summary-card,
+.activities-page .booking-card,
+.orders-page .summary-card,
+.orders-page .order-card,
+.achievements-page .summary-card,
+.achievements-page .badge-card,
+.user-homepage-page .stat-card,
+.user-homepage-page .badge-card,
+.user-homepage-page .post-card,
+.discover-page .post-card,
+.discover-page .notification-item,
+.tools-page .feature-card,
+.my-collections-page .collection-card,
+.history-page .history-card,
+.my-posts-page .post-item {
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.personal-center .metric-card:hover,
+.personal-center .content-card:hover,
+.personal-center .social-item:hover,
+.activities-page .booking-card:hover,
+.orders-page .order-card:hover,
+.achievements-page .badge-card:hover,
+.my-collections-page .collection-card:hover,
+.history-page .history-card:hover,
+.my-posts-page .post-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 44px rgba(44, 44, 44, 0.1) !important;
+}
+
+.settings-page .setting-item,
+.edit-profile-page .form-item,
+.edit-homepage-page .form-item,
+.my-posts-page .form-group,
+.user-homepage-page .inline-editor,
+.activities-page .panel-header,
+.orders-page .panel-header {
+  color: var(--pc-ink);
+}
+
+.settings-page .setting-item,
+.edit-profile-page .form-item input,
+.edit-homepage-page .form-item input,
+.edit-homepage-page .form-item textarea,
+.my-posts-page .form-group input,
+.my-posts-page .form-group textarea,
+.my-posts-page .form-group select {
+  background: transparent;
+}
+
+.settings-page select,
+.edit-profile-page input,
+.edit-homepage-page input,
+.edit-homepage-page textarea,
+.user-homepage-page input,
+.user-homepage-page textarea,
+.discover-page input,
+.discover-page textarea,
+.discover-page select,
+.my-posts-page input,
+.my-posts-page textarea,
+.my-posts-page select {
+  border: 1px solid rgba(217, 207, 193, 0.9) !important;
+  border-radius: 16px !important;
+  background: rgba(248, 245, 240, 0.72) !important;
+  color: var(--pc-ink) !important;
+  box-shadow: none !important;
+}
+
+.settings-page select:focus,
+.edit-profile-page input:focus,
+.edit-homepage-page input:focus,
+.edit-homepage-page textarea:focus,
+.user-homepage-page input:focus,
+.user-homepage-page textarea:focus,
+.discover-page input:focus,
+.discover-page textarea:focus,
+.discover-page select:focus,
+.my-posts-page input:focus,
+.my-posts-page textarea:focus,
+.my-posts-page select:focus {
+  border-color: rgba(157, 41, 41, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(157, 41, 41, 0.1) !important;
+  outline: none;
+}
+
+.personal-center .settings-trigger,
+.personal-center .my-homepage-btn,
+.personal-center .secondary-action-btn,
+.user-homepage-page .topbar-action,
+.user-homepage-page .primary-btn,
+.user-homepage-page .cover-upload-btn,
+.discover-page .partner-filter-btn,
+.discover-page .sort-btn,
+.discover-page .submit-post-btn,
+.discover-page .tag-btn,
+.settings-page .clear-btn,
+.edit-profile-page .save-btn,
+.edit-homepage-page .save-btn,
+.edit-homepage-page .secondary-btn,
+.my-posts-page .btn.primary,
+.my-posts-page .submit-post-btn,
+.my-collections-page .btn.primary,
+.history-page .btn.primary,
+.activities-page .ghost-btn,
+.activities-page .danger-btn,
+.activities-page .secondary-btn,
+.orders-page .ghost-btn,
+.orders-page .danger-btn,
+.orders-page .secondary-btn {
+  border-radius: 16px !important;
+}
+
+.personal-center .settings-trigger,
+.personal-center .my-homepage-btn,
+.personal-center .secondary-action-btn,
+.user-homepage-page .topbar-action,
+.user-homepage-page .primary-btn,
+.user-homepage-page .cover-upload-btn,
+.discover-page .partner-filter-btn.active,
+.discover-page .submit-post-btn,
+.discover-page .tag-btn,
+.edit-profile-page .save-btn,
+.edit-homepage-page .save-btn,
+.edit-homepage-page .secondary-btn,
+.my-posts-page .btn.primary,
+.my-posts-page .submit-post-btn,
+.my-collections-page .btn.primary,
+.history-page .btn.primary,
+.activities-page .ghost-btn,
+.orders-page .ghost-btn {
+  background: linear-gradient(135deg, var(--pc-accent), var(--pc-accent-deep)) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.activities-page .danger-btn,
+.orders-page .danger-btn,
+.user-homepage-page .secondary-btn,
+.discover-page .refresh-btn,
+.discover-page .remove-image-btn,
+.my-posts-page .delete-btn {
+  background: rgba(157, 41, 41, 0.08) !important;
+  color: var(--pc-accent) !important;
+  border: 1px solid rgba(157, 41, 41, 0.14) !important;
+}
+
+.activities-page .secondary-btn,
+.orders-page .secondary-btn,
+.settings-page .clear-btn,
+.user-homepage-page .topbar-secondary,
+.user-homepage-page .icon-btn,
+.discover-page .tab,
+.discover-page .sort-option,
+.discover-page .mobile-menu-item,
+.discover-page .nav-button,
+.my-posts-page .view-btn,
+.my-posts-page .edit-btn {
+  background: #fffaf4 !important;
+  color: var(--pc-accent) !important;
+  border: 1px solid rgba(157, 41, 41, 0.12) !important;
+}
+
+.settings-page .back-btn,
+.edit-profile-page .back-btn,
+.edit-homepage-page .back-btn,
+.user-homepage-page .icon-btn,
+.my-posts-page .back-btn,
+.my-collections-page .back-btn,
+.history-page .back-btn {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(157, 41, 41, 0.06) !important;
+  color: var(--pc-accent) !important;
+  margin-right: 14px !important;
+}
+
+.activities-page .summary-grid,
+.orders-page .summary-grid,
+.achievements-page .summary-grid {
+  gap: 16px !important;
+}
+
+.activities-page .summary-card,
+.orders-page .summary-card,
+.achievements-page .summary-card {
+  background:
+    linear-gradient(180deg, rgba(157, 41, 41, 0.03), rgba(255, 255, 255, 0.96)),
+    var(--pc-paper-strong) !important;
+}
+
+.activities-page .status-tag,
+.orders-page .status-tag,
+.user-homepage-page .role-chip,
+.user-homepage-page .post-tags span,
+.my-posts-page .tag {
+  border-radius: 999px !important;
+}
+
+.activities-page .status-tag,
+.orders-page .status-tag,
+.achievements-page .badge-type,
+.achievements-page .badge-state,
+.user-homepage-page .role-chip,
+.user-homepage-page .post-tags span {
+  background: rgba(157, 41, 41, 0.08) !important;
+  color: var(--pc-accent) !important;
+}
+
+.activities-page .status-note.success-note,
+.orders-page .status-note.success-note {
+  color: var(--pc-success) !important;
+}
+
+.activities-page .status-note.warning-note,
+.orders-page .status-note.warning-note {
+  color: var(--pc-accent) !important;
+}
+
+.activities-page .status-note.muted-note,
+.orders-page .status-note.muted-note {
+  color: var(--pc-muted) !important;
+}
+
+.my-collections-page .card-image.placeholder,
+.history-page .card-image.placeholder,
+.my-posts-page .image-upload-area {
+  background: rgba(157, 41, 41, 0.06) !important;
+  color: var(--pc-accent) !important;
+}
+
+.edit-homepage-page .preview-cover {
+  background-color: #f1e6d9 !important;
+}
+
+.discover-page,
+.tools-page {
+  width: min(1240px, calc(100% - 32px)) !important;
+  margin: 0 auto !important;
+  padding: 18px 0 48px !important;
+}
+
+.discover-page .top-nav {
+  position: sticky;
+  top: 12px;
+  z-index: 80;
+  background: transparent !important;
+  margin-bottom: 22px;
+}
+
+.discover-page .nav-content {
+  padding: 16px 20px !important;
+}
+
+.discover-page .logo,
+.discover-page .notification-user,
+.tools-page .welcome-text p {
+  color: var(--pc-ink) !important;
+}
+
+.discover-page .search-input,
+.discover-page .mobile-menu {
+  border: 1px solid var(--pc-border) !important;
+  border-radius: 18px !important;
+  background: rgba(248, 245, 240, 0.86) !important;
+  box-shadow: none !important;
+}
+
+.discover-page .search-input input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.discover-page .category-tabs-wrapper,
+.discover-page .notification-container,
+.discover-page .post-container {
+  padding: 18px 20px !important;
+  margin-bottom: 22px;
+}
+
+.discover-page .category-tabs {
+  gap: 10px !important;
+}
+
+.discover-page .tab.active,
+.discover-page .nav-button.active,
+.discover-page .mobile-menu-item.active,
+.discover-page .sort-option.active {
+  background: linear-gradient(135deg, var(--pc-accent), var(--pc-accent-deep)) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+.discover-page .post-card {
+  overflow: hidden;
+}
+
+.discover-page .partner-card {
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.95)),
+    var(--pc-paper-strong) !important;
+}
+
+.discover-page .post-content p,
+.discover-page .author-name,
+.discover-page .stat-item,
+.discover-page .notification-content p,
+.discover-page .notification-time,
+.discover-page .partner-summary,
+.discover-page .loading-text,
+.discover-page .empty-state p {
+  color: var(--pc-soft) !important;
+}
+
+.discover-page .post-title,
+.discover-page .notification-container h2 {
+  color: var(--pc-ink) !important;
+}
+
+.discover-page .partner-banner,
+.discover-page .selected-tag-item,
+.discover-page .tag-item.active {
+  background: rgba(157, 41, 41, 0.08) !important;
+  color: var(--pc-accent) !important;
+}
+
+.discover-page .image-upload-area,
+.discover-page .loading-container,
+.discover-page .empty-state {
+  border: 1px solid var(--pc-border) !important;
+  border-radius: 22px !important;
+  background: var(--pc-paper-strong) !important;
+  box-shadow: 0 14px 34px rgba(44, 44, 44, 0.06) !important;
+}
+
+.discover-page .notification-avatar,
+.discover-page .author-avatar {
+  border: 2px solid rgba(217, 207, 193, 0.8);
+}
+
+.discover-page .post-image,
+.discover-page .preview-image {
+  background: #efe5d8;
+}
+
+.tools-page .main-content {
+  padding: 0 !important;
+}
+
+.tools-page .welcome-section {
+  padding: 28px !important;
+  margin-bottom: 22px !important;
+}
+
+.tools-page .welcome-content {
+  justify-content: flex-start !important;
+}
+
+.tools-page .welcome-text {
+  text-align: left !important;
+}
+
+.tools-page .welcome-text h1 {
+  color: var(--pc-ink) !important;
+}
+
+.tools-page .quick-features {
+  gap: 18px !important;
+}
+
+.tools-page .feature-card {
+  padding: 26px 22px !important;
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.96)),
+    var(--pc-paper-strong) !important;
+}
+
+.tools-page .feature-card i {
+  color: var(--pc-accent) !important;
+}
+
+.tools-page .feature-card span {
+  color: var(--pc-ink) !important;
+}
+
+.tools-page .feature-card:hover {
+  background: linear-gradient(135deg, var(--pc-accent), var(--pc-accent-deep)) !important;
+}
+
+.tools-page .feature-card:hover i,
+.tools-page .feature-card:hover span {
+  color: #fff !important;
+}
+
+.user-homepage-page {
+  width: min(1200px, calc(100% - 32px)) !important;
+  margin: 0 auto !important;
+  padding: 18px 0 48px !important;
+}
+
+.user-homepage-page .page-topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px !important;
+  margin-bottom: 22px;
+}
+
+.user-homepage-page .topbar-title,
+.user-homepage-page .section-side,
+.user-homepage-page .post-footer span,
+.user-homepage-page .badge-text span,
+.user-homepage-page .summary-text,
+.user-homepage-page .summary-facts span {
+  color: var(--pc-soft) !important;
+}
+
+.user-homepage-page .hero-card {
+  padding: 16px !important;
+  margin-bottom: 20px;
+}
+
+.user-homepage-page .hero-main {
+  min-height: 300px;
+  border-radius: 24px !important;
+  background-color: #eadfce !important;
+  background-size: cover !important;
+  background-position: center !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.user-homepage-page .hero-main::before {
+  background: linear-gradient(180deg, rgba(44, 44, 44, 0.08), rgba(44, 44, 44, 0.38)) !important;
+}
+
+.user-homepage-page .hero-avatar {
+  border: 4px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 12px 28px rgba(44, 44, 44, 0.14) !important;
+}
+
+.user-homepage-page .hero-body,
+.user-homepage-page .hero-body h1,
+.user-homepage-page .editing-banner,
+.user-homepage-page .merchant-content,
+.user-homepage-page .merchant-name-row,
+.user-homepage-page .badge-text strong,
+.user-homepage-page .post-body h3,
+.user-homepage-page .post-stats span {
+  color: #fff !important;
+}
+
+.user-homepage-page .editing-banner {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.user-homepage-page .stats-grid {
+  gap: 16px !important;
+  margin-bottom: 20px;
+}
+
+.user-homepage-page .stat-card {
+  background:
+    linear-gradient(180deg, rgba(157, 41, 41, 0.03), rgba(255, 255, 255, 0.96)),
+    var(--pc-paper-strong) !important;
+}
+
+.user-homepage-page .stat-value,
+.user-homepage-page .section-head h2,
+.user-homepage-page .badge-card strong,
+.user-homepage-page .post-card h3 {
+  color: var(--pc-ink) !important;
+}
+
+.user-homepage-page .stat-label,
+.user-homepage-page .badge-text span,
+.user-homepage-page .post-content,
+.user-homepage-page .post-footer,
+.user-homepage-page .summary-facts span,
+.user-homepage-page .merchant-content p,
+.user-homepage-page .editor-hint {
+  color: var(--pc-soft) !important;
+}
+
+.user-homepage-page .empty-block {
+  border-radius: 20px;
+  background: #fffaf4 !important;
+  color: var(--pc-muted) !important;
+}
+
+.user-homepage-page .badge-icon {
+  background: rgba(157, 41, 41, 0.08) !important;
+  color: var(--pc-accent) !important;
+}
+
+.user-homepage-page .post-cover-wrap {
+  background: #efe5d8 !important;
+}
+
+.user-homepage-page .post-image-count {
+  background: rgba(157, 41, 41, 0.9) !important;
+  color: #fff !important;
+}
+
+.user-homepage-page .post-card {
+  overflow: hidden;
+}
+
+.user-homepage-page .post-card.disabled {
+  opacity: 0.7;
+}
+
+.user-homepage-page .post-body {
+  background: transparent !important;
+}
+
+.user-homepage-page .summary-facts i,
+.user-homepage-page .merchant-name-row i,
+.user-homepage-page .post-stats i {
+  color: var(--pc-accent) !important;
+}
+
+.edit-profile-page .avatar-upload-btn,
+.edit-homepage-page .cover-upload-btn {
+  background: linear-gradient(135deg, var(--pc-accent), var(--pc-accent-deep)) !important;
+  color: #fff !important;
+}
+
+.settings-page .switch input:checked + .slider,
+.settings-page .slider.round,
+.settings-page .slider {
+  background-color: #d9cfc1;
+}
+
+.settings-page .switch input:checked + .slider {
+  background-color: var(--pc-accent) !important;
+}
+
+@media (max-width: 768px) {
+  .settings-page,
+  .edit-profile-page,
+  .edit-homepage-page,
+  .user-homepage-page,
+  .discover-page,
+  .tools-page,
+  .my-posts-page,
+  .my-collections-page,
+  .history-page,
+  .activities-page,
+  .orders-page,
+  .achievements-page {
+    width: calc(100% - 24px) !important;
+    padding: 12px 0 32px !important;
+  }
+
+  .personal-center {
+    padding: 12px 12px 32px !important;
+  }
+
+  .settings-page .settings-header,
+  .edit-profile-page .settings-header,
+  .edit-homepage-page .settings-header,
+  .user-homepage-page .page-topbar,
+  .discover-page .top-nav,
+  .tools-page .welcome-section,
+  .my-posts-page .settings-header,
+  .my-collections-page .settings-header,
+  .history-page .settings-header,
+  .personal-center .page-header,
+  .activities-page .hero-card,
+  .orders-page .hero-card,
+  .achievements-page .hero-card {
+    border-radius: 20px !important;
+  }
+
+  .discover-page .nav-content,
+  .discover-page .category-tabs-wrapper,
+  .discover-page .notification-container,
+  .discover-page .post-container,
+  .tools-page .welcome-section {
+    padding: 16px !important;
+  }
+}
