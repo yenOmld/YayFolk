@@ -1,27 +1,34 @@
 <template>
   <div class="admin-page">
     <div class="page-header">
-      <h2>商家申请审核</h2>
-      <div class="filter-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          :class="['tab-btn', { active: currentTab === tab.value }]"
-          @click="switchTab(tab.value)"
-        >
-          {{ tab.label }}
-        </button>
+      <div>
+        <h2>商家申请审核</h2>
+      </div>
+      <div class="header-side">
+        <div class="filter-tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            :class="['tab-btn', { active: currentTab === tab.value }]"
+            @click="switchTab(tab.value)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div class="search-box">
+          <input v-model.trim="keyword" type="text" placeholder="搜索店铺/姓名/账号/电话/非遗品类" />
+        </div>
       </div>
     </div>
 
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="list.length === 0" class="empty">暂无申请记录</div>
+    <div v-else-if="filteredList.length === 0" class="empty">{{ emptyText }}</div>
 
     <div v-else class="card-list">
-      <div v-for="item in list" :key="item.id" class="merchant-card">
+      <div v-for="item in pagedList" :key="item.id" class="merchant-card">
         <div class="card-header">
           <div class="user-info">
-            <img :src="item.avatar || defaultAvatar" class="avatar" />
+            <img :src="item.avatar || defaultAvatar" class="avatar" alt="用户头像" />
             <div>
               <div class="name">{{ item.nickname || item.username || '未知用户' }}</div>
               <div class="sub">@{{ item.username || '-' }}</div>
@@ -33,35 +40,73 @@
         </div>
 
         <div class="card-body">
-          <div class="info-row"><span class="label">真实姓名：</span>{{ item.realName || '-' }}</div>
-          <div class="info-row"><span class="label">联系电话：</span>{{ item.phone || '-' }}</div>
-          <div class="info-row"><span class="label">店铺名称：</span>{{ item.shopName || '-' }}</div>
-          <div class="info-row"><span class="label">非遗品类：</span>{{ item.heritageType || '-' }}</div>
-          <div class="info-row full"><span class="label">申请说明：</span>{{ item.heritageDescription || '-' }}</div>
-          <div class="info-row full"><span class="label">店铺地址：</span>{{ item.shopAddress || '-' }}</div>
-          <div v-if="item.auditRemark" class="info-row full remark">
-            <span class="label">审核备注：</span>{{ item.auditRemark }}
+          <div class="info-row">
+            <span class="label">真实姓名</span>
+            <strong>{{ item.realName || '-' }}</strong>
           </div>
-          <div class="info-row full"><span class="label">申请时间：</span>{{ formatTime(item.createTime) }}</div>
+          <div class="info-row">
+            <span class="label">联系电话</span>
+            <strong>{{ item.phone || '-' }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="label">店铺名称</span>
+            <strong>{{ item.shopName || '-' }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="label">非遗品类</span>
+            <strong>{{ item.heritageType || '-' }}</strong>
+          </div>
+          <div class="info-row full">
+            <span class="label">申请说明</span>
+            <p>{{ item.heritageDescription || '-' }}</p>
+          </div>
+          <div class="info-row full">
+            <span class="label">店铺地址</span>
+            <p>{{ item.shopAddress || '-' }}</p>
+          </div>
+          <div v-if="item.auditRemark" class="info-row full remark">
+            <span class="label">审核备注</span>
+            <p>{{ item.auditRemark }}</p>
+          </div>
+          <div class="info-row full">
+            <span class="label">申请时间</span>
+            <p>{{ formatTime(item.createTime) }}</p>
+          </div>
         </div>
 
         <div v-if="item.applicationStatus === 'pending'" class="card-actions">
-          <button class="btn approve" @click="openAudit(item, true)">通过</button>
-          <button class="btn reject" @click="openAudit(item, false)">驳回</button>
+          <button v-if="item.applicationStatus === 'pending'" class="btn approve" @click="handleApprove(item)">通过</button>
+          <button class="btn reject" @click="openReject(item)">驳回</button>
         </div>
       </div>
     </div>
 
+    <div v-if="totalPages > 1" class="pagination">
+      <button class="page-btn" :disabled="page === 1" @click="changePage(-1)">上一页</button>
+      <span class="page-status">第 {{ page }} / {{ totalPages }} 页</span>
+      <button class="page-btn" :disabled="page === totalPages" @click="changePage(1)">下一页</button>
+    </div>
+
     <div v-if="auditModal.show" class="modal-mask" @click.self="auditModal.show = false">
       <div class="modal">
-        <h3>{{ auditModal.approve ? '通过申请' : '驳回申请' }}</h3>
-        <p>商家：{{ auditModal.item?.shopName || '-' }}（{{ auditModal.item?.realName || '-' }}）</p>
-        <textarea v-model="auditModal.remark" placeholder="审核备注（可选）" rows="3" />
+        <h3>填写驳回原因</h3>
+        <p class="modal-intro">
+          商家：{{ auditModal.item?.shopName || '-' }}（{{ auditModal.item?.realName || '-' }}）
+        </p>
+
+        <div class="modal-field">
+          <label class="field-label">驳回原因</label>
+          <textarea
+            v-model.trim="auditModal.remark"
+            placeholder="请填写驳回原因，方便商家修改后重新提交"
+            rows="4"
+          />
+          <small class="field-hint">通过不需要填写原因，只有驳回时必须填写。</small>
+        </div>
+
         <div class="modal-actions">
           <button class="btn cancel" @click="auditModal.show = false">取消</button>
-          <button :class="['btn', auditModal.approve ? 'approve' : 'reject']" @click="submitAudit">
-            确认{{ auditModal.approve ? '通过' : '驳回' }}
-          </button>
+          <button class="btn reject" @click="submitReject">确认驳回</button>
         </div>
       </div>
     </div>
@@ -69,7 +114,7 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
 import { auditMerchant, getAdminMerchants } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
@@ -86,12 +131,41 @@ const tabs = [
 const currentTab = ref('pending')
 const list = ref([])
 const loading = ref(false)
+const keyword = ref('')
+const page = ref(1)
+const pageSize = 3
 const auditModal = ref({
   show: false,
   item: null,
-  approve: true,
   remark: ''
 })
+
+const filteredList = computed(() => {
+  const search = keyword.value.trim().toLowerCase()
+  if (!search) {
+    return list.value
+  }
+  return list.value.filter(item => {
+    const fields = [
+      item.shopName,
+      item.realName,
+      item.username,
+      item.nickname,
+      item.phone,
+      item.heritageType,
+      item.shopAddress,
+      item.heritageDescription,
+      item.auditRemark
+    ]
+    return fields.some(field => String(field || '').toLowerCase().includes(search))
+  })
+})
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredList.value.length / pageSize)))
+const pagedList = computed(() => {
+  const start = (page.value - 1) * pageSize
+  return filteredList.value.slice(start, start + pageSize)
+})
+const emptyText = computed(() => keyword.value ? '没有匹配的商家申请' : '暂无申请记录')
 
 const load = async () => {
   loading.value = true
@@ -101,6 +175,7 @@ const load = async () => {
       throw new Error(res.message || '加载失败')
     }
     list.value = Array.isArray(res.data) ? res.data : []
+    page.value = 1
   } catch (error) {
     list.value = []
     notify(error.message || '加载失败', 'error')
@@ -111,6 +186,7 @@ const load = async () => {
 
 const switchTab = (value) => {
   currentTab.value = value
+  page.value = 1
   load()
 }
 
@@ -129,45 +205,81 @@ const formatTime = (value) => {
   return new Date(value).toLocaleString('zh-CN')
 }
 
-const openAudit = (item, approve) => {
+const openReject = (item) => {
   auditModal.value = {
     show: true,
     item,
-    approve,
     remark: ''
   }
 }
 
-const submitAudit = async () => {
-  const { item, approve, remark } = auditModal.value
+const closeReject = () => {
+  auditModal.value = {
+    show: false,
+    item: null,
+    remark: ''
+  }
+}
+
+const handleApprove = async (item) => {
   try {
-    const res = await auditMerchant(item.id, approve, remark)
+    const res = await auditMerchant(item.id, true)
     if (res.code !== 200) {
       throw new Error(res.message || '操作失败')
     }
-    notify(approve ? '已通过申请' : '已驳回申请', 'success')
-    auditModal.value.show = false
+    notify('已通过申请', 'success')
     await load()
   } catch (error) {
     notify(error.message || '操作失败', 'error')
   }
 }
 
+const submitReject = async () => {
+  const { item, remark } = auditModal.value
+  if (!remark) {
+    notify('请先填写驳回原因', 'warning')
+    return
+  }
+  try {
+    const res = await auditMerchant(item.id, false, remark)
+    if (res.code !== 200) {
+      throw new Error(res.message || '操作失败')
+    }
+    notify('已驳回申请', 'success')
+    closeReject()
+    await load()
+  } catch (error) {
+    notify(error.message || '操作失败', 'error')
+  }
+}
+
+const changePage = (step) => {
+  const nextPage = page.value + step
+  if (nextPage < 1 || nextPage > totalPages.value) {
+    return
+  }
+  page.value = nextPage
+}
+
+watch(keyword, () => {
+  page.value = 1
+})
+
 onMounted(load)
 </script>
 
 <style scoped>
 .admin-page {
-  max-width: 900px;
+  max-width: 980px;
 }
 
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
 .page-header h2 {
@@ -177,13 +289,21 @@ onMounted(load)
   margin: 0;
 }
 
+.header-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .filter-tabs {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 6px 16px;
+  padding: 8px 16px;
   border-radius: 20px;
   border: 1px solid #d1d5db;
   background: #fff;
@@ -199,6 +319,25 @@ onMounted(load)
   border-color: #7c3aed;
 }
 
+.search-box {
+  display: flex;
+}
+
+.search-box input {
+  width: 260px;
+  max-width: 72vw;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
 .loading,
 .empty {
   text-align: center;
@@ -210,6 +349,32 @@ onMounted(load)
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.page-status {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .merchant-card {
@@ -225,6 +390,7 @@ onMounted(load)
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  gap: 12px;
 }
 
 .user-info {
@@ -234,8 +400,8 @@ onMounted(load)
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   background: #e5e7eb;
@@ -256,7 +422,7 @@ onMounted(load)
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .status-badge.pending {
@@ -276,13 +442,16 @@ onMounted(load)
 
 .card-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
   margin-bottom: 16px;
 }
 
 .info-row {
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
   color: #374151;
 }
 
@@ -290,12 +459,22 @@ onMounted(load)
   grid-column: 1 / -1;
 }
 
-.info-row.remark {
+.info-row p,
+.info-row strong {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.info-row.remark p {
   color: #dc2626;
 }
 
 .label {
   color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .card-actions {
@@ -311,7 +490,7 @@ onMounted(load)
   border: none;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s;
 }
 
@@ -356,7 +535,7 @@ onMounted(load)
   background: #fff;
   border-radius: 16px;
   padding: 28px;
-  width: 420px;
+  width: 460px;
   max-width: 90vw;
 }
 
@@ -365,27 +544,54 @@ onMounted(load)
   font-size: 18px;
 }
 
-.modal p {
+.modal-intro {
   color: #6b7280;
   font-size: 14px;
-  margin-bottom: 16px;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .modal textarea {
   width: 100%;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 12px;
   font-size: 14px;
   resize: vertical;
   box-sizing: border-box;
+  min-height: 120px;
+  line-height: 1.7;
+}
+
+.modal textarea:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.field-hint {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .modal-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 @media (max-width: 768px) {

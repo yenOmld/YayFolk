@@ -70,7 +70,7 @@ const total = ref(0)
 const loading = ref(false)
 const keyword = ref('')
 const page = ref(0)
-const pageSize = 20
+const pageSize = 10
 
 const load = async () => {
   loading.value = true
@@ -91,18 +91,24 @@ const changePage = (dir) => { page.value += dir; load() }
 const handleBan = async (u) => {
   if (!confirm(`确认封禁用户 ${u.username}？`)) return
   try {
-    await banUser(u.id)
+    const res = await banUser(u.id)
+    if (res.code !== 200) {
+      throw new Error(res.message || '操作失败')
+    }
     notify('封禁成功', 'success')
     u.status = 0
-  } catch (e) { notify('操作失败', 'error') }
+  } catch (e) { notify(e.message || '操作失败', 'error') }
 }
 
 const handleUnban = async (u) => {
   try {
-    await unbanUser(u.id)
+    const res = await unbanUser(u.id)
+    if (res.code !== 200) {
+      throw new Error(res.message || '操作失败')
+    }
     notify('解封成功', 'success')
     u.status = 1
-  } catch (e) { notify('操作失败', 'error') }
+  } catch (e) { notify(e.message || '操作失败', 'error') }
 }
 
 const roleLabel = (r) => ({ user: '普通用户', merchant: '商家', admin: '管理员' }[r] || r)

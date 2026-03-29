@@ -32,6 +32,9 @@ public class DiscoverPost {
     @Column(name = "audit_status", length = 20)
     private String auditStatus;
 
+    @Column(name = "audit_remark", length = 500)
+    private String auditRemark;
+
     @Column(name = "images", columnDefinition = "MEDIUMTEXT")
     private String images;
 
@@ -80,7 +83,7 @@ public class DiscoverPost {
             commentCount = 0;
         }
         if (auditStatus == null) {
-            auditStatus = "passed";
+            auditStatus = "pending";
         }
     }
 

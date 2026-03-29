@@ -345,7 +345,12 @@
       "scenery": "풍경",
       "guide": "가이드",
       "hotel": "숙박",
-      "transport": "교통"
+      "transport": "교통",
+      "costume": "의상과 메이크업",
+      "artistry": "미술 조형",
+      "folklore": "민속 절기",
+      "opera": "희곡 공연",
+      "textile": "직물 공예"
     }
   },
   "postDetail": {

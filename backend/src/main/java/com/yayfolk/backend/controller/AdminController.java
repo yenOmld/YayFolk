@@ -83,13 +83,14 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/posts/pending")
-    public ResponseDto getPendingPosts(@RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "20") int size,
-                                       HttpServletRequest request) {
+    @GetMapping("/posts")
+    public ResponseDto getPosts(@RequestParam(required = false) String auditStatus,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "20") int size,
+                                HttpServletRequest request) {
         try {
             String username = requireUsername(request);
-            return ResponseDto.success(adminService.getPendingPosts(username, page, size));
+            return ResponseDto.success(adminService.getPosts(username, auditStatus, page, size));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -102,7 +103,8 @@ public class AdminController {
         try {
             String username = requireUsername(request);
             boolean pass = Boolean.TRUE.equals(data.get("pass"));
-            return ResponseDto.success(adminService.auditPost(username, id, pass));
+            String remark = data.get("remark") != null ? data.get("remark").toString() : null;
+            return ResponseDto.success(adminService.auditPost(username, id, pass, remark));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

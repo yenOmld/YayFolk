@@ -9,7 +9,7 @@
         <span class="hero-badge">Admin Access</span>
         <h1>管理员登录</h1>
         <p>
-          管理后台已统一为登录页同系的玻璃拟态视觉。这里用于商家审核、活动审核、用户管理和官方内容维护。
+          管理后台，用于商家审核、活动审核、用户管理和官方内容维护。
         </p>
 
         <div class="hero-points">
@@ -17,14 +17,12 @@
             <i class="bx bx-shield-quarter"></i>
             <div>
               <strong>安全登录</strong>
-              <span>仅管理员账号可进入后台</span>
             </div>
           </div>
           <div class="point-card">
             <i class="bx bx-check-circle"></i>
             <div>
               <strong>统一体验</strong>
-              <span>登录、导航和内容面板视觉一致</span>
             </div>
           </div>
         </div>

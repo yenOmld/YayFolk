@@ -196,7 +196,7 @@ const routes = [
     path: '/activity/:id/booking',
     name: 'activity-booking',
     component: ActivityBooking,
-    meta: { title: '娲诲姩鎶ュ悕 - YayFolk', requiresAuth: true }
+    meta: { title: '活动预约 - YayFolk', requiresAuth: true }
   },
   {
     path: '/admin',
@@ -226,6 +226,12 @@ const routes = [
         name: 'admin-posts',
         component: () => import('../views/admin/AdminPosts.vue'),
         meta: { title: '内容审核 - 管理后台' }
+      },
+      {
+        path: 'service',
+        name: 'admin-service',
+        component: () => import('../views/admin/AdminCustomerService.vue'),
+        meta: { title: '客服工作台 - 管理后台', normalAdminOnly: true }
       },
       {
         path: 'users',
@@ -262,20 +268,20 @@ const routes = [
         path: 'activities/create',
         name: 'merchant-activity-create',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '鍒涘缓娲诲姩 - 鍟嗗涓績' }
+        meta: { title: '创建活动 - 商家中心' }
       },
       {
         path: 'activities/:id/edit',
         name: 'merchant-activity-edit',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '缂栬緫娲诲姩 - 鍟嗗涓績' }
+        meta: { title: '编辑活动 - 商家中心' }
       },
       {
         path: 'bookings',
         name: 'merchant-bookings',
         component: () => import('../views/merchant/MerchantBookings.vue'),
         meta: { title: '预约管理 - 商家中心' }
-      },
+      }
     ]
   }
 ]
@@ -327,6 +333,10 @@ router.beforeEach((to, from, next) => {
     }
     if (to.matched.some(route => route.meta?.requiresSuperAdmin) && !isSuperAdminUser(userInfo)) {
       next('/admin/merchants')
+      return
+    }
+    if (to.matched.some(route => route.meta?.normalAdminOnly) && isSuperAdminUser(userInfo)) {
+      next('/admin/admins')
       return
     }
   }

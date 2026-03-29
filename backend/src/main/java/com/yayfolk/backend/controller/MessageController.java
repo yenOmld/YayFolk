@@ -2,7 +2,14 @@ package com.yayfolk.backend.controller;
 
 import com.yayfolk.backend.dto.ResponseDto;
 import com.yayfolk.backend.service.MessageService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -32,6 +39,16 @@ public class MessageController {
             String username = requireUsername(request);
             Long otherUserId = Long.parseLong(payload.get("otherUserId").toString());
             return ResponseDto.success(messageService.getOrCreateConversation(username, otherUserId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/customer-service")
+    public ResponseDto createCustomerServiceConversation(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(messageService.getOrCreateCustomerServiceConversation(username));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -130,7 +147,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.clearNotifications(username, type);
-            return ResponseDto.success("通知已清除");
+            return ResponseDto.success("通知已清空");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

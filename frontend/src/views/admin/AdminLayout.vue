@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="admin-shell">
     <div class="admin-shell__backdrop"></div>
     <div class="admin-shell__glow admin-shell__glow--left"></div>
@@ -17,7 +17,6 @@
         <div class="admin-shell__summary">
           <p class="summary-kicker">Control Panel</p>
           <h2>{{ currentUser.nickname || currentUser.username || '管理员' }}</h2>
-          <p>统一采用登录页的玻璃拟态风格，保留后台信息密度与管理效率。</p>
         </div>
 
         <nav class="admin-shell__nav">
@@ -100,6 +99,12 @@ const navItems = computed(() => {
       icon: 'bx-message-square-detail'
     },
     {
+      to: '/admin/service',
+      label: '客服工作台',
+      desc: '处理用户与商家咨询',
+      icon: 'bx-support'
+    },
+    {
       to: '/admin/users',
       label: '用户管理',
       desc: '封禁或恢复账号状态',
@@ -114,6 +119,7 @@ const navItems = computed(() => {
   ]
 
   if (isSuperAdmin) {
+    items.splice(3, 1)
     items.unshift({
       to: '/admin/admins',
       label: '管理员管理',
@@ -387,17 +393,19 @@ const goBack = () => router.push('/home/heritage')
 }
 
 :deep(.admin-page) {
-  max-width: none;
+  width: 100%;
+  max-width: none !important;
   color: var(--admin-ink);
 }
 
 :deep(.admin-page .page-header) {
   margin-bottom: 24px;
-  padding: 22px 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 :deep(.admin-page .page-header h2),
@@ -423,8 +431,6 @@ const goBack = () => router.push('/home/heritage')
   color: rgba(247, 244, 238, 0.74) !important;
 }
 
-:deep(.admin-page .filter-tabs),
-:deep(.admin-page .search-box),
 :deep(.admin-page .table-wrap),
 :deep(.admin-page .merchant-card),
 :deep(.admin-page .activity-card),
@@ -441,6 +447,22 @@ const goBack = () => router.push('/home/heritage')
     0 22px 50px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(18px);
+}
+
+:deep(.admin-page .filter-tabs) {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+:deep(.admin-page .search-box) {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
 }
 
 :deep(.admin-page .merchant-card),
@@ -538,25 +560,104 @@ const goBack = () => router.push('/home/heritage')
 :deep(.admin-page input),
 :deep(.admin-page select),
 :deep(.admin-page textarea) {
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   color: var(--admin-ink) !important;
   box-shadow: none !important;
+  min-height: 46px;
+  padding: 12px 14px !important;
+  line-height: 1.5;
 }
 
 :deep(.admin-page input::placeholder),
 :deep(.admin-page textarea::placeholder) {
-  color: rgba(247, 244, 238, 0.42);
+  color: rgba(247, 244, 238, 0.52);
 }
 
 :deep(.admin-page .search-box input:focus),
 :deep(.admin-page input:focus),
 :deep(.admin-page select:focus),
 :deep(.admin-page textarea:focus) {
-  border-color: rgba(255, 255, 255, 0.28) !important;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(251, 216, 181, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(251, 216, 181, 0.12) !important;
   outline: none;
+}
+
+:deep(.admin-page textarea) {
+  min-height: 120px;
+  resize: vertical;
+}
+
+:deep(.admin-page input:disabled),
+:deep(.admin-page select:disabled),
+:deep(.admin-page textarea:disabled) {
+  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(247, 244, 238, 0.58) !important;
+}
+
+:deep(.admin-page .dialog-card),
+:deep(.admin-page .modal) {
+  color: var(--admin-ink) !important;
+}
+
+:deep(.admin-page .dialog-header h3),
+:deep(.admin-page .modal h3) {
+  margin: 0 !important;
+  font-size: 24px !important;
+  line-height: 1.2;
+  color: var(--admin-ink) !important;
+}
+
+:deep(.admin-page .dialog-intro),
+:deep(.admin-page .modal-intro),
+:deep(.admin-page .modal p) {
+  color: rgba(247, 244, 238, 0.78) !important;
+  line-height: 1.7;
+}
+
+:deep(.admin-page .dialog-note) {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(251, 216, 181, 0.08);
+  border: 1px solid rgba(251, 216, 181, 0.14);
+  color: #ffe2bf !important;
+}
+
+:deep(.admin-page .form-grid label),
+:deep(.admin-page .field-block),
+:deep(.admin-page .modal-field) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:deep(.admin-page .form-grid label span),
+:deep(.admin-page .field-label),
+:deep(.admin-page .modal label) {
+  color: rgba(247, 244, 238, 0.92) !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+:deep(.admin-page .field-hint),
+:deep(.admin-page .modal-hint) {
+  color: rgba(247, 244, 238, 0.6) !important;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+:deep(.admin-page .form-grid) {
+  gap: 18px !important;
+}
+
+:deep(.admin-page .dialog-actions),
+:deep(.admin-page .modal-actions) {
+  margin-top: 24px !important;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 :deep(.admin-page .admin-table th),

@@ -1,5 +1,7 @@
 package com.yayfolk.backend.config;
 
+import com.yayfolk.backend.entity.User;
+import com.yayfolk.backend.repository.UserRepository;
 import com.yayfolk.backend.utils.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +23,12 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final UserRepository userRepository;
+
+    public JwtAuthenticationFilter(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
                                     HttpServletResponse response, 
@@ -39,6 +47,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String username = JwtUtil.getUsernameFromToken(token);
                     
                     if (username != null) {
+                        User user = userRepository.findByUsername(username).orElse(null);
+                        if (user == null || (user.getStatus() != null && user.getStatus() == 0)) {
+                            SecurityContextHolder.clearContext();
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"code\":403,\"message\":\"账号已被封禁\"}");
+                            return;
+                        }
+
                         // 始终在请求范围内提供用户名，避免控制器取不到
                         request.setAttribute("username", username);
                         

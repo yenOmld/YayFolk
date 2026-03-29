@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class DiscoverService {
+    private static final String AUDIT_STATUS_PENDING = "pending";
+    private static final String AUDIT_STATUS_PASSED = "passed";
     private static final long TRANSLATE_CACHE_DAYS = 7;
     
     private static final Map<String, Set<String>> TAG_I18N_MAP = new HashMap<>();
@@ -29,6 +31,11 @@ public class DiscoverService {
         Set<String> guideTags = new HashSet<>(Arrays.asList("攻略", "guide", "攻略", "가이드"));
         Set<String> hotelTags = new HashSet<>(Arrays.asList("住宿", "hotel", "宿泊", "숙박"));
         Set<String> transportTags = new HashSet<>(Arrays.asList("交通", "transport", "交通", "교통"));
+        Set<String> costumeTags = new HashSet<>(Arrays.asList("服饰妆造", "服饰", "妆造", "clothing and styling", "costume", "服飾と化粧", "의상과 메이크업"));
+        Set<String> artistryTags = new HashSet<>(Arrays.asList("美术造物", "美术", "造物", "arts and craft", "artistry", "美術と造物", "미술 조형"));
+        Set<String> folkloreTags = new HashSet<>(Arrays.asList("民俗节气", "民俗", "节气", "folk customs and solar terms", "folklore", "民俗と節気", "민속 절기"));
+        Set<String> operaTags = new HashSet<>(Arrays.asList("戏曲演绎", "戏曲", "演绎", "opera performance", "opera", "戯曲演繹", "희곡 공연"));
+        Set<String> textileTags = new HashSet<>(Arrays.asList("织物手工", "织物", "手工", "textile handcraft", "textile", "織物手工", "직물 공예"));
         
         TAG_I18N_MAP.put("travel", travelTags);
         TAG_I18N_MAP.put("food", foodTags);
@@ -36,6 +43,11 @@ public class DiscoverService {
         TAG_I18N_MAP.put("guide", guideTags);
         TAG_I18N_MAP.put("hotel", hotelTags);
         TAG_I18N_MAP.put("transport", transportTags);
+        TAG_I18N_MAP.put("服饰妆造", costumeTags);
+        TAG_I18N_MAP.put("美术造物", artistryTags);
+        TAG_I18N_MAP.put("民俗节气", folkloreTags);
+        TAG_I18N_MAP.put("戏曲演绎", operaTags);
+        TAG_I18N_MAP.put("织物手工", textileTags);
     }
     
     private final DiscoverPostRepository postRepository;
@@ -76,7 +88,7 @@ public class DiscoverService {
 
     public List<Map<String, Object>> getFeed(String username, String category, String keyword, String sortBy) {
         Long userId = findUserId(username);
-        List<DiscoverPost> allPosts = postRepository.findByStatusOrderByCreateTimeDesc(1);
+        List<DiscoverPost> allPosts = postRepository.findByStatusAndAuditStatusOrderByCreateTimeDesc(1, AUDIT_STATUS_PASSED);
         String normalizedCategory = normalizeText(category);
         String normalizedKeyword = normalizeText(keyword);
         
@@ -145,16 +157,22 @@ public class DiscoverService {
 
     public Map<String, Object> getPostDetail(String username, Long postId) {
         Long userId = findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
-        if (post.getStatus() == null || post.getStatus() != 1) {
-            throw new RuntimeException("帖子不存在");
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+
+        boolean publicVisible = isApprovedPost(post);
+        boolean ownerAccess = canOwnerAccessPost(post, userId);
+        if (!publicVisible && !ownerAccess) {
+            throw new RuntimeException("Post does not exist");
         }
 
-        recordHistory(userId, post);
-        post.setViewCount(Math.max(0, safeInt(post.getViewCount())) + 1);
-        postRepository.save(post);
+        if (publicVisible) {
+            recordHistory(userId, post);
+            post.setViewCount(Math.max(0, safeInt(post.getViewCount())) + 1);
+            postRepository.save(post);
+        }
 
-        boolean bookmarked = collectionRepository.existsByUserIdAndPostId(userId, postId);
+        boolean bookmarked = publicVisible && collectionRepository.existsByUserIdAndPostId(userId, postId);
         User author = userRepository.findById(post.getUserId()).orElse(null);
         Map<String, Object> detail = toPostSummary(post, author, bookmarked);
 
@@ -172,9 +190,9 @@ public class DiscoverService {
 
         Set<Long> likedCommentIds = getLikedCommentIds(userId, comments);
 
-        List<Map<String, Object>> commentList = comments.stream().map(comment -> {
-            return toCommentMap(comment, commentUserMap, likedCommentIds);
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> commentList = comments.stream()
+            .map(comment -> toCommentMap(comment, commentUserMap, likedCommentIds))
+            .collect(Collectors.toList());
 
         detail.put("commentList", commentList);
         detail.put("comments", commentList.size());
@@ -186,10 +204,10 @@ public class DiscoverService {
         String title = normalizeText((String) payload.get("title"));
         String content = normalizeText((String) payload.get("content"));
         if (!StringUtils.hasText(title)) {
-            throw new RuntimeException("请输入标题");
+            throw new RuntimeException("Please enter a title");
         }
         if (!StringUtils.hasText(content)) {
-            throw new RuntimeException("请输入内容");
+            throw new RuntimeException("Please enter content");
         }
 
         String category = normalizeText((String) payload.get("category"));
@@ -205,6 +223,9 @@ public class DiscoverService {
         post.setCategory(category);
         post.setImages(writeJsonArray(payload.get("images")));
         post.setTags(writeJsonArray(payload.get("tags")));
+        post.setStatus(1);
+        post.setAuditStatus(AUDIT_STATUS_PENDING);
+        post.setAuditRemark(null);
 
         DiscoverPost saved = postRepository.save(post);
         User author = userRepository.findById(userId).orElse(null);
@@ -214,21 +235,22 @@ public class DiscoverService {
     @Transactional
     public Map<String, Object> updatePost(String username, Long postId, Map<String, Object> payload) {
         Long userId = findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
         if (!userId.equals(post.getUserId())) {
-            throw new RuntimeException("无权限编辑该帖子");
+            throw new RuntimeException("You do not have permission to edit this post");
         }
-        if (post.getStatus() == null || post.getStatus() != 1) {
-            throw new RuntimeException("帖子不存在");
+        if (!canOwnerEditPost(post, userId)) {
+            throw new RuntimeException("Post does not exist");
         }
 
         String title = normalizeText((String) payload.get("title"));
         String content = normalizeText((String) payload.get("content"));
         if (!StringUtils.hasText(title)) {
-            throw new RuntimeException("请输入标题");
+            throw new RuntimeException("Please enter a title");
         }
         if (!StringUtils.hasText(content)) {
-            throw new RuntimeException("请输入内容");
+            throw new RuntimeException("Please enter content");
         }
 
         String category = normalizeText((String) payload.get("category"));
@@ -236,16 +258,12 @@ public class DiscoverService {
             category = "travel";
         }
 
-        // 获取旧图片列表
         List<String> oldImages = readStringArray(post.getImages());
-        // 获取新图片列表
         List<String> newImages = readStringArray(writeJsonArray(payload.get("images")));
-        
-        // 找出被删除的图片（在旧列表中但不在新列表中）
         for (String oldImage : oldImages) {
             if (!newImages.contains(oldImage) && ossUtil.isOssUrl(oldImage)) {
                 ossUtil.deleteFile(oldImage);
-                System.out.println("删除帖子旧图片：" + oldImage);
+                System.out.println("Deleted removed post image: " + oldImage);
             }
         }
 
@@ -255,18 +273,25 @@ public class DiscoverService {
         post.setCategory(category);
         post.setImages(writeJsonArray(payload.get("images")));
         post.setTags(writeJsonArray(payload.get("tags")));
+        post.setStatus(1);
+        post.setAuditStatus(AUDIT_STATUS_PENDING);
+        post.setAuditRemark(null);
         DiscoverPost saved = postRepository.save(post);
         clearPostTranslateCache(postId);
 
         User author = userRepository.findById(userId).orElse(null);
-        boolean bookmarked = collectionRepository.existsByUserIdAndPostId(userId, postId);
-        return toPostSummary(saved, author, bookmarked);
+        return toPostSummary(saved, author, false);
     }
 
     @Transactional
     public Map<String, Object> toggleCollection(String username, Long postId) {
         Long userId = findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!isApprovedPost(post)) {
+            throw new RuntimeException("Post does not exist");
+        }
+
         boolean collected;
         if (collectionRepository.existsByUserIdAndPostId(userId, postId)) {
             collectionRepository.deleteByUserIdAndPostId(userId, postId);
@@ -282,13 +307,13 @@ public class DiscoverService {
 
             if (!userId.equals(post.getUserId())) {
                 User collector = userRepository.findById(userId).orElse(null);
-                String collectorName = collector != null ? displayName(collector) : "有人";
+                String collectorName = collector != null ? displayName(collector) : "Someone";
                 Notification notification = new Notification();
                 notification.setUserId(post.getUserId());
                 notification.setType("collection");
                 notification.setFromUserId(userId);
                 notification.setPostId(postId);
-                notification.setContent(collectorName + " 收藏了你的帖子");
+                notification.setContent(collectorName + " bookmarked your post");
                 notification.setIsRead(false);
                 notificationRepository.save(notification);
             }
@@ -302,10 +327,15 @@ public class DiscoverService {
 
     public Map<String, Object> addComment(String username, Long postId, Map<String, String> payload) {
         Long userId = findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!isApprovedPost(post)) {
+            throw new RuntimeException("Post does not exist");
+        }
+
         String content = normalizeText(payload.get("content"));
         if (!StringUtils.hasText(content)) {
-            throw new RuntimeException("评论内容不能为空");
+            throw new RuntimeException("Comment content cannot be empty");
         }
 
         DiscoverPostComment comment = new DiscoverPostComment();
@@ -318,21 +348,20 @@ public class DiscoverService {
         if (StringUtils.hasText(parentIdStr)) {
             Long parentId = Long.parseLong(parentIdStr);
             DiscoverPostComment parentComment = commentRepository.findById(parentId)
-                .orElseThrow(() -> new RuntimeException("回复的评论不存在"));
+                .orElseThrow(() -> new RuntimeException("Reply target does not exist"));
             if (!parentComment.getPostId().equals(postId)) {
-                throw new RuntimeException("回复的评论不属于当前帖子");
+                throw new RuntimeException("Reply target does not belong to this post");
             }
             comment.setParentId(parentId);
             comment.setReplyToUserId(parentComment.getUserId());
         }
 
         DiscoverPostComment savedComment = commentRepository.save(comment);
-
         post.setCommentCount(safeInt(post.getCommentCount()) + 1);
         postRepository.save(post);
 
         User user = userRepository.findById(userId).orElse(null);
-        String commenterName = user != null ? displayName(user) : "有人";
+        String commenterName = user != null ? displayName(user) : "Someone";
 
         if (comment.getReplyToUserId() != null && !userId.equals(comment.getReplyToUserId())) {
             Notification replyNotification = new Notification();
@@ -341,7 +370,7 @@ public class DiscoverService {
             replyNotification.setFromUserId(userId);
             replyNotification.setPostId(postId);
             replyNotification.setCommentId(savedComment.getId());
-            replyNotification.setContent(commenterName + " 回复了你的评论: " + truncateContent(content, 50));
+            replyNotification.setContent(commenterName + " replied to your comment: " + truncateContent(content, 50));
             replyNotification.setIsRead(false);
             notificationRepository.save(replyNotification);
         } else if (!userId.equals(post.getUserId())) {
@@ -351,7 +380,7 @@ public class DiscoverService {
             commentNotification.setFromUserId(userId);
             commentNotification.setPostId(postId);
             commentNotification.setCommentId(savedComment.getId());
-            commentNotification.setContent(commenterName + " 评论了你的帖子: " + truncateContent(content, 50));
+            commentNotification.setContent(commenterName + " commented on your post: " + truncateContent(content, 50));
             commentNotification.setIsRead(false);
             notificationRepository.save(commentNotification);
         }
@@ -449,7 +478,24 @@ public class DiscoverService {
 
     public List<Map<String, Object>> getMyPosts(String username) {
         Long userId = findUserId(username);
-        List<DiscoverPost> posts = postRepository.findByUserIdAndStatusOrderByCreateTimeDesc(userId, 1);
+        List<DiscoverPost> posts = postRepository.findByUserId(userId)
+            .stream()
+            .filter(this::shouldShowInMyPosts)
+            .sorted((a, b) -> {
+                Date at = a.getCreateTime();
+                Date bt = b.getCreateTime();
+                if (at == null && bt == null) {
+                    return 0;
+                }
+                if (at == null) {
+                    return 1;
+                }
+                if (bt == null) {
+                    return -1;
+                }
+                return bt.compareTo(at);
+            })
+            .collect(Collectors.toList());
         User author = userRepository.findById(userId).orElse(null);
         Set<Long> collectedSet = getCollectedPostSet(userId, posts);
         return posts.stream()
@@ -464,8 +510,7 @@ public class DiscoverService {
         if (!userId.equals(post.getUserId())) {
             throw new RuntimeException("无权限删除该帖子");
         }
-        
-        // 删除帖子中的所有图片
+
         List<String> images = readStringArray(post.getImages());
         for (String image : images) {
             if (ossUtil.isOssUrl(image)) {
@@ -473,8 +518,10 @@ public class DiscoverService {
                 System.out.println("删除帖子图片：" + image);
             }
         }
-        
+
         post.setStatus(0);
+        post.setAuditStatus("deleted");
+        post.setAuditRemark(null);
         postRepository.save(post);
         clearPostTranslateCache(postId);
         collectionRepository.deleteByPostId(postId);
@@ -490,7 +537,7 @@ public class DiscoverService {
         }
         List<Long> postIds = collections.stream().map(DiscoverPostCollection::getPostId).collect(Collectors.toList());
         Map<Long, DiscoverPost> postMap = postRepository.findAllById(postIds).stream()
-            .filter(post -> post.getStatus() != null && post.getStatus() == 1)
+            .filter(this::isApprovedPost)
             .collect(Collectors.toMap(DiscoverPost::getId, item -> item));
         Map<Long, User> authorMap = getAuthorMap(new ArrayList<DiscoverPost>(postMap.values()));
 
@@ -521,7 +568,7 @@ public class DiscoverService {
         }
         List<Long> postIds = histories.stream().map(DiscoverPostHistory::getPostId).collect(Collectors.toList());
         Map<Long, DiscoverPost> postMap = postRepository.findAllById(postIds).stream()
-            .filter(post -> post.getStatus() != null && post.getStatus() == 1)
+            .filter(this::isApprovedPost)
             .collect(Collectors.toMap(DiscoverPost::getId, item -> item));
         Map<Long, User> authorMap = getAuthorMap(new ArrayList<DiscoverPost>(postMap.values()));
         Set<Long> collectedSet = getCollectedSetByPostIds(userId, postIds);
@@ -601,9 +648,10 @@ public class DiscoverService {
     }
 
     public Map<String, Object> getSharePostDetail(Long postId) {
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
-        if (post.getStatus() == null || post.getStatus() != 1) {
-            throw new RuntimeException("帖子不存在");
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!isApprovedPost(post)) {
+            throw new RuntimeException("Post does not exist");
         }
 
         post.setViewCount(Math.max(0, safeInt(post.getViewCount())) + 1);
@@ -614,10 +662,11 @@ public class DiscoverService {
     }
 
     public Map<String, Object> translatePost(String username, Long postId, String targetLang) {
-        findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
-        if (post.getStatus() == null || post.getStatus() != 1) {
-            throw new RuntimeException("帖子不存在");
+        Long userId = findUserId(username);
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!publiclyVisibleOrOwnerAccessible(post, userId)) {
+            throw new RuntimeException("Post does not exist");
         }
         String sourceLang = normalizeSourceLang(post.getSourceLang(), post.getContent());
         return translateWithCache(buildPostCacheKey(postId, targetLang), post.getContent(), sourceLang, targetLang);
@@ -644,6 +693,8 @@ public class DiscoverService {
         item.put("viewCount", safeInt(post.getViewCount()));
         item.put("time", formatDate(post.getCreateTime()));
         item.put("bookmarked", bookmarked);
+        item.put("auditStatus", defaultString(post.getAuditStatus()));
+        item.put("auditRemark", defaultString(post.getAuditRemark()));
 
         Map<String, Object> authorMap = new HashMap<String, Object>();
         authorMap.put("id", author == null ? null : author.getId());
@@ -655,8 +706,41 @@ public class DiscoverService {
         return item;
     }
 
+    private boolean isActivePost(DiscoverPost post) {
+        return post != null && post.getStatus() != null && post.getStatus() == 1;
+    }
+
+    private boolean isRejectedPost(DiscoverPost post) {
+        return post != null && "rejected".equalsIgnoreCase(defaultString(post.getAuditStatus()));
+    }
+
+    private boolean isApprovedPost(DiscoverPost post) {
+        return isActivePost(post) && AUDIT_STATUS_PASSED.equalsIgnoreCase(defaultString(post.getAuditStatus()));
+    }
+
+    private boolean isOwnerPost(DiscoverPost post, Long userId) {
+        return post != null && userId != null && userId.equals(post.getUserId());
+    }
+
+    private boolean canOwnerAccessPost(DiscoverPost post, Long userId) {
+        return isOwnerPost(post, userId) && (isActivePost(post) || isRejectedPost(post));
+    }
+
+    private boolean canOwnerEditPost(DiscoverPost post, Long userId) {
+        return canOwnerAccessPost(post, userId);
+    }
+
+    private boolean publiclyVisibleOrOwnerAccessible(DiscoverPost post, Long userId) {
+        return isApprovedPost(post) || canOwnerAccessPost(post, userId);
+    }
+
+    private boolean shouldShowInMyPosts(DiscoverPost post) {
+        return isActivePost(post) || isRejectedPost(post);
+    }
+
     private Long findUserId(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User does not exist"));
         return user.getId();
     }
 

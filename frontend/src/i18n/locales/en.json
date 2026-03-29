@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -162,6 +162,7 @@
     "general": "General",
     "aboutUs": "About Us",
     "about": "About",
+    "contactService": "Contact Support",
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "deleteAccount": "Delete Account",
@@ -174,6 +175,7 @@
     "passwordChangeFailed": "Password change failed, please try again later",
     "networkError": "Network error, please try again later",
     "aboutUsContent": "About Us: YayFolk v1.0.0",
+    "contactServiceFailed": "Unable to connect to customer service, please try again later",
     "accountDeleted": "Account deleted",
     "deleteAccountFailed": "Account deletion failed, please try again later"
   },
@@ -254,6 +256,7 @@
   },
   "notification": {
     "title": "Messages",
+    "customerService": "Customer Service",
     "commentNotif": "Comment Notifications",
     "collectionNotif": "Collection Notifications",
     "clearAll": "Clear All",
@@ -346,7 +349,12 @@
       "scenery": "Scenery",
       "guide": "Guide",
       "hotel": "Hotel",
-      "transport": "Transport"
+      "transport": "Transport",
+      "costume": "Clothing and Styling",
+      "artistry": "Arts and Craft",
+      "folklore": "Folk Customs and Solar Terms",
+      "opera": "Opera Performance",
+      "textile": "Textile Handcraft"
     }
   },
   "postDetail": {
@@ -395,6 +403,7 @@
     "clearCache": "Clear Cache",
     "nightMode": "Dark Mode",
     "about": "About",
+    "contactService": "Contact Support",
     "version": "Version",
     "userAgreement": "User Agreement",
     "privacyPolicy": "Privacy Policy",
@@ -413,3 +422,4 @@
     "operationFailed": "Operation failed, please try again later"
   }
 }
+

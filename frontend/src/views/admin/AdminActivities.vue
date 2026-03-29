@@ -1,25 +1,32 @@
 <template>
   <div class="admin-page">
     <div class="page-header">
-      <h2>活动审核</h2>
-      <div class="filter-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          :class="['tab-btn', { active: currentTab === tab.value }]"
-          @click="switchTab(tab.value)"
-        >
-          {{ tab.label }}
-        </button>
+      <div>
+        <h2>活动审核</h2>
+      </div>
+      <div class="header-side">
+        <div class="filter-tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            :class="['tab-btn', { active: currentTab === tab.value }]"
+            @click="switchTab(tab.value)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div class="search-box">
+          <input v-model.trim="keyword" type="text" placeholder="搜索活动/商家/地点/类型/非遗品类" />
+        </div>
       </div>
     </div>
 
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="list.length === 0" class="empty">暂无活动记录</div>
+    <div v-else-if="filteredList.length === 0" class="empty">{{ emptyText }}</div>
 
     <div v-else class="card-list">
-      <article v-for="item in list" :key="item.id" class="activity-card">
-        <img v-if="item.coverImage" :src="item.coverImage" class="cover" />
+      <article v-for="item in pagedList" :key="item.id" class="activity-card">
+        <img v-if="item.coverImage" :src="item.coverImage" class="cover" alt="活动封面" />
         <div v-else class="cover placeholder">活动</div>
 
         <div class="content">
@@ -31,33 +38,58 @@
             </div>
           </div>
 
-          <p class="meta-line">商家：{{ item.merchantName || item.merchantUsername || '-' }}</p>
-          <p class="meta-line">非遗品类：{{ item.heritageType || '-' }} / 类型：{{ item.activityType || '-' }}</p>
-          <p class="meta-line">时间：{{ formatTime(item.startTime) }} - {{ formatTime(item.endTime) }}</p>
-          <p class="meta-line">地点：{{ [item.locationCity, item.locationDetail].filter(Boolean).join(' ') || '-' }}</p>
-          <p class="meta-line">人数：{{ item.currentParticipants || 0 }} / {{ item.maxParticipants || '不限' }}</p>
-          <p class="meta-line">价格：{{ formatPrice(item.price) }}</p>
-          <p class="summary">{{ item.content || '暂无活动介绍' }}</p>
-          <p v-if="item.auditRemark" class="remark">审核备注：{{ item.auditRemark }}</p>
+          <div class="detail-grid">
+            <p class="meta-line">商家：{{ item.merchantName || item.merchantUsername || '-' }}</p>
+            <p class="meta-line">非遗品类：{{ item.heritageType || '-' }}</p>
+            <p class="meta-line">活动类型：{{ item.activityType || '-' }}</p>
+            <p class="meta-line">时间：{{ formatTime(item.startTime) }} - {{ formatTime(item.endTime) }}</p>
+            <p class="meta-line">地点：{{ [item.locationCity, item.locationDetail].filter(Boolean).join(' ') || '-' }}</p>
+            <p class="meta-line">人数：{{ item.currentParticipants || 0 }} / {{ item.maxParticipants || '不限' }}</p>
+            <p class="meta-line">价格：{{ formatPrice(item.price) }}</p>
+          </div>
+
+          <div class="summary-block">
+            <span class="section-label">活动简介</span>
+            <p class="summary">{{ item.content || '暂无活动介绍' }}</p>
+          </div>
+
+          <div v-if="item.auditRemark" class="remark-block">
+            <span class="section-label">审核备注</span>
+            <p class="remark">{{ item.auditRemark }}</p>
+          </div>
         </div>
 
-        <div v-if="item.auditStatus === 'pending'" class="actions">
-          <button class="btn approve" @click="openAudit(item, true)">通过</button>
-          <button class="btn reject" @click="openAudit(item, false)">驳回</button>
+        <div v-if="item.auditStatus === 'pending' || item.auditStatus === 'approved'" class="actions">
+          <button v-if="item.auditStatus === 'pending'" class="btn approve" @click="handleApprove(item)">通过</button>
+          <button class="btn reject" @click="openReject(item)">{{ item.auditStatus === 'approved' ? '下架' : '驳回' }}</button>
         </div>
       </article>
     </div>
 
+    <div v-if="totalPages > 1" class="pagination">
+      <button class="page-btn" :disabled="page === 1" @click="changePage(-1)">上一页</button>
+      <span class="page-status">第 {{ page }} / {{ totalPages }} 页</span>
+      <button class="page-btn" :disabled="page === totalPages" @click="changePage(1)">下一页</button>
+    </div>
+
     <div v-if="auditModal.show" class="modal-mask" @click.self="auditModal.show = false">
       <div class="modal">
-        <h3>{{ auditModal.approve ? '通过活动审核' : '驳回活动审核' }}</h3>
-        <p>{{ auditModal.item?.title || '-' }}</p>
-        <textarea v-model="auditModal.remark" rows="3" placeholder="审核备注（可选）" />
+        <h3>填写驳回原因</h3>
+        <p class="modal-intro">{{ auditModal.item?.title || '-' }}</p>
+
+        <div class="modal-field">
+          <label class="field-label">驳回原因</label>
+          <textarea
+            v-model.trim="auditModal.remark"
+            rows="4"
+            placeholder="请填写驳回原因，方便商家修改后重新提交"
+          />
+          <small class="field-hint">通过不需要填写原因，只有驳回时必须填写。</small>
+        </div>
+
         <div class="modal-actions">
           <button class="btn cancel" @click="auditModal.show = false">取消</button>
-          <button :class="['btn', auditModal.approve ? 'approve' : 'reject']" @click="submitAudit">
-            确认{{ auditModal.approve ? '通过' : '驳回' }}
-          </button>
+          <button class="btn reject" @click="submitReject">确认驳回</button>
         </div>
       </div>
     </div>
@@ -65,7 +97,7 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
 import { auditAdminActivity, getAdminActivities } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
@@ -81,12 +113,41 @@ const tabs = [
 const currentTab = ref('pending')
 const list = ref([])
 const loading = ref(false)
+const keyword = ref('')
+const page = ref(1)
+const pageSize = 3
 const auditModal = ref({
   show: false,
   item: null,
-  approve: true,
   remark: ''
 })
+
+const filteredList = computed(() => {
+  const search = keyword.value.trim().toLowerCase()
+  if (!search) {
+    return list.value
+  }
+  return list.value.filter(item => {
+    const fields = [
+      item.title,
+      item.merchantName,
+      item.merchantUsername,
+      item.heritageType,
+      item.activityType,
+      item.locationCity,
+      item.locationDetail,
+      item.content,
+      item.auditRemark
+    ]
+    return fields.some(field => String(field || '').toLowerCase().includes(search))
+  })
+})
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredList.value.length / pageSize)))
+const pagedList = computed(() => {
+  const start = (page.value - 1) * pageSize
+  return filteredList.value.slice(start, start + pageSize)
+})
+const emptyText = computed(() => keyword.value ? '没有匹配的活动记录' : '暂无活动记录')
 
 const load = async () => {
   loading.value = true
@@ -96,6 +157,7 @@ const load = async () => {
       throw new Error(res.message || '加载活动失败')
     }
     list.value = Array.isArray(res.data) ? res.data : []
+    page.value = 1
   } catch (error) {
     list.value = []
     notify(error.message || '加载活动失败', 'error')
@@ -106,27 +168,60 @@ const load = async () => {
 
 const switchTab = (value) => {
   currentTab.value = value
+  page.value = 1
   load()
 }
 
-const openAudit = (item, approve) => {
+const openReject = (item) => {
   auditModal.value = {
     show: true,
     item,
-    approve,
     remark: ''
   }
 }
 
-const submitAudit = async () => {
-  const { item, approve, remark } = auditModal.value
+const changePage = (step) => {
+  const nextPage = page.value + step
+  if (nextPage < 1 || nextPage > totalPages.value) {
+    return
+  }
+  page.value = nextPage
+}
+
+const closeReject = () => {
+  auditModal.value = {
+    show: false,
+    item: null,
+    remark: ''
+  }
+}
+
+const handleApprove = async (item) => {
   try {
-    const res = await auditAdminActivity(item.id, approve, remark)
+    const res = await auditAdminActivity(item.id, true)
     if (res.code !== 200) {
       throw new Error(res.message || '审核失败')
     }
-    notify(approve ? '活动已通过审核' : '活动已驳回', 'success')
-    auditModal.value.show = false
+    notify('活动已通过审核', 'success')
+    await load()
+  } catch (error) {
+    notify(error.message || '审核失败', 'error')
+  }
+}
+
+const submitReject = async () => {
+  const { item, remark } = auditModal.value
+  if (!remark) {
+    notify('请先填写驳回原因', 'warning')
+    return
+  }
+  try {
+    const res = await auditAdminActivity(item.id, false, remark)
+    if (res.code !== 200) {
+      throw new Error(res.message || '审核失败')
+    }
+    notify('活动已驳回', 'success')
+    closeReject()
     await load()
   } catch (error) {
     notify(error.message || '审核失败', 'error')
@@ -164,20 +259,24 @@ const statusLabel = (status) => {
   }[status] || status || '未知状态'
 }
 
+watch(keyword, () => {
+  page.value = 1
+})
+
 onMounted(load)
 </script>
 
 <style scoped>
 .admin-page {
-  max-width: 980px;
+  max-width: 1040px;
 }
 
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -187,17 +286,24 @@ onMounted(load)
   color: #111827;
 }
 
+.header-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .filter-tabs {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 6px 16px;
+  padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid #d1d5db;
   background: #fff;
-  color: #6b7280;
   cursor: pointer;
 }
 
@@ -205,6 +311,25 @@ onMounted(load)
   background: #0f766e;
   color: #fff;
   border-color: #0f766e;
+}
+
+.search-box {
+  display: flex;
+}
+
+.search-box input {
+  width: 280px;
+  max-width: 72vw;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
 }
 
 .loading,
@@ -220,10 +345,36 @@ onMounted(load)
   gap: 16px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.page-status {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .activity-card {
   display: flex;
-  gap: 16px;
-  padding: 18px;
+  gap: 18px;
+  padding: 20px;
   border-radius: 18px;
   border: 1px solid #e5e7eb;
   background: #fff;
@@ -249,13 +400,14 @@ onMounted(load)
 
 .content {
   flex: 1;
+  min-width: 0;
 }
 
 .title-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .title-row h3 {
@@ -309,19 +461,43 @@ onMounted(load)
   color: #059669;
 }
 
-.meta-line,
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.meta-line {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+.summary-block,
+.remark-block {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f7;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .summary,
 .remark {
-  margin: 6px 0 0;
-  color: #6b7280;
-  line-height: 1.6;
+  margin: 0;
+  line-height: 1.7;
 }
 
 .summary {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: #6b7280;
 }
 
 .remark {
@@ -369,7 +545,7 @@ onMounted(load)
 }
 
 .modal {
-  width: 420px;
+  width: 460px;
   max-width: 92vw;
   background: #fff;
   border-radius: 18px;
@@ -380,9 +556,22 @@ onMounted(load)
   margin: 0 0 12px;
 }
 
-.modal p {
-  margin: 0 0 12px;
+.modal-intro {
+  margin: 0 0 16px;
   color: #6b7280;
+  line-height: 1.7;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .modal textarea {
@@ -390,15 +579,28 @@ onMounted(load)
   box-sizing: border-box;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px;
+  min-height: 120px;
   resize: vertical;
+  line-height: 1.7;
+}
+
+.modal textarea:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.field-hint {
+  color: #94a3b8;
+  line-height: 1.6;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 @media (max-width: 768px) {
@@ -415,8 +617,9 @@ onMounted(load)
     flex-direction: row;
   }
 
-  .title-row {
-    flex-direction: column;
+  .title-row,
+  .detail-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

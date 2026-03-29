@@ -69,6 +69,12 @@ public class UserService {
         
         return savedUser;
     }
+
+    private void ensureUserEnabled(User user) {
+        if (user.getStatus() != null && user.getStatus() == 0) {
+            throw new RuntimeException("账号已被封禁");
+        }
+    }
     
     private void initializeDefaultPhrases(User user, String langCode) {
         List<Phrase> defaultPhrases;
@@ -164,6 +170,7 @@ public class UserService {
         }
 
         User user = userOptional.get();
+        ensureUserEnabled(user);
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("用户名或密码错误");
         }
@@ -176,8 +183,10 @@ public class UserService {
     }
 
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
+        ensureUserEnabled(user);
+        return user;
     }
 
     public void resetPassword(String username, String newPassword) {
@@ -241,6 +250,7 @@ public class UserService {
         User user = findByGithubId(githubId);
         
         if (user != null) {
+            ensureUserEnabled(user);
             // 已存在 GitHub 绑定用户，更新信息
             user.setUsername(username);
             user.setEmail(email);
@@ -259,6 +269,7 @@ public class UserService {
             if (existingUserOptional.isPresent()) {
                 // 邮箱已存在，将 GitHub ID 关联到该用户
                 user = existingUserOptional.get();
+                ensureUserEnabled(user);
                 user.setGithubId(githubId);
                 user.setUsername(username);
                 if (name != null && !name.isEmpty()) {

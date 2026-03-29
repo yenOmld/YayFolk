@@ -22,11 +22,17 @@
             <span v-if="post.images.length > 1" class="image-count">+{{ post.images.length - 1 }}</span>
           </div>
           <div class="post-content">
+            <div class="post-status-row">
+              <span :class="['audit-chip', post.auditStatus || 'pending']">{{ formatAuditStatus(post.auditStatus) }}</span>
+            </div>
             <h4>{{ post.title }}</h4>
             <p class="post-text">{{ post.content }}</p>
             <div class="post-tags" v-if="post.hashtags && post.hashtags.length > 0">
               <span class="tag" v-for="(tag, index) in post.hashtags.slice(0, 3)" :key="index">#{{ tag }}</span>
             </div>
+                        <p v-if="post.auditStatus === 'rejected' && post.auditRemark" class="audit-remark">
+              驳回原因：{{ post.auditRemark }}
+            </p>
             <div class="post-meta">
               <div class="post-stats">
                 <span class="stat-item">
@@ -89,11 +95,13 @@
             <div class="form-group">
               <label>{{ $t('discover.category') }}</label>
               <select v-model="editForm.category">
-                <option value="travel">{{ $t('myPosts.categoryTravel') }}</option>
-                <option value="food">{{ $t('myPosts.categoryFood') }}</option>
-                <option value="hotel">{{ $t('myPosts.categoryHotel') }}</option>
-                <option value="transport">{{ $t('myPosts.categoryTransport') }}</option>
-                <option value="tips">{{ $t('myPosts.categoryTips') }}</option>
+                <option
+                  v-for="category in categories"
+                  :key="category.id"
+                  :value="category.id"
+                >
+                  {{ category.name }}
+                </option>
               </select>
             </div>
           </div>
@@ -221,20 +229,26 @@ const currentPost = ref(null)
 const showEditModal = ref(false)
 const saving = ref(false)
 const customTagInput = ref('')
+const categories = computed(() => [
+  { id: '服饰妆造', name: t('discover.presetTags.costume') },
+  { id: '美术造物', name: t('discover.presetTags.artistry') },
+  { id: '民俗节气', name: t('discover.presetTags.folklore') },
+  { id: '戏曲演绎', name: t('discover.presetTags.opera') },
+  { id: '织物手工', name: t('discover.presetTags.textile') }
+])
 const presetTags = computed(() => [
-  t('discover.presetTags.travel'),
-  t('discover.presetTags.food'),
-  t('discover.presetTags.scenery'),
-  t('discover.presetTags.guide'),
-  t('discover.presetTags.hotel'),
-  t('discover.presetTags.transport')
+  t('discover.presetTags.costume'),
+  t('discover.presetTags.artistry'),
+  t('discover.presetTags.folklore'),
+  t('discover.presetTags.opera'),
+  t('discover.presetTags.textile')
 ])
 
 const editForm = ref({
   id: null,
   title: '',
   content: '',
-  category: 'travel',
+  category: '服饰妆造',
   tags: [],
   images: []
 })
@@ -250,6 +264,15 @@ const goBack = () => {
 
 const goToTranslate = () => {
   router.push('/home/discover')
+}
+
+const formatAuditStatus = (status) => {
+  const labels = {
+    pending: 'Pending review',
+    passed: 'Approved',
+    rejected: 'Needs changes'
+  }
+  return labels[status] || 'Pending review'
 }
 
 const loadMyPosts = async () => {
@@ -302,7 +325,7 @@ const openEditModal = async (post) => {
         id: detail.id,
         title: detail.title || '',
         content: detail.content || '',
-        category: detail.category || 'travel',
+        category: detail.category || '服饰妆造',
         tags: detail.hashtags || [],
         images: images
       }
@@ -328,7 +351,7 @@ const closeEditModal = () => {
     id: null,
     title: '',
     content: '',
-    category: 'travel',
+    category: '服饰妆造',
     tags: [],
     images: []
   }
@@ -506,7 +529,7 @@ const saveEdit = async () => {
       images: cleanFinalImages
     })
     if (response.code === 200) {
-      notify.success(t('myPosts.saveSuccess'))
+      notify.success('Post updated and resubmitted for review')
       closeEditModal()
       await loadMyPosts()
     } else {
@@ -697,6 +720,37 @@ onMounted(() => {
   min-width: 0;
 }
 
+.post-status-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.audit-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.audit-chip.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.audit-chip.passed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.audit-chip.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .post-content h4 {
   margin: 0 0 8px 0;
   font-size: 16px;
@@ -723,6 +777,16 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
+}
+
+.audit-remark {
+  margin: 0 0 10px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .tag {

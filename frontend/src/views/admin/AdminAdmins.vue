@@ -4,7 +4,6 @@
       <div>
         <p class="eyebrow">Super Admin Only</p>
         <h2>管理员管理</h2>
-        <p class="hero-desc">只有当前超级管理员可以新增管理员、编辑管理员资料、修改管理员密码和删除管理员账号。</p>
       </div>
       <button class="primary-btn" @click="openCreateDialog">新增管理员</button>
     </section>
@@ -14,7 +13,6 @@
     <section v-else class="table-card">
       <div class="table-header">
         <span>共 {{ admins.length }} 个管理员账号</span>
-        <span class="tip-text">当前 admin 已标记为超级管理员</span>
       </div>
 
       <div class="table-wrap">
@@ -31,7 +29,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in admins" :key="item.id">
+            <tr v-for="item in pagedAdmins" :key="item.id">
               <td>
                 <div class="cell-stack">
                   <strong>{{ item.username }}</strong>
@@ -70,6 +68,11 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <div v-if="totalPages > 1" class="pagination">
+        <button class="page-btn" :disabled="page === 1" @click="changePage(-1)">上一页</button>
+        <span class="page-status">第 {{ page }} / {{ totalPages }} 页</span>
+        <button class="page-btn" :disabled="page === totalPages" @click="changePage(1)">下一页</button>
       </div>
     </section>
 
@@ -168,7 +171,7 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import {
   createAdminAccount,
   deleteAdminAccount,
@@ -183,10 +186,18 @@ const notify = appContext.config.globalProperties.$notify
 const admins = ref([])
 const loading = ref(false)
 const submitting = ref(false)
+const page = ref(1)
+const pageSize = 5
 
 const createVisible = ref(false)
 const editVisible = ref(false)
 const passwordVisible = ref(false)
+
+const totalPages = computed(() => Math.max(1, Math.ceil(admins.value.length / pageSize)))
+const pagedAdmins = computed(() => {
+  const start = (page.value - 1) * pageSize
+  return admins.value.slice(start, start + pageSize)
+})
 
 const createForm = reactive({
   username: '',
@@ -237,6 +248,7 @@ const loadAdmins = async () => {
   try {
     const res = await getAdminAdmins()
     admins.value = Array.isArray(res.data) ? res.data : []
+    page.value = 1
   } catch (error) {
     notify?.error(error?.response?.data?.message || '管理员列表加载失败')
   } finally {
@@ -365,6 +377,14 @@ const formatTime = (value) => {
   return new Date(value).toLocaleString('zh-CN')
 }
 
+const changePage = (step) => {
+  const nextPage = page.value + step
+  if (nextPage < 1 || nextPage > totalPages.value) {
+    return
+  }
+  page.value = nextPage
+}
+
 onMounted(loadAdmins)
 </script>
 
@@ -471,6 +491,32 @@ onMounted(loadAdmins)
 
 .table-wrap {
   overflow-x: auto;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.page-status {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .admin-table {

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="personal-center">
     <!-- 顶部设置图标 -->
     <div class="page-header">
@@ -64,7 +64,7 @@
           <button class="metric-card" @click="openVisitors">
             <span class="metric-label">访客</span>
             <strong class="metric-value">{{ receivedVisitorCount }}</strong>
-            <span class="metric-footnote">查看 {{ viewedVisitorCount }} · 被看 {{ receivedVisitorCount }}</span>
+            <span class="metric-footnote">查看 {{ viewedVisitorCount }} 人 · 被看 {{ receivedVisitorCount }} 人</span>
           </button>
           <button class="metric-card" @click="navigateToMyPosts">
             <span class="metric-label">内容发布</span>
@@ -98,7 +98,7 @@
         <div v-if="isMerchantRole" class="merchant-dashboard">
           <div class="section-header">
             <h3>常用工作台</h3>
-            <span class="section-caption">个人中心只保留管理入口，主页展示请通过上方“个人主页”进入。</span>
+            <span class="section-caption">个人中心只保留管理入口，主页展示请通过上方"个人主页"进入。</span>
           </div>
 
           <div class="dashboard-grid">
@@ -126,7 +126,7 @@
               </div>
               <div class="card-info">
                 <h4>店铺设置</h4>
-                <p>配置资料、语言与账号</p>
+                <p>配置资料、语言与账台</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyPosts">
@@ -259,7 +259,7 @@
         </div>
       </div>
       
-      <!-- 数据统计框 (中间框) -->
+      <!-- 数据统计框（中间框） -->
       <div class="stats-box">
         <template v-if="isMerchantRole">
           <div class="stat-item" @click="navigateToMerchantOrders">
@@ -296,7 +296,7 @@
       </div>
     </div>
 
-    <!-- 下半部分内容展示 (不强制分类，美观为主) -->
+    <!-- 下半部分内容展示（不强制分类，美观为主） -->
     <div v-if="false" class="content-section">
       
       <!-- 商家专属布局 -->
@@ -305,7 +305,7 @@
           <h3>店铺运营中心</h3>
         </div>
         
-        <!-- 销量统计图表占位 -->
+        <!-- 销量统计图表占位-->
         <div class="chart-card" @click="navigateToMerchantOrders">
           <div class="chart-header">
             <h4>近七日销量趋势</h4>
@@ -442,7 +442,7 @@
 
     </div>
 
-    <!-- 设置侧边栏/弹窗 -->
+    <!-- 设置侧边栏弹窗 -->
     <div class="modal settings-drawer" v-if="showSettingsDrawer" @click.self="showSettingsDrawer = false">
       <div class="drawer-content">
         <div class="drawer-header">
@@ -471,9 +471,9 @@
             <span>{{ $t('personal.general') }}</span>
             <i class='bx bx-chevron-right'></i>
           </div>
-          <div class="menu-item" @click="showAbout">
+          <div class="menu-item" @click="openCustomerService">
             <i class='bx bxs-info-circle'></i>
-            <span>{{ $t('personal.about') }}</span>
+            <span>{{ $t('personal.contactService') }}</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           
@@ -506,7 +506,7 @@
         <div class="modal-header account-manager-header">
           <div>
             <h3>账号管理</h3>
-            <p>添加常用账号后，点击即可快速切换。</p>
+            <p>添加常用账号后，点击即可快速切换</p>
           </div>
           <i class='bx bx-x close-btn' @click="closeAccountManager"></i>
         </div>
@@ -545,7 +545,7 @@
                   type="button"
                   @click.stop="removeManagedAccount(account.account)"
                 >
-                  移除
+                  绉婚櫎
                 </button>
               </div>
             </div>
@@ -590,7 +590,7 @@
       </div>
     </div>
 
-    <!-- 退出登录确认弹窗 -->
+    <!-- 退出登录确认弹窗-->
     <div class="modal" v-if="showLogoutModal">
       <div class="modal-content">
         <h3>{{ $t('personal.logout') }}</h3>
@@ -624,7 +624,7 @@
       </div>
     </div>
 
-    <!-- 修改密码弹窗 -->
+    <!-- 修改瀵嗙爜弹窗 -->
     <div class="modal" v-if="showPasswordModal">
       <div class="modal-content">
         <h3>{{ $t('personal.changePassword') }}</h3>
@@ -815,7 +815,7 @@
 import { computed, ref, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
+import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -940,10 +940,10 @@ const profileSummary = computed(() => {
     return userInfo.value.bio
   }
   if (userInfo.value.role === 'admin') {
-    return '这里集中处理后台入口、资料设置和账号操作，个人主页单独作为对外展示页。'
+    return '这里集中处理后台入口、资料设置和账号操作，个人主页单独作为对外展示页'
   }
   if (isMerchantRole.value) {
-    return '这里集中处理商家工作台和账号设置，个人主页单独承担品牌与内容展示。'
+    return '这里集中处理商家工作台和账号设置，个人主页单独承担品牌与内容展示'
   }
   return '这里集中处理资料、订单和我的内容入口，个人主页单独展示给其他用户。'
 })
@@ -1029,7 +1029,7 @@ const parseStoredUser = () => {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('解析用户信息失败:', error)
+    console.error('瑙ｆ瀽用户信息失败:', error)
     return null
   }
 }
@@ -1060,7 +1060,7 @@ const parseSavedAccounts = () => {
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : []
   } catch (error) {
-    console.error('解析已保存账号失败:', error)
+    console.error('解析已保存账号失败', error)
     return []
   }
 }
@@ -1346,7 +1346,7 @@ const showChangePassword = () => {
   resetPasswordForm()
 }
 
-// 关闭修改密码弹窗
+// 关闭修改瀵嗙爜弹窗
 const closePasswordModal = () => {
   showPasswordModal.value = false
   resetPasswordForm()
@@ -1439,15 +1439,27 @@ const submitPasswordChange = async () => {
       notify.error(data.message || t('personal.passwordChangeFailed'))
     }
   } catch (error) {
-    console.error('修改密码失败:', error)
+    console.error('修改瀵嗙爜失败:', error)
     notify.error(t('personal.networkError'))
   }
 }
 
 // 显示关于我们
-const showAbout = () => {
+const openCustomerService = async () => {
   closeSettingsDrawer()
-  notify.info(t('personal.aboutUsContent'))
+  try {
+    const response = await createCustomerServiceConversation()
+    if (response.code === 200 && response.data?.id) {
+      router.push({
+        path: '/notification',
+        query: { conversationId: response.data.id }
+      })
+      return
+    }
+    notify.error(response.message || t('personal.contactServiceFailed'))
+  } catch (error) {
+    notify.error(t('personal.contactServiceFailed'))
+  }
 }
 
 // 显示退出登录确认
@@ -1612,11 +1624,11 @@ const loadPersonalCenterData = async () => {
             userInfo.value.avatar = localDefaultAvatar
           }
         } catch (error) {
-          console.error('检查头像可访问性失败:', error)
+          console.error('检查头像可访问性失败', error)
           userInfo.value.avatar = localDefaultAvatar
         }
       } catch (error) {
-        console.error('解析用户信息失败:', error)
+        console.error('瑙ｆ瀽用户信息失败:', error)
         userInfo.value = normalizeUserInfo({
           avatar: localDefaultAvatar
         })
@@ -2108,7 +2120,7 @@ onMounted(async () => {
   background-color: #eee;
 }
 
-/* 标签页 */
+/* 标签页*/
 .content-section {
   padding: 0 20px 80px;
 }
@@ -2242,7 +2254,7 @@ onMounted(async () => {
   color: #999;
 }
 
-/* 图标颜色 */
+/* 鍥炬爣颜色 */
 .icon-blue { color: #4facfe; }
 .icon-yellow { color: #f6d365; }
 .icon-purple { color: #a18cd1; }
@@ -2894,3 +2906,8 @@ onMounted(async () => {
   font-size: 20px;
 }
 </style>
+
+
+
+
+

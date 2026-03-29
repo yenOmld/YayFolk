@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByGithubId(String githubId);
     boolean existsByGithubId(String githubId);
     List<User> findByRoleOrderByCreateTimeDesc(String role);
+    List<User> findByRoleAndStatusAndIsSuperAdminOrderByCreateTimeAsc(String role, Integer status, Integer isSuperAdmin);
 }
+
+

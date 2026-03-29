@@ -345,7 +345,12 @@
       "scenery": "風景",
       "guide": "攻略",
       "hotel": "宿泊",
-      "transport": "交通"
+      "transport": "交通",
+      "costume": "服飾と化粧",
+      "artistry": "美術と造物",
+      "folklore": "民俗と節気",
+      "opera": "戯曲演繹",
+      "textile": "織物手工"
     }
   },
   "postDetail": {

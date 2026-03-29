@@ -56,7 +56,7 @@
     "registerFailedRetry": "注册失败，请稍后重试",
     "resetSuccess": "密码重置成功！",
     "resetFailed": "密码重置失败",
-    "resetFailedRetry": "重置密码失败，请稍后重试",
+    "resetFailedRetry": "密码重置失败，请稍后重试",
     "passwordHint": {
       "length": "密码长度至少8位",
       "maxLength": "密码长度不能超过20位",
@@ -81,7 +81,6 @@
     "translationComplete": "翻译完成",
     "camera": "拍照翻译",
     "voice": "语音翻译",
-
     "commonPhrases": "常用语",
     "text": "文本翻译",
     "chinese": "中文",
@@ -161,7 +160,8 @@
     "appSettings": "应用设置",
     "general": "通用",
     "aboutUs": "关于我们",
-    "about": "关于我们",
+    "about": "关于",
+    "contactService": "联系客服",
     "logout": "退出登录",
     "logoutConfirm": "确定要退出登录吗？",
     "deleteAccount": "注销账号",
@@ -174,6 +174,7 @@
     "passwordChangeFailed": "密码修改失败，请稍后重试",
     "networkError": "网络错误，请稍后重试",
     "aboutUsContent": "关于我们：YayFolk v1.0.0",
+    "contactServiceFailed": "暂时无法连接客服，请稍后再试",
     "accountDeleted": "账号已注销",
     "deleteAccountFailed": "注销失败，请稍后重试"
   },
@@ -254,6 +255,7 @@
   },
   "notification": {
     "title": "消息",
+    "customerService": "在线客服",
     "commentNotif": "评论通知",
     "collectionNotif": "收藏通知",
     "clearAll": "清除全部",
@@ -267,15 +269,15 @@
     "viewOriginal": "查看原文",
     "translate": "翻译",
     "delete": "删除",
-    "recall": "撤销",
+    "recall": "撤回",
     "translateFailed": "翻译失败，请重试",
     "translateFailedRetry": "翻译失败，请稍后重试",
     "confirmDeleteMessage": "确定要删除这条消息吗？删除后仅自己不可见。",
     "deleteFailed": "删除失败",
     "deleteFailedRetry": "删除失败，请稍后重试",
-    "confirmRecallMessage": "确定要撤销这条消息吗？撤销后双方都不可见，内容将恢复到输入框。",
-    "recallFailed": "撤销失败",
-    "recallFailedRetry": "撤销失败，请稍后重试",
+    "confirmRecallMessage": "确定要撤回这条消息吗？撤回后双方都不可见，内容将恢复到输入框。",
+    "recallFailed": "撤回失败",
+    "recallFailedRetry": "撤回失败，请稍后重试",
     "confirmDeleteConversation": "确定要删除此会话吗？删除后聊天记录将无法恢复。",
     "confirmClearNotifications": "确定要清除所有{type}通知吗？",
     "comment": "评论",
@@ -285,7 +287,6 @@
     "commentedYourPost": "评论了你的帖子",
     "collectedYourPost": "收藏了你的帖子"
   },
-
   "share": {
     "unknownUser": "未知用户",
     "unknown": "未知",
@@ -346,7 +347,12 @@
       "scenery": "风景",
       "guide": "攻略",
       "hotel": "住宿",
-      "transport": "交通"
+      "transport": "交通",
+      "costume": "服饰妆容",
+      "artistry": "美术造物",
+      "folklore": "民俗节气",
+      "opera": "戏曲演艺",
+      "textile": "织物手工"
     }
   },
   "postDetail": {
@@ -356,8 +362,8 @@
     "translating": "翻译中...",
     "viewOriginal": "查看原文",
     "translatePost": "翻译推文",
-    "commentsCount": "共 {count} 条评论",
-    "replyTo": "回复 {author}:",
+    "commentsCount": "共{count}条评论",
+    "replyTo": "回复{author}：",
     "translate": "翻译",
     "delete": "删除",
     "forward": "转发",
@@ -397,6 +403,7 @@
     "clearCache": "清除缓存",
     "nightMode": "夜间模式",
     "about": "关于",
+    "contactService": "联系客服",
     "version": "版本号",
     "userAgreement": "用户协议",
     "privacyPolicy": "隐私政策",

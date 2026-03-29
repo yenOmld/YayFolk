@@ -120,6 +120,10 @@ export const createConversation = (data) => {
   return request.post('/messages/conversations', data)
 }
 
+export const createCustomerServiceConversation = () => {
+  return request.post('/messages/customer-service')
+}
+
 export const getMessages = (conversationId) => {
   return request.get(`/messages/conversations/${conversationId}`)
 }
@@ -178,6 +182,15 @@ export const deletePhrase = (phraseId) => {
   return request.delete(`/phrases/${phraseId}`)
 }
 
+export const classifyDiscoverImage = (formData) => {
+  return request.post('/classification/predict', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    timeout: 120000
+  })
+}
+
 export const uploadPostImage = (formData, postId, index) => {
   let url = '/upload/post-image'
   if (postId && index) {
@@ -200,12 +213,12 @@ export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favo
 export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
 export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
 
-// ========== 公开内容（用户端无需登录） ==========
+// ========== 公共活动相关接口 ==========
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
 
-// ========== 商家端 ==========
+// ========== 公共活动相关接口 ==========
 export const applyMerchant = (data) => request.post('/merchant/apply', data)
 export const getMyApplication = () => request.get('/merchant/apply/status')
 
@@ -219,13 +232,13 @@ export const rejectBooking = (id) => request.post(`/merchant/bookings/${id}/reje
 
 
 
-// ========== 管理员端 ==========
+// ========== 商家管理 ==========
 export const getAdminMerchants = (status) => request.get('/admin/merchants', { params: { status } })
 export const auditMerchant = (id, approve, remark) => request.post(`/admin/merchants/${id}/audit`, { approve, remark })
 export const getAdminActivities = (auditStatus) => request.get('/admin/activities', { params: { auditStatus } })
 export const auditAdminActivity = (id, approve, remark) => request.post(`/admin/activities/${id}/audit`, { approve, remark })
-export const getAdminPendingPosts = (page = 0, size = 20) => request.get('/admin/posts/pending', { params: { page, size } })
-export const auditPost = (id, pass) => request.post(`/admin/posts/${id}/audit`, { pass })
+export const getAdminPosts = (auditStatus, page = 0, size = 20) => request.get('/admin/posts', { params: { auditStatus, page, size } })
+export const auditPost = (id, pass, remark) => request.post(`/admin/posts/${id}/audit`, { pass, remark })
 export const getAdminUsers = (page = 0, size = 20, keyword) => request.get('/admin/users', { params: { page, size, keyword } })
 export const banUser = (id) => request.post(`/admin/users/${id}/ban`)
 export const unbanUser = (id) => request.post(`/admin/users/${id}/unban`)
@@ -238,7 +251,7 @@ export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}
 export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
 export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
 
-// ========== 用户侧订单 & 报名 ==========
+// ========== 订单 & 成就 ==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
 export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
 export const cancelActivityBooking = (id) => request.post(`/orders/bookings/${id}/cancel`)
@@ -256,3 +269,9 @@ export const uploadImage = (formData, folder = 'images') => request.post(`/uploa
     'Content-Type': 'multipart/form-data'
   }
 })
+
+
+
+
+
+

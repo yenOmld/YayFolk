@@ -60,7 +60,7 @@
                   <span>{{ $t('notification.collectionNotif') }}</span>
                 </template>
                 <template v-else>
-                  <span>{{ currentConversation.name }}</span>
+                  <span>{{ getConversationName(currentConversation) }}</span>
                 </template>
               </div>
               <button 
@@ -118,7 +118,7 @@
               </template>
             </div>
 
-            <div v-if="currentConversation.type === 'chat'" class="chat-input">
+            <div v-if="currentConversation.type === 'chat' || currentConversation.type === 'service'" class="chat-input">
               <input
                 v-model="newMessage"
                 type="text"
@@ -200,7 +200,6 @@ import {
   translateMessage
 } from '../api/app'
 
-// 获取通知实例
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
@@ -209,7 +208,22 @@ const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
+const readStoredUser = () => {
+  const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
+  if (!raw) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(raw)
+  } catch (error) {
+    return {}
+  }
+}
+
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user'
+const currentUser = readStoredUser()
+const isAdminUser = currentUser?.role === 'admin'
 const conversations = ref([])
 const currentConversation = ref(null)
 const messages = ref([])
@@ -227,7 +241,6 @@ const isListCollapsed = ref(false)
 const messageTranslationState = ref({})
 
 const getPreferredLanguage = () => {
-  // i18n 使用的是 'locale' 键
   const locale = localStorage.getItem('locale')
   if (locale) {
     return locale
@@ -249,21 +262,24 @@ const getPreferredLanguage = () => {
 const preferredLanguage = ref(getPreferredLanguage())
 
 const getConversationName = (conv) => {
+  if (!conv) {
+    return ''
+  }
   if (conv.type === 'comment') {
     return t('notification.commentNotif')
   }
   if (conv.type === 'collection') {
     return t('notification.collectionNotif')
   }
+  if (conv.type === 'service' && !isAdminUser) {
+    return t('notification.customerService')
+  }
   return conv.name
 }
 
 const getNotificationContent = (notif) => {
-  // 从后端返回的内容中提取用户评论部分（如果有）
-  // 格式通常是: "评论了你的帖子: xxx" 或 "收藏了你的帖子"
   const content = notif.content || ''
   
-  // 尝试提取冒号后的用户内容
   const colonIndex = content.indexOf(':')
   let userContent = ''
   let originalPrefix = ''
@@ -273,7 +289,6 @@ const getNotificationContent = (notif) => {
     userContent = content.substring(colonIndex + 1).trim()
   }
   
-  // 根据通知类型返回国际化后的内容
   const type = currentConversation.value?.type
   if (type === 'comment') {
     if (userContent) {
@@ -302,8 +317,10 @@ const loadConversations = async () => {
     if (response.code === 200) {
       conversations.value = response.data
     }
+    return conversations.value
   } catch (error) {
     console.error('加载会话列表失败', error)
+    return []
   }
 }
 
@@ -362,7 +379,7 @@ const goToPostDetail = (notif) => {
 }
 
 const handleContextMenu = (e, conv) => {
-  if (conv.type === 'chat') {
+  if (conv.type === 'chat' || conv.type === 'service') {
     e.preventDefault()
     showContextMenu.value = true
     contextMenuX.value = e.clientX
@@ -644,9 +661,30 @@ const initChatWithUser = async (userId) => {
   }
 }
 
+const openConversationById = async (conversationId) => {
+  if (!conversationId) {
+    return
+  }
+
+  let conv = conversations.value.find(item => String(item.id) === String(conversationId))
+  if (!conv) {
+    await loadConversations()
+    conv = conversations.value.find(item => String(item.id) === String(conversationId))
+  }
+  if (conv) {
+    await selectConversation(conv)
+  }
+}
+
 watch(() => route.query.userId, (newUserId) => {
   if (newUserId) {
     initChatWithUser(newUserId)
+  }
+}, { immediate: true })
+
+watch(() => route.query.conversationId, (conversationId) => {
+  if (conversationId) {
+    openConversationById(conversationId)
   }
 }, { immediate: true })
 
@@ -1173,3 +1211,5 @@ onUnmounted(() => {
   font-size: 16px;
 }
 </style>
+
+

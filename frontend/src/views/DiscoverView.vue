@@ -1,6 +1,5 @@
-<template>
+﻿<template>
   <div class="discover-page" @click="closeMobileMenu">
-    <!-- 顶部导航栏 -->
     <div class="top-nav">
       <div class="nav-content" @click.stop>
         <div class="logo">YayFolk</div>
@@ -8,7 +7,6 @@
           <i class='bx bx-search'></i>
           <input v-model="searchKeyword" type="text" :placeholder="$t('discover.searchPlaceholder')" @keyup.enter="loadPosts" />
         </div>
-        <!-- 桌面端导航按钮 -->
         <div class="nav-buttons main-nav-buttons">
           <div 
             class="nav-button" 
@@ -36,11 +34,9 @@
             <span v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </div>
         </div>
-        <!-- 汉堡菜单按钮 -->
         <div class="hamburger-menu" @click="toggleMobileMenu">
           <i :class="showMobileMenu ? 'bx bx-x' : 'bx bx-menu'"></i>
         </div>
-        <!-- 移动端下拉菜单 -->
         <div v-if="showMobileMenu" class="mobile-menu">
           <div 
             class="mobile-menu-item" 
@@ -71,11 +67,8 @@
       </div>
     </div>
 
-    <!-- 主容器 -->
     <div class="main-container">
-      <!-- 发现页面 -->
       <div v-if="currentPage === 'discover'" class="main-content">
-        <!-- 分类标签 -->
         <div class="category-tabs-wrapper">
           <div class="category-tabs">
             <div 
@@ -89,14 +82,6 @@
             </div>
           </div>
           <div class="action-buttons">
-            <button
-              class="partner-filter-btn"
-              :class="{ active: activeCategory === 'partner' }"
-              @click="handleCategoryChange('partner')"
-            >
-              <i class='bx bx-group'></i>
-              <span>搭子专区</span>
-            </button>
             <div class="sort-dropdown" @click.stop>
               <button class="sort-btn" @click="toggleSortMenu">
                 <i class='bx bx-sort-alt-2'></i>
@@ -128,16 +113,13 @@
           </div>
         </div>
 
-        <!-- 内容列表 -->
         <div class="content-list">
-          <!-- 加载中状态 -->
           <div v-if="loadingPosts" class="loading-container">
             <div class="loading-spinner">
               <i class='bx bx-loader-alt bx-spin'></i>
             </div>
             <p class="loading-text">{{ $t('discover.loading') }}</p>
           </div>
-          <!-- 帖子列表 -->
           <template v-else>
             <div v-if="displayPosts.length === 0" class="empty-state">
               <i class='bx bx-file-blank'></i>
@@ -150,7 +132,6 @@
               :class="['post-card', { 'partner-card': isPartnerPost(post) }]"
               @click="openPostModal(post)"
             >
-            <!-- 图片网格 -->
             <div class="image-grid" v-if="post.images && post.images.length > 0">
               <img 
                 v-for="(image, index) in post.images" 
@@ -162,9 +143,8 @@
               />
             </div>
 
-            <!-- 帖子内容 -->
             <div class="post-content">
-              <div v-if="isPartnerPost(post)" class="partner-banner">组团搭子帖</div>
+              <div v-if="isPartnerPost(post)" class="partner-banner">Partner Post</div>
               <h3 v-if="post.title" class="post-title">{{ post.title }}</h3>
               <div v-if="isPartnerPost(post)" class="partner-summary">
                 {{ buildPartnerSummary(post) }}
@@ -172,7 +152,6 @@
               <p>{{ post.content }}</p>
             </div>
 
-            <!-- 作者信息和互动栏 -->
             <div class="post-footer">
               <div class="author-info" @click.stop="goToUserHomepage(post.author?.id)">
                 <img :src="post.author.avatar" alt="Avatar" class="author-avatar" />
@@ -198,12 +177,10 @@
         </div>
       </div>
 
-      <!-- 发布页面 -->
       <div v-else-if="currentPage === 'post'" class="main-content post-page">
         <div class="post-container">
           <h2>{{ $t('discover.newPost') }}</h2>
           <div class="post-form-horizontal">
-            <!-- 左侧：标题、内容、分类 -->
             <div class="post-form-left">
               <div class="form-group">
                 <label>{{ $t('discover.title') }}</label>
@@ -220,13 +197,10 @@
                     {{ category.name }}
                   </option>
                 </select>
-                <p v-if="postForm.category === 'partner'" class="partner-tip">
-                  搭子帖建议写清楚时间、城市、人数、预算和联系方式，方便其他用户快速组团。
-                </p>
+                <p class="partner-tip">发布招募信息，让更多人看到你的活动！</p>
               </div>
             </div>
             
-            <!-- 右侧：图片、标签、发布按钮 -->
             <div class="post-form-right">
               <div class="form-group">
                 <label>{{ $t('discover.addImage') }}</label>
@@ -271,7 +245,6 @@
               <div class="form-group">
                 <label>{{ $t('discover.tags') }} <span class="tag-count">({{ postForm.tags.length }}/10)</span></label>
                 <div class="tags-container">
-                  <!-- 已选标签 -->
                   <div v-if="postForm.tags.length > 0" class="selected-tags">
                     <span
                       v-for="tag in postForm.tags"
@@ -282,7 +255,6 @@
                       <i class='bx bx-x' @click="removeTag(tag)"></i>
                     </span>
                   </div>
-                  <!-- 预设标签 -->
                   <div class="preset-tags">
                     <span
                       v-for="tag in presetTags"
@@ -292,7 +264,6 @@
                       @click="toggleTag(tag)"
                     >#{{ tag }}</span>
                   </div>
-                  <!-- 自定义标签输入 -->
                   <div class="tag-input-container">
                     <input 
                       v-model="customTagsInput" 
@@ -315,7 +286,6 @@
         </div>
       </div>
 
-      <!-- 通知页面 -->
       <div v-else-if="currentPage === 'notification'" class="main-content notification-page">
         <div class="notification-container">
           <h2>{{ $t('nav.notification') }}</h2>
@@ -323,21 +293,21 @@
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user1" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">小明</span> {{ $t('discover.collectedYourPost') }}</p>
+                <p><span class="notification-user">User A</span> {{ $t('discover.collectedYourPost') }}</p>
                 <span class="notification-time">10{{ $t('discover.minutesAgo') }}</span>
               </div>
             </div>
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user2" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">小红</span> {{ $t('discover.commentedYourPost') }}</p>
+                <p><span class="notification-user">User B</span> {{ $t('discover.commentedYourPost') }}</p>
                 <span class="notification-time">30{{ $t('discover.minutesAgo') }}</span>
               </div>
             </div>
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user3" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">小李</span> {{ $t('discover.followedYou') }}</p>
+                <p><span class="notification-user">User C</span> {{ $t('discover.followedYou') }}</p>
                 <span class="notification-time">1{{ $t('discover.hoursAgo') }}</span>
               </div>
             </div>
@@ -362,7 +332,6 @@
     @searchTag="handleSearchTag"
   />
 
-  <!-- 图片预览模态框 -->
   <div v-if="showImagePreview" class="image-preview-modal">
     <div class="modal-overlay" @click="closeImagePreview"></div>
     <div class="modal-content">
@@ -385,11 +354,12 @@ import {
   getUnreadCount,
   toggleDiscoverPostCollect,
   uploadPostImage,
-  updateDiscoverPost
+  updateDiscoverPost,
+  classifyDiscoverImage
 } from '../api/app'
 import PostDetailModal from '../components/PostDetailModal.vue'
 
-// 获取通知实例
+
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
@@ -399,11 +369,11 @@ const route = useRoute()
 
 const categories = computed(() => [
   { id: 'all', name: t('discover.categoryAll') },
-  { id: 'food', name: t('discover.presetTags.food') },
-  { id: 'travel', name: t('discover.presetTags.travel') },
-  { id: 'hotel', name: t('discover.presetTags.hotel') },
-  { id: 'transport', name: t('discover.presetTags.transport') },
-  { id: 'tips', name: t('discover.presetTags.guide') }
+  { id: '\u670d\u9970\u5986\u9020', name: t('discover.presetTags.costume') },
+  { id: '\u7f8e\u672f\u9020\u7269', name: t('discover.presetTags.artistry') },
+  { id: '\u6c11\u4fd7\u8282\u6c14', name: t('discover.presetTags.folklore') },
+  { id: '\u620f\u66f2\u6f14\u7ece', name: t('discover.presetTags.opera') },
+  { id: '\u7ec7\u7269\u624b\u5de5', name: t('discover.presetTags.textile') }
 ])
 
 const posts = ref([])
@@ -422,22 +392,30 @@ const isRefreshing = ref(false)
 const postForm = ref({
   title: '',
   content: '',
-  category: 'travel',
+  category: '\u670d\u9970\u5986\u9020',
   tags: [],
   images: []
 })
 const pendingFilesMap = ref(new Map())
 const customTagsInput = ref('')
 const presetTags = computed(() => [
-  t('discover.presetTags.travel'),
-  t('discover.presetTags.food'),
-  t('discover.presetTags.scenery'),
-  t('discover.presetTags.guide'),
-  t('discover.presetTags.hotel'),
-  t('discover.presetTags.transport'),
-  '搭子',
-  '组团'
+  t('discover.presetTags.costume'),
+  t('discover.presetTags.artistry'),
+  t('discover.presetTags.folklore'),
+  t('discover.presetTags.opera'),
+  t('discover.presetTags.textile')
 ])
+const classifierTagMap = computed(() => ({
+  '\u670d\u9970\u5986\u9020': t('discover.presetTags.costume'),
+  '\u7f8e\u672f\u9020\u7269': t('discover.presetTags.artistry'),
+  '\u6c11\u4fd7\u8282\u6c14': t('discover.presetTags.folklore'),
+  '\u620f\u66f2\u6f14\u7ece': t('discover.presetTags.opera'),
+  '\u7ec7\u7269\u624b\u5de5': t('discover.presetTags.textile')
+}))
+const bestClassification = ref({
+  tag: '',
+  confidence: 0
+})
 const selectedImages = computed(() => postForm.value.images)
 const displayPosts = computed(() => posts.value)
 const draggedIndex = ref(null)
@@ -453,16 +431,79 @@ const buildPartnerSummary = (post) => {
     : ''
   const content = (post?.content || '').replace(/\s+/g, ' ').trim()
   const fallback = content
-    ? `招募信息：${content}`
-    : '建议补充时间、地点、人数和预算，方便其他用户快速组队。'
-  return [title, tagSummary, fallback].filter(Boolean).join(' · ')
+    ? `Recruitment info: ${content}`
+    : 'Add time, location, group size, budget, and contact details to help others join quickly.'
+  return [title, tagSummary, fallback].filter(Boolean).join(' / ')
 }
 
-// 触摸事件相关变量
+
 const touchStartX = ref(0)
 const touchStartY = ref(0)
 const touchDragged = ref(false)
 const touchDraggedIndex = ref(null)
+
+const mergeTags = (incomingTags = []) => {
+  if (!Array.isArray(incomingTags) || incomingTags.length === 0) {
+    return
+  }
+
+  const merged = [...postForm.value.tags]
+  incomingTags
+    .map(tag => (typeof tag === 'string' ? tag.trim() : ''))
+    .map(tag => classifierTagMap.value[tag] || tag)
+    .filter(Boolean)
+    .forEach(tag => {
+      if (merged.length < 10 && !merged.includes(tag)) {
+        merged.push(tag)
+      }
+    })
+
+  postForm.value.tags = merged
+}
+
+const syncCategoryFromPrediction = (primaryTag, confidence = 0) => {
+  const normalizedTag = typeof primaryTag === 'string' ? primaryTag.trim() : ''
+  if (!normalizedTag || !(normalizedTag in classifierTagMap.value)) {
+    return
+  }
+
+  if (confidence < bestClassification.value.confidence) {
+    return
+  }
+
+  bestClassification.value = {
+    tag: normalizedTag,
+    confidence
+  }
+  postForm.value.category = normalizedTag
+}
+
+const classifySelectedImage = async (file) => {
+  if (!file) {
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('image', file)
+
+  try {
+    const response = await classifyDiscoverImage(formData)
+    if (response.code === 200) {
+      const primaryTag = typeof response.data?.primaryTag === 'string' ? response.data.primaryTag.trim() : ''
+      const confidence = Number(response.data?.confidence || 0)
+      const autoTags = Array.isArray(response.data?.autoTags) ? response.data.autoTags : []
+      syncCategoryFromPrediction(primaryTag, confidence)
+      mergeTags(autoTags)
+      return
+    }
+
+    if (response.code === 503) {
+      console.warn('Local image classifier is unavailable.', response.message)
+    }
+  } catch (error) {
+    console.error('Discover image classification failed.', error)
+  }
+}
 
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
@@ -608,7 +649,7 @@ const toggleTag = (tag) => {
 }
 
 const addCustomTags = () => {
-  const tags = customTagsInput.value.split(/[\s,，]+/).map(item => item.trim()).filter(Boolean)
+  const tags = customTagsInput.value.split(/[\s,\uFF0C]+/).map(item => item.trim()).filter(Boolean)
   if (!tags.length) {
     return
   }
@@ -635,22 +676,36 @@ const removeTag = (tag) => {
 }
 
 const handleImageUpload = async (event) => {
-  const files = event.target.files ? Array.from(event.target.files) : []
+  const input = event.target
+  const files = input?.files ? Array.from(input.files) : []
   if (files.length === 0) return
-  
+
   const remainingSlots = 9 - postForm.value.images.length
   if (remainingSlots <= 0) {
     notify.warning(t('discover.maxImages'))
+    if (input) {
+      input.value = ''
+    }
     return
   }
-  
+
   const filesToUpload = files.slice(0, remainingSlots)
+  const classifyTasks = []
+
   filesToUpload.forEach(file => {
     const previewUrl = URL.createObjectURL(file)
     postForm.value.images.push(previewUrl)
     pendingFilesMap.value.set(previewUrl, file)
+    classifyTasks.push(classifySelectedImage(file))
   })
+
+  if (input) {
+    input.value = ''
+  }
+
+  Promise.allSettled(classifyTasks)
 }
+
 
 const removeImage = (index) => {
   const previewUrl = postForm.value.images[index]
@@ -670,11 +725,15 @@ const resetPostForm = () => {
   postForm.value = {
     title: '',
     content: '',
-    category: 'travel',
+    category: '\u670d\u9970\u5986\u9020',
     tags: [],
     images: []
   }
   pendingFilesMap.value = new Map()
+  bestClassification.value = {
+    tag: '',
+    confidence: 0
+  }
   customTagsInput.value = ''
 }
 
@@ -712,7 +771,7 @@ const onDragEnd = (event) => {
   draggedIndex.value = null
 }
 
-// 触摸事件处理
+
 const onTouchStart = (event, index) => {
   const touch = event.touches[0]
   touchStartX.value = touch.clientX
@@ -728,7 +787,7 @@ const onTouchMove = (event) => {
   const deltaX = Math.abs(touch.clientX - touchStartX.value)
   const deltaY = Math.abs(touch.clientY - touchStartY.value)
   
-  // 检测是否有明显的拖动
+  
   if (deltaX > 10 || deltaY > 10) {
     touchDragged.value = true
   }
@@ -781,14 +840,14 @@ const submitPost = async () => {
   try {
     const finalTags = [...postForm.value.tags]
     if (postForm.value.category === 'partner') {
-      if (!finalTags.includes('搭子')) {
-        finalTags.push('搭子')
+      if (!finalTags.includes('\u642d\u5b50')) {
+        finalTags.push('\u642d\u5b50')
       }
-      if (!finalTags.includes('组团')) {
-        finalTags.push('组团')
+      if (!finalTags.includes('\u7ec4\u56e2')) {
+        finalTags.push('\u7ec4\u56e2')
       }
     }
-    // 第一步：创建帖子（不提交图片）
+    
     const createResponse = await createDiscoverPost({
       title: postForm.value.title.trim(),
       content: postForm.value.content.trim(),
@@ -802,7 +861,7 @@ const submitPost = async () => {
     }
     const postId = createResponse.data.id
 
-    // 第二步：上传图片到OSS（使用postId作为文件夹）
+    
     const ossUrls = []
     let index = 1
     for (const previewUrl of postForm.value.images) {
@@ -815,12 +874,12 @@ const submitPost = async () => {
           ossUrls.push(response.data.url)
           index++
         } else {
-          throw new Error(response.message || '上传失败')
+          throw new Error(response.message || 'Image upload failed')
         }
       }
     }
 
-    // 第三步：更新帖子，添加图片URL
+    
     const updateResponse = await updateDiscoverPost(postId, {
       title: postForm.value.title.trim(),
       content: postForm.value.content.trim(),
@@ -855,13 +914,13 @@ onMounted(async () => {
         currentPost.value = response.data
         showPostModal.value = true
         syncPostInList(response.data)
-        // 传递 commentId 给模态框
+        
         if (commentId) {
           currentPost.value.highlightCommentId = commentId
         }
       }
     } catch (error) {
-      console.error('加载帖子详情失败', error)
+      console.error('Failed to load post detail', error)
     }
   }
 })
@@ -873,13 +932,13 @@ const loadUnreadCount = async () => {
       unreadCount.value = response.data
     }
   } catch (error) {
-    console.error('获取未读消息数量失败', error)
+    console.error('Failed to load unread count', error)
   }
 }
 </script>
 
 <style scoped>
-/* 全局样式重置 */
+
 * {
   margin: 0;
   padding: 0;
@@ -899,7 +958,7 @@ body {
   width: 100%;
 }
 
-/* 顶部红色导航栏 */
+
 .top-nav {
   color: white;
   padding: 10px 0;
@@ -1002,7 +1061,7 @@ body {
   cursor: pointer;
 }
 
-/* 主容器 */
+
 .main-container {
   flex: 1;
   max-width: 1200px;
@@ -1010,7 +1069,7 @@ body {
   width: 100%;
 }
 
-/* 主导航按钮 */
+
 .main-nav-buttons {
   display: flex;
   flex-direction: row;
@@ -1055,7 +1114,7 @@ body {
   font-size: 12px;
 }
 
-/* 汉堡菜单按钮 */
+
 .hamburger-menu {
   display: none;
   width: 40px;
@@ -1073,7 +1132,7 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* 移动端下拉菜单 */
+
 .mobile-menu {
   position: absolute;
   top: 100%;
@@ -1137,7 +1196,7 @@ body {
   margin-left: auto;
 }
 
-/* 联系按钮 */
+
 .contact-btn {
   padding: 6px 14px;
   background: #ff2442;
@@ -1157,14 +1216,14 @@ body {
   transform: translateY(-1px);
 }
 
-/* 主内容区 */
+
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* 分类标签 */
+
 .category-tabs-wrapper {
   display: flex;
   align-items: center;
@@ -1344,7 +1403,7 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* 加载中状态 */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -1366,7 +1425,7 @@ body {
   font-size: 14px;
 }
 
-/* 空状态 */
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -1388,7 +1447,7 @@ body {
   font-size: 14px;
 }
 
-/* 内容列表 */
+
 .content-list {
   padding: 20px;
   gap: 15px;
@@ -1398,7 +1457,7 @@ body {
   flex: 1;
 }
 
-/* 帖子卡片 */
+
 .post-card {
   background: white;
   border-radius: 8px;
@@ -1426,11 +1485,11 @@ body {
   box-shadow: 0 16px 36px rgba(249, 115, 22, 0.18);
 }
 
-/* 图片网格 */
+
 .image-grid {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* 1:1 比例 */
+  padding-top: 100%; /* 1:1 比例容器 */
   overflow: hidden;
 }
 
@@ -1448,7 +1507,7 @@ body {
   transform: scale(1.02);
 }
 
-/* 图片加载效果 */
+
 .post-image {
   background: linear-gradient(120deg, #f0f0f0 30%, #e0e0e0 50%, #f0f0f0 70%);
   background-size: 200% 100%;
@@ -1469,7 +1528,7 @@ body {
   animation: none;
 }
 
-/* 帖子内容 */
+
 .post-content {
   padding: 12px;
   flex: 1;
@@ -1522,7 +1581,7 @@ body {
   white-space: pre-line;
 }
 
-/* 帖子底部 */
+
 .post-footer {
   padding: 0 12px 12px;
   display: flex;
@@ -1577,7 +1636,7 @@ body {
   color: #ff2442;
 }
 
-/* 响应式设计 */
+
 @media (max-width: 1024px) {
   .content-list {
     grid-template-columns: repeat(3, 1fr);
@@ -1695,7 +1754,7 @@ body {
   }
 }
 
-/* 发布页面样式 */
+
 .post-page {
   display: flex;
   justify-content: center;
@@ -1725,7 +1784,7 @@ body {
   gap: 20px;
 }
 
-/* 左右布局的发布表单 */
+
 .post-form-horizontal {
   display: flex;
   gap: 30px;
@@ -1802,21 +1861,21 @@ body {
   background: #fff;
 }
 
-/* 标签容器 */
+
 .tags-container {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-/* 标签数量提示 */
+
 .tag-count {
   font-size: 12px;
   color: #999;
   font-weight: normal;
 }
 
-/* 已选标签 */
+
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1846,7 +1905,7 @@ body {
   opacity: 0.8;
 }
 
-/* 预设标签 */
+
 .preset-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1883,7 +1942,7 @@ body {
   font-weight: 500;
 }
 
-/* 标签输入容器 */
+
 .tag-input-container {
   display: flex;
   flex-direction: column;
@@ -1903,7 +1962,7 @@ body {
   border-color: #ff2442;
 }
 
-/* 标签按钮 */
+
 .tag-buttons {
   display: flex;
   gap: 10px;
@@ -2053,7 +2112,7 @@ body {
   box-shadow: none;
 }
 
-/* 图片预览模态框 */
+
 .image-preview-modal {
   position: fixed;
   top: 0;
@@ -2101,7 +2160,7 @@ body {
   border-radius: 8px;
 }
 
-/* 拖拽样式 */
+
 .image-preview-item {
   cursor: move;
   transition: all 0.3s;
@@ -2129,7 +2188,7 @@ body {
   opacity: 1;
 }
 
-/* 通知页面样式 */
+
 .notification-page {
   display: flex;
   justify-content: center;
@@ -2201,7 +2260,7 @@ body {
   color: #999;
 }
 
-/* 响应式设计 */
+
 @media (max-width: 900px) {
   .post-form-horizontal {
     flex-direction: column;
@@ -2240,3 +2299,10 @@ body {
   }
 }
 </style>
+
+
+
+
+
+
+

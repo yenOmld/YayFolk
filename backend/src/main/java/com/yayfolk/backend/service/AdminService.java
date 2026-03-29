@@ -152,8 +152,13 @@ public class AdminService {
         User admin = requireAdmin(adminUsername);
         MerchantApplication app = applicationRepository.findById(appId)
                 .orElseThrow(() -> new RuntimeException("Merchant application does not exist"));
+
         app.setApplicationStatus(approve ? "approved" : "rejected");
-        app.setAuditRemark(remark);
+        String trimmedRemark = remark == null ? null : remark.trim();
+        if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
+            throw new RuntimeException("驳回原因不能为空");
+        }
+        app.setAuditRemark(approve ? null : trimmedRemark);
         app.setAuditAdminId(admin.getId());
         app.setAuditTime(new Date());
         applicationRepository.save(app);
@@ -239,7 +244,11 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Activity does not exist"));
 
         activity.setAuditStatus(approve ? "approved" : "rejected");
-        activity.setAuditRemark(remark);
+        String trimmedRemark = remark == null ? null : remark.trim();
+        if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
+            throw new RuntimeException("驳回原因不能为空");
+        }
+        activity.setAuditRemark(approve ? null : trimmedRemark);
         activityRepository.save(activity);
 
         Map<String, Object> result = new HashMap<>();
@@ -251,10 +260,16 @@ public class AdminService {
     }
 
     // Post moderation
-    public List<Map<String, Object>> getPendingPosts(String adminUsername, int page, int size) {
+    public List<Map<String, Object>> getPosts(String adminUsername, String auditStatus, int page, int size) {
         requireAdmin(adminUsername);
 
-        List<DiscoverPost> posts = postRepository.findByAuditStatusOrderByCreateTimeDesc("pending");
+        List<DiscoverPost> posts;
+        if (auditStatus != null && !auditStatus.isEmpty()) {
+            posts = postRepository.findByStatusAndAuditStatusOrderByCreateTimeDesc(1, auditStatus);
+        } else {
+            posts = postRepository.findByStatusOrderByCreateTimeDesc(1);
+        }
+
         List<Map<String, Object>> result = new ArrayList<>();
         int start = Math.max(page, 0) * size;
         int end = Math.min(start + size, posts.size());
@@ -271,6 +286,7 @@ public class AdminService {
             m.put("images", p.getImages());
             m.put("category", p.getCategory());
             m.put("auditStatus", p.getAuditStatus());
+            m.put("auditRemark", p.getAuditRemark());
             m.put("createTime", p.getCreateTime());
             userRepository.findById(p.getUserId()).ifPresent(u -> {
                 m.put("username", u.getUsername());
@@ -281,19 +297,22 @@ public class AdminService {
         return result;
     }
 
-    public Map<String, Object> auditPost(String adminUsername, Long postId, boolean pass) {
+    public Map<String, Object> auditPost(String adminUsername, Long postId, boolean pass, String remark) {
         requireAdmin(adminUsername);
         DiscoverPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post does not exist"));
-        post.setAuditStatus(pass ? "passed" : "rejected");
-        if (!pass) {
-            post.setStatus(0);
+        String trimmedRemark = remark == null ? null : remark.trim();
+        if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
+            throw new RuntimeException("驳回原因不能为空");
         }
+        post.setAuditStatus(pass ? "passed" : "rejected");
+        post.setAuditRemark(pass ? null : trimmedRemark);
         postRepository.save(post);
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", post.getId());
         result.put("auditStatus", post.getAuditStatus());
+        result.put("auditRemark", post.getAuditRemark());
         return result;
     }
 
@@ -304,6 +323,9 @@ public class AdminService {
         List<User> all = userRepository.findAll();
         List<Map<String, Object>> filtered = new ArrayList<>();
         for (User u : all) {
+            if ("admin".equalsIgnoreCase(u.getRole()) || isSuperAdmin(u)) {
+                continue;
+            }
             if (keyword != null && !keyword.isEmpty()) {
                 boolean match = (u.getUsername() != null && u.getUsername().contains(keyword))
                         || (u.getNickname() != null && u.getNickname().contains(keyword))
@@ -329,6 +351,9 @@ public class AdminService {
         requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
+        if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
+            throw new RuntimeException("管理员账号不能在用户管理中封禁");
+        }
         user.setStatus(0);
         userRepository.save(user);
     }
@@ -337,6 +362,9 @@ public class AdminService {
         requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
+        if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
+            throw new RuntimeException("管理员账号不能在用户管理中解封");
+        }
         user.setStatus(1);
         userRepository.save(user);
     }
@@ -519,3 +547,5 @@ public class AdminService {
         return m;
     }
 }
+
+

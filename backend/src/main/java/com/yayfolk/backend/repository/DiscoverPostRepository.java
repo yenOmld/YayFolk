@@ -8,6 +8,8 @@ import java.util.List;
 public interface DiscoverPostRepository extends JpaRepository<DiscoverPost, Long> {
     List<DiscoverPost> findByStatusOrderByCreateTimeDesc(Integer status);
 
+    List<DiscoverPost> findByStatusAndAuditStatusOrderByCreateTimeDesc(Integer status, String auditStatus);
+
     List<DiscoverPost> findByUserIdAndStatusOrderByCreateTimeDesc(Long userId, Integer status);
 
     List<DiscoverPost> findByUserId(Long userId);

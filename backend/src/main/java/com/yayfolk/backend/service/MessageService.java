@@ -9,14 +9,20 @@ import com.yayfolk.backend.repository.MessageRepository;
 import com.yayfolk.backend.repository.NotificationRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserRepository;
-import com.yayfolk.backend.service.TranslateService;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,30 +53,34 @@ public class MessageService {
     }
 
     public List<Map<String, Object>> getConversationList(String username) {
-        Long userId = findUserId(username);
+        User currentUser = findUser(username);
+        Long userId = currentUser.getId();
         List<Map<String, Object>> result = new ArrayList<>();
 
-        Map<String, Object> commentNotif = createSystemConversation("comment", "评论通知", "评论通知", getUnreadCommentCount(userId));
-        result.add(commentNotif);
+        result.add(createSystemConversation("comment", "评论通知", "评论通知", getUnreadCommentCount(userId)));
+        result.add(createSystemConversation("collection", "收藏通知", "收藏通知", getUnreadCollectionCount(userId)));
 
-        Map<String, Object> collectNotif = createSystemConversation("collection", "收藏通知", "收藏通知", getUnreadCollectionCount(userId));
-        result.add(collectNotif);
-
-        List<Conversation> chatConversations = conversationRepository.findChatConversationsByUserId(userId);
-        for (Conversation conv : chatConversations) {
-            Long otherUserId = userId.equals(conv.getUser1Id()) ? conv.getUser2Id() : conv.getUser1Id();
+        List<Conversation> directConversations = conversationRepository.findDirectConversationsByUserId(userId);
+        for (Conversation conversation : directConversations) {
+            Long otherUserId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
             User otherUser = userRepository.findById(otherUserId).orElse(null);
-            int unreadCount = userId.equals(conv.getUser1Id()) ? safeInt(conv.getUnreadCountUser1()) : safeInt(conv.getUnreadCountUser2());
+            int unreadCount = userId.equals(conversation.getUser1Id())
+                ? safeInt(conversation.getUnreadCountUser1())
+                : safeInt(conversation.getUnreadCountUser2());
+            String type = defaultString(conversation.getType());
 
             Map<String, Object> item = new HashMap<>();
-            item.put("id", conv.getId());
-            item.put("type", "chat");
-            item.put("name", displayName(otherUser));
+            item.put("id", conversation.getId());
+            item.put("type", type);
+            item.put("name", conversationName(currentUser, otherUser, type));
             item.put("avatar", avatarOf(otherUser));
-            item.put("lastMessage", defaultString(conv.getLastMessage()));
-            item.put("lastMessageTime", formatDate(conv.getLastMessageTime()));
+            item.put("lastMessage", defaultString(conversation.getLastMessage()));
+            item.put("lastMessageTime", formatDate(conversation.getLastMessageTime()));
             item.put("unreadCount", unreadCount);
             item.put("otherUserId", otherUserId);
+            item.put("otherUserName", displayName(otherUser));
+            item.put("otherUsername", otherUser == null ? "" : defaultString(otherUser.getUsername()));
+            item.put("otherRole", otherUser == null ? "" : defaultString(otherUser.getRole()));
             result.add(item);
         }
 
@@ -93,57 +103,80 @@ public class MessageService {
     private int getUnreadCommentCount(Long userId) {
         return (int) notificationRepository.findByUserIdAndTypeOrderByCreateTimeDesc(userId, "comment")
             .stream()
-            .filter(n -> !Boolean.TRUE.equals(n.getIsRead()))
+            .filter(notification -> !Boolean.TRUE.equals(notification.getIsRead()))
             .count();
     }
 
     private int getUnreadCollectionCount(Long userId) {
         return (int) notificationRepository.findByUserIdAndTypeOrderByCreateTimeDesc(userId, "collection")
             .stream()
-            .filter(n -> !Boolean.TRUE.equals(n.getIsRead()))
+            .filter(notification -> !Boolean.TRUE.equals(notification.getIsRead()))
             .count();
     }
 
     @Transactional
     public Map<String, Object> getOrCreateConversation(String username, Long otherUserId) {
-        Long userId = findUserId(username);
+        User currentUser = findUser(username);
+        Long userId = currentUser.getId();
         if (userId.equals(otherUserId)) {
-            throw new RuntimeException("不能与自己创建会话");
+            throw new RuntimeException("Cannot create a conversation with yourself");
         }
 
         ensureFollowing(userId, otherUserId);
 
         Conversation conversation = conversationRepository.findChatConversation(userId, otherUserId)
             .orElseGet(() -> {
-                Conversation newConv = new Conversation();
-                newConv.setType("chat");
-                newConv.setUser1Id(userId);
-                newConv.setUser2Id(otherUserId);
-                return conversationRepository.save(newConv);
+                Conversation newConversation = new Conversation();
+                newConversation.setType("chat");
+                newConversation.setUser1Id(userId);
+                newConversation.setUser2Id(otherUserId);
+                return conversationRepository.save(newConversation);
             });
 
         User otherUser = userRepository.findById(otherUserId).orElse(null);
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", conversation.getId());
-        result.put("type", "chat");
-        result.put("otherUserId", otherUserId);
-        result.put("otherUserName", displayName(otherUser));
-        result.put("otherUserAvatar", avatarOf(otherUser));
-        return result;
+        return buildConversationDetail(currentUser, conversation, otherUser);
+    }
+
+    @Transactional
+    public Map<String, Object> getOrCreateCustomerServiceConversation(String username) {
+        User currentUser = findUser(username);
+        Long userId = currentUser.getId();
+
+        List<Conversation> existingServiceConversations = conversationRepository.findServiceConversationsByUserId(userId);
+        if (!existingServiceConversations.isEmpty()) {
+            Conversation conversation = existingServiceConversations.get(0);
+            Long otherUserId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
+            User otherUser = userRepository.findById(otherUserId).orElse(null);
+            return buildConversationDetail(currentUser, conversation, otherUser);
+        }
+
+        User serviceAdmin = findAvailableServiceAdmin(userId);
+        Conversation conversation = conversationRepository.findServiceConversation(userId, serviceAdmin.getId())
+            .orElseGet(() -> {
+                Conversation newConversation = new Conversation();
+                newConversation.setType("service");
+                newConversation.setUser1Id(userId);
+                newConversation.setUser2Id(serviceAdmin.getId());
+                return conversationRepository.save(newConversation);
+            });
+
+        return buildConversationDetail(currentUser, conversation, serviceAdmin);
     }
 
     @Transactional
     public Map<String, Object> sendMessage(String username, Long conversationId, String content) {
         Long userId = findUserId(username);
         Conversation conversation = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new RuntimeException("会话不存在"));
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
 
         if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
-            throw new RuntimeException("无权限发送消息");
+            throw new RuntimeException("You do not have permission to send messages in this conversation");
         }
 
         Long receiverId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
-        ensureFollowing(userId, receiverId);
+        if (requiresFollowing(conversation)) {
+            ensureFollowing(userId, receiverId);
+        }
 
         Message message = new Message();
         message.setConversationId(conversationId);
@@ -153,7 +186,7 @@ public class MessageService {
         message.setType("text");
         message.setSourceLang(detectLanguage(content));
         message.setIsRead(false);
-        Message saved = messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
 
         conversation.setLastMessage(content);
         conversation.setLastMessageTime(new Date());
@@ -164,28 +197,27 @@ public class MessageService {
         }
         conversationRepository.save(conversation);
 
-        return toMessageMap(saved, userId);
+        return toMessageMap(savedMessage, userId);
     }
 
     public List<Map<String, Object>> getMessages(String username, Long conversationId) {
         Long userId = findUserId(username);
         Conversation conversation = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new RuntimeException("会话不存在"));
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
 
         if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
-            throw new RuntimeException("无权限查看消息");
+            throw new RuntimeException("You do not have permission to view this conversation");
         }
 
         List<Message> messages = messageRepository.findByConversationIdOrderByCreateTimeAsc(conversationId);
         return messages.stream()
-            .filter(m -> {
-                if (userId.equals(m.getSenderId())) {
-                    return !Boolean.TRUE.equals(m.getDeletedBySender());
-                } else {
-                    return !Boolean.TRUE.equals(m.getDeletedByReceiver());
+            .filter(message -> {
+                if (userId.equals(message.getSenderId())) {
+                    return !Boolean.TRUE.equals(message.getDeletedBySender());
                 }
+                return !Boolean.TRUE.equals(message.getDeletedByReceiver());
             })
-            .map(m -> toMessageMap(m, userId))
+            .map(message -> toMessageMap(message, userId))
             .collect(Collectors.toList());
     }
 
@@ -193,7 +225,7 @@ public class MessageService {
     public void markAsRead(String username, Long conversationId) {
         Long userId = findUserId(username);
         Conversation conversation = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new RuntimeException("会话不存在"));
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
 
         if (userId.equals(conversation.getUser1Id())) {
             conversation.setUnreadCountUser1(0);
@@ -203,10 +235,10 @@ public class MessageService {
         conversationRepository.save(conversation);
 
         List<Message> messages = messageRepository.findByConversationIdOrderByCreateTimeAsc(conversationId);
-        for (Message m : messages) {
-            if (userId.equals(m.getReceiverId()) && !Boolean.TRUE.equals(m.getIsRead())) {
-                m.setIsRead(true);
-                messageRepository.save(m);
+        for (Message message : messages) {
+            if (userId.equals(message.getReceiverId()) && !Boolean.TRUE.equals(message.getIsRead())) {
+                message.setIsRead(true);
+                messageRepository.save(message);
             }
         }
     }
@@ -218,13 +250,13 @@ public class MessageService {
         Set<Long> fromUserIds = notifications.stream()
             .map(Notification::getFromUserId)
             .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toCollection(HashSet::new));
         Map<Long, User> userMap = userRepository.findAllById(fromUserIds)
             .stream()
-            .collect(Collectors.toMap(User::getId, u -> u));
+            .collect(Collectors.toMap(User::getId, user -> user));
 
         return notifications.stream()
-            .map(n -> toNotificationMap(n, userMap))
+            .map(notification -> toNotificationMap(notification, userMap))
             .collect(Collectors.toList());
     }
 
@@ -232,8 +264,8 @@ public class MessageService {
     public void markNotificationsAsRead(String username, String type) {
         Long userId = findUserId(username);
         List<Notification> notifications = notificationRepository.findByUserIdAndTypeOrderByCreateTimeDesc(userId, type);
-        for (Notification n : notifications) {
-            n.setIsRead(true);
+        for (Notification notification : notifications) {
+            notification.setIsRead(true);
         }
         notificationRepository.saveAll(notifications);
     }
@@ -305,8 +337,12 @@ public class MessageService {
     }
 
     private Long findUserId(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("用户不存在"));
-        return user.getId();
+        return findUser(username).getId();
+    }
+
+    private User findUser(String username) {
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User does not exist"));
     }
 
     private void ensureFollowing(Long followerId, Long followingId) {
@@ -321,14 +357,51 @@ public class MessageService {
         }
     }
 
+    private boolean requiresFollowing(Conversation conversation) {
+        return "chat".equals(defaultString(conversation.getType()));
+    }
+
     private String displayName(User user) {
         if (user == null) {
-            return "未知用户";
+            return "Unknown user";
         }
         if (StringUtils.hasText(user.getNickname())) {
             return user.getNickname();
         }
         return defaultString(user.getUsername());
+    }
+
+    private String conversationName(User currentUser, User otherUser, String type) {
+        if ("service".equals(type) && !isAdmin(currentUser)) {
+            return "在线客服";
+        }
+        return displayName(otherUser);
+    }
+
+    private boolean isAdmin(User user) {
+        return user != null && "admin".equalsIgnoreCase(user.getRole());
+    }
+
+    private User findAvailableServiceAdmin(Long requesterId) {
+        return userRepository.findByRoleAndStatusAndIsSuperAdminOrderByCreateTimeAsc("admin", 1, 0)
+            .stream()
+            .filter(admin -> admin.getId() != null && !admin.getId().equals(requesterId))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("暂无可用客服，请稍后再试"));
+    }
+
+    private Map<String, Object> buildConversationDetail(User currentUser, Conversation conversation, User otherUser) {
+        Long otherUserId = currentUser.getId().equals(conversation.getUser1Id())
+            ? conversation.getUser2Id()
+            : conversation.getUser1Id();
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", conversation.getId());
+        result.put("type", defaultString(conversation.getType()));
+        result.put("otherUserId", otherUserId);
+        result.put("otherUserName", displayName(otherUser));
+        result.put("otherUserAvatar", avatarOf(otherUser));
+        result.put("name", conversationName(currentUser, otherUser, defaultString(conversation.getType())));
+        return result;
     }
 
     private String avatarOf(User user) {
@@ -360,12 +433,12 @@ public class MessageService {
         total += getUnreadCommentCount(userId);
         total += getUnreadCollectionCount(userId);
 
-        List<Conversation> chatConversations = conversationRepository.findChatConversationsByUserId(userId);
-        for (Conversation conv : chatConversations) {
-            if (userId.equals(conv.getUser1Id())) {
-                total += safeInt(conv.getUnreadCountUser1());
+        List<Conversation> directConversations = conversationRepository.findDirectConversationsByUserId(userId);
+        for (Conversation conversation : directConversations) {
+            if (userId.equals(conversation.getUser1Id())) {
+                total += safeInt(conversation.getUnreadCountUser1());
             } else {
-                total += safeInt(conv.getUnreadCountUser2());
+                total += safeInt(conversation.getUnreadCountUser2());
             }
         }
 
@@ -376,10 +449,10 @@ public class MessageService {
     public void deleteConversation(String username, Long conversationId) {
         Long userId = findUserId(username);
         Conversation conversation = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new RuntimeException("会话不存在"));
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
 
         if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
-            throw new RuntimeException("无权限删除此会话");
+            throw new RuntimeException("You do not have permission to delete this conversation");
         }
 
         messageRepository.deleteByConversationId(conversationId);
@@ -397,17 +470,17 @@ public class MessageService {
     public void deleteMessage(String username, Long messageId) {
         Long userId = findUserId(username);
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("消息不存在"));
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
 
         if (!userId.equals(message.getSenderId()) && !userId.equals(message.getReceiverId())) {
-            throw new RuntimeException("无权限删除此消息");
+            throw new RuntimeException("You do not have permission to delete this message");
         }
 
         Long conversationId = message.getConversationId();
         boolean wasLastMessage = false;
-        
+
         Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
-        if (conversation != null && message.getContent().equals(conversation.getLastMessage())) {
+        if (conversation != null && Objects.equals(message.getContent(), conversation.getLastMessage())) {
             wasLastMessage = true;
         }
 
@@ -432,19 +505,19 @@ public class MessageService {
         List<Message> messages = messageRepository.findByConversationIdOrderByCreateTimeDesc(conversation.getId());
         String newLastMessage = "";
         Date newLastMessageTime = null;
-        
-        for (Message m : messages) {
-            boolean visibleToUser = userId.equals(m.getSenderId()) 
-                ? !Boolean.TRUE.equals(m.getDeletedBySender())
-                : !Boolean.TRUE.equals(m.getDeletedByReceiver());
-            
+
+        for (Message message : messages) {
+            boolean visibleToUser = userId.equals(message.getSenderId())
+                ? !Boolean.TRUE.equals(message.getDeletedBySender())
+                : !Boolean.TRUE.equals(message.getDeletedByReceiver());
+
             if (visibleToUser) {
-                newLastMessage = m.getContent();
-                newLastMessageTime = m.getCreateTime();
+                newLastMessage = message.getContent();
+                newLastMessageTime = message.getCreateTime();
                 break;
             }
         }
-        
+
         conversation.setLastMessage(newLastMessage);
         conversation.setLastMessageTime(newLastMessageTime);
         conversationRepository.save(conversation);
@@ -454,15 +527,15 @@ public class MessageService {
     public Map<String, Object> recallMessage(String username, Long messageId) {
         Long userId = findUserId(username);
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("消息不存在"));
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
 
         if (!userId.equals(message.getSenderId())) {
-            throw new RuntimeException("只能撤销自己发送的消息");
+            throw new RuntimeException("You can only recall messages sent by yourself");
         }
 
         long timeDiff = System.currentTimeMillis() - message.getCreateTime().getTime();
         if (timeDiff > 2 * 60 * 1000) {
-            throw new RuntimeException("消息发送超过2分钟，无法撤销");
+            throw new RuntimeException("Messages can only be recalled within 2 minutes");
         }
 
         String redisKey = "recall:message:" + messageId;
@@ -492,10 +565,10 @@ public class MessageService {
     public Map<String, Object> translateMessage(String username, Long messageId, String targetLang) {
         Long userId = findUserId(username);
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("消息不存在"));
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
 
         if (!userId.equals(message.getSenderId()) && !userId.equals(message.getReceiverId())) {
-            throw new RuntimeException("无权限翻译此消息");
+            throw new RuntimeException("You do not have permission to translate this message");
         }
 
         String sourceLang = message.getSourceLang();
