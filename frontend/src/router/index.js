@@ -248,6 +248,12 @@ const routes = [
     ]
   },
   {
+    path: '/unban-application',
+    name: 'unban-application',
+    component: () => import('../views/UnbanApplicationView.vue'),
+    meta: { title: '账号解封申请 - YayFolk' }
+  },
+  {
     path: '/merchant',
     component: () => import('../views/merchant/MerchantLayout.vue'),
     meta: { requiresAuth: true },

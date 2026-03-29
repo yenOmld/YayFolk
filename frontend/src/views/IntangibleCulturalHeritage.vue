@@ -1,192 +1,341 @@
 <template>
-  <div class="official-page">
-    <div class="page-header">
-      <h2 class="page-title">非遗文化 · 官方宣传</h2>
-      <p class="page-subtitle">传承与创新，让文化之光跨越山海</p>
-    </div>
-    <div class="hero-carousel" @mouseenter="pauseCarousel" @mouseleave="resumeCarousel">
-      <div class="slides" :style="{ transform: 'translateX(' + (-currentSlide*100) + '%)'}">
-        <div class="slide" v-for="(img,i) in carouselImages" :key="i">
-          <img :src="img" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event, i)" />
+  <div class="promotion-page">
+    <div class="banner-section" id="banner">
+      <div class="banner-bg"></div>
+      <div class="banner-content">
+        <div class="banner-subtitle">传承千年文化</div>
+        <h1 class="banner-title">非遗文化</h1>
+        <p class="banner-desc">守护中华文明瑰宝，弘扬传统匠心精神</p>
+        <div class="banner-btns">
+          <button class="btn-primary" @click="scrollToSection('about')">了解更多</button>
+          <button class="btn-secondary" @click="scrollToSection('events')">查看活动</button>
         </div>
       </div>
-      <div class="hot hot-left"></div>
-      <div class="hot hot-right"></div>
-      <button class="nav prev" @click.stop="prevSlide"><i class='bx bx-chevron-left'></i></button>
-      <button class="nav next" @click.stop="nextSlide"><i class='bx bx-chevron-right'></i></button>
-      <div class="dots">
-        <span v-for="(img,i) in carouselImages" :key="'d'+i" :class="{active: i===currentSlide}" @click.stop="goSlide(i)"></span>
+      <div class="scroll-hint">
+        <span>向下滚动</span>
+        <i class='bx bx-chevron-down'></i>
       </div>
     </div>
-    <h3 class="section-title" style="margin: 30px auto 10px;">非遗介绍</h3>
-    <div class="stars-container">
-      <div class="star star-1 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('papercut')">
-        <div class="flower-mask-border"></div> <!-- 扇形窗户边框 -->
-        <div class="flower-mask-cover"></div> <!-- 扇形遮罩覆盖层 -->
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="intro">
-          <h4>剪纸</h4>
-          <p>以纸为载体的民间装饰艺术，寓意吉祥与祝福。</p>
+
+    <div class="about-section animate-section" id="about">
+      <div class="parallax-bg parallax-bg-1"></div>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">关于我们</span>
+          <h2 class="section-title">传承非遗，守护文明</h2>
         </div>
-        <div class="ich-sheet" v-if="modalSlug==='papercut'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
+        <div class="about-content">
+          <div class="about-text animate-left">
+          <p>我们致力于保护和传承非物质文化遗产，通过展览、教育、研究等多种方式，让更多人了解和热爱非遗文化。</p>
+          <p>我们汇集了来自全国各地的非遗技艺，包括传统工艺、戏曲、音乐、舞蹈等多个门类，为您呈现一场文化盛宴。</p>
+          <div class="about-stats">
+            <div class="stat-item animate-item" style="animation-delay: 0.1s">
+              <div class="stat-number">100+</div>
+              <div class="stat-label">非遗项目</div>
+            </div>
+            <div class="stat-item animate-item" style="animation-delay: 0.2s">
+              <div class="stat-number">50+</div>
+              <div class="stat-label">传承人</div>
+            </div>
+            <div class="stat-item animate-item" style="animation-delay: 0.3s">
+              <div class="stat-number">1000+</div>
+              <div class="stat-label">精品作品</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="star star-2 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('shadowplay')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>皮影</h4>
-          <p>光与影的戏剧表达，纸与皮的巧妙联动。</p>
+          <div class="about-image animate-right">
+            <img src="/heritage/202601-养心殿-冬季-.png" alt="关于我们" />
+          </div>
         </div>
-        <div class="ich-sheet" v-if="modalSlug==='shadowplay'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-3 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('nianhua')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>年画</h4>
-          <p>木版年画记录节俗记忆，守护万家团圆的色彩。</p>
-        </div>
-        <div class="ich-sheet" v-if="modalSlug==='nianhua'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-4 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('embroidery')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>刺绣</h4>
-          <p>丝线绘纹样，针法织匠心，凝结工艺之美。</p>
-        </div>
-        <div class="ich-sheet" v-if="modalSlug==='embroidery'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-5 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('dragon')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>龙舞</h4>
-          <p>节庆祈愿的舞乐传统，激荡人心的生活礼赞。</p>
-        </div>
-        <div class="ich-sheet" v-if="modalSlug==='dragon'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-6 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('kite')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>风筝</h4>
-          <p>工艺与风的艺术，从指尖飞向天空的童趣。</p>
-        </div>
-        <div class="ich-sheet" v-if="modalSlug==='kite'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-7 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('opera')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>戏曲</h4>
-          <p>唱念做打凝练百戏之美，水袖翻飞传古今。</p>
-        </div>
-        <div class="ich-sheet" v-if="modalSlug==='opera'" @click.stop>
-          <button class="sheet-close" @click.stop="closeModal"><i class='bx bx-x'></i></button>
-          <h3 class="ich-title">{{ modalTitle }}</h3>
-          <p class="ich-desc">{{ modalDesc }}</p>
-        </div>
-      </div>
-      <div class="star star-10b flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('batik')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>蜡染</h4>
-          <p>以蜡为墨，绘染成画，古老技艺的现代传承。</p>
-        </div>
-      </div>
-      <div class="star star-8 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('ceramic')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>瓷艺</h4>
-          <p>泥与火的艺术，釉色与纹样凝练东方美学。</p>
-        </div>
-      </div>
-      <div class="star star-9 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('woodcarving')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>木雕</h4>
-          <p>刀与木的对话，纹理间诉说匠人的故事。</p>
-        </div>
-      </div>
-      <div class="star star-10 flower-mask" @mouseenter="playVideo" @mouseleave="pauseVideo" @click="openDetail('tie-dye')">
-        <img :src="chinaImg" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event)" />
-        <video muted loop playsinline preload="metadata" src="/videos/中国风背景.mp4"></video>
-        <div class="flower-mask-border"></div>
-        <div class="intro">
-          <h4>扎染</h4>
-          <p>绳结与染液交织的蓝白之美，流淌生活智慧。</p>
-        </div>
-      </div>
-      
-      <div class="star star-11 flower-mask">
-        <div class="red-placeholder">
-          <span class="placeholder-text">敬请期待</span>
-        </div>
-        <div class="flower-mask-border"></div>
       </div>
     </div>
-    <div v-if="modalVisible" class="ich-modal" @click.self="closeModal">
-      <div class="ich-modal-content">
-        <button class="modal-close" @click="closeModal">
+
+    <div class="features-section animate-section">
+      <div class="parallax-bg parallax-bg-2"></div>
+      <div class="container">
+        <div class="section-header centered animate-up">
+          <span class="section-label">核心板块</span>
+          <h2 class="section-title">探索非遗文化</h2>
+        </div>
+        <div class="features-grid">
+          <div class="feature-item animate-item" style="animation-delay: 0.1s; cursor: pointer;" @click="scrollToSection('events')">
+            <div class="feature-icon">
+              <i class='bx bx-calendar-event'></i>
+            </div>
+            <h3>活动宣传</h3>
+            <p>精彩活动预告，邀您共赏非遗文化盛宴</p>
+          </div>
+          <div class="feature-item animate-item" style="animation-delay: 0.2s; cursor: pointer;" @click="scrollToSection('knowledge')">
+            <div class="feature-icon">
+              <i class='bx bx-book-reader'></i>
+            </div>
+            <h3>非遗科普</h3>
+            <p>深入了解非遗知识，传承传统文化精髓</p>
+          </div>
+          <div class="feature-item animate-item" style="animation-delay: 0.3s; cursor: pointer;" @click="scrollToSection('gallery')">
+            <div class="feature-icon">
+              <i class='bx bx-gift'></i>
+            </div>
+            <h3>作品展示</h3>
+            <p>欣赏非遗精品，感受匠心独运的魅力</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="events-section animate-section" id="events">
+      <div class="parallax-bg parallax-bg-3"></div>
+      <div class="container">
+        <div class="section-header centered animate-up">
+          <span class="section-label">精彩活动</span>
+          <h2 class="section-title">活动宣传</h2>
+        </div>
+        <div class="events-list">
+          <div class="event-item animate-up" style="animation-delay: 0.1s">
+            <div class="event-image">
+              <img src="https://picsum.photos/seed/event1/500/350" alt="活动1" />
+              <div class="event-tag">热门</div>
+            </div>
+            <div class="event-content">
+              <div class="event-meta">
+                <span class="event-date"><i class='bx bx-calendar'></i> 2026年4月1日 - 6月30日</span>
+                <span class="event-location"><i class='bx bx-map'></i> 非遗文化中心</span>
+              </div>
+              <h3 class="event-title">非遗文化大展</h3>
+              <p class="event-desc">汇集百项非遗技艺，展现中华文明瑰宝，邀您共赏文化盛宴</p>
+              <button class="event-link" @click="goToEventDetail('exhibition')">
+                查看详情 <i class='bx bx-right-arrow-alt'></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="event-item animate-up" style="animation-delay: 0.2s">
+            <div class="event-image">
+              <img src="https://picsum.photos/seed/event2/500/350" alt="活动2" />
+            </div>
+            <div class="event-content">
+              <div class="event-meta">
+                <span class="event-date"><i class='bx bx-calendar'></i> 每周六、周日</span>
+                <span class="event-location"><i class='bx bx-map'></i> 非遗体验中心</span>
+              </div>
+              <h3 class="event-title">非遗体验工坊</h3>
+              <p class="event-desc">亲手体验传统技艺，感受匠人精神，获得独特文化体验</p>
+              <button class="event-link" @click="goToEventDetail('workshop')">
+                查看详情 <i class='bx bx-right-arrow-alt'></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="event-item animate-up" style="animation-delay: 0.3s">
+            <div class="event-image">
+              <img src="https://picsum.photos/seed/event3/500/350" alt="活动3" />
+            </div>
+            <div class="event-content">
+              <div class="event-meta">
+                <span class="event-date"><i class='bx bx-calendar'></i> 每月第一周周五</span>
+                <span class="event-location"><i class='bx bx-map'></i> 非遗文化讲堂</span>
+              </div>
+              <h3 class="event-title">非遗文化讲座</h3>
+              <p class="event-desc">专家学者深度解读，探索非遗奥秘，传承文化精髓</p>
+              <button class="event-link" @click="goToEventDetail('lecture')">
+                查看详情 <i class='bx bx-right-arrow-alt'></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="knowledge-section animate-section" id="knowledge">
+      <div class="parallax-bg parallax-bg-4"></div>
+      <div class="container">
+        <div class="section-header centered animate-up">
+          <span class="section-label">非遗知识</span>
+          <h2 class="section-title">非遗科普</h2>
+        </div>
+        <div class="knowledge-list">
+          <div class="knowledge-card animate-item" style="animation-delay: 0.1s; cursor: pointer;" @click="openKnowledgeModal(0)" @mouseenter="handleCardMouseEnter(0)" @mouseleave="handleCardMouseLeave(0)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[0].image" :alt="knowledgeData[0].title" class="knowledge-image" />
+              <video v-if="knowledgeData[0].video" :src="knowledgeData[0].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-cut'></i>
+            </div>
+            <h3>剪纸艺术</h3>
+            <p>中国最古老的民间艺术之一，以纸为载体，通过剪刻技法创造精美图案</p>
+          </div>
+          <div class="knowledge-card animate-item" style="animation-delay: 0.2s; cursor: pointer;" @click="openKnowledgeModal(1)" @mouseenter="handleCardMouseEnter(1)" @mouseleave="handleCardMouseLeave(1)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[1].image" :alt="knowledgeData[1].title" class="knowledge-image" />
+              <video v-if="knowledgeData[1].video" :src="knowledgeData[1].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-palette'></i>
+            </div>
+            <h3>景泰蓝</h3>
+            <p>又称铜胎掐丝珐琅，是中国著名的特种金属工艺品之一</p>
+          </div>
+          <div class="knowledge-card animate-item" style="animation-delay: 0.3s; cursor: pointer;" @click="openKnowledgeModal(2)" @mouseenter="handleCardMouseEnter(2)" @mouseleave="handleCardMouseLeave(2)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[2].image" :alt="knowledgeData[2].title" class="knowledge-image" />
+              <video v-if="knowledgeData[2].video" :src="knowledgeData[2].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-paint'></i>
+            </div>
+            <h3>苏绣</h3>
+            <p>中国四大名绣之一，以精细的针法和秀丽的色彩著称</p>
+          </div>
+          <div class="knowledge-card animate-item" style="animation-delay: 0.4s; cursor: pointer;" @click="openKnowledgeModal(3)" @mouseenter="handleCardMouseEnter(3)" @mouseleave="handleCardMouseLeave(3)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[3].image" :alt="knowledgeData[3].title" class="knowledge-image" />
+              <video v-if="knowledgeData[3].video" :src="knowledgeData[3].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-music'></i>
+            </div>
+            <h3>古琴艺术</h3>
+            <p>中国最古老的弹拨乐器之一，被誉为"琴棋书画"四艺之首</p>
+          </div>
+          <div class="knowledge-card animate-item" style="animation-delay: 0.5s; cursor: pointer;" @click="openKnowledgeModal(4)" @mouseenter="handleCardMouseEnter(4)" @mouseleave="handleCardMouseLeave(4)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[4].image" :alt="knowledgeData[4].title" class="knowledge-image" />
+              <video v-if="knowledgeData[4].video" :src="knowledgeData[4].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-coffee'></i>
+            </div>
+            <h3>茶道</h3>
+            <p>通过品茶艺术来修身养性、品味人生的一种高雅文化</p>
+          </div>
+          <div class="knowledge-card animate-item" style="animation-delay: 0.6s; cursor: pointer;" @click="openKnowledgeModal(5)" @mouseenter="handleCardMouseEnter(5)" @mouseleave="handleCardMouseLeave(5)">
+            <div class="knowledge-media">
+              <img :src="knowledgeData[5].image" :alt="knowledgeData[5].title" class="knowledge-image" />
+              <video v-if="knowledgeData[5].video" :src="knowledgeData[5].video" class="knowledge-video" muted loop playsinline></video>
+            </div>
+            <div class="knowledge-icon">
+              <i class='bx bx-book'></i>
+            </div>
+            <h3>书法篆刻</h3>
+            <p>汉字特有的传统艺术形式，融合了书写与雕刻技艺</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gallery-section animate-section" id="gallery">
+      <div class="parallax-bg parallax-bg-5"></div>
+      <div class="container">
+        <div class="section-header centered animate-up">
+          <span class="section-label">精品展示</span>
+          <h2 class="section-title">非遗作品展示</h2>
+        </div>
+        <div class="gallery-grid">
+          <div class="gallery-item animate-item" style="animation-delay: 0.1s">
+            <img src="https://picsum.photos/seed/gallery1/400/400" alt="作品1" />
+            <div class="gallery-overlay">
+              <h4>青花瓷瓶</h4>
+              <p>景德镇传统工艺</p>
+            </div>
+          </div>
+          <div class="gallery-item animate-item" style="animation-delay: 0.2s">
+            <img src="https://picsum.photos/seed/gallery2/400/400" alt="作品2" />
+            <div class="gallery-overlay">
+              <h4>双面绣屏</h4>
+              <p>苏绣精品</p>
+            </div>
+          </div>
+          <div class="gallery-item animate-item" style="animation-delay: 0.3s">
+            <img src="https://picsum.photos/seed/gallery3/400/400" alt="作品3" />
+            <div class="gallery-overlay">
+              <h4>雕漆茶具</h4>
+              <p>北京雕漆工艺</p>
+            </div>
+          </div>
+          <div class="gallery-item animate-item" style="animation-delay: 0.4s">
+            <img src="https://picsum.photos/seed/gallery4/400/400" alt="作品4" />
+            <div class="gallery-overlay">
+              <h4>景泰蓝香炉</h4>
+              <p>宫廷御制工艺</p>
+            </div>
+          </div>
+          <div class="gallery-item animate-item" style="animation-delay: 0.5s">
+            <img src="https://picsum.photos/seed/gallery5/400/400" alt="作品5" />
+            <div class="gallery-overlay">
+              <h4>玉雕摆件</h4>
+              <p>苏州玉雕</p>
+            </div>
+          </div>
+          <div class="gallery-item animate-item" style="animation-delay: 0.6s">
+            <img src="https://picsum.photos/seed/gallery6/400/400" alt="作品6" />
+            <div class="gallery-overlay">
+              <h4>缂丝团扇</h4>
+              <p>苏州缂丝</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-section animate-section">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <h3>非遗文化</h3>
+            <p>传承千年匠心，守护中华文明</p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-column">
+              <h4>快速链接</h4>
+              <a href="#">首页</a>
+              <a href="#events">活动宣传</a>
+              <a href="#">非遗科普</a>
+              <a href="#">作品展示</a>
+            </div>
+            <div class="footer-column">
+              <h4>联系方式</h4>
+              <a href="#"><i class='bx bx-phone'></i> 010-12345678</a>
+              <a href="#"><i class='bx bx-envelope'></i> contact@gugong.com</a>
+              <a href="#"><i class='bx bx-map'></i> 北京市东城区景山前街4号</a>
+            </div>
+            <div class="footer-column">
+              <h4>关注我们</h4>
+              <div class="social-links">
+                <a href="#"><i class='bx bxl-wechat'></i></a>
+                <a href="#"><i class='bx bxl-weibo'></i></a>
+                <a href="#"><i class='bx bxl-qq'></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 故宫·非遗文化 版权所有</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 非遗科普详情弹窗 -->
+    <div class="modal-overlay" v-if="showKnowledgeModal" @click="closeKnowledgeModal">
+      <div class="modal-content" @click.stop>
+        <button class="modal-close" @click="closeKnowledgeModal">
           <i class='bx bx-x'></i>
         </button>
-        <h3 class="ich-title">{{ modalTitle }}</h3>
-        <p class="ich-desc">{{ modalDesc }}</p>
-      </div>
-    </div>
-    <h3 class="section-title works-title">作品展示</h3>
-    <div class="ich-marquee" @mouseenter="pauseMarquee" @mouseleave="resumeMarquee">
-      <div class="marquee-track" :style="{ animationPlayState: marqueePaused ? 'paused' : 'running' }">
-        <div
-          v-for="(img, i) in marqueeLoop"
-          :key="'m'+i"
-          class="marquee-item flower-mask"
-          @click="openBottomSheet(i % marqueeImages.length)"
-        >
-          <img :src="img" alt="" loading="lazy" referrerpolicy="no-referrer" @error="onImgError($event, i)" />
-          <div class="flower-mask-border"></div>
-          <div class="item-sheet" v-if="bottomSheetIndex=== (i % marqueeImages.length)">
-            <button class="sheet-close" @click.stop="closeBottomSheet"><i class='bx bx-x'></i></button>
-            <h4 class="sheet-title">{{ bottomTitle }}</h4>
-            <p class="sheet-desc">{{ bottomDesc }}</p>
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i :class="selectedKnowledge.icon"></i>
+          </div>
+          <h2>{{ selectedKnowledge.title }}</h2>
+        </div>
+        <div class="modal-body">
+          <p>{{ selectedKnowledge.description }}</p>
+          <div class="modal-details">
+            <h3>历史渊源</h3>
+            <p>{{ selectedKnowledge.history }}</p>
+            <h3>工艺特点</h3>
+            <p>{{ selectedKnowledge.features }}</p>
+            <h3>文化价值</h3>
+            <p>{{ selectedKnowledge.value }}</p>
           </div>
         </div>
       </div>
@@ -195,921 +344,1067 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { onMounted, onUnmounted, ref } from 'vue'
 
-const fallbackImage = '/1.png'
-const chinaImg = fallbackImage
-const carouselImages = [
-  '/1.png',
-  '/1.png?slide=2',
-  '/1.png?slide=3',
-  '/1.png?slide=4'
+const router = useRouter()
+
+const showKnowledgeModal = ref(false)
+const selectedKnowledge = ref({})
+
+const knowledgeData = [
+  {
+    id: 'paper-cut',
+    icon: 'bx bx-cut',
+    title: '剪纸艺术',
+    description: '中国最古老的民间艺术之一，以纸为载体，通过剪刻技法创造精美图案',
+    history: '剪纸艺术起源于汉代，距今已有两千多年历史。唐代时期剪纸艺术达到鼎盛，明清时期更是广泛流传于民间。',
+    features: '剪纸主要使用剪刀或刻刀，通过镂空、阳刻、阴刻等技法，创造出丰富多样的图案。题材涵盖花鸟、人物、故事等。',
+    value: '剪纸艺术是中华民族珍贵的文化遗产，体现了劳动人民的智慧和审美情趣，2009年被列入联合国教科文组织人类非物质文化遗产代表作名录。',
+    image: 'https://picsum.photos/seed/papercut/400/300',
+    video: '/heritage/剪纸.mp4'
+  },
+  {
+    id: 'cloisonne',
+    icon: 'bx bx-palette',
+    title: '景泰蓝',
+    description: '又称铜胎掐丝珐琅，是中国著名的特种金属工艺品之一',
+    history: '景泰蓝起源于元代，盛行于明朝景泰年间，因釉色多以蓝色为主，故名"景泰蓝"。清代达到工艺巅峰。',
+    features: '景泰蓝制作工艺复杂，包括制胎、掐丝、点蓝、烧蓝、打磨、镀金等多道工序。成品色彩艳丽、金碧辉煌。',
+    value: '景泰蓝是中国宫廷艺术的代表，融合了中国传统工艺与外来技法，具有极高的艺术价值和收藏价值。',
+    image: 'https://picsum.photos/seed/cloisonne/400/300',
+    video: '/heritage/剪纸.mp4'
+  },
+  {
+    id: 'su-embroidery',
+    icon: 'bx bx-paint',
+    title: '苏绣',
+    description: '中国四大名绣之一，以精细的针法和秀丽的色彩著称',
+    history: '苏绣起源于苏州，历史可追溯至春秋时期。明清时期苏绣技艺达到巅峰，成为皇家贡品。',
+    features: '苏绣以针代笔，以线代墨，针法多达40余种。作品细腻逼真，色彩清雅，具有"平、齐、细、密、匀、顺、和、光"八大特点。',
+    value: '苏绣是江南文化的瑰宝，体现了中国传统女红的最高成就，被誉为"东方艺术明珠"。',
+    image: 'https://picsum.photos/seed/suembroidery/400/300',
+    video: '/heritage/剪纸.mp4'
+  },
+  {
+    id: 'guqin',
+    icon: 'bx bx-music',
+    title: '古琴艺术',
+    description: '中国最古老的弹拨乐器之一，被誉为"琴棋书画"四艺之首',
+    history: '古琴有三千多年历史，传说为伏羲所创。孔子、司马相如、诸葛亮等历史名人都是古琴大师。',
+    features: '古琴有七弦十三徽，音色深沉悠远。演奏技法丰富，讲究"和、静、清、远、古、淡、恬、逸"的审美意境。',
+    value: '古琴艺术是中国传统文化的象征，2003年被列入联合国教科文组织人类口头和非物质遗产代表作。',
+    image: 'https://picsum.photos/seed/guqin/400/300',
+    video: '/heritage/剪纸.mp4'
+  },
+  {
+    id: 'tea-ceremony',
+    icon: 'bx bx-coffee',
+    title: '茶道',
+    description: '通过品茶艺术来修身养性、品味人生的一种高雅文化',
+    history: '中国茶道兴于唐，盛于宋，明清时期达到鼎盛。唐代陆羽著《茶经》，是世界上第一部茶叶专著。',
+    features: '茶道讲究"和、敬、清、寂"，通过备器、择水、取火、候汤、习茶等程序，达到心灵的宁静与升华。',
+    value: '茶道是中国传统文化的重要组成部分，体现了中国人的生活智慧和审美追求，影响遍及东亚乃至世界。',
+    image: 'https://picsum.photos/seed/tea/400/300',
+    video: '/heritage/剪纸.mp4'
+  },
+  {
+    id: 'calligraphy',
+    icon: 'bx bx-book',
+    title: '书法篆刻',
+    description: '汉字特有的传统艺术形式，融合了书写与雕刻技艺',
+    history: '中国书法始于甲骨文，历经篆、隶、楷、行、草等书体演变。王羲之、颜真卿、苏轼等都是书法史上的巨匠。',
+    features: '书法以毛笔为工具，通过笔法、字法、章法、墨法的运用，展现汉字的美感。篆刻则以刀代笔，在印章上刻写文字。',
+    value: '书法篆刻是中华文化的核心艺术，被誉为"无言的诗，无行的舞，无图的画，无声的乐"。',
+    image: 'https://picsum.photos/seed/calligraphy/400/300',
+    video: '/heritage/剪纸.mp4'
+  }
 ]
-const marqueeImages = [
-  '/1.png?work=1',
-  '/1.png?work=2',
-  '/1.png?work=3',
-  '/1.png?work=4',
-  '/1.png?work=5',
-  '/1.png?work=6'
-]
-const heritageMap = {
-  papercut: {
-    title: '剪纸',
-    desc: '以纸为载体的民间装饰艺术，通过镂空与剪刻表达吉祥寓意，常见于节庆与礼俗场景。'
-  },
-  shadowplay: {
-    title: '皮影',
-    desc: '借助灯光、唱腔与操偶形成独特叙事，是口头传统、表演艺术与工艺制作的综合表达。'
-  },
-  nianhua: {
-    title: '年画',
-    desc: '木版年画以鲜明色彩记录节俗记忆，承载祈福、迎新与地方审美传统。'
-  },
-  embroidery: {
-    title: '刺绣',
-    desc: '不同针法在织物上塑造纹样与层次，体现细腻手工与东方工艺美学。'
-  },
-  dragon: {
-    title: '龙舞',
-    desc: '节庆礼俗中的集体表演形式，以腾跃翻转的动态节奏传递祈愿与欢庆。'
-  },
-  kite: {
-    title: '风筝',
-    desc: '将结构、绘制与放飞技巧结合起来，是工艺与童趣并存的传统民俗项目。'
-  },
-  opera: {
-    title: '戏曲',
-    desc: '唱念做打凝练百戏之美，以程式化表演、服饰与唱腔保留传统舞台艺术。'
-  },
-  ceramic: {
-    title: '瓷艺',
-    desc: '泥与火反复淬炼出的器物工艺，在釉色、造型与纹饰中沉淀生活智慧。'
-  },
-  woodcarving: {
-    title: '木雕',
-    desc: '以刀代笔，在木材纹理中塑造人物、花鸟与故事，展现匠人的造型能力。'
-  },
-  'tie-dye': {
-    title: '扎染',
-    desc: '通过扎结、缝缀与浸染形成层层晕染纹样，保留天然质感与生活温度。'
-  },
-  batik: {
-    title: '蜡染',
-    desc: '以蜡为媒介控制染色区域，形成独特防染纹理，是少数民族传统工艺的重要代表。'
-  },
-  default: {
-    title: '非遗文化',
-    desc: '非遗是可被感知、可被实践、也可继续生长的文化记忆，连接地方生活与代际传承。'
-  }
+
+const openKnowledgeModal = (index) => {
+  selectedKnowledge.value = knowledgeData[index]
+  showKnowledgeModal.value = true
+  document.body.style.overflow = 'hidden'
 }
 
-const currentSlide = ref(0)
-let carouselTimer = null
-const modalVisible = ref(false)
-const modalSlug = ref('')
-const modalTitle = ref('')
-const modalDesc = ref('')
-const marqueePaused = ref(false)
-const bottomSheetIndex = ref(-1)
-const bottomTitle = ref('非遗作品')
-const bottomDesc = ref('以匠心与传承为谱，书写在生活中的艺术。')
-const marqueeLoop = [...marqueeImages, ...marqueeImages, ...marqueeImages, ...marqueeImages]
-
-const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % carouselImages.length
+const closeKnowledgeModal = () => {
+  showKnowledgeModal.value = false
+  document.body.style.overflow = ''
 }
 
-const prevSlide = () => {
-  currentSlide.value = (currentSlide.value - 1 + carouselImages.length) % carouselImages.length
-}
-
-const goSlide = (index) => {
-  currentSlide.value = index
-}
-
-const stopCarousel = () => {
-  if (!carouselTimer) {
-    return
-  }
-  clearInterval(carouselTimer)
-  carouselTimer = null
-}
-
-const startCarousel = () => {
-  stopCarousel()
-  carouselTimer = setInterval(nextSlide, 4000)
-}
-
-const pauseCarousel = () => stopCarousel()
-const resumeCarousel = () => startCarousel()
-
-const onImgError = (event) => {
-  if (event?.target) {
-    event.target.src = fallbackImage
-  }
-}
-
-const playVideo = (event) => {
-  const video = event.currentTarget.querySelector('video')
+const handleCardMouseEnter = (index) => {
+  const video = document.querySelector(`.knowledge-card:nth-child(${index + 1}) .knowledge-video`)
   if (video) {
     video.play().catch(() => {})
   }
 }
 
-const pauseVideo = (event) => {
-  const video = event.currentTarget.querySelector('video')
+const handleCardMouseLeave = (index) => {
+  const video = document.querySelector(`.knowledge-card:nth-child(${index + 1}) .knowledge-video`)
   if (video) {
     video.pause()
+    video.currentTime = 0
   }
 }
 
-const openDetail = (slug) => {
-  const current = heritageMap[slug] || heritageMap.default
-  modalTitle.value = current.title
-  modalDesc.value = current.desc
-  modalSlug.value = ''
-  modalVisible.value = true
+const goToEventDetail = (eventId) => {
+  router.push(`/home/event/${eventId}`)
 }
 
-const closeModal = () => {
-  modalVisible.value = false
-  modalSlug.value = ''
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
 }
 
-const pauseMarquee = () => {
-  marqueePaused.value = true
+let observer = null
+let lastScrollY = 0
+
+const handleParallax = () => {
+  const scrollY = window.scrollY
+  lastScrollY = scrollY
+  
+  const bannerBg = document.querySelector('.banner-bg')
+  if (bannerBg) {
+    bannerBg.style.transform = `translateY(${scrollY * 0.4}px)`
+  }
+  
+  const parallaxBgs = document.querySelectorAll('.parallax-bg')
+  parallaxBgs.forEach((bg, index) => {
+    const speed = 0.2 + (index * 0.1)
+    bg.style.transform = `translateY(${scrollY * speed}px)`
+  })
 }
 
-const resumeMarquee = () => {
-  marqueePaused.value = false
-}
-
-const closeBottomSheet = () => {
-  bottomSheetIndex.value = -1
-  marqueePaused.value = false
-}
-
-const openBottomSheet = (index) => {
-  if (bottomSheetIndex.value === index) {
-    closeBottomSheet()
-    return
+const initObserver = () => {
+  const options = {
+    root: null,
+    rootMargin: '0px 0px -100px 0px',
+    threshold: 0.1
   }
 
-  bottomSheetIndex.value = index
-  marqueePaused.value = true
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-active')
+      } else {
+        entry.target.classList.remove('animate-active')
+      }
+    })
+  }, options)
+
+  const animateElements = document.querySelectorAll('.animate-up, .animate-left, .animate-right, .animate-item')
+  animateElements.forEach((el) => observer.observe(el))
 }
 
-onMounted(startCarousel)
-onUnmounted(stopCarousel)
+onMounted(() => {
+  initObserver()
+  window.addEventListener('scroll', handleParallax, { passive: true })
+  handleParallax()
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+  window.removeEventListener('scroll', handleParallax)
+})
 </script>
-  
-  <style scoped>
-  .official-page {
-    min-height: 100vh !important;
-    width: 100% !important;
-    /* 最底层：暗红色背景 */
-    background-color: #5b0e18;
-    
-    /* 背景叠加：顶部装饰图 + 底部栏杆图 */
-    background-image: 
-      url('/videos/屋檐.png'),    /* 顶部透明装饰图 */
-      url('/videos/栏杆.png');    /* 底部栏杆透明图 */
-    
-    background-position: 
-      top center,    /* 顶部图位置 */
-      bottom center; /* 栏杆图：固定在页面最底部 */
-    
-    background-repeat: no-repeat;
-    background-size: 
-      120% 1500px,    /* 屋檐图：拉宽到 120% */
-      100% 1900px;    /* 栏杆图：宽度铺满 */
-    
-    background-attachment: scroll; /* 随页面滚动，只有滑到底才看到完整栏杆 */
-    margin: 0 !important;
-    padding: 50px 0 120px 0; /* 顶部向下移 100px，底部留出足够空间，避免被导航栏遮挡 */
-    
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden; /* 防止横向滚动 */
-  }
-  
-  .hero-carousel {
-    width: min(1100px, 92vw);
-    margin: 100px auto 2vh; /* 顶部增加 50px 间距，使轮播框向下移动 */
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-    position: relative;
-    aspect-ratio: 21/9;
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(6px);
-  }
-  .slides {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform .6s cubic-bezier(0.16,1,0.3,1);
-  }
-  .slide {
-    min-width: 100%;
-    height: 100%;
-  }
-  .slide img {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    object-fit: cover;
-    display: block;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .hot {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 50%;
-    z-index: 1;
-  }
-  .hot-left { left: 0; }
-  .hot-right { right: 0; }
-  .nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.8);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s ease;
-    z-index: 3;
-  }
-  .nav.prev { left: 12px; }
-  .nav.next { right: 12px; }
-  .hot-left:hover ~ .nav.prev { opacity: 1; pointer-events: auto; }
-  .hot-right:hover ~ .nav.next { opacity: 1; pointer-events: auto; }
-  .nav.prev:hover,
-  .nav.next:hover { opacity: 1; pointer-events: auto; }
-  .dots {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 10px;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-  }
-  .dots span {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.6);
-    cursor: pointer;
-    transition: transform .2s ease, background .2s ease;
-  }
-  .dots span.active { background: #ffffff; transform: scale(1.15); }
-  
-  .hero {
-    display: none;
-  }
-  .page-header {
-    width: min(1100px, 92vw);
-    margin: 3vh auto 1vh;
-    text-align: center;
-  }
-  .page-title {
-    font-size: clamp(48px, 7vw, 72px); /* 加大字体 */
-    font-weight: 800;
-    font-style: italic;
-    color: #ffffff;
-    margin: 0;
-  }
-  .page-subtitle {
-    margin: 6px 0 0;
-    color: #ffffff;
-    opacity: 0.9;
-    font-size: clamp(14px, 1.6vw, 16px);
-  }
-  .section-title {
-    text-align: center;
-    width: min(1100px, 92vw);
-    margin: 270px auto 20px; /* 从上边距 220px 改为 270px，整体往下移 50px */
-    font-size: clamp(24px, 3.8vw, 36px);
-    font-weight: 800;
-    color: #ffffff;
-  }
-  
-  /* 作品展示标题专属样式：只移动标题，不影响其他元素 */
-  .works-title {
-    margin: 0px auto 30px; /* 从上边距 00px 下边距 200px 改为上边距 0 下边距 30px，大幅减小间距 */
-  }
-  
-  .stars-container {
-    width: min(1100px, 92vw);
-    margin: 6vh auto 8vh;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 18px;
-    padding: 0 8px;
-  }
-  .star {
-    position: relative;
-    width: 100%;
-    border-radius: 14px;
-    overflow: hidden;
-    /* 移除长方形阴影，只保留花形阴影 */
-    transition: transform .35s ease, box-shadow .35s ease;
-  }
-  
-  /* 花形窗户遮罩效果 */
-  .star.flower-mask {
-    border-radius: 0; /* 移除圆角，使用花形轮廓 */
-    overflow: visible; /* 允许内容溢出显示 */
-    position: relative;
-    background-color: transparent; /* 去掉黑色背景 */
-    /* 使用 drop-shadow 创建花形阴影 */
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
-  }
-  
-  /* 花形窗户边框：透明底，显示边框 */
-  .star.flower-mask .flower-mask-border {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%; /* 放大到 100%，占满容器 */
-    height: 100%; /* 放大到 100%，占满容器 */
-    background-image: url('/videos/花形窗户边框.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    transform: translate(-50%, -50%); /* 居中对齐 */
-    z-index: 110; /* 在最上层，高于所有内容 */
-    pointer-events: none; /* 不影响点击 */
-  }
-  
-  /* 剪纸窗户专属：使用扇形窗户边框 */
-  .star.star-1.flower-mask .flower-mask-border {
-    background-image: url('/videos/扇形窗户边框.PNG');
-    transform: translate(-50%, -50%) scale(2.0); /* 放大 80% */
-  }
-  
-  /* 剪纸窗户专属：使用扇形窗户遮罩 */
-  .star.star-1.flower-mask > img,
-  .star.star-1.flower-mask > video {
-    -webkit-mask-image: url('/videos/扇形窗户.PNG');
-    mask-image: url('/videos/扇形窗户.PNG');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-mode: alpha;
-    mask-mode: alpha;
-    transform: translate(-50%, -50%) scale(2.0); /* 放大 80% */
-  }
-  
-  /* 花形窗户内的图片/视频样式 */
-  .star.flower-mask > img,
-  .star.flower-mask > video {
-    -webkit-mask-image: url('/videos/花形窗户.png');
-    mask-image: url('/videos/花形窗户.png');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-mode: alpha;
-    mask-mode: alpha;
-    /* 关键修改：放大尺寸，让窗户更大 */
-    width: 100%; /* 放大到 100%，占满容器 */
-    height: 100%; /* 放大到 100%，占满容器 */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1); /* 不额外缩放，使用完整尺寸 */
-    object-fit: cover; /* 改为 contain，避免裁剪，优先完整显示 */
-    object-position: center; /* 确保内容居中 */
-  }
-  
-  .star.flower-mask .flower-mask-cover {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100; /* 在最上层 */
-    pointer-events: none;
-  }
-  
-  /* 壁画窗户专属：纯红背景占位符 */
-  .star.star-11.flower-mask .red-placeholder {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    background-color: #4f0915; /* 深红背景 */
-    transform: translate(-50%, -50%);
-    z-index: 50;
-    /* 使用花形遮罩限制显示区域 */
-    -webkit-mask-image: url('/videos/花形窗户.png');
-    mask-image: url('/videos/花形窗户.png');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-mode: alpha;
-    mask-mode: alpha;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .star.star-11.flower-mask .placeholder-text {
-    font-size: 24px;
-    font-weight: 800;
-    color: #ffffff;
-    text-align: center;
-    white-space: nowrap;
-  }
-  
-  /* 文字提示改为透明框形式 - 紧贴边框正下方 */
-  .star.flower-mask .intro {
-    position: absolute;
-    top: 50%; /* 与边框同一起点 */
-    left: 50%; /* 与边框同一起点 */
-    width: 100%; /* 从 80% 改为 100%，与边框同宽 */
-    transform: translate(-50%, calc(-50% + 20%)) !important; /* 居中后，向下移动边框高度 10%，紧贴边框底部 */
-    background: rgba(255, 255, 255, 0); /* 完全透明背景 */
-    color: #fff;
-    padding: 0; /* 移除内边距，让边框紧贴文字 */
-    border-radius: 0; /* 移除圆角 */
-    z-index: 50;
-    pointer-events: none;
-    text-align: center;
-    white-space: normal; /* 允许换行 */
-    opacity: 0; /* 默认隐藏 */
-    transition: opacity 0.3s ease; /* 只保留透明度过渡 */
-  }
-  
-  /* 剪纸窗户专属：文字紧贴放大后的扇形边框 */
-  .star.star-1.flower-mask .intro {
-    transform: translate(-50%, calc(-50% - 28%)) !important; /* 向上移动，紧贴放大后的扇形边框底部 */
-  }
-  
-  /* 鼠标悬停时显示介绍 */
-  .star.flower-mask:hover .intro {
-    opacity: 1; /* 显示 */
-    /* transform 保持不变，由默认样式定义 */
-  }
-  
-  .star.flower-mask .intro h4 {
-    margin: 0 0 2px; /* 减小标题下边距 */
-    font-size: 14px;
-    font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  }
-  
-  .star.flower-mask .intro p {
-    margin: 0;
-    font-size: 11px;
-    opacity: 0.9;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
-  
-  .star img,
-  .star video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .star img {
-    opacity: 1;
-    transition: opacity .35s ease, transform .35s ease;
-  }
-  .star video {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity .35s ease;
-  }
-  .star:hover { 
-    transform: translateY(-4px) scale(1.02); /* 向上移动并轻微放大 */
-  }
-  /* 花形窗户：悬停时放大，保持放大状态 */
-  .star.flower-mask:hover {
-    transform: scale(1.25) translateY(-20px); /* 从 1.2 放大到 1.25，保持向上移动 */
-  }
-  
-  /* 剪纸窗户专属：悬停时弹性扩张，保持向下位移 */
-  .star.star-1.flower-mask:hover {
-    transform: scale(1.25) translateY(80px); /* 放大到 1.25 倍，保持向下 80px 位移 */
-  }
-  .star:hover img { opacity: 0; } /* 移除图片的 scale，避免冲突 */
-  .star:hover video { opacity: 1; }
-  
-  /* 文字介绍不受悬停影响，保持在边框底部 */
-  .star.flower-mask:hover .intro {
-    opacity: 1; /* 只显示，不移动位置 */
-  }
-  .intro {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 14px;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%);
-    color: #fff;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity .3s ease, transform .3s ease;
-    pointer-events: none;
-  }
-  .intro h4 {
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0 0 6px 0;
-  }
-  .intro p {
-    font-size: 13px;
-    line-height: 1.6;
-    margin: 0;
-    opacity: 0.95;
-  }
-  .star:hover .intro { opacity: 1; transform: translateY(0); }
-  
-  /* 俄罗斯方块式错落布局 */
-  /* 第一行：长条方块 */
-  .star-1 { 
-    grid-column: 1 / span 6; /* 从 span 4 改为 span 6，增加容器宽度 */
-    aspect-ratio: 1/1; /* 正方形 */
-    margin-left: 300px; /* 从 250px 改为 300px，向右移动 50px */
-    transform: scale(1.2) translateY(80px); /* 放大到 120%，向下移动 100px（从 -20px 改为 +80px） */
-  }
-  .star-2 { 
-    grid-column: 1 / span 6; /* 改为 span 6，与 star-1 相同 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  .star-3 { 
-    grid-column: 7 / span 6; /* 改为 span 6，放在第二列 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  /* 第二行 */
-  .star-4 { 
-    grid-column: 1 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  .star-5 { 
-    grid-column: 7 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  /* 第三行 */
-  .star-6 { 
-    grid-column: 1 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  .star-7 { 
-    grid-column: 7 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  /* 第四行 */
-  .star-10b { 
-    grid-column: 1 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  .star-8 { 
-    grid-column: 7 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  /* 第五行 */
-  .star-9 { 
-    grid-column: 1 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  .star-10 { 
-    grid-column: 7 / span 6; /* 改为 span 6 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  /* 第六行 */
-  .star-11 { 
-    grid-column: 4 / span 6; /* 从第 4 列开始，span 6 列，居中显示 */
-    aspect-ratio: 1/1; /* 正方形 */
-    transform: scale(1.2) translateY(-20px); /* 放大到 120% */
-  }
-  
-  @media (max-width: 900px) {
-    .stars-container { grid-template-columns: repeat(8, 1fr); gap: 16px; }
-    .star-1 { grid-column: 1 / span 8; }
-    .star-2 { grid-column: 1 / span 4; }
-    .star-3 { grid-column: 5 / span 4; }
-    .star-4 { grid-column: 1 / span 4; }
-    .star-5 { grid-column: 5 / span 4; }
-    .star-6 { grid-column: 1 / span 5; }
-    .star-7 { grid-column: 6 / span 3; }
-    .star-10b { grid-column: 1 / span 5; }
-    .star-8 { grid-column: 6 / span 3; }
-    .star-9 { grid-column: 1 / span 4; }
-    .star-10 { grid-column: 5 / span 4; }
-    .star-11 { grid-column: 1 / span 8; }
-  }
-  @media (max-width: 600px) {
-    .stars-container { grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8vh auto 12vh; }
-    .star { width: 100%; margin: 0; }
-    .star-1, .star-2, .star-3, .star-4, .star-5, .star-6, .star-7,
-    .star-8, .star-9, .star-10,
-    .star-10b, .star-11 { grid-column: 1 / span 4; aspect-ratio: 16/10; }
-    .star-1 { margin-top: 50px; }
-  }
-  .duotone-red {
-    filter: grayscale(1) sepia(1) saturate(8) hue-rotate(-10deg) contrast(1.2) brightness(0.95);
-    mix-blend-mode: multiply;
-  }
-  .ich-sheet {
-    position: absolute;
-    top: 50%; /* 与边框同一起点 */
-    left: 50%; /* 与边框同一起点 */
-    width: 60%; /* 使用 60% 宽度，匹配花形实际可视区域 */
-    height: 60%; /* 使用 60% 高度，匹配花形实际可视区域 */
-    transform: translate(-50%, -50%); /* 居中显示 */
-    background: #4f0915;
-    border-radius: 14px;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.22);
-    padding: 16px 16px 14px;
-    opacity: 1; /* 默认显示，由动画控制 */
-    animation: sheetUp .28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  @keyframes sheetUp {
-    0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  }
-  .sheet-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 10px;
-    background: #f1f5f9;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background .2s ease, transform .2s ease;
-  }
-  .sheet-close:hover { background: #e2e8f0; transform: scale(1.04); }
-  .ich-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 8px;
-  }
-  .ich-desc {
-    font-size: 15px;
-    line-height: 1.9;
-    color: #ffffff;
-    margin: 0;
-  }
-  .ich-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 16px;
-    animation: modalBackdrop .25s ease both;
-  }
-  .ich-modal-content {
-    width: min(640px, 92vw);
-    background: #4f0915;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
-    padding: 24px 24px 20px;
-    position: relative;
-    transform: scale(0.97) translateY(4px);
-    opacity: 0;
-    animation: modalIn .22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  .modal-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 10px;
-    background: #f9f1f1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background .2s ease, transform .2s ease;
-  }
-  .modal-close:hover { background: #e2e8f0; transform: scale(1.05); }
-  @keyframes modalIn {
-    0% { transform: scale(0.97) translateY(4px); opacity: 0; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
-  }
-  @keyframes modalBackdrop {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-  @media (max-width: 600px) {
-    .ich-modal { align-items: flex-end; padding: 0; }
-    .ich-modal-content {
-      width: 100vw;
-      height: 100vh;
-      border-radius: 0;
-      box-shadow: none;
-      padding: 20px 16px;
-      overflow-y: auto;
-      animation-duration: .28s;
-    }
-    .modal-close { top: 10px; right: 10px; width: 40px; height: 40px; }
-  }
-  .ich-marquee {
-    width: 100vw; /* 使用 100vw 铺满整个视口宽度 */
-    /* 固定跑马灯的上边距，不随标题变化 */
-    margin: 20px 0 -100px !important; /* 从上边距 20px 下边距 0px 改为上边距 20px 下边距 -100px，让走马灯向上移动 */
-    padding: 0; /* 移除 padding，避免额外间隔 */
-    border-radius: 16px;
-  }
-  .marquee-track {
-    display: flex;
-    gap: 20px; /* 从 50px 改为 20px，适配更小的窗户 */
-    width: max-content;
-    animation: marqueeScroll 60s linear infinite; /* 从 30s 改为 60s，调慢速度 */
-    will-change: transform;
-  }
-  @keyframes marqueeScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .marquee-item {
-    position: relative;
-    width: 600px; /* 从 500px 改为 600px，再放大一点 */
-    height: 600px; /* 从 500px 改为 600px，再放大一点 */
-    border-radius: 14px;
-    overflow: visible; /* 改为 visible，允许花形边框溢出 */
-    box-shadow: none; /* 移除长方形阴影 */
-    transition: transform .25s cubic-bezier(0.16,1,0.3,1), box-shadow .25s ease;
-    cursor: pointer;
-  }
-  
-  /* 走马灯的花形窗户格式 */
-  .marquee-item.flower-mask {
-    border-radius: 0; /* 移除圆角，使用花形轮廓 */
-    overflow: visible; /* 允许内容溢出显示 */
-    background-color: transparent; /* 去掉黑色背景 */
-    box-shadow: none; /* 移除长方形阴影 */
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3)); /* 使用 drop-shadow 创建花形阴影 */
-  }
-  
-  /* 走马灯的花形窗户边框 */
-  .marquee-item.flower-mask .flower-mask-border {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    background-image: url('/videos/五边形窗户边框.PNG');
-    background-size: contain; /* 使用 contain 保持比例 */
-    background-repeat: no-repeat;
-    background-position: center;
-    transform: translate(-50%, -50%);
-    z-index: 110;
-    pointer-events: none;
-  }
-  
-  /* 走马灯的花形窗户内的图片样式 */
-  .marquee-item.flower-mask > img {
-    -webkit-mask-image: url('/videos/五边形窗户.PNG');
-    mask-image: url('/videos/五边形窗户.PNG');
-    -webkit-mask-size: contain; /* 使用 contain 保持比例 */
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-mode: alpha;
-    mask-mode: alpha;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    object-fit: cover;
-  }
-  
-  /* 走马灯中的 item-sheet 使用花形遮罩限制显示区域 */
-  .marquee-item.flower-mask .item-sheet {
-    top: 50%; /* 与花形窗户同一起点 */
-    left: 50%; /* 与花形窗户同一起点 */
-    width: 100%; /* 填满容器 */
-    height: 100%; /* 填满容器 */
-    transform: translate(-50%, -50%); /* 居中显示，与花形窗户对齐 */
-    background: rgba(79, 9, 21, 0.95); /* 半透明背景 */
-    border-radius: 0; /* 移除圆角 */
-    padding: 0; /* 移除内边距 */
-    /* 使用五边形遮罩限制显示区域 */
-    -webkit-mask-image: url('/videos/五边形窗户.PNG');
-    mask-image: url('/videos/五边形窗户.PNG');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    /* 内容居中 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .marquee-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .ich-marquee:hover .marquee-track { animation-play-state: paused; }
-  /* 走马灯的花形窗户悬停效果 */
-  .marquee-item.flower-mask:hover {
-    transform: scale(1.08); /* 轻微放大 8% */
-  }
-  
-  /* 作品展示详情框通用样式 */
-  .item-sheet {
-    position: absolute;
-    top: 50%; /* 与边框同一起点 */
-    left: 50%; /* 与边框同一起点 */
-    width: 60%; /* 使用 60% 宽度，匹配花形实际可视区域 */
-    height: 60%; /* 使用 60% 高度，匹配花形实际可视区域 */
-    transform: translate(-50%, -50%) scale(0.98); /* 居中显示 */
-    background: #4f0915;
-    color: #ffffff;
-    padding: 16px;
-    border-radius: 14px;
-    opacity: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    animation: itemSheetOverlay .25s cubic-bezier(0.16,1,0.3,1) forwards;
-    overflow: hidden; /* 确保内容不超出边界 */
-  }
-  @keyframes itemSheetOverlay {
-    0% { transform: translate(-50%, -50%) scale(0.98); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  }
-  .sheet-title { margin: 0 0 6px; font-size: 16px; font-weight: 800; color: #ffffff; }
-  .sheet-desc { margin: 0; font-size: 13px; line-height: 1.7; color: #ffffff; }
-  @media (max-width: 600px) {
-    .ich-marquee { margin-bottom: 0px; /* 从 64px 改为 0px，减小与底部的间距 */ }
-  }
-  
- 
-  
-  @media (max-width: 960px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  
-  @media (max-width: 600px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  </style>
 
+<style scoped>
+.promotion-page {
+  min-height: 100vh;
+  background: #fff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-section {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.banner-bg {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  right: 0;
+  bottom: -20%;
+  background: url('/heritage/爱上紫禁城.jpg') center/cover no-repeat;
+  will-change: transform;
+}
+
+.banner-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(79, 9, 21, 0.6);
+}
+
+.banner-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  max-width: 1000px;
+  top: 100px;
+  padding: 0 24px;
+}
+
+.banner-subtitle {
+  font-size: 18px;
+  letter-spacing: 8px;
+  color: #daa520;
+  margin-bottom: 16px;
+}
+
+.banner-title {
+  font-size: 180px;
+  font-weight: 900;
+  margin-bottom: 24px;
+  color: #ffffff;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 24px;
+  white-space: nowrap;
+  font-family: 'FangSong', '仿宋', 'STFangsong', '华文仿宋', serif;
+  opacity: 0.65;
+}
+
+.banner-desc {
+  font-size: 20px;
+  color:#daa520;
+  margin-bottom: 40px;
+  line-height: 1.8;
+}
+
+.banner-btns {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.btn-primary {
+  padding: 14px 40px;
+  background: #daa520;
+  color: #4f0915;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(218, 165, 32, 0.3);
+}
+
+.btn-secondary {
+  padding: 14px 40px;
+  background: transparent;
+  color: #daa520;
+  border: 2px solid #daa520;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #daa520;
+  color: #4f0915;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s infinite;
+  z-index: 2;
+}
+
+.scroll-hint i {
+  font-size: 24px;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+.section-header {
+  margin-bottom: 60px;
+}
+
+.section-header.centered {
+  text-align: center;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: #4f0915;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.about-section {
+  position: relative;
+  padding: 120px 0;
+  background: #fdf5e6;
+  overflow: hidden;
+}
+
+.features-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.events-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.knowledge-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax-bg {
+  position: absolute;
+  top: -30%;
+  left: 0;
+  right: 0;
+  bottom: -30%;
+  z-index: 0;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.parallax-bg-1 {
+  background: radial-gradient(circle at 20% 50%, rgba(79, 9, 21, 0.05) 0%, transparent 50%);
+}
+
+.parallax-bg-2 {
+  background: radial-gradient(circle at 80% 30%, rgba(218, 165, 32, 0.08) 0%, transparent 50%);
+}
+
+.parallax-bg-3 {
+  background: radial-gradient(circle at 30% 70%, rgba(79, 9, 21, 0.06) 0%, transparent 50%);
+}
+
+.parallax-bg-4 {
+  background: radial-gradient(circle at 70% 60%, rgba(218, 165, 32, 0.07) 0%, transparent 50%);
+}
+
+.parallax-bg-5 {
+  background: radial-gradient(circle at 50% 20%, rgba(79, 9, 21, 0.05) 0%, transparent 50%);
+}
+
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.about-text p {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.about-stats {
+  display: flex;
+  gap: 60px;
+  margin-top: 40px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #4f0915;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.about-image {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(139, 0, 0, 0.15);
+}
+
+.about-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.features-section {
+  padding: 120px 0;
+  background: #fff;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.feature-item {
+  text-align: center;
+  padding: 48px 32px;
+  background: #fdf5e6;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(139, 0, 0, 0.15);
+  background: #fff5e6;
+}
+
+.feature-item:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.feature-icon i {
+  font-size: 36px;
+  color: #daa520;
+}
+
+.feature-item h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.feature-item p {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.events-section {
+  padding: 120px 0;
+  background: #fdf5e6;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.event-item {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 40px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(139, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.event-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 50px rgba(139, 0, 0, 0.12);
+}
+
+.event-image {
+  position: relative;
+  height: 100%;
+  min-height: 300px;
+}
+
+.event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-tag {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #4f0915;
+  color: #daa520;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.event-content {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.event-meta {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.event-date,
+.event-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #4f0915;
+}
+
+.event-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.event-desc {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.event-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #4f0915;
+  font-size: 16px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.event-link:hover {
+  gap: 16px;
+}
+
+.knowledge-section {
+  padding: 120px 0;
+  background: #fff;
+}
+
+.knowledge-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.knowledge-card {
+  padding: 40px 32px;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.02) 0%, rgba(255, 215, 0, 0.02) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.knowledge-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(139, 0, 0, 0.1);
+  border-color: #4f0915;
+}
+
+.knowledge-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.knowledge-icon i {
+  font-size: 32px;
+  color: #daa520;
+}
+
+.knowledge-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.knowledge-card p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.gallery-section {
+  padding: 120px 0;
+  background: #fdf5e6;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+.gallery-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(139, 0, 0, 0.9) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #daa520;
+  margin-bottom: 8px;
+}
+
+.gallery-overlay p {
+  font-size: 14px;
+  color: #fff;
+}
+
+.footer-section {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 80px 0 0;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 80px;
+  padding-bottom: 60px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-brand h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #daa520;
+  margin-bottom: 12px;
+}
+
+.footer-brand p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.footer-column h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #daa520;
+  margin-bottom: 20px;
+}
+
+.footer-column a {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-column a:hover {
+  color: #daa520;
+}
+
+.footer-column a i {
+  margin-right: 8px;
+}
+
+.social-links {
+  display: flex;
+  gap: 16px;
+}
+
+.social-links a {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  background: #daa520;
+  color: #4f0915;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.footer-bottom p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.animate-up {
+  opacity: 0;
+  transform: translateY(80px);
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-up.animate-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.animate-left {
+  opacity: 0;
+  transform: translateX(-80px);
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-left.animate-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.animate-right {
+  opacity: 0;
+  transform: translateX(80px);
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-right.animate-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.animate-item {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-item.animate-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #fff 0%, #fdf5e6 100%);
+  border-radius: 20px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.4s ease;
+  box-shadow: 0 25px 80px rgba(79, 9, 21, 0.4);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #4f0915;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.modal-close:hover {
+  background: #6b101d;
+  transform: rotate(90deg);
+}
+
+.modal-header {
+  text-align: center;
+  padding: 48px 32px 32px;
+  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-icon {
+  width: 100px;
+  height: 100px;
+  background: rgba(218, 165, 32, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.modal-icon i {
+  font-size: 48px;
+  color: #daa520;
+}
+
+.modal-header h2 {
+  font-size: 32px;
+  color: #daa520;
+  margin: 0;
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 32px;
+}
+
+.modal-body > p {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.8;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.modal-details h3 {
+  font-size: 20px;
+  color: #4f0915;
+  margin: 24px 0 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-details h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #daa520;
+  border-radius: 2px;
+}
+
+.modal-details p {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.8;
+  margin: 0 0 16px 12px;
+}
+
+/* 知识卡片悬停效果 */
+.knowledge-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.knowledge-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(139, 0, 0, 0.15);
+}
+
+.knowledge-card:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* 知识卡片媒体容器 */
+.knowledge-media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.knowledge-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+
+.knowledge-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.knowledge-card:hover .knowledge-image {
+  opacity: 0;
+}
+
+.knowledge-card:hover .knowledge-video {
+  opacity: 1;
+}
+
+/* 调整知识卡片icon位置 */
+.knowledge-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.knowledge-icon i {
+  font-size: 32px;
+  color: #daa520;
+}
+</style>

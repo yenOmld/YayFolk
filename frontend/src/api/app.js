@@ -1,4 +1,4 @@
-import request from '../utils/request'
+﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -217,12 +217,14 @@ export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favo
 export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
 export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
 
-// ========== 公共活动相关接口 ==========
+// ========== 鍏叡娲诲姩鐩稿叧鎺ュ彛 ==========
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
+export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
+export const getLatestUnbanApplication = (account) => request.get('/public/unban-applications/latest', { params: { account } })
 
-// ========== 公共活动相关接口 ==========
+// ========== 鍏叡娲诲姩鐩稿叧鎺ュ彛 ==========
 export const applyMerchant = (data) => request.post('/merchant/apply', data)
 export const getMyApplication = () => request.get('/merchant/apply/status')
 
@@ -236,7 +238,7 @@ export const rejectBooking = (id) => request.post(`/merchant/bookings/${id}/reje
 
 
 
-// ========== 商家管理 ==========
+// ========== 鍟嗗绠＄悊 ==========
 export const getAdminMerchants = (status) => request.get('/admin/merchants', { params: { status } })
 export const auditMerchant = (id, approve, remark) => request.post(`/admin/merchants/${id}/audit`, { approve, remark })
 export const getAdminActivities = (auditStatus) => request.get('/admin/activities', { params: { auditStatus } })
@@ -245,8 +247,10 @@ export const getAdminPosts = (auditStatus, page = 0, size = 20) => request.get('
 export const auditPost = (id, pass, remark) => request.post(`/admin/posts/${id}/audit`, { pass, remark })
 export const batchAuditPosts = (ids, pass, remark) => request.post('/admin/posts/batch-audit', { ids, pass, remark })
 export const getAdminUsers = (page = 0, size = 20, keyword) => request.get('/admin/users', { params: { page, size, keyword } })
-export const banUser = (id) => request.post(`/admin/users/${id}/ban`)
+export const banUser = (id, reason) => request.post(`/admin/users/${id}/ban`, { reason })
 export const unbanUser = (id) => request.post(`/admin/users/${id}/unban`)
+export const getAdminUnbanApplications = (status) => request.get('/admin/users/unban-applications', { params: { status } })
+export const auditAdminUnbanApplication = (id, approve, remark) => request.post(`/admin/users/unban-applications/${id}/audit`, { approve, remark })
 export const getAdminOfficial = () => request.get('/admin/official')
 export const createOfficialContent = (data) => request.post('/admin/official', data)
 export const deleteOfficialContent = (id) => request.delete(`/admin/official/${id}`)
@@ -256,7 +260,7 @@ export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}
 export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
 export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
 
-// ========== 订单 & 成就 ==========
+// ========== 璁㈠崟 & 鎴愬氨 ==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
 export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
 export const cancelActivityBooking = (id) => request.post(`/orders/bookings/${id}/cancel`)
@@ -274,6 +278,7 @@ export const uploadImage = (formData, folder = 'images') => request.post(`/uploa
     'Content-Type': 'multipart/form-data'
   }
 })
+
 
 
 

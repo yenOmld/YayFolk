@@ -51,7 +51,7 @@ public class UserService {
         user.setCountry(country);
         user.setLangCode(langCode);
         user.setRegionCode(regionCode);
-        
+
         // 如果没有提供昵称，生成默认昵称
         if (nickname == null || nickname.isEmpty()) {
             user.setNickname("用户" + new Random().nextInt(10000));
@@ -63,22 +63,26 @@ public class UserService {
         user.setAvatar("https://api.dicebear.com/7.x/avataaars/svg?seed=" + username);
 
         User savedUser = userRepository.save(user);
-        
+
         // 初始化默认常用语（根据用户语言偏好）
         initializeDefaultPhrases(savedUser, langCode);
-        
+
         return savedUser;
     }
 
     private void ensureUserEnabled(User user) {
         if (user.getStatus() != null && user.getStatus() == 0) {
+            String reason = user.getBanReason();
+            if (reason != null && !reason.trim().isEmpty()) {
+                throw new RuntimeException("账号已被封禁，原因：" + reason.trim());
+            }
             throw new RuntimeException("账号已被封禁");
         }
     }
-    
+
     private void initializeDefaultPhrases(User user, String langCode) {
         List<Phrase> defaultPhrases;
-        
+
         switch (langCode != null ? langCode.toLowerCase() : "zh") {
             case "en":
                 defaultPhrases = getEnglishPhrases(user);
@@ -94,63 +98,63 @@ public class UserService {
                 defaultPhrases = getChinesePhrases(user);
                 break;
         }
-        
+
         phraseRepository.saveAll(defaultPhrases);
     }
-    
+
     // 中文默认常用语
     private List<Phrase> getChinesePhrases(User user) {
         return Arrays.asList(
-            createPhrase(user, "你好，请问附近有洗手间吗？", "你好，请问附近有洗手间吗？", "日常"),
-            createPhrase(user, "这个多少钱？", "这个多少钱？", "购物"),
-            createPhrase(user, "请给我一杯咖啡", "请给我一杯咖啡", "餐饮"),
-            createPhrase(user, "请问怎么去机场？", "请问怎么去机场？", "交通"),
-            createPhrase(user, "我需要帮助", "我需要帮助", "紧急"),
-            createPhrase(user, "谢谢你的帮助", "谢谢你的帮助", "礼貌"),
-            createPhrase(user, "我不会说当地语言", "我不会说当地语言", "沟通"),
-            createPhrase(user, "请说慢一点", "请说慢一点", "沟通")
+                createPhrase(user, "你好，请问附近有洗手间吗？", "你好，请问附近有洗手间吗？", "日常"),
+                createPhrase(user, "这个多少钱？", "这个多少钱？", "购物"),
+                createPhrase(user, "请给我一杯咖啡", "请给我一杯咖啡", "餐饮"),
+                createPhrase(user, "请问怎么去机场？", "请问怎么去机场？", "交通"),
+                createPhrase(user, "我需要帮助", "我需要帮助", "紧急"),
+                createPhrase(user, "谢谢你的帮助", "谢谢你的帮助", "礼貌"),
+                createPhrase(user, "我不会说当地语言", "我不会说当地语言", "沟通"),
+                createPhrase(user, "请说慢一点", "请说慢一点", "沟通")
         );
     }
 
     // 英文默认常用语
     private List<Phrase> getEnglishPhrases(User user) {
         return Arrays.asList(
-            createPhrase(user, "你好，请问附近有洗手间吗？", "Hello, is there a restroom nearby?", "Daily"),
-            createPhrase(user, "这个多少钱？", "How much is this?", "Shopping"),
-            createPhrase(user, "请给我一杯咖啡", "Please give me a cup of coffee", "Dining"),
-            createPhrase(user, "请问怎么去机场？", "How do I get to the airport?", "Transport"),
-            createPhrase(user, "我需要帮助", "I need help", "Emergency"),
-            createPhrase(user, "谢谢你的帮助", "Thank you for your help", "Polite"),
-            createPhrase(user, "我不会说当地语言", "I don't speak the local language", "Communication"),
-            createPhrase(user, "请说慢一点", "Please speak more slowly", "Communication")
+                createPhrase(user, "你好，请问附近有洗手间吗？", "Hello, is there a restroom nearby?", "Daily"),
+                createPhrase(user, "这个多少钱？", "How much is this?", "Shopping"),
+                createPhrase(user, "请给我一杯咖啡", "Please give me a cup of coffee", "Dining"),
+                createPhrase(user, "请问怎么去机场？", "How do I get to the airport?", "Transport"),
+                createPhrase(user, "我需要帮助", "I need help", "Emergency"),
+                createPhrase(user, "谢谢你的帮助", "Thank you for your help", "Polite"),
+                createPhrase(user, "我不会说当地语言", "I don't speak the local language", "Communication"),
+                createPhrase(user, "请说慢一点", "Please speak more slowly", "Communication")
         );
     }
 
     // 日文默认常用语
     private List<Phrase> getJapanesePhrases(User user) {
         return Arrays.asList(
-            createPhrase(user, "你好，请问附近有洗手间吗？", "こんにちは、近くにトイレはありますか？", "日常"),
-            createPhrase(user, "这个多少钱？", "これはいくらですか？", "買い物"),
-            createPhrase(user, "请给我一杯咖啡", "コーヒーを一杯ください", "飲食"),
-            createPhrase(user, "请问怎么去机场？", "空港へはどうやって行きますか？", "交通"),
-            createPhrase(user, "我需要帮助", "助けが必要です", "緊急"),
-            createPhrase(user, "谢谢你的帮助", "助けてくれてありがとう", "礼儀"),
-            createPhrase(user, "我不会说当地语言", "現地の言葉が話せません", "コミュニケーション"),
-            createPhrase(user, "请说慢一点", "もっとゆっくり話してください", "コミュニケーション")
+                createPhrase(user, "你好，请问附近有洗手间吗？", "こんにちは、近くにトイレはありますか？", "日常"),
+                createPhrase(user, "这个多少钱？", "これはいくらですか？", "買い物"),
+                createPhrase(user, "请给我一杯咖啡", "コーヒーを一杯ください", "食事"),
+                createPhrase(user, "请问怎么去机场？", "空港まではどうやって行きますか？", "交通"),
+                createPhrase(user, "我需要帮助", "助けが必要です", "緊急"),
+                createPhrase(user, "谢谢你的帮助", "助けてくれてありがとう", "礼儀"),
+                createPhrase(user, "我不会说当地语言", "現地の言葉が話せません", "コミュニケーション"),
+                createPhrase(user, "请说慢一点", "もっとゆっくり話してください", "コミュニケーション")
         );
     }
 
     // 韩文默认常用语
     private List<Phrase> getKoreanPhrases(User user) {
         return Arrays.asList(
-            createPhrase(user, "你好，请问附近有洗手间吗？", "안녕하세요, 근처에 화장실이 있나요?", "일상"),
-            createPhrase(user, "这个多少钱？", "이거 얼마예요?", "쇼핑"),
-            createPhrase(user, "请给我一杯咖啡", "커피 한 잔 주세요", "음식"),
-            createPhrase(user, "请问怎么去机场？", "공항은 어떻게 가나요?", "교통"),
-            createPhrase(user, "我需要帮助", "도움이 필요해요", "긴급"),
-            createPhrase(user, "谢谢你的帮助", "도와줘서 감사합니다", "예의"),
-            createPhrase(user, "我不会说当地语言", "현지 언어를 할 수 없어요", "의사소통"),
-            createPhrase(user, "请说慢一点", "천천히 말해주세요", "의사소통")
+                createPhrase(user, "你好，请问附近有洗手间吗？", "실례합니다. 근처에 화장실이 있나요?", "일상"),
+                createPhrase(user, "这个多少钱？", "이거 얼마예요?", "쇼핑"),
+                createPhrase(user, "请给我一杯咖啡", "커피 한 잔 주세요", "식사"),
+                createPhrase(user, "请问怎么去机场？", "공항에 어떻게 가요?", "교통"),
+                createPhrase(user, "我需要帮助", "도움이 필요해요", "비상"),
+                createPhrase(user, "谢谢你的帮助", "도와주셔서 감사합니다", "예의"),
+                createPhrase(user, "我不会说当地语言", "현지어를 할 수 없어요", "커뮤니케이션"),
+                createPhrase(user, "请说慢一点", "좀 더 천천히 말해주세요", "커뮤니케이션")
         );
     }
 
@@ -192,16 +196,16 @@ public class UserService {
     public void resetPassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
-    
+
     public User findByGithubId(String githubId) {
         return userRepository.findByGithubId(githubId)
                 .orElse(null);
     }
-    
+
     public void save(User user) {
         try {
             // 数据验证
@@ -222,9 +226,9 @@ public class UserService {
                     throw new RuntimeException("图片数据过大，请压缩后上传（最大 16MB）");
                 }
             } else if (user.getAvatar() != null && user.getAvatar().length() > 2000) {
-                System.out.println("警告：Avatar URL 较长（" + user.getAvatar().length() + " 字符），建议使用图床服务");
+                System.out.println("警告：Avatar URL 较长，" + user.getAvatar().length() + " 字符），建议使用图床服务");
             }
-            
+
             userRepository.save(user);
             System.out.println("用户数据保存成功");
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
@@ -244,11 +248,11 @@ public class UserService {
             throw new RuntimeException("保存失败：" + errorMsg, e);
         }
     }
-    
+
     public User createOrUpdateUserFromGithub(String githubId, String username, String email, String name, String avatarUrl) {
         // 首先尝试通过 GitHub ID 查找用户
         User user = findByGithubId(githubId);
-        
+
         if (user != null) {
             ensureUserEnabled(user);
             // 已存在 GitHub 绑定用户，更新信息
@@ -262,7 +266,7 @@ public class UserService {
             }
             return userRepository.save(user);
         }
-        
+
         // 如果 GitHub ID 不存在，检查邮箱是否已存在
         if (email != null) {
             Optional<User> existingUserOptional = userRepository.findByEmail(email);
@@ -281,7 +285,7 @@ public class UserService {
                 return userRepository.save(user);
             }
         }
-        
+
         // 邮箱也不存在，创建新用户
         user = new User();
         user.setGithubId(githubId);
@@ -292,13 +296,13 @@ public class UserService {
         user.setNickname(name != null && !name.isEmpty() ? name : username);
         user.setAvatar(avatarUrl);
         user.setCountry("Unknown");
-        user.setLangCode("en"); // GitHub用户默认使用英文
-        
+        user.setLangCode("en"); // GitHub 用户默认使用英文
+
         User savedUser = userRepository.save(user);
-        
-        // 初始化默认常用语（GitHub用户默认使用英文）
+
+        // 初始化默认常用语（GitHub 用户默认使用英文）
         initializeDefaultPhrases(savedUser, "en");
-        
+
         return savedUser;
     }
 
@@ -307,7 +311,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
         userRepository.delete(user);
     }
-    
+
     public User findByUserId(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
@@ -317,11 +321,11 @@ public class UserService {
     public String updateAvatar(String username, String newAvatarUrl) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        
+
         String oldAvatar = user.getAvatar();
         user.setAvatar(newAvatarUrl);
         userRepository.save(user);
-        
+
         return oldAvatar;
     }
 
@@ -335,10 +339,10 @@ public class UserService {
         if (avatarUrl.contains("dicebear.com")) {
             return;
         }
-        // 如果是Base64数据，不删除
+        // 如果是 Base64 数据，不删除
         if (avatarUrl.startsWith("data:image")) {
             return;
         }
-        // OSS头像会在外部调用OssUtil.deleteFile删除
+        // OSS 头像会在外部调用 OssUtil.deleteFile 删除
     }
 }

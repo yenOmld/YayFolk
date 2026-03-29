@@ -7,6 +7,7 @@ import com.yayfolk.backend.entity.MerchantProfile;
 import com.yayfolk.backend.entity.OfficialContent;
 import com.yayfolk.backend.entity.PostReport;
 import com.yayfolk.backend.entity.User;
+import com.yayfolk.backend.entity.UserUnbanApplication;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
@@ -14,11 +15,14 @@ import com.yayfolk.backend.repository.MerchantProfileRepository;
 import com.yayfolk.backend.repository.OfficialContentRepository;
 import com.yayfolk.backend.repository.PostReportRepository;
 import com.yayfolk.backend.repository.UserRepository;
+import com.yayfolk.backend.repository.UserUnbanApplicationRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +40,9 @@ public class AdminService {
     private static final String REPORT_STATUS_PENDING = "pending";
     private static final String REPORT_STATUS_PROCESSED = "processed";
 
+    @Value("${FRONTEND_BASE_URL:http://localhost:5173}")
+    private String frontendBaseUrl;
+
     private final UserRepository userRepository;
     private final MerchantProfileRepository merchantProfileRepository;
     private final MerchantApplicationRepository applicationRepository;
@@ -43,6 +50,8 @@ public class AdminService {
     private final DiscoverPostRepository postRepository;
     private final OfficialContentRepository officialContentRepository;
     private final PostReportRepository postReportRepository;
+    private final UserUnbanApplicationRepository userUnbanApplicationRepository;
+    private final EmailService emailService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AdminService(UserRepository userRepository,
@@ -51,7 +60,9 @@ public class AdminService {
                         ActivityRepository activityRepository,
                         DiscoverPostRepository postRepository,
                         OfficialContentRepository officialContentRepository,
-                        PostReportRepository postReportRepository) {
+                        PostReportRepository postReportRepository,
+                        UserUnbanApplicationRepository userUnbanApplicationRepository,
+                        EmailService emailService) {
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.applicationRepository = applicationRepository;
@@ -59,6 +70,8 @@ public class AdminService {
         this.postRepository = postRepository;
         this.officialContentRepository = officialContentRepository;
         this.postReportRepository = postReportRepository;
+        this.userUnbanApplicationRepository = userUnbanApplicationRepository;
+        this.emailService = emailService;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -169,7 +182,7 @@ public class AdminService {
         app.setApplicationStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("驳回原因不能为空");
+            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
         }
         app.setAuditRemark(approve ? null : trimmedRemark);
         app.setAuditAdminId(admin.getId());
@@ -259,7 +272,7 @@ public class AdminService {
         activity.setAuditStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("驳回原因不能为空");
+            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
         }
         activity.setAuditRemark(approve ? null : trimmedRemark);
         activityRepository.save(activity);
@@ -337,7 +350,7 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Post does not exist"));
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("驳回原因不能为空");
+            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
         }
         post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
         post.setAuditRemark(pass ? null : trimmedRemark);
@@ -470,15 +483,26 @@ public class AdminService {
         return result;
     }
 
-    public void banUser(String adminUsername, Long userId) {
-        requireAdmin(adminUsername);
+        public void banUser(String adminUsername, Long userId, String reason) {
+        User admin = requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
         if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
             throw new RuntimeException("管理员账号不能在用户管理中封禁");
         }
+
+        String trimmedReason = reason == null ? null : reason.trim();
+        if (trimmedReason == null || trimmedReason.isEmpty()) {
+            throw new RuntimeException("封禁原因不能为空");
+        }
+
         user.setStatus(0);
+        user.setBanReason(trimmedReason);
+        user.setBanAdminId(admin.getId());
+        user.setBanTime(new Date());
         userRepository.save(user);
+
+        sendBanEmail(user, trimmedReason);
     }
 
     public void unbanUser(String adminUsername, Long userId) {
@@ -489,9 +513,114 @@ public class AdminService {
             throw new RuntimeException("管理员账号不能在用户管理中解封");
         }
         user.setStatus(1);
+        user.setBanReason(null);
+        user.setBanAdminId(null);
+        user.setBanTime(null);
         userRepository.save(user);
+
+        sendUnbanEmail(user, null);
     }
 
+    public List<Map<String, Object>> getUnbanApplications(String adminUsername, String status) {
+        requireAdmin(adminUsername);
+
+        List<UserUnbanApplication> applications;
+        if (status != null && !status.trim().isEmpty()) {
+            applications = userUnbanApplicationRepository.findByStatusOrderByCreateTimeDesc(status.trim());
+        } else {
+            applications = userUnbanApplicationRepository.findAllByOrderByCreateTimeDesc();
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (UserUnbanApplication application : applications) {
+            result.add(unbanApplicationToMap(application));
+        }
+        return result;
+    }
+
+    public Map<String, Object> auditUnbanApplication(String adminUsername,
+                                                     Long applicationId,
+                                                     boolean approve,
+                                                     String remark) {
+        User admin = requireAdmin(adminUsername);
+        UserUnbanApplication application = userUnbanApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("解封申请不存在"));
+
+        if (!"pending".equalsIgnoreCase(application.getStatus())) {
+            throw new RuntimeException("该申请已处理，请勿重复操作");
+        }
+
+        User targetUser = userRepository.findById(application.getUserId())
+                .orElseThrow(() -> new RuntimeException("申请用户不存在"));
+
+        String trimmedRemark = remark == null ? null : remark.trim();
+        if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
+            throw new RuntimeException("驳回申请时必须填写原因");
+        }
+
+        application.setAdminId(admin.getId());
+        application.setHandleTime(new Date());
+        application.setAdminRemark(trimmedRemark);
+
+        if (approve) {
+            application.setStatus("approved");
+            targetUser.setStatus(1);
+            targetUser.setBanReason(null);
+            targetUser.setBanAdminId(null);
+            targetUser.setBanTime(null);
+            userRepository.save(targetUser);
+            sendUnbanEmail(targetUser, trimmedRemark);
+        } else {
+            application.setStatus("rejected");
+        }
+
+        UserUnbanApplication saved = userUnbanApplicationRepository.save(application);
+        return unbanApplicationToMap(saved);
+    }
+
+    private void sendBanEmail(User user, String reason) {
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        String subject = "YayFolk 账号封禁通知";
+        String content = "您好，\n\n您的 YayFolk 账号已被管理员封禁。"
+                + "\n封禁原因：" + reason
+                + "\n\n如果您需要申请解封，请访问以下页面："
+                + "\n" + buildUnbanApplicationUrl(user)
+                + "\n\n感谢您的理解。";
+        emailService.sendSystemEmail(user.getEmail(), subject, content);
+    }
+
+    private void sendUnbanEmail(User user, String remark) {
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        String subject = "YayFolk 账号解封通知";
+        StringBuilder content = new StringBuilder();
+        content.append("您好，\n\n您的 YayFolk 账号已恢复正常使用。");
+        if (remark != null && !remark.trim().isEmpty()) {
+            content.append("\n管理员备注：").append(remark.trim());
+        }
+        content.append("\n\n感谢您的耐心等待。");
+        emailService.sendSystemEmail(user.getEmail(), subject, content.toString());
+    }
+
+    private String buildUnbanApplicationUrl(User user) {
+        String baseUrl = frontendBaseUrl == null ? "http://localhost:5173" : frontendBaseUrl.trim();
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        String account = user.getEmail() != null && !user.getEmail().trim().isEmpty() ? user.getEmail() : user.getUsername();
+        try {
+            return baseUrl + "/unban-application?account=" + java.net.URLEncoder.encode(account, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return baseUrl + "/unban-application";
+        }
+    }
+
+    // Official content
     // Official content
     public List<Map<String, Object>> getOfficialContents(String adminUsername) {
         requireAdmin(adminUsername);
@@ -622,8 +751,38 @@ public class AdminService {
         m.put("shopName", u.getShopName());
         m.put("isMerchant", u.getIsMerchant());
         m.put("status", u.getStatus());
+        m.put("banReason", u.getBanReason());
+        m.put("banAdminId", u.getBanAdminId());
+        m.put("banTime", u.getBanTime());
         m.put("isSuperAdmin", u.getIsSuperAdmin());
         m.put("createTime", u.getCreateTime());
+        return m;
+    }
+
+    private Map<String, Object> unbanApplicationToMap(UserUnbanApplication application) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", application.getId());
+        m.put("userId", application.getUserId());
+        m.put("applyReason", application.getApplyReason());
+        m.put("status", application.getStatus());
+        m.put("adminId", application.getAdminId());
+        m.put("adminRemark", application.getAdminRemark());
+        m.put("createTime", application.getCreateTime());
+        m.put("handleTime", application.getHandleTime());
+
+        userRepository.findById(application.getUserId()).ifPresent(user -> {
+            m.put("username", user.getUsername());
+            m.put("nickname", user.getNickname());
+            m.put("email", user.getEmail());
+            m.put("banReason", user.getBanReason());
+            m.put("userStatus", user.getStatus());
+        });
+
+        if (application.getAdminId() != null) {
+            userRepository.findById(application.getAdminId())
+                    .ifPresent(admin -> m.put("adminUsername", admin.getUsername()));
+        }
+
         return m;
     }
 
@@ -670,5 +829,15 @@ public class AdminService {
         return m;
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 

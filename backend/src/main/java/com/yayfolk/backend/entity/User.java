@@ -1,7 +1,15 @@
 package com.yayfolk.backend.entity;
 
-import javax.persistence.*;
 import lombok.Data;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Data
@@ -78,6 +86,15 @@ public class User {
 
     @Column(name = "status", columnDefinition = "tinyint(1) default 1")
     private Integer status;
+
+    @Column(name = "ban_reason", length = 500)
+    private String banReason;
+
+    @Column(name = "ban_admin_id")
+    private Long banAdminId;
+
+    @Column(name = "ban_time")
+    private Date banTime;
 
     @Column(name = "is_super_admin", columnDefinition = "tinyint(1) default 0")
     private Integer isSuperAdmin;

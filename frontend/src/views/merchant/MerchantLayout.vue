@@ -8,14 +8,14 @@
           <div class="brand-mark">YF</div>
           <div class="brand-copy">
             <strong>商家中心</strong>
-            <span>延续活动页的暖色卡片风格</span>
+            <span>活动、预约与审核动态集中处理</span>
           </div>
         </div>
 
         <div class="merchant-shell__shop">
-          <p class="shop-kicker">{{ isMerchant ? '已入驻商家' : '入驻申请中' }}</p>
+          <p class="shop-kicker">{{ isMerchant ? '商家工作台' : '商家申请' }}</p>
           <h2>{{ shopName }}</h2>
-          <p>{{ isMerchant ? '管理活动发布、预约处理与到店核销。' : '先完成入驻申请，再开通完整商家能力。' }}</p>
+          <p>{{ isMerchant ? '新的活动审核结果会在这里同步红标提醒。' : '提交入驻资料后，新的审核结果会在这里显示红标提醒。' }}</p>
         </div>
 
         <nav class="merchant-shell__nav">
@@ -30,13 +30,16 @@
               <span>{{ item.label }}</span>
               <small>{{ item.desc }}</small>
             </div>
+            <span v-if="getNavBadgeCount(item.key) > 0" class="nav-badge">
+              {{ formatBadgeCount(getNavBadgeCount(item.key)) }}
+            </span>
           </router-link>
         </nav>
 
         <div class="merchant-shell__footer">
           <div v-if="isMerchant" class="merchant-shell__status">
             <span class="status-dot"></span>
-            <span>商家身份已认证</span>
+            <span>商家身份已开通</span>
           </div>
           <button class="back-btn" @click="goBack">
             <i class="bx bx-left-arrow-alt"></i>
@@ -55,10 +58,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  markMerchantActivityUpdatesSeen,
+  markMerchantApplicationUpdateSeen,
+  refreshWorkbenchBadges,
+  workbenchBadgeState
+} from '@/utils/workbenchBadge.js'
 
 const router = useRouter()
+const route = useRoute()
+let badgeTimer = null
 
 const readStoredUser = () => {
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
@@ -69,7 +80,7 @@ const readStoredUser = () => {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('读取商家信息失败', error)
+    console.error('Failed to read merchant user info', error)
     return {}
   }
 }
@@ -82,6 +93,7 @@ const navItems = computed(() => {
   if (!isMerchant.value) {
     return [
       {
+        key: 'apply',
         to: '/merchant/apply',
         label: '申请入驻',
         desc: '提交商家认证资料',
@@ -92,12 +104,14 @@ const navItems = computed(() => {
 
   return [
     {
+      key: 'activities',
       to: '/merchant/activities',
       label: '活动管理',
-      desc: '发布与维护活动内容',
+      desc: '查看活动审核结果与活动状态',
       icon: 'bx-calendar-event'
     },
     {
+      key: 'bookings',
       to: '/merchant/bookings',
       label: '预约管理',
       desc: '查看报名和核销情况',
@@ -106,10 +120,51 @@ const navItems = computed(() => {
   ]
 })
 
+const navBadgeCountMap = computed(() => ({
+  apply: workbenchBadgeState.merchant.applicationCount,
+  activities: workbenchBadgeState.merchant.activitiesCount,
+  bookings: 0
+}))
+
+const getNavBadgeCount = (key) => Number(navBadgeCountMap.value[key] || 0)
+const formatBadgeCount = (count) => (count > 99 ? '99+' : String(count))
 const goBack = () => router.push('/home/heritage')
+
+const syncSeenStateWithRoute = () => {
+  if (!route.path.startsWith('/merchant')) {
+    return
+  }
+
+  if (workbenchBadgeState.merchant.applicationCount > 0) {
+    markMerchantApplicationUpdateSeen()
+  }
+
+  if (route.path === '/merchant/activities' && workbenchBadgeState.merchant.activitiesCount > 0) {
+    markMerchantActivityUpdatesSeen()
+  }
+}
+
+const refreshBadges = async () => {
+  await refreshWorkbenchBadges()
+  syncSeenStateWithRoute()
+}
 
 onMounted(() => {
   userInfo.value = readStoredUser()
+  refreshBadges()
+  badgeTimer = window.setInterval(refreshBadges, 60000)
+})
+
+watch(() => route.path, () => {
+  userInfo.value = readStoredUser()
+  syncSeenStateWithRoute()
+})
+
+onBeforeUnmount(() => {
+  if (badgeTimer) {
+    window.clearInterval(badgeTimer)
+    badgeTimer = null
+  }
 })
 </script>
 
@@ -117,13 +172,11 @@ onMounted(() => {
 .merchant-shell {
   --merchant-bg: #f8f5f0;
   --merchant-paper: rgba(255, 255, 255, 0.9);
-  --merchant-paper-strong: rgba(255, 255, 255, 0.96);
   --merchant-border: #d9cfc1;
   --merchant-ink: #2c2c2c;
   --merchant-soft: #6f6255;
   --merchant-muted: #8b8074;
   --merchant-accent: #9d2929;
-  --merchant-accent-deep: #7f1d1d;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
@@ -169,12 +222,6 @@ onMounted(() => {
   backdrop-filter: blur(10px);
 }
 
-.merchant-shell__brand,
-.merchant-shell__shop,
-.merchant-shell__footer {
-  border-radius: 22px;
-}
-
 .merchant-shell__brand {
   display: flex;
   align-items: center;
@@ -216,6 +263,7 @@ onMounted(() => {
 
 .merchant-shell__shop {
   padding: 18px;
+  border-radius: 22px;
   background:
     linear-gradient(180deg, rgba(157, 41, 41, 0.05), rgba(157, 41, 41, 0.01)),
     #fffdf9;
@@ -287,6 +335,25 @@ onMounted(() => {
   line-height: 1.5;
 }
 
+.nav-badge {
+  min-width: 28px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 8px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 145, 63, 0.28);
+  background: linear-gradient(180deg, #fff8ea, #f7edd7);
+  color: #8a5a16;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .nav-item:hover,
 .nav-item.router-link-active {
   transform: translateY(-1px);
@@ -324,22 +391,14 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border: 1px solid rgba(157, 41, 41, 0.18);
+  gap: 10px;
+  padding: 13px 16px;
+  border: 1px solid rgba(157, 41, 41, 0.16);
   border-radius: 16px;
-  background: #fff;
+  background: #fffdfa;
   color: var(--merchant-accent);
-  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-}
-
-.back-btn:hover {
-  transform: translateY(-1px);
-  background: rgba(157, 41, 41, 0.06);
-  box-shadow: 0 12px 24px rgba(157, 41, 41, 0.1);
 }
 
 .merchant-shell__content {
@@ -349,170 +408,33 @@ onMounted(() => {
 
 .merchant-shell__content-card {
   min-height: calc(100vh - 56px);
-  padding: 26px;
+  padding: 24px;
   border-radius: 30px;
-  border: 1px solid var(--merchant-border);
-  background: var(--merchant-paper);
-  box-shadow: 0 18px 50px rgba(44, 44, 44, 0.08);
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(217, 207, 193, 0.72);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 56px rgba(44, 44, 44, 0.08);
+  backdrop-filter: blur(14px);
 }
 
-:deep(.merchant-page),
-:deep(.merchant-reservations) {
-  max-width: none;
-  color: var(--merchant-ink);
-  background: transparent !important;
-  min-height: auto !important;
-}
-
-:deep(.merchant-page .page-header),
-:deep(.merchant-reservations .page-header) {
-  margin-bottom: 24px;
-  padding: 24px 26px;
-  border-radius: 24px;
-  border: 1px solid rgba(217, 207, 193, 0.82);
-  background:
-    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.74)),
-    rgba(255, 255, 255, 0.88);
-  box-shadow: 0 14px 34px rgba(44, 44, 44, 0.06);
-}
-
-:deep(.merchant-page .page-header h1),
-:deep(.merchant-page .page-header h2),
-:deep(.merchant-reservations .page-header h1),
-:deep(.merchant-reservations .page-header h2) {
-  margin: 0;
-  color: var(--merchant-ink);
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-:deep(.merchant-page .page-header p),
-:deep(.merchant-page .subtitle),
-:deep(.merchant-page .stat),
-:deep(.merchant-reservations .activity-filter) {
-  color: var(--merchant-soft);
-}
-
-:deep(.merchant-page .loading),
-:deep(.merchant-page .empty),
-:deep(.merchant-page .empty-state),
-:deep(.merchant-page .state-card),
-:deep(.merchant-page .status-card),
-:deep(.merchant-page .apply-form-wrap),
-:deep(.merchant-page .activity-card),
-:deep(.merchant-page .product-card),
-:deep(.merchant-page .order-card),
-:deep(.merchant-page .modal),
-:deep(.merchant-reservations .tabs),
-:deep(.merchant-reservations .reservation-card),
-:deep(.merchant-reservations .empty-state),
-:deep(.merchant-reservations .modal-content) {
-  border: 1px solid rgba(217, 207, 193, 0.82) !important;
-  background: var(--merchant-paper-strong) !important;
-  box-shadow: 0 16px 38px rgba(44, 44, 44, 0.06) !important;
-}
-
-:deep(.merchant-page .loading),
-:deep(.merchant-page .empty),
-:deep(.merchant-page .empty-state),
-:deep(.merchant-page .state-card),
-:deep(.merchant-reservations .empty-state) {
-  color: var(--merchant-muted) !important;
-  border-radius: 24px !important;
-}
-
-:deep(.merchant-page .product-card),
-:deep(.merchant-page .order-card),
-:deep(.merchant-page .activity-card),
-:deep(.merchant-reservations .reservation-card) {
-  border-radius: 22px !important;
-  overflow: hidden;
-}
-
-:deep(.merchant-page .product-card:hover),
-:deep(.merchant-page .activity-card:hover),
-:deep(.merchant-reservations .reservation-card:hover) {
-  transform: translateY(-3px);
-  box-shadow: 0 22px 46px rgba(44, 44, 44, 0.1) !important;
-}
-
-:deep(.merchant-reservations .tabs) {
-  margin-bottom: 22px;
-  padding: 10px;
-  border-radius: 22px;
-}
-
-:deep(.merchant-page .create-btn),
-:deep(.merchant-page .submit-btn),
-:deep(.merchant-page .go-btn),
-:deep(.merchant-page .retry-btn),
-:deep(.merchant-page .act-btn.bookings) {
-  background: linear-gradient(135deg, #9d2929, #b33030) !important;
-  color: #fff !important;
-  border-color: transparent !important;
-}
-
-:deep(.merchant-page .action-btn),
-:deep(.merchant-page .act-btn),
-:deep(.merchant-page .btn.cancel),
-:deep(.merchant-page .create-btn),
-:deep(.merchant-page .submit-btn),
-:deep(.merchant-page .go-btn),
-:deep(.merchant-page .retry-btn) {
-  border-radius: 14px !important;
-}
-
-:deep(.merchant-page input),
-:deep(.merchant-page select),
-:deep(.merchant-page textarea) {
-  border: 1px solid rgba(217, 207, 193, 0.92) !important;
-  border-radius: 16px !important;
-  background: rgba(248, 245, 240, 0.7) !important;
-  color: var(--merchant-ink);
-  box-shadow: none !important;
-}
-
-:deep(.merchant-page input:focus),
-:deep(.merchant-page select:focus),
-:deep(.merchant-page textarea:focus) {
-  border-color: rgba(157, 41, 41, 0.42) !important;
-  box-shadow: 0 0 0 4px rgba(157, 41, 41, 0.1) !important;
-  outline: none;
-}
-
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .merchant-shell__inner {
     flex-direction: column;
-    padding: 18px 16px;
   }
 
   .merchant-shell__sidebar {
     width: 100%;
     position: static;
   }
-
-  .merchant-shell__content-card {
-    min-height: auto;
-  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .merchant-shell__inner {
+    padding: 16px;
+  }
+
   .merchant-shell__content-card {
     padding: 16px;
-    border-radius: 24px;
-  }
-
-  :deep(.merchant-page .page-header),
-  :deep(.merchant-reservations .page-header) {
-    padding: 18px;
-  }
-
-  :deep(.merchant-page .page-header h1),
-  :deep(.merchant-page .page-header h2),
-  :deep(.merchant-reservations .page-header h1),
-  :deep(.merchant-reservations .page-header h2) {
-    font-size: 24px;
+    border-radius: 22px;
   }
 }
 </style>

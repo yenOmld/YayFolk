@@ -129,7 +129,7 @@
               v-else
               v-for="post in displayPosts" 
               :key="post.id"
-              :class="['post-card', { 'partner-card': isPartnerPost(post) }]"
+              class="post-card"
               @click="openPostModal(post)"
             >
             <div class="image-grid" v-if="post.images && post.images.length > 0">
@@ -144,11 +144,7 @@
             </div>
 
             <div class="post-content">
-              <div v-if="isPartnerPost(post)" class="partner-banner">Partner Post</div>
               <h3 v-if="post.title" class="post-title">{{ post.title }}</h3>
-              <div v-if="isPartnerPost(post)" class="partner-summary">
-                {{ buildPartnerSummary(post) }}
-              </div>
               <p>{{ post.content }}</p>
             </div>
 
@@ -197,7 +193,6 @@
                     {{ category.name }}
                   </option>
                 </select>
-                <p class="partner-tip">发布招募信息，让更多人看到你的活动！</p>
               </div>
             </div>
             
@@ -422,19 +417,7 @@ const draggedIndex = ref(null)
 const showImagePreview = ref(false)
 const previewImageSrc = ref('')
 
-const isPartnerPost = (post) => post?.category === 'partner'
 
-const buildPartnerSummary = (post) => {
-  const title = (post?.title || '').trim()
-  const tagSummary = Array.isArray(post?.tags)
-    ? post.tags.filter(Boolean).slice(0, 3).map((tag) => `#${tag}`).join(' / ')
-    : ''
-  const content = (post?.content || '').replace(/\s+/g, ' ').trim()
-  const fallback = content
-    ? `Recruitment info: ${content}`
-    : 'Add time, location, group size, budget, and contact details to help others join quickly.'
-  return [title, tagSummary, fallback].filter(Boolean).join(' / ')
-}
 
 
 const touchStartX = ref(0)
@@ -843,14 +826,6 @@ const submitPost = async () => {
   submittingPost.value = true
   try {
     const finalTags = [...postForm.value.tags]
-    if (postForm.value.category === 'partner') {
-      if (!finalTags.includes('\u642d\u5b50')) {
-        finalTags.push('\u642d\u5b50')
-      }
-      if (!finalTags.includes('\u7ec4\u56e2')) {
-        finalTags.push('\u7ec4\u56e2')
-      }
-    }
     
     const createResponse = await createDiscoverPost({
       title: postForm.value.title.trim(),
@@ -1084,38 +1059,50 @@ body {
 .nav-button {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   cursor: pointer;
   color: white;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   position: relative;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .nav-button .badge {
   position: absolute;
-  top: -5px;
-  right: -10px;
+  top: -8px;
+  right: -8px;
   background: #ff2442;
   color: white;
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 10px;
-  min-width: 16px;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  min-width: 18px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 36, 66, 0.3);
 }
 
 .nav-button.active {
   color: white;
   font-weight: 600;
+  background: rgba(255, 36, 66, 0.8);
+  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.3);
 }
 
 .nav-button i {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .nav-button span {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 
@@ -1126,8 +1113,8 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
-  font-size: 24px;
+  color: #8f5151ff;
+  font-size: 28px;
   border-radius: 8px;
   transition: background 0.3s;
 }
@@ -1258,15 +1245,26 @@ body {
   white-space: nowrap;
   font-size: 15px;
   font-weight: 500;
-  color: #333;
+  color: #666;
   cursor: pointer;
-  transition: all 0.3s;
-  padding: 5px 0;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f5f5f5;
+  margin-right: 8px;
+}
+
+.tab:hover {
+  color: #333;
+  background: #e8e8e8;
+  transform: translateY(-2px);
 }
 
 .tab.active {
-  color: #ff2442;
+  color: white;
   font-weight: 600;
+  background: #ff2442;
+  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.3);
 }
 
 .action-buttons {
@@ -1276,33 +1274,7 @@ body {
   margin-left: 20px;
 }
 
-.partner-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid #f2d6b3;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #fff7ed, #fffbeb);
-  color: #b45309;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
 
-.partner-filter-btn:hover {
-  border-color: #f59e0b;
-  color: #92400e;
-  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.16);
-}
-
-.partner-filter-btn.active {
-  border-color: #d97706;
-  background: linear-gradient(135deg, #f59e0b, #f97316);
-  color: #fff;
-  box-shadow: 0 10px 20px rgba(217, 119, 6, 0.24);
-}
 
 .sort-dropdown {
   position: relative;
@@ -1311,20 +1283,23 @@ body {
 .sort-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 8px 16px;
   border: 1px solid #e8e8e8;
   border-radius: 20px;
   background: white;
   cursor: pointer;
   font-size: 13px;
   color: #666;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .sort-btn:hover {
-  border-color: #ff2442;
-  color: #ff2442;
+  border-color: #a71d2fff;
+  color: #a12031ff;
+  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.2);
+  transform: translateY(-1px);
 }
 
 .sort-btn i:first-child {
@@ -1376,21 +1351,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid #e8e8e8;
   border-radius: 50%;
   background: white;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   color: #666;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .refresh-btn:hover:not(:disabled) {
   border-color: #ff2442;
   color: #ff2442;
-  transform: rotate(180deg);
+  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.2);
+  transform: rotate(180deg) scale(1.05);
 }
 
 .refresh-btn:disabled {
@@ -1477,17 +1454,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.partner-card {
-  border: 1px solid rgba(249, 115, 22, 0.22);
-  background:
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.16), transparent 32%),
-    linear-gradient(180deg, #fffdf8 0%, #ffffff 48%);
-  box-shadow: 0 10px 28px rgba(249, 115, 22, 0.12);
-}
 
-.partner-card:hover {
-  box-shadow: 0 16px 36px rgba(249, 115, 22, 0.18);
-}
 
 
 .image-grid {
@@ -1545,33 +1512,7 @@ body {
   color: #1f2937;
 }
 
-.partner-banner {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 10px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f59e0b, #f97316);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
 
-.partner-summary {
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 247, 237, 0.95);
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  color: #9a3412;
-  font-size: 12px;
-  line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 .post-content p {
   margin: 0;
@@ -1685,19 +1626,6 @@ body {
   .sort-btn {
     padding: 4px 8px;
     font-size: 12px;
-  }
-
-  .partner-filter-btn {
-    padding: 4px 10px;
-    font-size: 12px;
-  }
-
-  .sort-btn span {
-    display: none;
-  }
-
-  .partner-filter-btn span {
-    display: none;
   }
 
   .refresh-btn {
@@ -1825,15 +1753,7 @@ body {
   color: #666;
 }
 
-.partner-tip {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #fff7ed;
-  color: #c2410c;
-  font-size: 12px;
-  line-height: 1.6;
-}
+
 
 .form-group input,
 .form-group textarea {

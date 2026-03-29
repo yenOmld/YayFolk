@@ -49,9 +49,10 @@
             <i class='bx bx-user-circle'></i>
             个人主页
           </button>
-          <button class="secondary-action-btn" @click="handleSecondaryAction">
+          <button class="secondary-action-btn" :class="{ 'has-alert': hasWorkbenchAlert }" @click="handleSecondaryAction">
             <i :class="secondaryActionIcon"></i>
             {{ secondaryActionLabel }}
+            <span v-if="hasWorkbenchAlert" class="workbench-alert-pill">{{ workbenchAlertText }}</span>
           </button>
         </div>
       </div>
@@ -490,7 +491,7 @@
             <span>注册为商家</span>
             <i class='bx bx-chevron-right'></i>
           </div>
-          <div class="menu-item" v-else @click="openPrimaryPanel">
+          <div class="menu-item menu-item--with-alert" v-else @click="openPrimaryPanel" :data-alert="hasWorkbenchAlert ? workbenchAlertText : ''">
             <i class='bx bxs-dashboard'></i>
             <span>{{ userInfo.role === 'admin' ? '进入管理后台' : '进入商家工作台' }}</span>
             <i class='bx bx-chevron-right'></i>
@@ -819,11 +820,12 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, getCurrentInstance } from 'vue'
+import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
 import CustomerServiceView from './CustomerServiceView.vue'
+import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -834,6 +836,7 @@ const showLogoutModal = ref(false)
 const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
 const showCustomerServiceModal = ref(false)
+let badgeTimer = null
 
 const addingAccount = ref(false)
 const switchingAccount = ref('')
@@ -912,6 +915,25 @@ const merchantForm = ref({
 })
 
 const isMerchantRole = computed(() => ['merchant', 'admin'].includes(userInfo.value.role))
+const hasWorkbenchAlert = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return workbenchBadgeState.admin.totalCount > 0
+  }
+  if (userInfo.value.role === 'merchant') {
+    return workbenchBadgeState.merchant.totalCount > 0
+  }
+  return false
+})
+const workbenchAlertCount = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return Number(workbenchBadgeState.admin.totalCount || 0)
+  }
+  if (userInfo.value.role === 'merchant') {
+    return Number(workbenchBadgeState.merchant.totalCount || 0)
+  }
+  return 0
+})
+const workbenchAlertText = computed(() => (workbenchAlertCount.value > 99 ? '99+' : String(workbenchAlertCount.value || 0)))
 const receivedVisitorCount = computed(() => visitorsList.value.length || 0)
 const viewedVisitorCount = computed(() => viewedUsersList.value.length || 0)
 
@@ -1680,11 +1702,20 @@ const loadPersonalCenterData = async () => {
     resetStats()
   } finally {
     loadSavedAccounts()
+    await refreshWorkbenchBadges()
   }
 }
 
 onMounted(async () => {
   await loadPersonalCenterData()
+  badgeTimer = window.setInterval(refreshWorkbenchBadges, 60000)
+})
+
+onBeforeUnmount(() => {
+  if (badgeTimer) {
+    window.clearInterval(badgeTimer)
+    badgeTimer = null
+  }
 })
 </script>
 
@@ -1819,6 +1850,32 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  position: relative;
+}
+
+.secondary-action-btn.has-alert {
+  box-shadow: 0 0 0 1px rgba(201, 145, 63, 0.18), 0 10px 22px rgba(163, 112, 38, 0.08);
+}
+
+.workbench-alert-pill {
+  min-width: 28px;
+  height: 22px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 145, 63, 0.28);
+  background: linear-gradient(180deg, #fff8ea, #f7edd7);
+  color: #8a5a16;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.workbench-alert-pill--drawer {
+  margin-left: 12px;
 }
 
 .metric-strip {
@@ -2318,6 +2375,28 @@ onMounted(async () => {
 
 .menu-item:hover {
   background-color: #f5f5f5;
+}
+
+.menu-item--with-alert {
+  position: relative;
+}
+
+.menu-item--with-alert[data-alert]:not([data-alert=''])::after {
+  content: attr(data-alert);
+  margin-left: 12px;
+  padding: 0 8px;
+  min-width: 28px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 145, 63, 0.28);
+  background: linear-gradient(180deg, #fff8ea, #f7edd7);
+  color: #8a5a16;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .menu-item i:first-child {

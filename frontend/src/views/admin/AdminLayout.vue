@@ -31,6 +31,9 @@
               <span>{{ item.label }}</span>
               <small>{{ item.desc }}</small>
             </div>
+            <span v-if="getNavBadgeCount(item.key) > 0" class="nav-badge">
+              {{ formatBadgeCount(getNavBadgeCount(item.key)) }}
+            </span>
           </router-link>
         </nav>
 
@@ -56,10 +59,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
 
 const router = useRouter()
+let badgeTimer = null
 
 const readStoredUser = () => {
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
@@ -81,36 +86,42 @@ const isSuperAdmin = Number(currentUser?.isSuperAdmin || 0) === 1
 const navItems = computed(() => {
   const items = [
     {
+      key: 'merchants',
       to: '/admin/merchants',
       label: '商家审核',
       desc: '处理商家入驻申请',
       icon: 'bx-store-alt'
     },
     {
+      key: 'activities',
       to: '/admin/activities',
       label: '活动审核',
       desc: '审核商家发布的活动',
       icon: 'bx-calendar-check'
     },
     {
+      key: 'posts',
       to: '/admin/posts',
       label: '内容审核',
       desc: '审核用户发布内容',
       icon: 'bx-message-square-detail'
     },
     {
+      key: 'service',
       to: '/admin/service',
       label: '客服工作台',
       desc: '处理用户与商家咨询',
       icon: 'bx-support'
     },
     {
+      key: 'users',
       to: '/admin/users',
       label: '用户管理',
       desc: '封禁或恢复账号状态',
       icon: 'bx-user-circle'
     },
     {
+      key: 'official',
       to: '/admin/official',
       label: '官方内容',
       desc: '维护平台展示内容',
@@ -121,6 +132,7 @@ const navItems = computed(() => {
   if (isSuperAdmin) {
     items.splice(3, 1)
     items.unshift({
+      key: 'admins',
       to: '/admin/admins',
       label: '管理员管理',
       desc: '维护后台管理员账号',
@@ -132,7 +144,36 @@ const navItems = computed(() => {
 })
 
 const userBadge = computed(() => (isSuperAdmin ? '超级管理员' : '管理员'))
-const goBack = () => router.push('/home/heritage')
+const goBack = () => router.push('/home/personal')
+
+const navBadgeCountMap = computed(() => ({
+  merchants: workbenchBadgeState.admin.merchantsCount,
+  activities: workbenchBadgeState.admin.activitiesCount,
+  posts: workbenchBadgeState.admin.postsCount,
+  service: workbenchBadgeState.admin.serviceCount,
+  users: workbenchBadgeState.admin.usersCount,
+  admins: 0,
+  official: 0
+}))
+
+const getNavBadgeCount = (key) => Number(navBadgeCountMap.value[key] || 0)
+const formatBadgeCount = (count) => (count > 99 ? '99+' : String(count))
+
+const refreshBadges = async () => {
+  await refreshWorkbenchBadges()
+}
+
+onMounted(() => {
+  refreshBadges()
+  badgeTimer = window.setInterval(refreshBadges, 60000)
+})
+
+onBeforeUnmount(() => {
+  if (badgeTimer) {
+    window.clearInterval(badgeTimer)
+    badgeTimer = null
+  }
+})
 </script>
 
 <style scoped>
@@ -296,6 +337,25 @@ const goBack = () => router.push('/home/heritage')
   color: var(--admin-ink-soft);
   text-decoration: none;
   transition: transform 0.24s ease, background 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.nav-badge {
+  min-width: 22px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 216, 181, 0.28);
+  background: linear-gradient(180deg, rgba(251, 216, 181, 0.18), rgba(251, 216, 181, 0.1));
+  color: #fbd8b5;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .nav-item i {

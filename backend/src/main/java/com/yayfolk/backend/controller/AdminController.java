@@ -151,10 +151,13 @@ public class AdminController {
     }
 
     @PostMapping("/users/{id}/ban")
-    public ResponseDto banUser(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseDto banUser(@PathVariable Long id,
+                               @RequestBody(required = false) Map<String, Object> data,
+                               HttpServletRequest request) {
         try {
             String username = requireUsername(request);
-            adminService.banUser(username, id);
+            String reason = data != null && data.get("reason") != null ? data.get("reason").toString() : null;
+            adminService.banUser(username, id, reason);
             return ResponseDto.success("User disabled successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
@@ -167,6 +170,31 @@ public class AdminController {
             String username = requireUsername(request);
             adminService.unbanUser(username, id);
             return ResponseDto.success("User restored successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/users/unban-applications")
+    public ResponseDto getUnbanApplications(@RequestParam(required = false) String status,
+                                            HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.getUnbanApplications(username, status));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/users/unban-applications/{id}/audit")
+    public ResponseDto auditUnbanApplication(@PathVariable Long id,
+                                             @RequestBody Map<String, Object> data,
+                                             HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            boolean approve = Boolean.TRUE.equals(data.get("approve"));
+            String remark = data.get("remark") != null ? data.get("remark").toString() : null;
+            return ResponseDto.success(adminService.auditUnbanApplication(username, id, approve, remark));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
