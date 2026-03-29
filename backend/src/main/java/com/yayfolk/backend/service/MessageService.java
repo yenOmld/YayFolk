@@ -9,6 +9,7 @@ import com.yayfolk.backend.repository.MessageRepository;
 import com.yayfolk.backend.repository.NotificationRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserRepository;
+import com.yayfolk.backend.util.TextRepairUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,8 +58,8 @@ public class MessageService {
         Long userId = currentUser.getId();
         List<Map<String, Object>> result = new ArrayList<>();
 
-        result.add(createSystemConversation("comment", "评论通知", "评论通知", getUnreadCommentCount(userId)));
-        result.add(createSystemConversation("collection", "收藏通知", "收藏通知", getUnreadCollectionCount(userId)));
+        result.add(createSystemConversation("comment", "\u8BC4\u8BBA\u901A\u77E5", "\u8BC4\u8BBA\u901A\u77E5", getUnreadCommentCount(userId)));
+        result.add(createSystemConversation("collection", "\u6536\u85CF\u901A\u77E5", "\u6536\u85CF\u901A\u77E5", getUnreadCollectionCount(userId)));
 
         List<Conversation> directConversations = conversationRepository.findDirectConversationsByUserId(userId);
         for (Conversation conversation : directConversations) {
@@ -72,9 +73,9 @@ public class MessageService {
             Map<String, Object> item = new HashMap<>();
             item.put("id", conversation.getId());
             item.put("type", type);
-            item.put("name", conversationName(currentUser, otherUser, type));
+            item.put("name", visibleText(conversationName(currentUser, otherUser, type)));
             item.put("avatar", avatarOf(otherUser));
-            item.put("lastMessage", defaultString(conversation.getLastMessage()));
+            item.put("lastMessage", visibleText(conversation.getLastMessage()));
             item.put("lastMessageTime", formatDate(conversation.getLastMessageTime()));
             item.put("unreadCount", unreadCount);
             item.put("otherUserId", otherUserId);
@@ -304,7 +305,7 @@ public class MessageService {
     private Map<String, Object> toMessageMap(Message message, Long currentUserId) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", message.getId());
-        map.put("content", message.getContent());
+        map.put("content", visibleText(message.getContent()));
         map.put("time", formatDate(message.getCreateTime()));
         map.put("isSelf", currentUserId.equals(message.getSenderId()));
         map.put("isRead", message.getIsRead());
@@ -316,7 +317,7 @@ public class MessageService {
         Map<String, Object> map = new HashMap<>();
         map.put("id", notification.getId());
         map.put("type", notification.getType());
-        map.put("content", notification.getContent());
+        map.put("content", visibleText(notification.getContent()));
         map.put("time", formatDate(notification.getCreateTime()));
         map.put("isRead", notification.getIsRead());
 
@@ -366,14 +367,14 @@ public class MessageService {
             return "Unknown user";
         }
         if (StringUtils.hasText(user.getNickname())) {
-            return user.getNickname();
+            return visibleText(user.getNickname());
         }
-        return defaultString(user.getUsername());
+        return visibleText(user.getUsername());
     }
 
     private String conversationName(User currentUser, User otherUser, String type) {
         if ("service".equals(type) && !isAdmin(currentUser)) {
-            return "在线客服";
+            return "\u5728\u7EBF\u5BA2\u670D";
         }
         return displayName(otherUser);
     }
@@ -387,7 +388,7 @@ public class MessageService {
             .stream()
             .filter(admin -> admin.getId() != null && !admin.getId().equals(requesterId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("暂无可用客服，请稍后再试"));
+            .orElseThrow(() -> new RuntimeException("\u6682\u65E0\u53EF\u7528\u5BA2\u670D\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5"));
     }
 
     private Map<String, Object> buildConversationDetail(User currentUser, Conversation conversation, User otherUser) {
@@ -417,6 +418,10 @@ public class MessageService {
 
     private String defaultString(String value) {
         return value == null ? "" : value;
+    }
+
+    private String visibleText(String value) {
+        return TextRepairUtils.repairIfNeeded(defaultString(value));
     }
 
     private String formatDate(Date date) {
@@ -552,7 +557,7 @@ public class MessageService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("messageId", messageId);
-        result.put("content", content);
+        result.put("content", visibleText(content));
         result.put("conversationId", conversationId);
         return result;
     }
@@ -572,12 +577,13 @@ public class MessageService {
         }
 
         String sourceLang = message.getSourceLang();
+        String content = visibleText(message.getContent());
         if (sourceLang == null || "auto".equals(sourceLang)) {
-            sourceLang = detectLanguage(message.getContent());
+            sourceLang = detectLanguage(content);
         }
 
         com.yayfolk.backend.dto.TranslateRequest request = new com.yayfolk.backend.dto.TranslateRequest();
-        request.setText(message.getContent());
+        request.setText(content);
         request.setSourceLang(sourceLang);
         request.setTargetLang(targetLang);
 

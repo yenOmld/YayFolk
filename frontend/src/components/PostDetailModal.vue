@@ -136,6 +136,10 @@
                 <i class='bx bx-share-alt'></i>
                 <span>{{ $t('postDetail.forward') }}</span>
               </button>
+              <button class="interaction-btn report-btn" @click="reportPost">
+                <i class='bx bx-error-circle'></i>
+                <span>举报</span>
+              </button>
             </div>
             <div class="comment-input">
               <div v-if="replyToCommentId" class="reply-info">
@@ -244,6 +248,7 @@ import { useI18n } from 'vue-i18n'
 import {
   createDiscoverPostComment,
   deleteDiscoverComment,
+  reportDiscoverPost,
   translateDiscoverComment,
   translateDiscoverPost,
   toggleDiscoverCommentLike,
@@ -405,6 +410,33 @@ const toggleCollect = async () => {
     emit('update', { ...props.post, bookmarked, collects })
   } catch (error) {
     notify.error(t('postDetail.collectFailed'))
+  }
+}
+
+const reportPost = async () => {
+  if (!props.post?.id) return
+  const confirmed = window.confirm('确认举报该内容吗？')
+  if (!confirmed) return
+
+  const reasonInput = window.prompt('请输入举报原因（选填）', '')
+  if (reasonInput === null) return
+  const reason = reasonInput.trim()
+
+  try {
+    const response = await reportDiscoverPost(props.post.id, reason)
+    if (response.code !== 200) {
+      notify.error(response.message || '举报提交失败')
+      return
+    }
+    emit('update', {
+      ...props.post,
+      auditStatus: response.data?.auditStatus || props.post.auditStatus,
+      auditRemark: response.data?.auditRemark || props.post.auditRemark
+    })
+    notify.success('举报已提交，管理员将优先复核')
+    emit('close')
+  } catch (error) {
+    notify.error('举报提交失败，请稍后重试')
   }
 }
 
@@ -1339,6 +1371,14 @@ const copyLink = async () => {
 
 .share-btn {
   margin-left: auto;
+}
+
+.report-btn {
+  color: #b91c1c;
+}
+
+.report-btn:hover {
+  background: #fee2e2;
 }
 
 .share-modal {

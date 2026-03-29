@@ -5,18 +5,23 @@ import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.MerchantApplication;
 import com.yayfolk.backend.entity.MerchantProfile;
 import com.yayfolk.backend.entity.OfficialContent;
+import com.yayfolk.backend.entity.PostReport;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
 import com.yayfolk.backend.repository.MerchantProfileRepository;
 import com.yayfolk.backend.repository.OfficialContentRepository;
+import com.yayfolk.backend.repository.PostReportRepository;
 import com.yayfolk.backend.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +29,12 @@ import java.util.Map;
 
 @Service
 @Transactional
+@Slf4j
 public class AdminService {
+    private static final String AUDIT_STATUS_PASSED = "passed";
+    private static final String AUDIT_STATUS_REJECTED = "rejected";
+    private static final String REPORT_STATUS_PENDING = "pending";
+    private static final String REPORT_STATUS_PROCESSED = "processed";
 
     private final UserRepository userRepository;
     private final MerchantProfileRepository merchantProfileRepository;
@@ -32,6 +42,7 @@ public class AdminService {
     private final ActivityRepository activityRepository;
     private final DiscoverPostRepository postRepository;
     private final OfficialContentRepository officialContentRepository;
+    private final PostReportRepository postReportRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AdminService(UserRepository userRepository,
@@ -39,13 +50,15 @@ public class AdminService {
                         MerchantApplicationRepository applicationRepository,
                         ActivityRepository activityRepository,
                         DiscoverPostRepository postRepository,
-                        OfficialContentRepository officialContentRepository) {
+                        OfficialContentRepository officialContentRepository,
+                        PostReportRepository postReportRepository) {
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.applicationRepository = applicationRepository;
         this.activityRepository = activityRepository;
         this.postRepository = postRepository;
         this.officialContentRepository = officialContentRepository;
+        this.postReportRepository = postReportRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -269,6 +282,26 @@ public class AdminService {
         } else {
             posts = postRepository.findByStatusOrderByCreateTimeDesc(1);
         }
+        Map<Long, Integer> pendingReportCountMap = buildPendingReportCountMap(posts);
+        posts.sort((left, right) -> {
+            int leftCount = pendingReportCountMap.getOrDefault(left.getId(), 0);
+            int rightCount = pendingReportCountMap.getOrDefault(right.getId(), 0);
+            if (leftCount != rightCount) {
+                return Integer.compare(rightCount, leftCount);
+            }
+            Date leftTime = left.getCreateTime();
+            Date rightTime = right.getCreateTime();
+            if (leftTime == null && rightTime == null) {
+                return 0;
+            }
+            if (leftTime == null) {
+                return 1;
+            }
+            if (rightTime == null) {
+                return -1;
+            }
+            return rightTime.compareTo(leftTime);
+        });
 
         List<Map<String, Object>> result = new ArrayList<>();
         int start = Math.max(page, 0) * size;
@@ -287,6 +320,7 @@ public class AdminService {
             m.put("category", p.getCategory());
             m.put("auditStatus", p.getAuditStatus());
             m.put("auditRemark", p.getAuditRemark());
+            m.put("pendingReportCount", pendingReportCountMap.getOrDefault(p.getId(), 0));
             m.put("createTime", p.getCreateTime());
             userRepository.findById(p.getUserId()).ifPresent(u -> {
                 m.put("username", u.getUsername());
@@ -298,22 +332,111 @@ public class AdminService {
     }
 
     public Map<String, Object> auditPost(String adminUsername, Long postId, boolean pass, String remark) {
-        requireAdmin(adminUsername);
+        User admin = requireAdmin(adminUsername);
         DiscoverPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post does not exist"));
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
             throw new RuntimeException("驳回原因不能为空");
         }
-        post.setAuditStatus(pass ? "passed" : "rejected");
+        post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
         post.setAuditRemark(pass ? null : trimmedRemark);
         postRepository.save(post);
+        resolvePendingReports(postId, admin.getId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", post.getId());
         result.put("auditStatus", post.getAuditStatus());
         result.put("auditRemark", post.getAuditRemark());
         return result;
+    }
+
+    public Map<String, Object> batchAuditPosts(String adminUsername, List<Long> postIds, boolean pass, String remark) {
+        User admin = requireAdmin(adminUsername);
+        if (postIds == null || postIds.isEmpty()) {
+            throw new RuntimeException("Please select posts first");
+        }
+        String trimmedRemark = remark == null ? null : remark.trim();
+        if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
+            throw new RuntimeException("Please provide a rejection reason");
+        }
+
+        List<Long> successIds = new ArrayList<Long>();
+        List<Map<String, Object>> failures = new ArrayList<Map<String, Object>>();
+        for (Long postId : postIds) {
+            if (postId == null) {
+                continue;
+            }
+            try {
+                DiscoverPost post = postRepository.findById(postId)
+                        .orElseThrow(() -> new RuntimeException("Post does not exist"));
+                post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
+                post.setAuditRemark(pass ? null : trimmedRemark);
+                postRepository.save(post);
+                resolvePendingReports(postId, admin.getId());
+                successIds.add(postId);
+            } catch (Exception e) {
+                Map<String, Object> failed = new HashMap<String, Object>();
+                failed.put("id", postId);
+                failed.put("message", e.getMessage());
+                failures.add(failed);
+            }
+        }
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("successIds", successIds);
+        result.put("failed", failures);
+        result.put("successCount", successIds.size());
+        result.put("failedCount", failures.size());
+        return result;
+    }
+
+    private Map<Long, Integer> buildPendingReportCountMap(List<DiscoverPost> posts) {
+        if (posts == null || posts.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        try {
+            List<Long> postIds = new ArrayList<Long>();
+            for (DiscoverPost post : posts) {
+                if (post != null && post.getId() != null) {
+                    postIds.add(post.getId());
+                }
+            }
+            if (postIds.isEmpty()) {
+                return Collections.emptyMap();
+            }
+            List<PostReport> reports = postReportRepository.findByPostIdInAndStatus(postIds, REPORT_STATUS_PENDING);
+            Map<Long, Integer> countMap = new HashMap<Long, Integer>();
+            for (PostReport report : reports) {
+                Long postId = report.getPostId();
+                if (postId == null) {
+                    continue;
+                }
+                countMap.put(postId, countMap.getOrDefault(postId, 0) + 1);
+            }
+            return countMap;
+        } catch (DataAccessException e) {
+            log.warn("Failed to query pending report counts; fallback to zero counts", e);
+            return Collections.emptyMap();
+        }
+    }
+
+    private void resolvePendingReports(Long postId, Long handlerId) {
+        try {
+            List<PostReport> pendingReports = postReportRepository.findByPostIdAndStatus(postId, REPORT_STATUS_PENDING);
+            if (pendingReports.isEmpty()) {
+                return;
+            }
+            Date now = new Date();
+            for (PostReport report : pendingReports) {
+                report.setStatus(REPORT_STATUS_PROCESSED);
+                report.setHandlerId(handlerId);
+                report.setHandleTime(now);
+            }
+            postReportRepository.saveAll(pendingReports);
+        } catch (DataAccessException e) {
+            log.warn("Failed to resolve pending reports for post {}", postId, e);
+        }
     }
 
     // User management

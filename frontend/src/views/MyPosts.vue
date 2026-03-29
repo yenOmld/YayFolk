@@ -30,7 +30,7 @@
             <div class="post-tags" v-if="post.hashtags && post.hashtags.length > 0">
               <span class="tag" v-for="(tag, index) in post.hashtags.slice(0, 3)" :key="index">#{{ tag }}</span>
             </div>
-                        <p v-if="post.auditStatus === 'rejected' && post.auditRemark" class="audit-remark">
+                        <p v-if="(post.auditStatus === 'rejected' || post.auditStatus === 'manual_review') && post.auditRemark" class="audit-remark">
               驳回原因：{{ post.auditRemark }}
             </p>
             <div class="post-meta">
@@ -269,6 +269,7 @@ const goToTranslate = () => {
 const formatAuditStatus = (status) => {
   const labels = {
     pending: 'Pending review',
+    manual_review: 'Under manual review',
     passed: 'Approved',
     rejected: 'Needs changes'
   }
@@ -744,6 +745,11 @@ onMounted(() => {
 .audit-chip.passed {
   background: #dcfce7;
   color: #15803d;
+}
+
+.audit-chip.manual_review {
+  background: #ffedd5;
+  color: #c2410c;
 }
 
 .audit-chip.rejected {

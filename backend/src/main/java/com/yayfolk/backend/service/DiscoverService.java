@@ -7,6 +7,8 @@ import com.yayfolk.backend.dto.TranslateResponse;
 import com.yayfolk.backend.entity.*;
 import com.yayfolk.backend.repository.*;
 import com.yayfolk.backend.util.OssUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +17,36 @@ import org.springframework.util.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class DiscoverService {
     private static final String AUDIT_STATUS_PENDING = "pending";
     private static final String AUDIT_STATUS_PASSED = "passed";
+    private static final String AUDIT_STATUS_REJECTED = "rejected";
+    private static final String AUDIT_STATUS_MANUAL_REVIEW = "manual_review";
+    private static final String REPORT_STATUS_PENDING = "pending";
     private static final long TRANSLATE_CACHE_DAYS = 7;
+    private static final List<String> FORBIDDEN_KEYWORDS = Arrays.asList(
+        "微信", "v信", "vx", "wechat", "qq", "二维码", "扫码", "联系方式", "广告", "代购", "返利", "引流", "推广"
+    );
+    private static final Pattern PHONE_PATTERN = Pattern.compile("(?<!\\d)1\\d{10}(?!\\d)");
+    private static final Pattern WECHAT_PATTERN = Pattern.compile("(?i)(微信|vx|v信|wechat|wx)\\s*[:：]?[\\s\\-_]*[a-z][a-z0-9\\-_]{5,19}");
+    private static final Pattern QQ_PATTERN = Pattern.compile("(?i)(qq|q号|企鹅号)?\\s*[:：]?[\\s\\-_]*[1-9][0-9]{4,11}");
     
+    private static final List<String> MODERATION_KEYWORDS = Arrays.asList(
+        "微信", "v信", "vx", "wechat", "wx", "qq",
+        "二维码", "扫码", "联系方式", "联系电话", "加我",
+        "广告", "推广", "引流", "代购", "返利", "私聊",
+        "品牌合作", "品牌广告", "招商", "代理", "加盟"
+    );
+    private static final Pattern MODERATION_PHONE_PATTERN = Pattern.compile("(?<!\\d)(?:1\\d{10}|0\\d{2,3}-?\\d{7,8})(?!\\d)");
+    private static final Pattern MODERATION_WECHAT_PATTERN = Pattern.compile("(?i)(微信|wechat|wx|vx|v信)\\s*[:：]?[\\s\\-_]*[a-z][a-z0-9\\-_]{5,19}");
+    private static final Pattern MODERATION_QQ_PATTERN = Pattern.compile("(?i)(qq|q号|企鹅号)\\s*[:：]?[\\s\\-_]*[1-9][0-9]{4,11}");
+    private static final Pattern MODERATION_URL_PATTERN = Pattern.compile("(?i)\\b(?:https?://|www\\.)\\S+");
+
     private static final Map<String, Set<String>> TAG_I18N_MAP = new HashMap<>();
     static {
         Set<String> travelTags = new HashSet<>(Arrays.asList("旅行", "travel", "travel", "여행"));
@@ -57,9 +81,11 @@ public class DiscoverService {
     private final DiscoverPostHistoryRepository historyRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final PostReportRepository postReportRepository;
     private final ObjectMapper objectMapper;
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
+    private final BaiduContentAuditService baiduContentAuditService;
     private final OssUtil ossUtil;
 
     public DiscoverService(DiscoverPostRepository postRepository,
@@ -69,9 +95,11 @@ public class DiscoverService {
                            DiscoverPostHistoryRepository historyRepository,
                            UserRepository userRepository,
                            NotificationRepository notificationRepository,
+                           PostReportRepository postReportRepository,
                            ObjectMapper objectMapper,
                            StringRedisTemplate redisTemplate,
                            TranslateService translateService,
+                           BaiduContentAuditService baiduContentAuditService,
                            OssUtil ossUtil) {
         this.postRepository = postRepository;
         this.collectionRepository = collectionRepository;
@@ -80,9 +108,11 @@ public class DiscoverService {
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
         this.notificationRepository = notificationRepository;
+        this.postReportRepository = postReportRepository;
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
         this.translateService = translateService;
+        this.baiduContentAuditService = baiduContentAuditService;
         this.ossUtil = ossUtil;
     }
 
@@ -200,7 +230,8 @@ public class DiscoverService {
     }
 
     public Map<String, Object> createPost(String username, Map<String, Object> payload) {
-        Long userId = findUserId(username);
+        User author = findUser(username);
+        Long userId = author.getId();
         String title = normalizeText((String) payload.get("title"));
         String content = normalizeText((String) payload.get("content"));
         if (!StringUtils.hasText(title)) {
@@ -214,6 +245,9 @@ public class DiscoverService {
         if (!StringUtils.hasText(category)) {
             category = "travel";
         }
+        List<String> imageUrls = readStringArray(writeJsonArray(payload.get("images")));
+        List<String> videoUrls = readStringArray(writeJsonArray(payload.get("videos")));
+        ModerationDecision decision = runModerationPipeline(author, null, title, content, imageUrls, videoUrls);
 
         DiscoverPost post = new DiscoverPost();
         post.setUserId(userId);
@@ -221,20 +255,20 @@ public class DiscoverService {
         post.setContent(content);
         post.setSourceLang(detectLanguage(content));
         post.setCategory(category);
-        post.setImages(writeJsonArray(payload.get("images")));
+        post.setImages(writeJsonArray(imageUrls));
         post.setTags(writeJsonArray(payload.get("tags")));
         post.setStatus(1);
-        post.setAuditStatus(AUDIT_STATUS_PENDING);
-        post.setAuditRemark(null);
+        post.setAuditStatus(decision.getAuditStatus());
+        post.setAuditRemark(decision.getAuditRemark());
 
         DiscoverPost saved = postRepository.save(post);
-        User author = userRepository.findById(userId).orElse(null);
         return toPostSummary(saved, author, false);
     }
 
     @Transactional
     public Map<String, Object> updatePost(String username, Long postId, Map<String, Object> payload) {
-        Long userId = findUserId(username);
+        User author = findUser(username);
+        Long userId = author.getId();
         DiscoverPost post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post does not exist"));
         if (!userId.equals(post.getUserId())) {
@@ -260,26 +294,27 @@ public class DiscoverService {
 
         List<String> oldImages = readStringArray(post.getImages());
         List<String> newImages = readStringArray(writeJsonArray(payload.get("images")));
+        List<String> videoUrls = readStringArray(writeJsonArray(payload.get("videos")));
         for (String oldImage : oldImages) {
             if (!newImages.contains(oldImage) && ossUtil.isOssUrl(oldImage)) {
                 ossUtil.deleteFile(oldImage);
                 System.out.println("Deleted removed post image: " + oldImage);
             }
         }
+        ModerationDecision decision = runModerationPipeline(author, postId, title, content, newImages, videoUrls);
 
         post.setTitle(title);
         post.setContent(content);
         post.setSourceLang(detectLanguage(content));
         post.setCategory(category);
-        post.setImages(writeJsonArray(payload.get("images")));
+        post.setImages(writeJsonArray(newImages));
         post.setTags(writeJsonArray(payload.get("tags")));
         post.setStatus(1);
-        post.setAuditStatus(AUDIT_STATUS_PENDING);
-        post.setAuditRemark(null);
+        post.setAuditStatus(decision.getAuditStatus());
+        post.setAuditRemark(decision.getAuditRemark());
         DiscoverPost saved = postRepository.save(post);
         clearPostTranslateCache(postId);
 
-        User author = userRepository.findById(userId).orElse(null);
         return toPostSummary(saved, author, false);
     }
 
@@ -560,6 +595,55 @@ public class DiscoverService {
         collectionRepository.deleteByUserIdAndPostId(userId, postId);
     }
 
+    @Transactional
+    public Map<String, Object> reportPost(String username, Long postId, Map<String, Object> payload) {
+        User reporter = findUser(username);
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!isActivePost(post)) {
+            throw new RuntimeException("Post does not exist");
+        }
+        if (reporter.getId() != null && reporter.getId().equals(post.getUserId())) {
+            throw new RuntimeException("You cannot report your own post");
+        }
+
+        Object reasonObj = payload == null ? null : payload.get("reason");
+        String reason = normalizeText(reasonObj == null ? "" : String.valueOf(reasonObj));
+        if (!StringUtils.hasText(reason)) {
+            reason = "Reported as potentially violating community policy";
+        }
+
+        try {
+            if (postReportRepository.existsByPostIdAndReporterIdAndStatus(postId, reporter.getId(), REPORT_STATUS_PENDING)) {
+                throw new RuntimeException("You have already reported this post");
+            }
+
+            PostReport report = new PostReport();
+            report.setPostId(postId);
+            report.setReporterId(reporter.getId());
+            report.setReason(reason);
+            report.setStatus(REPORT_STATUS_PENDING);
+            postReportRepository.save(report);
+
+            long pendingReportCount = postReportRepository.countByPostIdAndStatus(postId, REPORT_STATUS_PENDING);
+            if (!AUDIT_STATUS_REJECTED.equalsIgnoreCase(defaultString(post.getAuditStatus()))) {
+                post.setAuditStatus(AUDIT_STATUS_MANUAL_REVIEW);
+                post.setAuditRemark("User reported (" + pendingReportCount + "): " + truncateContent(reason, 120));
+                postRepository.save(post);
+            }
+
+            Map<String, Object> result = new HashMap<String, Object>();
+            result.put("postId", postId);
+            result.put("auditStatus", post.getAuditStatus());
+            result.put("auditRemark", post.getAuditRemark());
+            result.put("pendingReportCount", pendingReportCount);
+            return result;
+        } catch (DataAccessException e) {
+            log.error("Failed to report post, postId={}", postId, e);
+            throw new RuntimeException("Report service temporarily unavailable, please try again later");
+        }
+    }
+
     public List<Map<String, Object>> getMyHistory(String username) {
         Long userId = findUserId(username);
         List<DiscoverPostHistory> histories = historyRepository.findByUserIdOrderByLastViewTimeDesc(userId);
@@ -711,7 +795,7 @@ public class DiscoverService {
     }
 
     private boolean isRejectedPost(DiscoverPost post) {
-        return post != null && "rejected".equalsIgnoreCase(defaultString(post.getAuditStatus()));
+        return post != null && AUDIT_STATUS_REJECTED.equalsIgnoreCase(defaultString(post.getAuditStatus()));
     }
 
     private boolean isApprovedPost(DiscoverPost post) {
@@ -739,9 +823,133 @@ public class DiscoverService {
     }
 
     private Long findUserId(String username) {
-        User user = userRepository.findByUsername(username)
+        return findUser(username).getId();
+    }
+
+    private User findUser(String username) {
+        return userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User does not exist"));
-        return user.getId();
+    }
+
+    private ModerationDecision runModerationPipeline(User author,
+                                                     Long editingPostId,
+                                                     String title,
+                                                     String content,
+                                                     List<String> imageUrls,
+                                                     List<String> videoUrls) {
+        String ruleReason = detectRuleViolation(author, editingPostId, title, content);
+        if (StringUtils.hasText(ruleReason)) {
+            return new ModerationDecision(AUDIT_STATUS_REJECTED, "Rule blocked: " + ruleReason);
+        }
+
+        BaiduContentAuditService.AuditOutcome aiResult = baiduContentAuditService.auditPostContent(
+            buildTextForAudit(title, content),
+            imageUrls,
+            videoUrls
+        );
+
+        if (aiResult.getDecision() == BaiduContentAuditService.Decision.REJECT) {
+            return new ModerationDecision(AUDIT_STATUS_REJECTED, "AI blocked: " + aiResult.getReason());
+        }
+        if (aiResult.getDecision() == BaiduContentAuditService.Decision.REVIEW) {
+            return new ModerationDecision(AUDIT_STATUS_MANUAL_REVIEW, "AI uncertain: " + aiResult.getReason());
+        }
+        return new ModerationDecision(AUDIT_STATUS_PASSED, null);
+    }
+
+    private String detectRuleViolation(User author, Long editingPostId, String title, String content) {
+        if (author == null || author.getId() == null) {
+            return "Invalid author";
+        }
+        if (author.getStatus() != null && author.getStatus() == 0) {
+            return "Account is disabled";
+        }
+
+        String fullText = buildTextForAudit(title, content);
+        if (containsForbiddenContent(fullText)) {
+            return "Contains prohibited contact, advertising, or banned keywords";
+        }
+        if (isDuplicatePost(author.getId(), editingPostId, title, content)) {
+            return "Duplicate content detected";
+        }
+        return null;
+    }
+
+    private boolean containsForbiddenContent(String text) {
+        if (!StringUtils.hasText(text)) {
+            return false;
+        }
+        String lowerText = text.toLowerCase();
+        for (String keyword : MODERATION_KEYWORDS) {
+            if (lowerText.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return MODERATION_PHONE_PATTERN.matcher(text).find()
+            || MODERATION_WECHAT_PATTERN.matcher(text).find()
+            || MODERATION_QQ_PATTERN.matcher(text).find()
+            || MODERATION_URL_PATTERN.matcher(text).find();
+    }
+
+    private boolean isDuplicatePost(Long userId, Long editingPostId, String title, String content) {
+        String normalizedNew = normalizeForDuplicate(buildTextForAudit(title, content));
+        if (!StringUtils.hasText(normalizedNew) || normalizedNew.length() < 24) {
+            return false;
+        }
+
+        List<DiscoverPost> historyPosts = postRepository.findByUserIdAndStatusOrderByCreateTimeDesc(userId, 1);
+        for (DiscoverPost existing : historyPosts) {
+            if (existing == null || existing.getId() == null) {
+                continue;
+            }
+            if (editingPostId != null && editingPostId.equals(existing.getId())) {
+                continue;
+            }
+            String normalizedExisting = normalizeForDuplicate(
+                buildTextForAudit(defaultString(existing.getTitle()), defaultString(existing.getContent()))
+            );
+            if (normalizedNew.equals(normalizedExisting)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String normalizeForDuplicate(String text) {
+        if (!StringUtils.hasText(text)) {
+            return "";
+        }
+        return text.toLowerCase().replaceAll("[\\p{Punct}\\p{IsPunctuation}\\s]+", "");
+    }
+
+    private String buildTextForAudit(String title, String content) {
+        String safeTitle = defaultString(title);
+        String safeContent = defaultString(content);
+        if (!StringUtils.hasText(safeTitle)) {
+            return safeContent;
+        }
+        if (!StringUtils.hasText(safeContent)) {
+            return safeTitle;
+        }
+        return safeTitle + "\n" + safeContent;
+    }
+
+    private static class ModerationDecision {
+        private final String auditStatus;
+        private final String auditRemark;
+
+        private ModerationDecision(String auditStatus, String auditRemark) {
+            this.auditStatus = auditStatus;
+            this.auditRemark = auditRemark;
+        }
+
+        public String getAuditStatus() {
+            return auditStatus;
+        }
+
+        public String getAuditRemark() {
+            return auditRemark;
+        }
     }
 
     private List<String> readStringArray(String json) {

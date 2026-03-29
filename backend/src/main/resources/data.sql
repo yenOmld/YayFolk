@@ -18,3 +18,17 @@ SET
   avatar = COALESCE(avatar, 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'), 
   update_time = NOW() 
 WHERE username = 'admin';
+
+-- 帖子举报记录（用于举报优先人工审核）
+CREATE TABLE IF NOT EXISTS post_reports (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  post_id BIGINT NOT NULL,
+  reporter_id BIGINT NOT NULL,
+  reason VARCHAR(500) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  handler_id BIGINT NULL,
+  handle_time DATETIME NULL,
+  create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_post_reports_post_status (post_id, status),
+  INDEX idx_post_reports_reporter_status (reporter_id, status)
+);

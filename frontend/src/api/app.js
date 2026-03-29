@@ -68,6 +68,10 @@ export const toggleDiscoverPostCollect = (postId) => {
   return request.post(`/discover/posts/${postId}/collect`)
 }
 
+export const reportDiscoverPost = (postId, reason) => {
+  return request.post(`/discover/posts/${postId}/report`, { reason })
+}
+
 export const createDiscoverPostComment = (postId, data) => {
   return request.post(`/discover/posts/${postId}/comments`, data)
 }
@@ -239,6 +243,7 @@ export const getAdminActivities = (auditStatus) => request.get('/admin/activitie
 export const auditAdminActivity = (id, approve, remark) => request.post(`/admin/activities/${id}/audit`, { approve, remark })
 export const getAdminPosts = (auditStatus, page = 0, size = 20) => request.get('/admin/posts', { params: { auditStatus, page, size } })
 export const auditPost = (id, pass, remark) => request.post(`/admin/posts/${id}/audit`, { pass, remark })
+export const batchAuditPosts = (ids, pass, remark) => request.post('/admin/posts/batch-audit', { ids, pass, remark })
 export const getAdminUsers = (page = 0, size = 20, keyword) => request.get('/admin/users', { params: { page, size, keyword } })
 export const banUser = (id) => request.post(`/admin/users/${id}/ban`)
 export const unbanUser = (id) => request.post(`/admin/users/${id}/unban`)

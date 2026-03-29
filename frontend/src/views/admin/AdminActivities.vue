@@ -79,12 +79,22 @@
 
         <div class="modal-field">
           <label class="field-label">驳回原因</label>
+          <select v-model="auditModal.reasonPreset" class="reason-select">
+            <option value="">请选择驳回原因</option>
+            <option
+              v-for="option in activityRejectReasonOptions"
+              :key="option"
+              :value="option"
+            >
+              {{ option }}
+            </option>
+          </select>
           <textarea
             v-model.trim="auditModal.remark"
             rows="4"
-            placeholder="请填写驳回原因，方便商家修改后重新提交"
+            placeholder="可补充说明（选填）"
           />
-          <small class="field-hint">通过不需要填写原因，只有驳回时必须填写。</small>
+          <small class="field-hint">建议先选择预设原因，如有需要可在下方补充说明。</small>
         </div>
 
         <div class="modal-actions">
@@ -103,6 +113,14 @@ import { auditAdminActivity, getAdminActivities } from '@/api/app.js'
 const { appContext } = getCurrentInstance()
 const notify = (msg, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(msg)
 
+const activityRejectReasonOptions = [
+  '活动主题与非遗分类不匹配',
+  '活动时间或地点信息不完整',
+  '活动内容存在营销引流风险',
+  '活动描述夸大或信息不真实',
+  '存在安全合规风险',
+  '其他'
+]
 const tabs = [
   { label: '全部', value: '' },
   { label: '待审核', value: 'pending' },
@@ -119,6 +137,7 @@ const pageSize = 3
 const auditModal = ref({
   show: false,
   item: null,
+  reasonPreset: '',
   remark: ''
 })
 
@@ -176,6 +195,7 @@ const openReject = (item) => {
   auditModal.value = {
     show: true,
     item,
+    reasonPreset: '',
     remark: ''
   }
 }
@@ -192,8 +212,24 @@ const closeReject = () => {
   auditModal.value = {
     show: false,
     item: null,
+    reasonPreset: '',
     remark: ''
   }
+}
+
+const buildRejectRemark = (reasonPreset, remark) => {
+  const preset = String(reasonPreset || '').trim()
+  const extra = String(remark || '').trim()
+  if (!preset && !extra) {
+    return ''
+  }
+  if (!preset) {
+    return extra
+  }
+  if (!extra || extra === preset) {
+    return preset
+  }
+  return `${preset}; ${extra}`
 }
 
 const handleApprove = async (item) => {
@@ -210,13 +246,14 @@ const handleApprove = async (item) => {
 }
 
 const submitReject = async () => {
-  const { item, remark } = auditModal.value
-  if (!remark) {
+  const { item, reasonPreset, remark } = auditModal.value
+  const finalRemark = buildRejectRemark(reasonPreset, remark)
+  if (!finalRemark) {
     notify('请先填写驳回原因', 'warning')
     return
   }
   try {
-    const res = await auditAdminActivity(item.id, false, remark)
+    const res = await auditAdminActivity(item.id, false, finalRemark)
     if (res.code !== 200) {
       throw new Error(res.message || '审核失败')
     }
@@ -585,10 +622,50 @@ onMounted(load)
   line-height: 1.7;
 }
 
+.reason-select {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  border: 1px solid #94a3b8;
+  border-radius: 12px;
+  padding: 0 40px 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #0f172a;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
 .modal textarea:focus {
   outline: none;
   border-color: #0f766e;
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.reason-select:hover {
+  border-color: #64748b;
+}
+
+.reason-select:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.reason-select option {
+  color: #0f172a;
+  background: #fff;
 }
 
 .field-hint {

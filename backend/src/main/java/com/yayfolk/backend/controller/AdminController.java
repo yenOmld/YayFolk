@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -105,6 +107,31 @@ public class AdminController {
             boolean pass = Boolean.TRUE.equals(data.get("pass"));
             String remark = data.get("remark") != null ? data.get("remark").toString() : null;
             return ResponseDto.success(adminService.auditPost(username, id, pass, remark));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/posts/batch-audit")
+    public ResponseDto batchAuditPosts(@RequestBody Map<String, Object> data,
+                                       HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            Object idsObj = data.get("ids");
+            if (!(idsObj instanceof List)) {
+                return ResponseDto.error(400, "Invalid ids");
+            }
+            List<Long> ids = new ArrayList<Long>();
+            for (Object item : (List<?>) idsObj) {
+                if (item instanceof Number) {
+                    ids.add(((Number) item).longValue());
+                } else if (item != null) {
+                    ids.add(Long.parseLong(item.toString()));
+                }
+            }
+            boolean pass = Boolean.TRUE.equals(data.get("pass"));
+            String remark = data.get("remark") != null ? data.get("remark").toString() : null;
+            return ResponseDto.success(adminService.batchAuditPosts(username, ids, pass, remark));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

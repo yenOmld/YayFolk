@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="personal-center">
     <!-- 顶部设置图标 -->
     <div class="page-header">
@@ -12,6 +12,13 @@
         设置
       </button>
     </div>
+    
+    <!-- 客服消息模态框 -->
+    <CustomerServiceView 
+      :visible="showCustomerServiceModal" 
+      @close="showCustomerServiceModal = false"
+    />
+
 
     <!-- 个人信息概览 -->
     <div class="overview-card">
@@ -816,6 +823,7 @@ import { computed, ref, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
+import CustomerServiceView from './CustomerServiceView.vue'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -825,6 +833,8 @@ const { t } = useI18n()
 const showLogoutModal = ref(false)
 const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
+const showCustomerServiceModal = ref(false)
+
 const addingAccount = ref(false)
 const switchingAccount = ref('')
 const savedAccounts = ref([])
@@ -1447,19 +1457,7 @@ const submitPasswordChange = async () => {
 // 显示关于我们
 const openCustomerService = async () => {
   closeSettingsDrawer()
-  try {
-    const response = await createCustomerServiceConversation()
-    if (response.code === 200 && response.data?.id) {
-      router.push({
-        path: '/notification',
-        query: { conversationId: response.data.id }
-      })
-      return
-    }
-    notify.error(response.message || t('personal.contactServiceFailed'))
-  } catch (error) {
-    notify.error(t('personal.contactServiceFailed'))
-  }
+  showCustomerServiceModal.value = true
 }
 
 // 显示退出登录确认

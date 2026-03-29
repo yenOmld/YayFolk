@@ -202,11 +202,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.admin-service-page {
+  --service-layout-height: clamp(640px, calc(100dvh - 180px), 940px);
+}
+
 .service-layout {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 20px;
-  min-height: calc(100vh - 220px);
+  height: var(--service-layout-height);
+  min-height: var(--service-layout-height);
+  overflow: hidden;
 }
 
 .service-sidebar,
@@ -214,23 +220,62 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 20px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .toolbar-row {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.search-box input {
+  width: 100%;
+  min-width: 0;
 }
 
 .search-box {
+  flex: 3;
+}
+
+.search-btn {
   flex: 1;
+  min-width: 80px;
 }
 
 .conversation-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 216, 181, 0.55) transparent;
+}
+
+.conversation-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(251, 216, 181, 0.75), rgba(219, 176, 139, 0.66));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(251, 216, 181, 0.95), rgba(219, 176, 139, 0.86));
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .service-item {
@@ -303,11 +348,13 @@ onMounted(() => {
   min-height: 180px;
   color: rgba(247, 244, 238, 0.72);
   text-align: center;
+  flex: 1;
 }
 
 .panel-header {
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 
 .panel-header h3 {
@@ -322,8 +369,33 @@ onMounted(() => {
 
 .message-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 216, 181, 0.55) transparent;
+}
+
+.message-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(251, 216, 181, 0.75), rgba(219, 176, 139, 0.66));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(251, 216, 181, 0.95), rgba(219, 176, 139, 0.86));
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .message-row {
@@ -364,6 +436,7 @@ onMounted(() => {
 .composer {
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 
 .composer textarea {
@@ -378,12 +451,24 @@ onMounted(() => {
 }
 
 @media (max-width: 1100px) {
+  .admin-service-page {
+    --service-layout-height: clamp(560px, calc(100dvh - 150px), 840px);
+  }
+
   .service-layout {
     grid-template-columns: 1fr;
+    height: var(--service-layout-height);
+    min-height: var(--service-layout-height);
   }
 
   .service-sidebar {
-    min-height: 280px;
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-service-page {
+    --service-layout-height: calc(100dvh - 120px);
   }
 }
 </style>

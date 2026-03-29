@@ -315,7 +315,8 @@ const loadConversations = async () => {
   try {
     const response = await getConversations()
     if (response.code === 200) {
-      conversations.value = response.data
+      // 过滤掉客服会话，客服消息在专门的客服页面显示
+      conversations.value = response.data.filter(item => item.type !== 'service')
     }
     return conversations.value
   } catch (error) {

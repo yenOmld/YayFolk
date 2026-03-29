@@ -61,6 +61,18 @@ public class DiscoverController {
         }
     }
 
+    @PostMapping("/posts/{id}/report")
+    public ResponseDto reportPost(@PathVariable("id") Long postId,
+                                  @RequestBody(required = false) Map<String, Object> payload,
+                                  HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(discoverService.reportPost(username, postId, payload));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     @PostMapping("/posts/{id}/collect")
     public ResponseDto toggleCollect(@PathVariable("id") Long postId, HttpServletRequest request) {
         try {

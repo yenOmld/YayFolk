@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="discover-page" @click="closeMobileMenu">
     <div class="top-nav">
       <div class="nav-content" @click.stop>
@@ -611,6 +611,10 @@ const handlePostUpdate = (updatedPost) => {
 }
 
 const syncPostInList = (updatedPost) => {
+  if (updatedPost?.auditStatus && updatedPost.auditStatus !== 'passed') {
+    posts.value = posts.value.filter(item => item.id !== updatedPost.id)
+    return
+  }
   const index = posts.value.findIndex(item => item.id === updatedPost.id)
   if (index !== -1) {
     posts.value[index] = {
