@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "*")
 public class AdminController {
 
     private final AdminService adminService;
@@ -33,6 +35,18 @@ public class AdminController {
             throw new RuntimeException("Unauthorized, please login first");
         }
         return username.toString();
+    }
+
+    private String getRequiredString(Map<String, Object> data, String key, String message) {
+        Object value = data.get(key);
+        if (value == null) {
+            throw new RuntimeException(message);
+        }
+        String text = value.toString().trim();
+        if (text.isEmpty()) {
+            throw new RuntimeException(message);
+        }
+        return text;
     }
 
     @GetMapping("/merchants")
@@ -288,4 +302,173 @@ public class AdminController {
             return ResponseDto.error(400, e.getMessage());
         }
     }
+    @GetMapping("/official/activities")
+    public ResponseDto getOfficialActivities(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.getOfficialActivities(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/official/activities")
+    public ResponseDto createOfficialActivity(@RequestBody Map<String, Object> data,
+                                              HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.createOfficialActivity(username, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/official/activities/{id}")
+    public ResponseDto updateOfficialActivity(@PathVariable Long id,
+                                              @RequestBody Map<String, Object> data,
+                                              HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.updateOfficialActivity(username, id, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/official/activities/{id}")
+    public ResponseDto deleteOfficialActivity(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            adminService.deleteOfficialActivity(username, id);
+            return ResponseDto.success("Activity deleted successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/official/heritages")
+    public ResponseDto getOfficialHeritages(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.getOfficialHeritages(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/official/heritages")
+    public ResponseDto createOfficialHeritage(@RequestBody Map<String, Object> data,
+                                              HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.createOfficialHeritage(username, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/official/heritages/{id}")
+    public ResponseDto updateOfficialHeritage(@PathVariable Long id,
+                                              @RequestBody Map<String, Object> data,
+                                              HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.updateOfficialHeritage(username, id, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/official/heritages/{id}")
+    public ResponseDto deleteOfficialHeritage(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            adminService.deleteOfficialHeritage(username, id);
+            return ResponseDto.success("Heritage deleted successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+    // Official content management - get works list (top 20 by heat)
+    @GetMapping("/official/works")
+    public ResponseDto getOfficialWorks(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.getOfficialWorks(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/official/works")
+    public ResponseDto createOfficialWork(@RequestBody Map<String, Object> data,
+                                          HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.createOfficialWork(username, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/official/works/{id}")
+    public ResponseDto updateOfficialWork(@PathVariable Long id,
+                                          @RequestBody Map<String, Object> data,
+                                          HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.updateOfficialWork(username, id, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/official/works/{id}")
+    public ResponseDto deleteOfficialWork(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            adminService.deleteOfficialWork(username, id);
+            return ResponseDto.success("Work deleted successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/official/published")
+    public ResponseDto getHomepagePublishedState(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(adminService.getHomepagePublishedState(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    // Official content management - publish to homepage
+    @PostMapping("/official/publish")
+    public ResponseDto publishToHomepage(@RequestBody Map<String, Object> data,
+                                          HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            String type = getRequiredString(data, "type", "Type is required");
+            Object idsObj = data.get("ids");
+            if (!(idsObj instanceof List)) {
+                return ResponseDto.error(400, "Invalid ids");
+            }
+            List<Long> ids = new ArrayList<Long>();
+            for (Object item : (List<?>) idsObj) {
+                if (item instanceof Number) {
+                    ids.add(((Number) item).longValue());
+                } else if (item != null) {
+                    ids.add(Long.parseLong(item.toString()));
+                }
+            }
+            return ResponseDto.success(adminService.publishToHomepage(username, type, ids));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
 }
+
+
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="promotion-page">
     <div class="banner-section" id="banner">
       <div class="banner-bg"></div>
@@ -26,25 +26,25 @@
         </div>
         <div class="about-content">
           <div class="about-text animate-left">
-          <p>我们致力于保护和传承非物质文化遗产，通过展览、教育、研究等多种方式，让更多人了解和热爱非遗文化。</p>
-          <p>我们汇集了来自全国各地的非遗技艺，包括传统工艺、戏曲、音乐、舞蹈等多个门类，为您呈现一场文化盛宴。</p>
-          <div class="about-stats">
-            <div class="stat-item animate-item" style="animation-delay: 0.1s">
-              <div class="stat-number">100+</div>
-              <div class="stat-label">非遗项目</div>
-            </div>
-            <div class="stat-item animate-item" style="animation-delay: 0.2s">
-              <div class="stat-number">50+</div>
-              <div class="stat-label">传承人</div>
-            </div>
-            <div class="stat-item animate-item" style="animation-delay: 0.3s">
-              <div class="stat-number">1000+</div>
-              <div class="stat-label">精品作品</div>
+            <p>我们致力于保护和传承非物质文化遗产，通过展览、教育、研究等多种方式，让更多人了解和热爱非遗文化。</p>
+            <p>我们汇集了来自全国各地的非遗技艺，包括传统工艺、戏曲、音乐、舞蹈等多个门类，为您呈现一场文化盛宴。</p>
+            <div class="about-stats">
+              <div class="stat-item animate-item" style="animation-delay: 0.1s">
+                <div class="stat-number">{{ events.length || '100+' }}</div>
+                <div class="stat-label">非遗项目</div>
+              </div>
+              <div class="stat-item animate-item" style="animation-delay: 0.2s">
+                <div class="stat-number">{{ knowledgeData.length || '50+' }}</div>
+                <div class="stat-label">传承人</div>
+              </div>
+              <div class="stat-item animate-item" style="animation-delay: 0.3s">
+                <div class="stat-number">{{ galleryWorks.length || '1000+' }}</div>
+                <div class="stat-label">精品作品</div>
+              </div>
             </div>
           </div>
-        </div>
           <div class="about-image animate-right">
-            <img src="/heritage/202601-养心殿-冬季-.png" alt="关于我们" />
+            <img :src="'/heritage/about-img.png'" alt="关于我们" />
           </div>
         </div>
       </div>
@@ -91,56 +91,25 @@
           <h2 class="section-title">活动宣传</h2>
         </div>
         <div class="events-list">
-          <div class="event-item animate-up" style="animation-delay: 0.1s">
+          <div v-for="(item, index) in events" :key="item.id || index" class="event-item animate-up" :style="{ animationDelay: `${(index + 1) * 0.1}s` }">
             <div class="event-image">
-              <img src="https://picsum.photos/seed/event1/500/350" alt="活动1" />
-              <div class="event-tag">热门</div>
+              <img :src="item.coverImage || fallbackCover" :alt="item.title || `活动${index + 1}`" />
+              <div class="event-tag">{{ item.statusLabel }}</div>
             </div>
             <div class="event-content">
               <div class="event-meta">
-                <span class="event-date"><i class='bx bx-calendar'></i> 2026年4月1日 - 6月30日</span>
-                <span class="event-location"><i class='bx bx-map'></i> 非遗文化中心</span>
+                <span class="event-date"><i class='bx bx-calendar'></i> {{ item.dateText }}</span>
+                <span class="event-location"><i class='bx bx-map'></i> {{ item.locationText }}</span>
               </div>
-              <h3 class="event-title">非遗文化大展</h3>
-              <p class="event-desc">汇集百项非遗技艺，展现中华文明瑰宝，邀您共赏文化盛宴</p>
-              <button class="event-link" @click="goToEventDetail('exhibition')">
+              <h3 class="event-title">{{ item.title }}</h3>
+              <p class="event-desc">{{ item.description }}</p>
+              <button class="event-link" @click="goToActivity(item.id)">
                 查看详情 <i class='bx bx-right-arrow-alt'></i>
               </button>
             </div>
           </div>
-          
-          <div class="event-item animate-up" style="animation-delay: 0.2s">
-            <div class="event-image">
-              <img src="https://picsum.photos/seed/event2/500/350" alt="活动2" />
-            </div>
-            <div class="event-content">
-              <div class="event-meta">
-                <span class="event-date"><i class='bx bx-calendar'></i> 每周六、周日</span>
-                <span class="event-location"><i class='bx bx-map'></i> 非遗体验中心</span>
-              </div>
-              <h3 class="event-title">非遗体验工坊</h3>
-              <p class="event-desc">亲手体验传统技艺，感受匠人精神，获得独特文化体验</p>
-              <button class="event-link" @click="goToEventDetail('workshop')">
-                查看详情 <i class='bx bx-right-arrow-alt'></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="event-item animate-up" style="animation-delay: 0.3s">
-            <div class="event-image">
-              <img src="https://picsum.photos/seed/event3/500/350" alt="活动3" />
-            </div>
-            <div class="event-content">
-              <div class="event-meta">
-                <span class="event-date"><i class='bx bx-calendar'></i> 每月第一周周五</span>
-                <span class="event-location"><i class='bx bx-map'></i> 非遗文化讲堂</span>
-              </div>
-              <h3 class="event-title">非遗文化讲座</h3>
-              <p class="event-desc">专家学者深度解读，探索非遗奥秘，传承文化精髓</p>
-              <button class="event-link" @click="goToEventDetail('lecture')">
-                查看详情 <i class='bx bx-right-arrow-alt'></i>
-              </button>
-            </div>
+          <div v-if="events.length === 0" class="no-data">
+            <p>暂无活动信息</p>
           </div>
         </div>
       </div>
@@ -154,71 +123,19 @@
           <h2 class="section-title">非遗科普</h2>
         </div>
         <div class="knowledge-list">
-          <div class="knowledge-card animate-item" style="animation-delay: 0.1s; cursor: pointer;" @click="openKnowledgeModal(0)" @mouseenter="handleCardMouseEnter(0)" @mouseleave="handleCardMouseLeave(0)">
+          <div v-for="(item, index) in knowledgeData" :key="item.id || index" class="knowledge-card animate-item" :style="{ animationDelay: `${(index + 1) * 0.1}s`, cursor: 'pointer' }" @click="openKnowledgeModal(index)" @mouseenter="handleCardMouseEnter(index)" @mouseleave="handleCardMouseLeave(index)">
             <div class="knowledge-media">
-              <img :src="knowledgeData[0].image" :alt="knowledgeData[0].title" class="knowledge-image" />
-              <video v-if="knowledgeData[0].video" :src="knowledgeData[0].video" class="knowledge-video" muted loop playsinline></video>
+              <img :src="item.image" :alt="item.title" class="knowledge-image" />
+              <video v-if="item.video" :src="item.video" class="knowledge-video" muted loop playsinline></video>
             </div>
             <div class="knowledge-icon">
-              <i class='bx bx-cut'></i>
+              <i :class="item.icon"></i>
             </div>
-            <h3>剪纸艺术</h3>
-            <p>中国最古老的民间艺术之一，以纸为载体，通过剪刻技法创造精美图案</p>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
           </div>
-          <div class="knowledge-card animate-item" style="animation-delay: 0.2s; cursor: pointer;" @click="openKnowledgeModal(1)" @mouseenter="handleCardMouseEnter(1)" @mouseleave="handleCardMouseLeave(1)">
-            <div class="knowledge-media">
-              <img :src="knowledgeData[1].image" :alt="knowledgeData[1].title" class="knowledge-image" />
-              <video v-if="knowledgeData[1].video" :src="knowledgeData[1].video" class="knowledge-video" muted loop playsinline></video>
-            </div>
-            <div class="knowledge-icon">
-              <i class='bx bx-palette'></i>
-            </div>
-            <h3>景泰蓝</h3>
-            <p>又称铜胎掐丝珐琅，是中国著名的特种金属工艺品之一</p>
-          </div>
-          <div class="knowledge-card animate-item" style="animation-delay: 0.3s; cursor: pointer;" @click="openKnowledgeModal(2)" @mouseenter="handleCardMouseEnter(2)" @mouseleave="handleCardMouseLeave(2)">
-            <div class="knowledge-media">
-              <img :src="knowledgeData[2].image" :alt="knowledgeData[2].title" class="knowledge-image" />
-              <video v-if="knowledgeData[2].video" :src="knowledgeData[2].video" class="knowledge-video" muted loop playsinline></video>
-            </div>
-            <div class="knowledge-icon">
-              <i class='bx bx-paint'></i>
-            </div>
-            <h3>苏绣</h3>
-            <p>中国四大名绣之一，以精细的针法和秀丽的色彩著称</p>
-          </div>
-          <div class="knowledge-card animate-item" style="animation-delay: 0.4s; cursor: pointer;" @click="openKnowledgeModal(3)" @mouseenter="handleCardMouseEnter(3)" @mouseleave="handleCardMouseLeave(3)">
-            <div class="knowledge-media">
-              <img :src="knowledgeData[3].image" :alt="knowledgeData[3].title" class="knowledge-image" />
-              <video v-if="knowledgeData[3].video" :src="knowledgeData[3].video" class="knowledge-video" muted loop playsinline></video>
-            </div>
-            <div class="knowledge-icon">
-              <i class='bx bx-music'></i>
-            </div>
-            <h3>古琴艺术</h3>
-            <p>中国最古老的弹拨乐器之一，被誉为"琴棋书画"四艺之首</p>
-          </div>
-          <div class="knowledge-card animate-item" style="animation-delay: 0.5s; cursor: pointer;" @click="openKnowledgeModal(4)" @mouseenter="handleCardMouseEnter(4)" @mouseleave="handleCardMouseLeave(4)">
-            <div class="knowledge-media">
-              <img :src="knowledgeData[4].image" :alt="knowledgeData[4].title" class="knowledge-image" />
-              <video v-if="knowledgeData[4].video" :src="knowledgeData[4].video" class="knowledge-video" muted loop playsinline></video>
-            </div>
-            <div class="knowledge-icon">
-              <i class='bx bx-coffee'></i>
-            </div>
-            <h3>茶道</h3>
-            <p>通过品茶艺术来修身养性、品味人生的一种高雅文化</p>
-          </div>
-          <div class="knowledge-card animate-item" style="animation-delay: 0.6s; cursor: pointer;" @click="openKnowledgeModal(5)" @mouseenter="handleCardMouseEnter(5)" @mouseleave="handleCardMouseLeave(5)">
-            <div class="knowledge-media">
-              <img :src="knowledgeData[5].image" :alt="knowledgeData[5].title" class="knowledge-image" />
-              <video v-if="knowledgeData[5].video" :src="knowledgeData[5].video" class="knowledge-video" muted loop playsinline></video>
-            </div>
-            <div class="knowledge-icon">
-              <i class='bx bx-book'></i>
-            </div>
-            <h3>书法篆刻</h3>
-            <p>汉字特有的传统艺术形式，融合了书写与雕刻技艺</p>
+          <div v-if="knowledgeData.length === 0" class="no-data">
+            <p>暂无非遗科普信息</p>
           </div>
         </div>
       </div>
@@ -232,47 +149,15 @@
           <h2 class="section-title">非遗作品展示</h2>
         </div>
         <div class="gallery-grid">
-          <div class="gallery-item animate-item" style="animation-delay: 0.1s">
-            <img src="https://picsum.photos/seed/gallery1/400/400" alt="作品1" />
+          <div v-for="(item, index) in galleryWorks" :key="item.id || index" class="gallery-item animate-item" :style="{ animationDelay: `${(index + 1) * 0.1}s` }" @click="goToWork(item.id)">
+            <img :src="item.coverImage || fallbackCover" :alt="item.title || `作品${index + 1}`" />
             <div class="gallery-overlay">
-              <h4>青花瓷瓶</h4>
-              <p>景德镇传统工艺</p>
+              <h4>{{ item.title }}</h4>
+              <p>{{ item.subtitle }}</p>
             </div>
           </div>
-          <div class="gallery-item animate-item" style="animation-delay: 0.2s">
-            <img src="https://picsum.photos/seed/gallery2/400/400" alt="作品2" />
-            <div class="gallery-overlay">
-              <h4>双面绣屏</h4>
-              <p>苏绣精品</p>
-            </div>
-          </div>
-          <div class="gallery-item animate-item" style="animation-delay: 0.3s">
-            <img src="https://picsum.photos/seed/gallery3/400/400" alt="作品3" />
-            <div class="gallery-overlay">
-              <h4>雕漆茶具</h4>
-              <p>北京雕漆工艺</p>
-            </div>
-          </div>
-          <div class="gallery-item animate-item" style="animation-delay: 0.4s">
-            <img src="https://picsum.photos/seed/gallery4/400/400" alt="作品4" />
-            <div class="gallery-overlay">
-              <h4>景泰蓝香炉</h4>
-              <p>宫廷御制工艺</p>
-            </div>
-          </div>
-          <div class="gallery-item animate-item" style="animation-delay: 0.5s">
-            <img src="https://picsum.photos/seed/gallery5/400/400" alt="作品5" />
-            <div class="gallery-overlay">
-              <h4>玉雕摆件</h4>
-              <p>苏州玉雕</p>
-            </div>
-          </div>
-          <div class="gallery-item animate-item" style="animation-delay: 0.6s">
-            <img src="https://picsum.photos/seed/gallery6/400/400" alt="作品6" />
-            <div class="gallery-overlay">
-              <h4>缂丝团扇</h4>
-              <p>苏州缂丝</p>
-            </div>
+          <div v-if="galleryWorks.length === 0" class="no-data">
+            <p>暂无作品信息</p>
           </div>
         </div>
       </div>
@@ -288,15 +173,15 @@
           <div class="footer-links">
             <div class="footer-column">
               <h4>快速链接</h4>
-              <a href="#">首页</a>
+              <a href="#banner">首页</a>
               <a href="#events">活动宣传</a>
-              <a href="#">非遗科普</a>
-              <a href="#">作品展示</a>
+              <a href="#knowledge">非遗科普</a>
+              <a href="#gallery">作品展示</a>
             </div>
             <div class="footer-column">
               <h4>联系方式</h4>
               <a href="#"><i class='bx bx-phone'></i> 010-12345678</a>
-              <a href="#"><i class='bx bx-envelope'></i> contact@gugong.com</a>
+              <a href="#"><i class='bx bx-envelope'></i> contact@yayfolk.com</a>
               <a href="#"><i class='bx bx-map'></i> 北京市东城区景山前街4号</a>
             </div>
             <div class="footer-column">
@@ -310,12 +195,11 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2026 故宫·非遗文化 版权所有</p>
+          <p>&copy; 2026 YayFolk 非遗文化 版权所有</p>
         </div>
       </div>
     </div>
 
-    <!-- 非遗科普详情弹窗 -->
     <div class="modal-overlay" v-if="showKnowledgeModal" @click="closeKnowledgeModal">
       <div class="modal-content" @click.stop>
         <button class="modal-close" @click="closeKnowledgeModal">
@@ -328,14 +212,20 @@
           <h2>{{ selectedKnowledge.title }}</h2>
         </div>
         <div class="modal-body">
-          <p>{{ selectedKnowledge.description }}</p>
+          <p>{{ selectedKnowledge.introduction || selectedKnowledge.description || '暂无简介信息' }}</p>
           <div class="modal-details">
+            <h3>基础信息</h3>
+            <p>{{ heritageBaseInfo }}</p>
             <h3>历史渊源</h3>
-            <p>{{ selectedKnowledge.history }}</p>
-            <h3>工艺特点</h3>
-            <p>{{ selectedKnowledge.features }}</p>
-            <h3>文化价值</h3>
-            <p>{{ selectedKnowledge.value }}</p>
+            <p>{{ selectedKnowledge.history || '暂无历史信息' }}</p>
+            <h3>传承价值</h3>
+            <p>{{ selectedKnowledge.inheritanceValue || '暂无传承价值信息' }}</p>
+            <h3>代表性传承人</h3>
+            <p>{{ selectedKnowledge.representativeInheritor || '暂无代表性传承人信息' }}</p>
+            <h3>相关诗词</h3>
+            <p>{{ formatKnowledgeList(selectedKnowledge.relatedPoems, '暂无相关诗词信息') }}</p>
+            <h3>相关节气</h3>
+            <p>{{ formatKnowledgeList(selectedKnowledge.relatedSolarTerms, '暂无相关节气信息') }}</p>
           </div>
         </div>
       </div>
@@ -344,85 +234,100 @@
 </template>
 
 <script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { getHomepageOfficialContents } from '@/api/app.js'
 
 const router = useRouter()
+const fallbackCover = 'https://picsum.photos/seed/heritage-home/800/600'
+const heritageIcons = ['bx bx-cut', 'bx bx-palette', 'bx bx-paint', 'bx bx-music', 'bx bx-coffee', 'bx bx-book']
 
+const events = ref([])
+const knowledgeData = ref([])
+const galleryWorks = ref([])
 const showKnowledgeModal = ref(false)
 const selectedKnowledge = ref({})
 
-const knowledgeData = [
-  {
-    id: 'paper-cut',
-    icon: 'bx bx-cut',
-    title: '剪纸艺术',
-    description: '中国最古老的民间艺术之一，以纸为载体，通过剪刻技法创造精美图案',
-    history: '剪纸艺术起源于汉代，距今已有两千多年历史。唐代时期剪纸艺术达到鼎盛，明清时期更是广泛流传于民间。',
-    features: '剪纸主要使用剪刀或刻刀，通过镂空、阳刻、阴刻等技法，创造出丰富多样的图案。题材涵盖花鸟、人物、故事等。',
-    value: '剪纸艺术是中华民族珍贵的文化遗产，体现了劳动人民的智慧和审美情趣，2009年被列入联合国教科文组织人类非物质文化遗产代表作名录。',
-    image: 'https://picsum.photos/seed/papercut/400/300',
-    video: '/heritage/剪纸.mp4'
-  },
-  {
-    id: 'cloisonne',
-    icon: 'bx bx-palette',
-    title: '景泰蓝',
-    description: '又称铜胎掐丝珐琅，是中国著名的特种金属工艺品之一',
-    history: '景泰蓝起源于元代，盛行于明朝景泰年间，因釉色多以蓝色为主，故名"景泰蓝"。清代达到工艺巅峰。',
-    features: '景泰蓝制作工艺复杂，包括制胎、掐丝、点蓝、烧蓝、打磨、镀金等多道工序。成品色彩艳丽、金碧辉煌。',
-    value: '景泰蓝是中国宫廷艺术的代表，融合了中国传统工艺与外来技法，具有极高的艺术价值和收藏价值。',
-    image: 'https://picsum.photos/seed/cloisonne/400/300',
-    video: '/heritage/剪纸.mp4'
-  },
-  {
-    id: 'su-embroidery',
-    icon: 'bx bx-paint',
-    title: '苏绣',
-    description: '中国四大名绣之一，以精细的针法和秀丽的色彩著称',
-    history: '苏绣起源于苏州，历史可追溯至春秋时期。明清时期苏绣技艺达到巅峰，成为皇家贡品。',
-    features: '苏绣以针代笔，以线代墨，针法多达40余种。作品细腻逼真，色彩清雅，具有"平、齐、细、密、匀、顺、和、光"八大特点。',
-    value: '苏绣是江南文化的瑰宝，体现了中国传统女红的最高成就，被誉为"东方艺术明珠"。',
-    image: 'https://picsum.photos/seed/suembroidery/400/300',
-    video: '/heritage/剪纸.mp4'
-  },
-  {
-    id: 'guqin',
-    icon: 'bx bx-music',
-    title: '古琴艺术',
-    description: '中国最古老的弹拨乐器之一，被誉为"琴棋书画"四艺之首',
-    history: '古琴有三千多年历史，传说为伏羲所创。孔子、司马相如、诸葛亮等历史名人都是古琴大师。',
-    features: '古琴有七弦十三徽，音色深沉悠远。演奏技法丰富，讲究"和、静、清、远、古、淡、恬、逸"的审美意境。',
-    value: '古琴艺术是中国传统文化的象征，2003年被列入联合国教科文组织人类口头和非物质遗产代表作。',
-    image: 'https://picsum.photos/seed/guqin/400/300',
-    video: '/heritage/剪纸.mp4'
-  },
-  {
-    id: 'tea-ceremony',
-    icon: 'bx bx-coffee',
-    title: '茶道',
-    description: '通过品茶艺术来修身养性、品味人生的一种高雅文化',
-    history: '中国茶道兴于唐，盛于宋，明清时期达到鼎盛。唐代陆羽著《茶经》，是世界上第一部茶叶专著。',
-    features: '茶道讲究"和、敬、清、寂"，通过备器、择水、取火、候汤、习茶等程序，达到心灵的宁静与升华。',
-    value: '茶道是中国传统文化的重要组成部分，体现了中国人的生活智慧和审美追求，影响遍及东亚乃至世界。',
-    image: 'https://picsum.photos/seed/tea/400/300',
-    video: '/heritage/剪纸.mp4'
-  },
-  {
-    id: 'calligraphy',
-    icon: 'bx bx-book',
-    title: '书法篆刻',
-    description: '汉字特有的传统艺术形式，融合了书写与雕刻技艺',
-    history: '中国书法始于甲骨文，历经篆、隶、楷、行、草等书体演变。王羲之、颜真卿、苏轼等都是书法史上的巨匠。',
-    features: '书法以毛笔为工具，通过笔法、字法、章法、墨法的运用，展现汉字的美感。篆刻则以刀代笔，在印章上刻写文字。',
-    value: '书法篆刻是中华文化的核心艺术，被誉为"无言的诗，无行的舞，无图的画，无声的乐"。',
-    image: 'https://picsum.photos/seed/calligraphy/400/300',
-    video: '/heritage/剪纸.mp4'
+const aboutImage = computed(() => knowledgeData.value[0]?.image || '/videos/202601-鍏诲績娈?鍐-.png')
+const heritageBaseInfo = computed(() => {
+  const item = selectedKnowledge.value || {}
+  const parts = [
+    item.category ? `分类：${item.category}` : '',
+    item.subcategory ? `子类：${item.subcategory}` : '',
+    item.region ? `地区：${item.region}` : '',
+    item.level ? `级别：${item.level}` : '',
+    item.dynasty ? `朝代：${item.dynasty}` : '',
+    typeof item.viewCount === 'number' ? `浏览量：${item.viewCount}` : ''
+  ].filter(Boolean)
+  return parts.join(' / ') || '暂无基础信息'
+})
+
+const mapEventStatus = (status) => {
+  const statusMap = {
+    signup: 'Open',
+    ongoing: 'Ongoing',
+    ended: 'Ended',
+    full: 'Full'
   }
-]
+  return statusMap[status] || 'Popular'
+}
+
+const formatDateTime = (value) => {
+  return value ? new Date(value).toLocaleString('zh-CN') : 'Time TBD'
+}
+
+const formatLocation = (item) => {
+  return [item.locationProvince, item.locationCity, item.locationDistrict, item.locationDetail].filter(Boolean).join(' / ') || 'Location TBD'
+}
+
+const formatKnowledgeList = (value, fallback = '暂无相关信息') => {
+  if (Array.isArray(value)) {
+    const text = value.filter(Boolean).join('、')
+    return text || fallback
+  }
+  if (typeof value === 'string') {
+    return value.trim() || fallback
+  }
+  return fallback
+}
+
+const loadHomepageData = async () => {
+  try {
+    const res = await getHomepageOfficialContents()
+    const data = res.data || {}
+    
+    events.value = (data.activities || []).slice(0, 3).map((item) => ({
+      ...item,
+      title: item.title || 'Untitled activity',
+      description: item.content || item.subtitle || 'No activity description',
+      dateText: `${formatDateTime(item.startTime)} - ${formatDateTime(item.endTime)}`,
+      locationText: formatLocation(item),
+      statusLabel: mapEventStatus(item.status),
+      coverImage: item.coverImage || fallbackCover
+    }))
+    
+    knowledgeData.value = (data.heritages || []).slice(0, 6).map((item, index) => ({
+      ...item,
+      icon: heritageIcons[index % heritageIcons.length],
+      title: item.title || item.name || '未命名非遗',
+      description: item.description || item.introduction || '暂无非遗简介',
+      image: item.coverImage || item.imageList?.[0] || item.images || fallbackCover,
+      video: item.videoUrl || ''
+    }))
+    
+    galleryWorks.value = (data.works || []).slice(0, 6).map((item) => ({
+      ...item,
+      title: item.title || 'Untitled work',
+      subtitle: item.description || item.content || 'Tap to view work details',
+      coverImage: item.coverImage || item.images || fallbackCover
+    }))
+  } catch (error) {
+    console.error('Failed to load homepage official content', error)
+  }
+}
 
 const openKnowledgeModal = (index) => {
-  selectedKnowledge.value = knowledgeData[index]
+  selectedKnowledge.value = knowledgeData.value[index] || {}
   showKnowledgeModal.value = true
   document.body.style.overflow = 'hidden'
 }
@@ -434,9 +339,7 @@ const closeKnowledgeModal = () => {
 
 const handleCardMouseEnter = (index) => {
   const video = document.querySelector(`.knowledge-card:nth-child(${index + 1}) .knowledge-video`)
-  if (video) {
-    video.play().catch(() => {})
-  }
+  if (video) video.play().catch(() => {})
 }
 
 const handleCardMouseLeave = (index) => {
@@ -447,28 +350,25 @@ const handleCardMouseLeave = (index) => {
   }
 }
 
-const goToEventDetail = (eventId) => {
-  router.push(`/home/event/${eventId}`)
+const goToActivity = (id) => {
+  if (id) router.push(`/activity/${id}`)
+}
+
+const goToWork = (id) => {
+  if (id) router.push(`/share?postId=${id}`)
 }
 
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
-  }
+  if (element) element.scrollIntoView({ behavior: 'smooth' })
 }
 
 let observer = null
-let lastScrollY = 0
 
 const handleParallax = () => {
   const scrollY = window.scrollY
-  lastScrollY = scrollY
-  
   const bannerBg = document.querySelector('.banner-bg')
-  if (bannerBg) {
-    bannerBg.style.transform = `translateY(${scrollY * 0.4}px)`
-  }
+  if (bannerBg) bannerBg.style.transform = `translateY(${scrollY * 0.4}px)`
   
   const parallaxBgs = document.querySelectorAll('.parallax-bg')
   parallaxBgs.forEach((bg, index) => {
@@ -478,12 +378,6 @@ const handleParallax = () => {
 }
 
 const initObserver = () => {
-  const options = {
-    root: null,
-    rootMargin: '0px 0px -100px 0px',
-    threshold: 0.1
-  }
-
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -492,23 +386,28 @@ const initObserver = () => {
         entry.target.classList.remove('animate-active')
       }
     })
-  }, options)
-
-  const animateElements = document.querySelectorAll('.animate-up, .animate-left, .animate-right, .animate-item')
-  animateElements.forEach((el) => observer.observe(el))
+  }, {
+    root: null,
+    rootMargin: '0px 0px -100px 0px',
+    threshold: 0.1
+  })
+  
+  document.querySelectorAll('.animate-up, .animate-left, .animate-right, .animate-item').forEach((el) => {
+    observer.observe(el)
+  })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadHomepageData()
   initObserver()
   window.addEventListener('scroll', handleParallax, { passive: true })
   handleParallax()
 })
 
 onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-  }
+  if (observer) observer.disconnect()
   window.removeEventListener('scroll', handleParallax)
+  document.body.style.overflow = ''
 })
 </script>
 
@@ -531,6 +430,7 @@ onUnmounted(() => {
   height: 100vh;
   min-height: 600px;
   display: flex;
+  align-items: flex-start;
   justify-content: center;
   overflow: hidden;
 }
@@ -561,8 +461,8 @@ onUnmounted(() => {
   text-align: center;
   color: #fff;
   max-width: 1000px;
-  top: 100px;
   padding: 0 24px;
+  top: 100px;
 }
 
 .banner-subtitle {
@@ -586,7 +486,7 @@ onUnmounted(() => {
 
 .banner-desc {
   font-size: 20px;
-  color:#daa520;
+  color: #daa520;
   margin-bottom: 40px;
   line-height: 1.8;
 }
@@ -965,12 +865,54 @@ onUnmounted(() => {
   border: 1px solid rgba(139, 0, 0, 0.1);
   transition: all 0.3s ease;
   text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
 }
 
 .knowledge-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 40px rgba(139, 0, 0, 0.1);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(139, 0, 0, 0.15);
   border-color: #4f0915;
+}
+
+.knowledge-card:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+.knowledge-media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.knowledge-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+
+.knowledge-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.knowledge-card:hover .knowledge-image {
+  opacity: 0;
+}
+
+.knowledge-card:hover .knowledge-video {
+  opacity: 1;
 }
 
 .knowledge-icon {
@@ -981,7 +923,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 16px;
+  position: relative;
+  z-index: 2;
 }
 
 .knowledge-icon i {
@@ -1153,6 +1097,13 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.5);
 }
 
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+}
+
 .animate-up {
   opacity: 0;
   transform: translateY(80px);
@@ -1197,7 +1148,6 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-/* 弹窗样式 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1334,77 +1284,5 @@ onUnmounted(() => {
   color: #555;
   line-height: 1.8;
   margin: 0 0 16px 12px;
-}
-
-/* 知识卡片悬停效果 */
-.knowledge-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
-  position: relative;
-}
-
-.knowledge-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 16px 40px rgba(139, 0, 0, 0.15);
-}
-
-.knowledge-card:active {
-  transform: translateY(-4px) scale(0.98);
-}
-
-/* 知识卡片媒体容器 */
-.knowledge-media {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.knowledge-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.5s ease;
-}
-
-.knowledge-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.knowledge-card:hover .knowledge-image {
-  opacity: 0;
-}
-
-.knowledge-card:hover .knowledge-video {
-  opacity: 1;
-}
-
-/* 调整知识卡片icon位置 */
-.knowledge-icon {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-  position: relative;
-  z-index: 2;
-}
-
-.knowledge-icon i {
-  font-size: 32px;
-  color: #daa520;
 }
 </style>

@@ -221,6 +221,7 @@ export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-rou
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
+export const getHomepageOfficialContents = () => request.get('/public/official/homepage')
 export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
 export const getLatestUnbanApplication = (account) => request.get('/public/unban-applications/latest', { params: { account } })
 
@@ -260,6 +261,22 @@ export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}
 export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
 export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
 
+// ========== 官方内容管理 ==========
+export const getOfficialActivities = () => request.get('/admin/official/activities')
+export const createOfficialActivity = (data) => request.post('/admin/official/activities', data)
+export const updateOfficialActivity = (id, data) => request.put(`/admin/official/activities/${id}`, data)
+export const deleteOfficialActivity = (id) => request.delete(`/admin/official/activities/${id}`)
+export const getOfficialHeritages = () => request.get('/admin/official/heritages')
+export const createOfficialHeritage = (data) => request.post('/admin/official/heritages', data)
+export const updateOfficialHeritage = (id, data) => request.put(`/admin/official/heritages/${id}`, data)
+export const deleteOfficialHeritage = (id) => request.delete(`/admin/official/heritages/${id}`)
+export const getOfficialWorks = () => request.get('/admin/official/works')
+export const getOfficialPublishedState = () => request.get('/admin/official/published')
+export const createOfficialWork = (data) => request.post('/admin/official/works', data)
+export const updateOfficialWork = (id, data) => request.put(`/admin/official/works/${id}`, data)
+export const deleteOfficialWork = (id) => request.delete(`/admin/official/works/${id}`)
+export const publishToHomepage = (type, ids) => request.post('/admin/official/publish', { type, ids })
+
 // ========== 璁㈠崟 & 鎴愬氨 ==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
 export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
@@ -278,6 +295,13 @@ export const uploadImage = (formData, folder = 'images') => request.post(`/uploa
     'Content-Type': 'multipart/form-data'
   }
 })
+
+export const uploadMedia = (formData, folder = 'media') => request.post(`/upload/media?folder=${encodeURIComponent(folder)}`, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
 
 
 

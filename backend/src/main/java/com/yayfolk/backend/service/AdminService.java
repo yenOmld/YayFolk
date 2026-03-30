@@ -1,7 +1,10 @@
 package com.yayfolk.backend.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.Activity;
+import com.yayfolk.backend.entity.IntangibleCulturalHeritage;
 import com.yayfolk.backend.entity.MerchantApplication;
 import com.yayfolk.backend.entity.MerchantProfile;
 import com.yayfolk.backend.entity.OfficialContent;
@@ -10,6 +13,7 @@ import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.UserUnbanApplication;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
+import com.yayfolk.backend.repository.IntangibleCulturalHeritageRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
 import com.yayfolk.backend.repository.MerchantProfileRepository;
 import com.yayfolk.backend.repository.OfficialContentRepository;
@@ -22,9 +26,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +43,13 @@ public class AdminService {
     private static final String AUDIT_STATUS_REJECTED = "rejected";
     private static final String REPORT_STATUS_PENDING = "pending";
     private static final String REPORT_STATUS_PROCESSED = "processed";
+    private static final String HOMEPAGE_ACTIVITY_CATEGORY = "homepage_activity_selection";
+    private static final String HOMEPAGE_HERITAGE_CATEGORY = "homepage_heritage_selection";
+    private static final String HOMEPAGE_WORK_CATEGORY = "homepage_work_selection";
+    private static final int HOMEPAGE_ACTIVITY_LIMIT = 3;
+    private static final int HOMEPAGE_HERITAGE_LIMIT = 6;
+    private static final int HOMEPAGE_WORK_LIMIT = 6;
+    private static final List<String> APPROVED_POST_AUDIT_STATUSES = Arrays.asList(AUDIT_STATUS_PASSED, "approved");
 
     @Value("${FRONTEND_BASE_URL:http://localhost:5173}")
     private String frontendBaseUrl;
@@ -51,7 +62,9 @@ public class AdminService {
     private final OfficialContentRepository officialContentRepository;
     private final PostReportRepository postReportRepository;
     private final UserUnbanApplicationRepository userUnbanApplicationRepository;
+    private final IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository;
     private final EmailService emailService;
+    private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AdminService(UserRepository userRepository,
@@ -62,7 +75,9 @@ public class AdminService {
                         OfficialContentRepository officialContentRepository,
                         PostReportRepository postReportRepository,
                         UserUnbanApplicationRepository userUnbanApplicationRepository,
-                        EmailService emailService) {
+                        IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository,
+                        EmailService emailService,
+                        ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.applicationRepository = applicationRepository;
@@ -71,7 +86,9 @@ public class AdminService {
         this.officialContentRepository = officialContentRepository;
         this.postReportRepository = postReportRepository;
         this.userUnbanApplicationRepository = userUnbanApplicationRepository;
+        this.intangibleCulturalHeritageRepository = intangibleCulturalHeritageRepository;
         this.emailService = emailService;
+        this.objectMapper = objectMapper;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -182,7 +199,7 @@ public class AdminService {
         app.setApplicationStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
+            throw new RuntimeException("Please provide a rejection reason");
         }
         app.setAuditRemark(approve ? null : trimmedRemark);
         app.setAuditAdminId(admin.getId());
@@ -272,7 +289,7 @@ public class AdminService {
         activity.setAuditStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
+            throw new RuntimeException("Please provide a rejection reason");
         }
         activity.setAuditRemark(approve ? null : trimmedRemark);
         activityRepository.save(activity);
@@ -350,7 +367,7 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Post does not exist"));
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("濡炵懓鍟垮ú鏍储閻旈攱绀堝☉鎾崇Х閸忔ɑ绋夐搹鍏夋晞");
+            throw new RuntimeException("Please provide a rejection reason");
         }
         post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
         post.setAuditRemark(pass ? null : trimmedRemark);
@@ -483,17 +500,17 @@ public class AdminService {
         return result;
     }
 
-        public void banUser(String adminUsername, Long userId, String reason) {
+    public void banUser(String adminUsername, Long userId, String reason) {
         User admin = requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
         if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
-            throw new RuntimeException("管理员账号不能在用户管理中封禁");
+            throw new RuntimeException("Administrator accounts cannot be disabled");
         }
 
         String trimmedReason = reason == null ? null : reason.trim();
         if (trimmedReason == null || trimmedReason.isEmpty()) {
-            throw new RuntimeException("封禁原因不能为空");
+            throw new RuntimeException("Please provide a ban reason");
         }
 
         user.setStatus(0);
@@ -510,7 +527,7 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
         if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
-            throw new RuntimeException("管理员账号不能在用户管理中解封");
+            throw new RuntimeException("Administrator accounts cannot be restored by this action");
         }
         user.setStatus(1);
         user.setBanReason(null);
@@ -544,18 +561,18 @@ public class AdminService {
                                                      String remark) {
         User admin = requireAdmin(adminUsername);
         UserUnbanApplication application = userUnbanApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("解封申请不存在"));
+                .orElseThrow(() -> new RuntimeException("Unban application does not exist"));
 
         if (!"pending".equalsIgnoreCase(application.getStatus())) {
-            throw new RuntimeException("该申请已处理，请勿重复操作");
+            throw new RuntimeException("This unban application has already been processed");
         }
 
         User targetUser = userRepository.findById(application.getUserId())
-                .orElseThrow(() -> new RuntimeException("申请用户不存在"));
+                .orElseThrow(() -> new RuntimeException("Target user does not exist"));
 
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("驳回申请时必须填写原因");
+            throw new RuntimeException("Please provide a rejection reason");
         }
 
         application.setAdminId(admin.getId());
@@ -583,13 +600,13 @@ public class AdminService {
             return;
         }
 
-        String subject = "YayFolk 账号封禁通知";
-        String content = "您好，\n\n您的 YayFolk 账号已被管理员封禁。"
-                + "\n封禁原因：" + reason
-                + "\n\n如果您需要申请解封，请访问以下页面："
-                + "\n" + buildUnbanApplicationUrl(user)
-                + "\n\n感谢您的理解。";
-        emailService.sendSystemEmail(user.getEmail(), subject, content);
+        String subject = "YayFolk account notice";
+        StringBuilder content = new StringBuilder();
+        content.append("Your YayFolk account has been disabled.\n");
+        content.append("Reason: ").append(reason);
+        content.append("\n\nIf you believe this was a mistake, you can submit an unban application here:\n");
+        content.append(buildUnbanApplicationUrl(user));
+        emailService.sendSystemEmail(user.getEmail(), subject, content.toString());
     }
 
     private void sendUnbanEmail(User user, String remark) {
@@ -597,13 +614,13 @@ public class AdminService {
             return;
         }
 
-        String subject = "YayFolk 账号解封通知";
+        String subject = "YayFolk account restored";
         StringBuilder content = new StringBuilder();
-        content.append("您好，\n\n您的 YayFolk 账号已恢复正常使用。");
+        content.append("Your YayFolk account has been restored.");
         if (remark != null && !remark.trim().isEmpty()) {
-            content.append("\n管理员备注：").append(remark.trim());
+            content.append("\nRemark: ").append(remark.trim());
         }
-        content.append("\n\n感谢您的耐心等待。");
+        content.append("\n\nYou can now log in and continue using YayFolk.");
         emailService.sendSystemEmail(user.getEmail(), subject, content.toString());
     }
 
@@ -801,12 +818,15 @@ public class AdminService {
 
     private Map<String, Object> activityToMap(Activity activity) {
         Map<String, Object> m = new HashMap<>();
+        List<String> imageList = parseStringList(activity.getImages());
         m.put("id", activity.getId());
         m.put("merchantId", activity.getMerchantId());
         m.put("merchantProfileId", activity.getMerchantProfileId());
         m.put("title", activity.getTitle());
         m.put("subtitle", activity.getSubtitle());
         m.put("coverImage", activity.getCoverImage());
+        m.put("images", imageList);
+        m.put("imageList", imageList);
         m.put("heritageType", activity.getHeritageType());
         m.put("activityType", activity.getActivityType());
         m.put("startTime", activity.getStartTime());
@@ -814,12 +834,15 @@ public class AdminService {
         m.put("price", activity.getPrice());
         m.put("maxParticipants", activity.getMaxParticipants());
         m.put("currentParticipants", activity.getCurrentParticipants());
+        m.put("locationProvince", activity.getLocationProvince());
         m.put("locationCity", activity.getLocationCity());
+        m.put("locationDistrict", activity.getLocationDistrict());
         m.put("locationDetail", activity.getLocationDetail());
         m.put("status", activity.getStatus());
         m.put("auditStatus", activity.getAuditStatus());
         m.put("auditRemark", activity.getAuditRemark());
         m.put("content", activity.getContent());
+        m.put("viewCount", safeInt(activity.getViewCount()));
         m.put("createTime", activity.getCreateTime());
         userRepository.findById(activity.getMerchantId()).ifPresent(user -> {
             m.put("merchantName", user.getShopName() != null ? user.getShopName() : user.getNickname());
@@ -827,6 +850,441 @@ public class AdminService {
             m.put("merchantUsername", user.getUsername());
         });
         return m;
+    }
+
+    public List<Map<String, Object>> getOfficialActivities(String adminUsername) {
+        requireAdmin(adminUsername);
+        List<Long> publishedIds = readPublishedIds(HOMEPAGE_ACTIVITY_CATEGORY);
+        List<Activity> activities = activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended");
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Activity activity : activities) {
+            Map<String, Object> item = activityToMap(activity);
+            item.put("description", activity.getContent());
+            item.put("published", publishedIds.contains(activity.getId()));
+            result.add(item);
+        }
+        return result;
+    }
+
+    public Map<String, Object> createOfficialActivity(String adminUsername, Map<String, Object> data) {
+        User admin = requireAdmin(adminUsername);
+        Activity activity = new Activity();
+        activity.setMerchantId(admin.getId());
+        applyActivityPayload(activity, data, false);
+        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("Activity title is required");
+        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("Start time and end time are required");
+        activity.setAuditStatus("approved");
+        activity.setAuditRemark(null);
+        activityRepository.save(activity);
+        return activityToMap(activity);
+    }
+
+    public Map<String, Object> updateOfficialActivity(String adminUsername, Long id, Map<String, Object> data) {
+        requireAdmin(adminUsername);
+        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("Activity does not exist"));
+        applyActivityPayload(activity, data, true);
+        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("Activity title is required");
+        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("Start time and end time are required");
+        activity.setAuditStatus("approved");
+        activity.setAuditRemark(null);
+        activityRepository.save(activity);
+        return activityToMap(activity);
+    }
+
+    public void deleteOfficialActivity(String adminUsername, Long id) {
+        requireAdmin(adminUsername);
+        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("Activity does not exist"));
+        activityRepository.delete(activity);
+    }
+
+    public List<Map<String, Object>> getOfficialHeritages(String adminUsername) {
+        requireAdmin(adminUsername);
+        List<Long> publishedIds = readPublishedIds(HOMEPAGE_HERITAGE_CATEGORY);
+        List<IntangibleCulturalHeritage> heritages = intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (IntangibleCulturalHeritage heritage : heritages) {
+            result.add(heritageToAdminMap(heritage, publishedIds));
+        }
+        return result;
+    }
+
+    public Map<String, Object> createOfficialHeritage(String adminUsername, Map<String, Object> data) {
+        requireAdmin(adminUsername);
+        IntangibleCulturalHeritage heritage = new IntangibleCulturalHeritage();
+        applyHeritagePayload(heritage, data, false);
+        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("Heritage name is required");
+        intangibleCulturalHeritageRepository.save(heritage);
+        return heritageToAdminMap(heritage, Collections.<Long>emptyList());
+    }
+
+    public Map<String, Object> updateOfficialHeritage(String adminUsername, Long id, Map<String, Object> data) {
+        requireAdmin(adminUsername);
+        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("Heritage does not exist"));
+        applyHeritagePayload(heritage, data, true);
+        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("Heritage name is required");
+        intangibleCulturalHeritageRepository.save(heritage);
+        return heritageToAdminMap(heritage, readPublishedIds(HOMEPAGE_HERITAGE_CATEGORY));
+    }
+
+    public void deleteOfficialHeritage(String adminUsername, Long id) {
+        requireAdmin(adminUsername);
+        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("Heritage does not exist"));
+        intangibleCulturalHeritageRepository.delete(heritage);
+    }
+
+    public List<Map<String, Object>> getOfficialWorks(String adminUsername) {
+        requireAdmin(adminUsername);
+        List<Long> publishedIds = readPublishedIds(HOMEPAGE_WORK_CATEGORY);
+        List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (DiscoverPost post : posts) {
+            result.add(workToAdminMap(post, publishedIds));
+        }
+        result.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
+        if (result.size() > 20) return new ArrayList<>(result.subList(0, 20));
+        return result;
+    }
+
+    public Map<String, Object> createOfficialWork(String adminUsername, Map<String, Object> data) {
+        User admin = requireAdmin(adminUsername);
+        DiscoverPost post = new DiscoverPost();
+        post.setUserId(admin.getId());
+        applyWorkPayload(post, data, false);
+        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("Work title is required");
+        if (normalizeText(post.getContent()) == null) throw new RuntimeException("Work content is required");
+        post.setStatus(1);
+        post.setAuditStatus(AUDIT_STATUS_PASSED);
+        post.setAuditRemark(null);
+        postRepository.save(post);
+        return workToAdminMap(post, Collections.<Long>emptyList());
+    }
+
+    public Map<String, Object> updateOfficialWork(String adminUsername, Long id, Map<String, Object> data) {
+        requireAdmin(adminUsername);
+        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Work does not exist"));
+        applyWorkPayload(post, data, true);
+        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("Work title is required");
+        if (normalizeText(post.getContent()) == null) throw new RuntimeException("Work content is required");
+        post.setStatus(1);
+        post.setAuditStatus(AUDIT_STATUS_PASSED);
+        post.setAuditRemark(null);
+        postRepository.save(post);
+        return workToAdminMap(post, readPublishedIds(HOMEPAGE_WORK_CATEGORY));
+    }
+
+    public void deleteOfficialWork(String adminUsername, Long id) {
+        requireAdmin(adminUsername);
+        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Work does not exist"));
+        post.setStatus(0);
+        postRepository.save(post);
+    }
+
+    public Map<String, Object> getHomepagePublishedState(String adminUsername) {
+        requireAdmin(adminUsername);
+        Map<String, Object> result = new HashMap<>();
+        result.put("activities", readPublishedIds(HOMEPAGE_ACTIVITY_CATEGORY));
+        result.put("heritages", readPublishedIds(HOMEPAGE_HERITAGE_CATEGORY));
+        result.put("works", readPublishedIds(HOMEPAGE_WORK_CATEGORY));
+        return result;
+    }
+
+    public Map<String, Object> publishToHomepage(String adminUsername, String type, List<Long> ids) {
+        User admin = requireAdmin(adminUsername);
+        String normalizedType = type == null ? "" : type.trim().toLowerCase();
+        List<Long> normalizedIds = normalizeIdList(ids);
+        validateHomepagePublish(normalizedType, normalizedIds);
+        OfficialContent config = new OfficialContent();
+        config.setAdminId(admin.getId());
+        config.setTitle("homepage_publish_" + normalizedType);
+        config.setCategory(resolveHomepageCategory(normalizedType));
+        config.setContent(writeJson(normalizedIds));
+        config.setIsPublic(1);
+        config.setViewCount(0);
+        officialContentRepository.save(config);
+        Map<String, Object> result = new HashMap<>();
+        result.put("type", normalizedType);
+        result.put("ids", normalizedIds);
+        return result;
+    }
+
+    private void validateHomepagePublish(String type, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) throw new RuntimeException("Please select at least one item");
+        if ("activity".equals(type)) {
+            if (ids.size() > HOMEPAGE_ACTIVITY_LIMIT) throw new RuntimeException("At most 3 activities can be published");
+            ensureIdsExist(ids, extractActivityIds(activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended")), "Some activities are unavailable");
+            return;
+        }
+        if ("heritage".equals(type)) {
+            if (ids.size() > HOMEPAGE_HERITAGE_LIMIT) throw new RuntimeException("At most 6 heritage items can be published");
+            ensureIdsExist(ids, extractHeritageIds(intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc()), "Some heritage items are unavailable");
+            return;
+        }
+        if ("work".equals(type)) {
+            if (ids.size() > HOMEPAGE_WORK_LIMIT) throw new RuntimeException("At most 6 works can be published");
+            List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
+            List<Map<String, Object>> works = new ArrayList<>();
+            for (DiscoverPost post : posts) works.add(workToAdminMap(post, Collections.<Long>emptyList()));
+            works.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
+            if (works.size() > 20) works = new ArrayList<>(works.subList(0, 20));
+            List<Long> validIds = new ArrayList<>();
+            for (Map<String, Object> item : works) {
+                Long workId = toLong(item.get("id"));
+                if (workId != null) validIds.add(workId);
+            }
+            ensureIdsExist(ids, validIds, "Works must come from the top 20 approved hot posts");
+            return;
+        }
+        throw new RuntimeException("Unsupported publish type");
+    }
+
+    private void ensureIdsExist(List<Long> selectedIds, List<Long> validIds, String message) {
+        for (Long id : selectedIds) {
+            if (!validIds.contains(id)) throw new RuntimeException(message);
+        }
+    }
+
+    private String resolveHomepageCategory(String type) {
+        if ("activity".equals(type)) return HOMEPAGE_ACTIVITY_CATEGORY;
+        if ("heritage".equals(type)) return HOMEPAGE_HERITAGE_CATEGORY;
+        if ("work".equals(type)) return HOMEPAGE_WORK_CATEGORY;
+        throw new RuntimeException("Unsupported publish type");
+    }
+
+    private List<Long> readPublishedIds(String category) {
+        OfficialContent content = officialContentRepository.findTopByCategoryAndIsPublicOrderByCreateTimeDesc(category, 1);
+        if (content == null || content.getContent() == null || content.getContent().trim().isEmpty()) return Collections.emptyList();
+        try {
+            return objectMapper.readValue(content.getContent(), new TypeReference<List<Long>>() { });
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private void applyActivityPayload(Activity activity, Map<String, Object> data, boolean partial) {
+        if (!partial || data.containsKey("title")) activity.setTitle(normalizeText(data.get("title")));
+        if (!partial || data.containsKey("subtitle")) activity.setSubtitle(normalizeText(data.get("subtitle")));
+        if (!partial || data.containsKey("content")) activity.setContent(normalizeText(data.get("content")));
+        if (!partial || data.containsKey("heritageType")) activity.setHeritageType(normalizeText(data.get("heritageType")));
+        if (!partial || data.containsKey("activityType")) activity.setActivityType(normalizeText(data.get("activityType")));
+        if (!partial || data.containsKey("locationProvince")) activity.setLocationProvince(normalizeText(data.get("locationProvince")));
+        if (!partial || data.containsKey("locationCity")) activity.setLocationCity(normalizeText(data.get("locationCity")));
+        if (!partial || data.containsKey("locationDistrict")) activity.setLocationDistrict(normalizeText(data.get("locationDistrict")));
+        if (!partial || data.containsKey("locationDetail")) activity.setLocationDetail(normalizeText(data.get("locationDetail")));
+        if (!partial || data.containsKey("price")) activity.setPrice(defaultZero(toNullableInteger(data.get("price"))));
+        if (!partial || data.containsKey("maxParticipants")) activity.setMaxParticipants(toNullableInteger(data.get("maxParticipants")));
+        if (!partial || data.containsKey("startTime")) activity.setStartTime(parseDateValue(data.get("startTime")));
+        if (!partial || data.containsKey("endTime")) activity.setEndTime(parseDateValue(data.get("endTime")));
+        List<String> imageList = null;
+        if (!partial || data.containsKey("images")) {
+            imageList = normalizeStringList(data.get("images"));
+            activity.setImages(imageList.isEmpty() ? null : writeJson(imageList));
+        }
+        if (!partial || data.containsKey("coverImage")) activity.setCoverImage(normalizeText(data.get("coverImage")));
+        if ((activity.getCoverImage() == null || activity.getCoverImage().trim().isEmpty()) && imageList != null && !imageList.isEmpty()) activity.setCoverImage(imageList.get(0));
+    }
+
+    private void applyHeritagePayload(IntangibleCulturalHeritage heritage, Map<String, Object> data, boolean partial) {
+        if (!partial || data.containsKey("name")) heritage.setName(normalizeText(data.get("name")));
+        if (!partial || data.containsKey("category")) heritage.setCategory(normalizeText(data.get("category")));
+        if (!partial || data.containsKey("subcategory")) heritage.setSubcategory(normalizeText(data.get("subcategory")));
+        if (!partial || data.containsKey("dynasty")) heritage.setDynasty(normalizeText(data.get("dynasty")));
+        if (!partial || data.containsKey("region")) heritage.setRegion(normalizeText(data.get("region")));
+        if (!partial || data.containsKey("level")) heritage.setLevel(normalizeText(data.get("level")));
+        if (!partial || data.containsKey("introduction")) heritage.setIntroduction(normalizeText(data.get("introduction")));
+        if (!partial || data.containsKey("history")) heritage.setHistory(normalizeText(data.get("history")));
+        if (!partial || data.containsKey("inheritanceValue")) heritage.setInheritanceValue(normalizeText(data.get("inheritanceValue")));
+        if (!partial || data.containsKey("representativeInheritor")) heritage.setRepresentativeInheritor(normalizeText(data.get("representativeInheritor")));
+        if (!partial || data.containsKey("images")) heritage.setImages(writeStringList(data.get("images")));
+        if (!partial || data.containsKey("videoUrl")) heritage.setVideoUrl(normalizeText(data.get("videoUrl")));
+        if (!partial || data.containsKey("isFeatured")) heritage.setIsFeatured(toFlag(data.get("isFeatured")));
+    }
+
+    private void applyWorkPayload(DiscoverPost post, Map<String, Object> data, boolean partial) {
+        if (!partial || data.containsKey("title")) post.setTitle(normalizeText(data.get("title")));
+        if (!partial || data.containsKey("content")) post.setContent(normalizeText(data.get("content")));
+        if (!partial || data.containsKey("category")) post.setCategory(normalizeText(data.get("category")));
+        if (!partial || data.containsKey("sourceLang")) post.setSourceLang(normalizeText(data.get("sourceLang")));
+        if (!partial || data.containsKey("images")) post.setImages(writeStringList(data.get("images")));
+        if (!partial || data.containsKey("tags")) post.setTags(writeStringList(data.get("tags")));
+        if (!partial || data.containsKey("viewCount")) { Integer value = toNullableInteger(data.get("viewCount")); if (value != null) post.setViewCount(value); }
+        if (!partial || data.containsKey("collectCount")) { Integer value = toNullableInteger(data.get("collectCount")); if (value != null) { post.setCollectCount(value); post.setCollectionCount(value); } }
+        if (!partial || data.containsKey("commentCount")) { Integer value = toNullableInteger(data.get("commentCount")); if (value != null) post.setCommentCount(value); }
+    }
+
+    private Map<String, Object> heritageToAdminMap(IntangibleCulturalHeritage heritage, List<Long> publishedIds) {
+        Map<String, Object> item = new HashMap<>();
+        List<String> imageList = parseStringList(heritage.getImages());
+        item.put("id", heritage.getId());
+        item.put("name", heritage.getName());
+        item.put("title", heritage.getName());
+        item.put("category", heritage.getCategory());
+        item.put("subcategory", heritage.getSubcategory());
+        item.put("dynasty", heritage.getDynasty());
+        item.put("region", heritage.getRegion());
+        item.put("level", heritage.getLevel());
+        item.put("introduction", heritage.getIntroduction());
+        item.put("description", heritage.getIntroduction());
+        item.put("history", heritage.getHistory());
+        item.put("inheritanceValue", heritage.getInheritanceValue());
+        item.put("representativeInheritor", heritage.getRepresentativeInheritor());
+        item.put("images", imageList);
+        item.put("imageList", imageList);
+        item.put("coverImage", imageList.isEmpty() ? null : imageList.get(0));
+        item.put("videoUrl", heritage.getVideoUrl());
+        item.put("isFeatured", heritage.getIsFeatured());
+        item.put("viewCount", safeInt(heritage.getViewCount()));
+        item.put("published", publishedIds.contains(heritage.getId()));
+        return item;
+    }
+
+    private Map<String, Object> workToAdminMap(DiscoverPost post, List<Long> publishedIds) {
+        Map<String, Object> item = new HashMap<>();
+        List<String> imageList = parseStringList(post.getImages());
+        item.put("id", post.getId());
+        item.put("title", post.getTitle());
+        item.put("category", post.getCategory());
+        item.put("sourceLang", post.getSourceLang());
+        item.put("description", post.getContent());
+        item.put("content", post.getContent());
+        item.put("coverImage", imageList.isEmpty() ? null : imageList.get(0));
+        item.put("images", imageList);
+        item.put("tags", parseStringList(post.getTags()));
+        item.put("viewCount", safeInt(post.getViewCount()));
+        item.put("collectCount", safeInt(post.getCollectCount()));
+        item.put("commentCount", safeInt(post.getCommentCount()));
+        item.put("heat", calculatePostHeat(post));
+        item.put("createTime", post.getCreateTime());
+        item.put("auditStatus", post.getAuditStatus());
+        item.put("published", publishedIds.contains(post.getId()));
+        userRepository.findById(post.getUserId()).ifPresent(user -> item.put("authorName", user.getNickname() != null ? user.getNickname() : user.getUsername()));
+        return item;
+    }
+
+    private List<Long> extractActivityIds(List<Activity> activities) {
+        List<Long> ids = new ArrayList<>();
+        for (Activity activity : activities) if (activity.getId() != null) ids.add(activity.getId());
+        return ids;
+    }
+
+    private List<Long> extractHeritageIds(List<IntangibleCulturalHeritage> heritages) {
+        List<Long> ids = new ArrayList<>();
+        for (IntangibleCulturalHeritage heritage : heritages) if (heritage.getId() != null) ids.add(heritage.getId());
+        return ids;
+    }
+
+    private List<Long> normalizeIdList(List<Long> ids) {
+        List<Long> result = new ArrayList<>();
+        if (ids == null) return result;
+        for (Long id : ids) if (id != null && !result.contains(id)) result.add(id);
+        return result;
+    }
+
+    private String writeJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to write json");
+        }
+    }
+
+    private String writeStringList(Object value) {
+        List<String> items = normalizeStringList(value);
+        if (items.isEmpty()) return null;
+        return writeJson(items);
+    }
+
+    private List<String> parseStringList(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return new ArrayList<>();
+        try {
+            if (raw.trim().startsWith("[")) return normalizeStringList(objectMapper.readValue(raw, new TypeReference<List<String>>() { }));
+        } catch (Exception ignored) {
+        }
+        return normalizeStringList(raw);
+    }
+
+    private List<String> normalizeStringList(Object value) {
+        List<String> result = new ArrayList<>();
+        if (value == null) return result;
+        if (value instanceof List) {
+            for (Object item : (List<?>) value) {
+                String text = normalizeText(item);
+                if (text != null) result.add(text);
+            }
+            return result;
+        }
+        String text = normalizeText(value);
+        if (text == null) return result;
+        String[] parts = text.replace("\r\n", "\n").contains("\n") ? text.replace("\r\n", "\n").split("\\n") : text.split(",");
+        for (String part : parts) {
+            String item = part == null ? null : part.trim();
+            if (item != null && !item.isEmpty()) result.add(item);
+        }
+        if (result.isEmpty()) result.add(text);
+        return result;
+    }
+
+    private String normalizeText(Object value) {
+        if (value == null) return null;
+        String text = value.toString().trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    private Date parseDateValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof Date) return (Date) value;
+        if (value instanceof Number) return new Date(((Number) value).longValue());
+        String text = normalizeText(value);
+        if (text == null) return null;
+        String[] patterns = new String[] { "yyyy-MM-dd'T'HH:mm:ss.SSSX", "yyyy-MM-dd'T'HH:mm:ssX", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
+        for (String pattern : patterns) {
+            try {
+                java.text.SimpleDateFormat format = new java.text.SimpleDateFormat(pattern);
+                format.setLenient(false);
+                return format.parse(text);
+            } catch (Exception ignored) {
+            }
+        }
+        throw new RuntimeException("Invalid date value");
+    }
+
+    private Integer toNullableInteger(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).intValue();
+        String text = value.toString().trim();
+        if (text.isEmpty()) return null;
+        return Integer.parseInt(text);
+    }
+
+    private Integer defaultZero(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private Integer toFlag(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Boolean) return Boolean.TRUE.equals(value) ? 1 : 0;
+        if (value instanceof Number) return ((Number) value).intValue() > 0 ? 1 : 0;
+        String text = value.toString().trim();
+        return ("1".equals(text) || "true".equalsIgnoreCase(text)) ? 1 : 0;
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).longValue();
+        try { return Long.parseLong(value.toString()); } catch (Exception e) { return null; }
+    }
+
+    private Integer safeInt(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private Integer safeInt(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Number) return ((Number) value).intValue();
+        try { return Integer.parseInt(value.toString()); } catch (Exception e) { return 0; }
+    }
+
+    private int calculatePostHeat(DiscoverPost post) {
+        return safeInt(post.getViewCount()) + safeInt(post.getCollectCount()) + safeInt(post.getCommentCount());
     }
 }
 

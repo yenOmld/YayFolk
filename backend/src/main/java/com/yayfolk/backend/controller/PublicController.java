@@ -72,6 +72,14 @@ public class PublicController {
         }
     }
 
+    @GetMapping("/official/homepage")
+    public ResponseDto getHomepageOfficialContents() {
+        try {
+            return ResponseDto.success(publicContentService.getHomepageOfficialContents());
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
     @PostMapping("/unban-applications")
     public ResponseDto submitUnbanApplication(@RequestBody Map<String, Object> data) {
         try {
@@ -92,3 +100,5 @@ public class PublicController {
         }
     }
 }
+
+

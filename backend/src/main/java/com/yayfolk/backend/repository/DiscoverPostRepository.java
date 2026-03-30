@@ -3,6 +3,7 @@ package com.yayfolk.backend.repository;
 import com.yayfolk.backend.entity.DiscoverPost;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface DiscoverPostRepository extends JpaRepository<DiscoverPost, Long> {
@@ -17,4 +18,6 @@ public interface DiscoverPostRepository extends JpaRepository<DiscoverPost, Long
     long countByUserIdAndStatus(Long userId, Integer status);
 
     List<DiscoverPost> findByAuditStatusOrderByCreateTimeDesc(String auditStatus);
+
+    List<DiscoverPost> findByStatusAndAuditStatusInOrderByCreateTimeDesc(Integer status, Collection<String> auditStatuses);
 }
