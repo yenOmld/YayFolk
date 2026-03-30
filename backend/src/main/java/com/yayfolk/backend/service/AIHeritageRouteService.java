@@ -111,15 +111,21 @@ public class AIHeritageRouteService {
                 !intentKeywords.isEmpty(),
                 exclusions
         );
-        List<Activity> rankedActivities = rankActivities(
+        List<Activity> rankedActivities = diversifyActivities(rankActivities(
                 candidateActivities,
                 destination,
                 queryKeywords,
                 preferences,
-                Math.max(0, requestedProjectCount - rankedHeritages.size()),
+                requestedProjectCount,
                 !intentKeywords.isEmpty(),
                 exclusions,
                 rankedHeritages
+        ), requestedProjectCount);
+        List<IntangibleCulturalHeritage> relatedHeritages = selectRelatedHeritages(
+                rankedActivities,
+                rankedHeritages,
+                candidateHeritages,
+                Math.max(3, Math.min(requestedProjectCount, 6))
         );
         List<OfficialContent> rankedContents = rankOfficialContents(removeExclusionSegments(userInput), destination, preferences);
 
@@ -129,12 +135,12 @@ public class AIHeritageRouteService {
         result.put("requestedProjectCount", requestedProjectCount);
         result.put("preferences", preferences);
         result.put("parsedRequest", buildParsedRequest(dynasties, regions, categories, themes, exclusions, days, requestedProjectCount));
-        result.put("summary", buildSummary(destination, days, requestedProjectCount, preferences, rankedHeritages, rankedActivities, rankedContents));
-        result.put("itinerary", buildItinerary(days, rankedHeritages, rankedActivities, rankedContents));
+        result.put("summary", buildSummary(destination, days, requestedProjectCount, preferences, rankedActivities, rankedContents));
+        result.put("itinerary", buildExperienceItinerary(days, rankedActivities));
         result.put("recommendedBusinesses", buildBusinesses(rankedActivities));
         result.put("activities", buildActivityCards(rankedActivities));
-        result.put("officialHighlights", buildOfficialHighlights(rankedHeritages, rankedContents));
-        result.put("matchedCount", rankedHeritages.size() + rankedActivities.size());
+        result.put("officialHighlights", buildRelatedHeritageHighlights(rankedActivities, relatedHeritages, rankedContents));
+        result.put("matchedCount", relatedHeritages.size() + rankedActivities.size());
         return result;
     }
 
@@ -693,6 +699,48 @@ public class AIHeritageRouteService {
                 .collect(Collectors.toList());
     }
 
+
+    private List<Activity> diversifyActivities(List<Activity> activities, int requestedProjectCount) {
+        if (activities.isEmpty()) {
+            return activities;
+        }
+
+        int limit = Math.min(Math.max(requestedProjectCount, 1), Math.min(activities.size(), 8));
+        LinkedHashMap<String, List<Activity>> grouped = new LinkedHashMap<>();
+        for (Activity activity : activities) {
+            grouped.computeIfAbsent(activityDiversityKey(activity), key -> new ArrayList<>()).add(activity);
+        }
+
+        List<Activity> diversified = new ArrayList<>();
+        int round = 0;
+        while (diversified.size() < limit) {
+            boolean pickedAny = false;
+            for (List<Activity> bucket : grouped.values()) {
+                if (round < bucket.size()) {
+                    diversified.add(bucket.get(round));
+                    pickedAny = true;
+                    if (diversified.size() >= limit) {
+                        break;
+                    }
+                }
+            }
+            if (!pickedAny) {
+                break;
+            }
+            round++;
+        }
+        return diversified;
+    }
+
+    private String activityDiversityKey(Activity activity) {
+        if (hasText(activity.getHeritageType())) {
+            return activity.getHeritageType().trim();
+        }
+        if (hasText(activity.getActivityType())) {
+            return activity.getActivityType().trim();
+        }
+        return valueOrDefault(activity.getTitle(), "activity");
+    }
     private int scoreActivity(Activity activity,
                               DestinationScope destination,
                               List<String> queryKeywords,
@@ -1050,6 +1098,7 @@ public class AIHeritageRouteService {
 
             if (content != null) {
                 Map<String, Object> intro = new HashMap<>();
+                intro.put("type", "official");
                 intro.put("time", "09:30");
                 intro.put("name", content.getTitle());
                 intro.put("description", abbreviate(content.getContent(), 72));
@@ -1060,6 +1109,7 @@ public class AIHeritageRouteService {
 
             for (IntangibleCulturalHeritage heritage : heritageBuckets.get(i)) {
                 Map<String, Object> anchor = new HashMap<>();
+                anchor.put("type", "heritage");
                 anchor.put("time", dayActivities.isEmpty() ? "10:00" : nextTimeSlot(dayActivities.size()));
                 anchor.put("name", heritage.getName());
                 anchor.put("description", abbreviate(primaryHeritageDescription(heritage), 88));
@@ -1075,6 +1125,7 @@ public class AIHeritageRouteService {
 
             for (Activity activity : dayBuckets.get(i)) {
                 Map<String, Object> experience = new HashMap<>();
+                experience.put("type", "activity");
                 experience.put("time", dayActivities.isEmpty() ? "10:00" : nextTimeSlot(dayActivities.size()));
                 experience.put("name", activity.getTitle());
                 experience.put("description", abbreviate(activity.getContent(), 88));
@@ -1094,6 +1145,7 @@ public class AIHeritageRouteService {
 
             if (dayActivities.isEmpty()) {
                 Map<String, Object> fallback = new HashMap<>();
+                fallback.put("type", "fallback");
                 fallback.put("time", "全天");
                 fallback.put("name", "自由探索本地非遗空间");
                 fallback.put("description", "当前没有更高匹配度的非遗项目或活动，可结合博物馆、非遗馆、传统街区和官方内容做轻量文化漫游。");
@@ -1175,6 +1227,7 @@ public class AIHeritageRouteService {
 
             if (content != null) {
                 Map<String, Object> intro = new HashMap<>();
+                intro.put("type", "official");
                 intro.put("time", "09:30");
                 intro.put("name", content.getTitle());
                 intro.put("description", abbreviate(content.getContent(), 72));
@@ -1185,6 +1238,7 @@ public class AIHeritageRouteService {
 
             for (Activity activity : dayBuckets.get(i)) {
                 Map<String, Object> experience = new HashMap<>();
+                experience.put("type", "activity");
                 experience.put("time", dayActivities.isEmpty() ? "10:00" : nextTimeSlot(dayActivities.size()));
                 experience.put("name", activity.getTitle());
                 experience.put("description", abbreviate(activity.getContent(), 88));
@@ -1201,6 +1255,7 @@ public class AIHeritageRouteService {
 
             if (dayActivities.isEmpty()) {
                 Map<String, Object> fallback = new HashMap<>();
+                fallback.put("type", "fallback");
                 fallback.put("time", "全天");
                 fallback.put("name", "自由探索本地非遗空间");
                 fallback.put("description", "当前没有更高匹配度的活动，可先结合城市博物馆、非遗展馆、传统街区和官方内容做一条轻量文化漫游路线。");
@@ -1257,6 +1312,177 @@ public class AIHeritageRouteService {
         return cards;
     }
 
+
+    private List<Map<String, Object>> buildExperienceItinerary(int days, List<Activity> activities) {
+        List<Map<String, Object>> itinerary = new ArrayList<>();
+        List<List<Activity>> dayBuckets = distributeActivities(days, activities);
+        for (int i = 0; i < days; i++) {
+            Map<String, Object> day = new HashMap<>();
+            day.put("day", i + 1);
+            day.put("theme", buildActivityDayTheme(dayBuckets.get(i), i));
+
+            List<Map<String, Object>> dayActivities = new ArrayList<>();
+            for (Activity activity : dayBuckets.get(i)) {
+                Map<String, Object> experience = new HashMap<>();
+                experience.put("type", "activity");
+                experience.put("time", dayActivities.isEmpty() ? "10:00" : nextTimeSlot(dayActivities.size()));
+                experience.put("name", activity.getTitle());
+                experience.put("description", abbreviate(activity.getContent(), 88));
+                experience.put("tags", buildActivityTags(activity));
+                experience.put("details", Arrays.asList(
+                        detail("Province", valueOrDefault(activity.getLocationProvince(), "TBD")),
+                        detail("City", valueOrDefault(activity.getLocationCity(), "TBD")),
+                        detail("Price", activity.getPrice() == null || activity.getPrice() == 0 ? "Free" : "CNY " + (activity.getPrice() / 100.0)),
+                        detail("Time", formatDateTime(activity.getStartTime()))
+                ));
+                experience.put("business", buildBusiness(activity.getMerchantId(), activity.getLocationDetail()));
+                dayActivities.add(experience);
+            }
+
+            if (dayActivities.isEmpty()) {
+                Map<String, Object> fallback = new HashMap<>();
+                fallback.put("type", "fallback");
+                fallback.put("time", "All day");
+                fallback.put("name", "Flexible exploration");
+                fallback.put("description", "No stronger activity match was found for this day. You can keep it open for a museum visit, a heritage venue, or a traditional street walk.");
+                fallback.put("tags", Arrays.asList("Flexible", "Culture walk"));
+                fallback.put("details", Collections.singletonList(detail("Suggestion", "Try a more specific city or add more activity data for this area.")));
+                dayActivities.add(fallback);
+            }
+
+            day.put("activities", dayActivities);
+            itinerary.add(day);
+        }
+        return itinerary;
+    }
+
+    private String buildActivityDayTheme(List<Activity> activities, int index) {
+        if (activities == null || activities.isEmpty()) {
+            return "Open exploration";
+        }
+
+        LinkedHashSet<String> labels = new LinkedHashSet<>();
+        for (Activity activity : activities) {
+            if (hasText(activity.getHeritageType())) {
+                labels.add(activity.getHeritageType().trim());
+            }
+            if (labels.size() >= 2) {
+                break;
+            }
+        }
+        if (!labels.isEmpty()) {
+            return String.join(" + ", labels) + " route";
+        }
+        return "Experience route day " + (index + 1);
+    }
+
+    private List<IntangibleCulturalHeritage> selectRelatedHeritages(List<Activity> activities,
+                                                                    List<IntangibleCulturalHeritage> prioritizedHeritages,
+                                                                    List<IntangibleCulturalHeritage> allHeritages,
+                                                                    int limit) {
+        if (activities.isEmpty() || limit <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<IntangibleCulturalHeritage> candidatePool = new ArrayList<>();
+        candidatePool.addAll(prioritizedHeritages);
+        for (IntangibleCulturalHeritage heritage : allHeritages) {
+            boolean exists = candidatePool.stream().anyMatch(item -> item.getId().equals(heritage.getId()));
+            if (!exists) {
+                candidatePool.add(heritage);
+            }
+        }
+
+        LinkedHashMap<Long, IntangibleCulturalHeritage> selected = new LinkedHashMap<>();
+        for (Activity activity : activities) {
+            IntangibleCulturalHeritage match = findBestRelatedHeritage(activity, candidatePool);
+            if (match != null) {
+                selected.putIfAbsent(match.getId(), match);
+            }
+            if (selected.size() >= limit) {
+                break;
+            }
+        }
+
+        if (selected.isEmpty()) {
+            return prioritizedHeritages.stream()
+                    .limit(Math.min(limit, prioritizedHeritages.size()))
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>(selected.values()).subList(0, Math.min(limit, selected.size()));
+    }
+
+    private IntangibleCulturalHeritage findBestRelatedHeritage(Activity activity, List<IntangibleCulturalHeritage> candidates) {
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        List<String> keywords = extractActivityKeywords(activity);
+        IntangibleCulturalHeritage best = null;
+        int bestScore = 0;
+        for (IntangibleCulturalHeritage heritage : candidates) {
+            int score = scoreRelatedHeritage(activity, heritage, keywords);
+            if (score > bestScore) {
+                bestScore = score;
+                best = heritage;
+            }
+        }
+        return bestScore > 0 ? best : null;
+    }
+
+    private List<String> extractActivityKeywords(Activity activity) {
+        LinkedHashSet<String> keywords = new LinkedHashSet<>();
+        addKeywordTokens(keywords, activity.getHeritageType());
+        addKeywordTokens(keywords, activity.getTitle());
+        addKeywordTokens(keywords, activity.getSubtitle());
+        return keywords.stream().limit(12).collect(Collectors.toList());
+    }
+
+    private int scoreRelatedHeritage(Activity activity, IntangibleCulturalHeritage heritage, List<String> keywords) {
+        int score = 0;
+        score += matchKeywords(keywords, heritage.getName(), 10);
+        score += matchKeywords(keywords, heritage.getCategory(), 7);
+        score += matchKeywords(keywords, heritage.getSubcategory(), 7);
+        score += matchKeywords(keywords, heritage.getIntroduction(), 3);
+        score += matchKeywords(keywords, heritage.getRegion(), 4);
+        if (hasText(activity.getHeritageType())) {
+            score += matchKeywords(Collections.singletonList(activity.getHeritageType()), heritage.getName(), 12);
+            score += matchKeywords(Collections.singletonList(activity.getHeritageType()), heritage.getCategory(), 10);
+            score += matchKeywords(Collections.singletonList(activity.getHeritageType()), heritage.getSubcategory(), 10);
+        }
+        return score;
+    }
+
+    private List<Map<String, Object>> buildRelatedHeritageHighlights(List<Activity> activities,
+                                                                     List<IntangibleCulturalHeritage> heritages,
+                                                                     List<OfficialContent> contents) {
+        List<Map<String, Object>> highlights = new ArrayList<>();
+        for (IntangibleCulturalHeritage heritage : heritages.subList(0, Math.min(heritages.size(), 4))) {
+            Map<String, Object> highlight = new HashMap<>();
+            highlight.put("title", heritage.getName());
+            highlight.put("category", valueOrDefault(heritage.getCategory(), "Heritage topic"));
+            highlight.put("summary", abbreviate(primaryHeritageDescription(heritage), 110));
+            highlight.put("region", valueOrDefault(heritage.getRegion(), "Region TBD"));
+            highlight.put("relatedType", matchActivityTypeForHeritage(heritage, activities));
+            highlights.add(highlight);
+        }
+        return highlights;
+    }
+
+    private String matchActivityTypeForHeritage(IntangibleCulturalHeritage heritage, List<Activity> activities) {
+        for (Activity activity : activities) {
+            if (hasText(activity.getHeritageType())) {
+                String type = activity.getHeritageType().trim();
+                if ((hasText(heritage.getName()) && heritage.getName().contains(type))
+                        || (hasText(heritage.getCategory()) && heritage.getCategory().contains(type))
+                        || (hasText(heritage.getSubcategory()) && heritage.getSubcategory().contains(type))) {
+                    return type;
+                }
+            }
+        }
+        return "Related introduction";
+    }
     private List<Map<String, Object>> buildOfficialHighlights(List<IntangibleCulturalHeritage> heritages, List<OfficialContent> contents) {
         List<Map<String, Object>> highlights = new ArrayList<>();
         for (IntangibleCulturalHeritage heritage : heritages.subList(0, Math.min(heritages.size(), 3))) {

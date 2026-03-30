@@ -3,28 +3,28 @@
     <section class="hero-panel">
       <div class="hero-copy">
         <p class="eyebrow">AI Heritage Planner</p>
-        <h1>AI 非遗路线规划</h1>
+        <h1>AI Heritage Route Planner</h1>
         <p class="hero-text">
-          输入目的地、天数和偏好，系统会结合活动与官方内容生成一条可执行的非遗体验路线。
-          生成后的路线可以直接收藏，下次打开页面继续查看。
+          Describe your destination, schedule, and interests. The planner combines heritage topics, bookable activities,
+          and editorial content into a route that is easier to understand and follow.
         </p>
         <div class="hero-meta">
-          <span>城市识别</span>
-          <span>活动推荐</span>
-          <span>商家导览</span>
-          <span>路线收藏</span>
+          <span>City Detection</span>
+          <span>Activity Picks</span>
+          <span>Merchant Guide</span>
+          <span>Saved Routes</span>
         </div>
       </div>
 
       <div class="hero-card">
-        <h2>描述你的路线需求</h2>
-        <label class="input-label" for="route-input">尽量把目的地、天数和兴趣说完整</label>
+        <h2>Describe Your Route</h2>
+        <label class="input-label" for="route-input">Include destination, number of days, and interests</label>
         <textarea
           id="route-input"
           v-model.trim="userInput"
           rows="5"
           :disabled="loading"
-          placeholder="例如：我想去北京玩 3 天，重点看戏曲和传统工艺，希望优先安排能报名参与的线下活动。"
+          placeholder="Example: I want a 3-day Beijing trip focused on opera and traditional crafts, with bookable offline experiences first."
         />
 
         <div class="prompt-grid">
@@ -45,7 +45,7 @@
 
         <div class="action-row">
           <button type="button" class="generate-btn" :disabled="loading" @click="generateRoute">
-            {{ loading ? '路线生成中...' : '生成路线' }}
+            {{ loading ? 'Generating...' : 'Generate Route' }}
           </button>
           <button
             type="button"
@@ -53,7 +53,7 @@
             :disabled="loadingFavorites"
             @click="loadFavorites"
           >
-            {{ loadingFavorites ? '刷新中...' : '刷新收藏' }}
+            {{ loadingFavorites ? 'Refreshing...' : 'Refresh Saved' }}
           </button>
         </div>
       </div>
@@ -64,16 +64,16 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Saved Routes</p>
-            <h2>我的路线收藏</h2>
+            <h2>My Saved Routes</h2>
           </div>
-          <span class="count-badge">{{ favorites.length }} 条</span>
+          <span class="count-badge">{{ favorites.length }} saved</span>
         </div>
 
         <div v-if="loadingFavorites" class="favorites-empty">
-          <p>正在加载收藏路线...</p>
+          <p>Loading saved routes...</p>
         </div>
         <div v-else-if="!favorites.length" class="favorites-empty">
-          <p>还没有收藏路线。先生成一条路线，再点“收藏路线”保存下来。</p>
+          <p>No saved routes yet. Generate one first, then save it here for quick access.</p>
         </div>
         <div v-else class="favorites-list">
           <article
@@ -83,14 +83,14 @@
           >
             <button type="button" class="favorite-main" @click="openFavorite(item.id)">
               <div class="favorite-meta">
-                <strong>{{ item.destination || '全国' }} · {{ item.days || 1 }} 天</strong>
+                <strong>{{ item.destination || 'Nationwide' }} - {{ item.days || 1 }} day<span v-if="(item.days || 1) > 1">s</span></strong>
                 <span>{{ formatDate(item.updateTime || item.createTime) }}</span>
               </div>
               <h3>{{ item.query }}</h3>
-              <p>{{ item.summary || '已保存的 AI 路线，可随时回看。' }}</p>
+              <p>{{ item.summary || 'Saved AI route, ready to reopen anytime.' }}</p>
             </button>
             <button type="button" class="delete-btn" @click="removeFavorite(item.id)">
-              删除
+              Delete
             </button>
           </article>
         </div>
@@ -115,13 +115,13 @@
         <div class="overview-head">
           <div>
             <p class="eyebrow">Route Overview</p>
-            <h2>{{ normalizedRoute.destination }} · {{ normalizedRoute.days }} 天</h2>
+            <h2>{{ normalizedRoute.destination }} - {{ normalizedRoute.days }} day<span v-if="normalizedRoute.days > 1">s</span></h2>
           </div>
           <div class="overview-actions">
             <div class="overview-badges">
-              <span>{{ normalizedRoute.itinerary.length }} 天日程</span>
-              <span>{{ normalizedRoute.activities.length }} 个活动</span>
-              <span>{{ normalizedRoute.recommendedBusinesses.length }} 家商家</span>
+              <span>{{ normalizedRoute.itinerary.length }} itinerary days</span>
+              <span>{{ normalizedRoute.activities.length }} activities</span>
+              <span>{{ normalizedRoute.officialHighlights.length }} heritage notes</span>
             </div>
             <button
               type="button"
@@ -129,7 +129,7 @@
               :disabled="savingFavorite"
               @click="saveRoute"
             >
-              {{ savingFavorite ? '收藏中...' : '收藏路线' }}
+              {{ savingFavorite ? 'Saving...' : 'Save Route' }}
             </button>
           </div>
         </div>
@@ -157,7 +157,7 @@
             <div class="day-header">
               <div>
                 <p class="day-index">Day {{ day.day }}</p>
-                <h3>{{ day.theme || `第 ${day.day} 天` }}</h3>
+                <h3>{{ day.theme || ('Day ' + day.day) }}</h3>
               </div>
             </div>
 
@@ -165,10 +165,18 @@
               <div
                 v-for="activity in day.activities"
                 :key="`${day.day}-${activity.time}-${activity.name}`"
-                class="timeline-item"
+                :class="['timeline-item', `timeline-item--${activity.type}`]"
               >
-                <div class="time-pill">{{ activity.time || '全天' }}</div>
-                <div class="timeline-body">
+                <div class="time-pill">{{ activity.time || 'All day' }}</div>
+                <div :class="['timeline-body', `timeline-body--${activity.type}`]">
+                  <div class="timeline-head">
+                    <span :class="['entry-kind', `entry-kind--${activity.type}`]">
+                      {{ activity.typeLabel }}
+                    </span>
+                    <span v-if="activity.typeHint" class="entry-hint">
+                      {{ activity.typeHint }}
+                    </span>
+                  </div>
                   <h4>{{ activity.name }}</h4>
                   <p>{{ activity.description }}</p>
 
@@ -178,7 +186,7 @@
                       :key="`${activity.name}-${detail.label}`"
                       class="detail-item"
                     >
-                      {{ detail.label }}：{{ detail.value }}
+                      {{ detail.label }}: {{ detail.value }}
                     </span>
                   </div>
 
@@ -205,59 +213,12 @@
 
         <aside class="side-column">
           <section
-            v-if="normalizedRoute.recommendedBusinesses.length"
-            class="side-card"
-          >
-            <div class="side-header">
-              <p class="eyebrow">Local Partners</p>
-              <h3>推荐商家</h3>
-            </div>
-
-            <article
-              v-for="business in normalizedRoute.recommendedBusinesses"
-              :key="`${business.name}-${business.address}`"
-              class="side-item"
-            >
-              <h4>{{ business.name }}</h4>
-              <p>{{ business.description }}</p>
-              <span>{{ business.address }}</span>
-              <div class="tag-row compact">
-                <span
-                  v-for="tag in business.tags"
-                  :key="`${business.name}-${tag}`"
-                  class="tag"
-                >
-                  {{ tag }}
-                </span>
-              </div>
-            </article>
-          </section>
-
-          <section v-if="normalizedRoute.activities.length" class="side-card">
-            <div class="side-header">
-              <p class="eyebrow">Activities</p>
-              <h3>相关活动</h3>
-            </div>
-
-            <article
-              v-for="activity in normalizedRoute.activities"
-              :key="activity.id || `${activity.title}-${activity.date}`"
-              class="side-item"
-            >
-              <h4>{{ activity.title }}</h4>
-              <p>{{ activity.description }}</p>
-              <span>{{ activity.date }}</span>
-              <span>{{ activity.location }}</span>
-            </article>
-          </section>
-
-          <section
             v-if="normalizedRoute.officialHighlights.length"
             class="side-card"
           >
             <div class="side-header">
-              <p class="eyebrow">Official Highlights</p>
-              <h3>官方解读</h3>
+              <p class="eyebrow">Heritage Context</p>
+              <h3>Related Heritage Introductions</h3>
             </div>
 
             <article
@@ -268,6 +229,8 @@
               <h4>{{ item.title }}</h4>
               <p>{{ item.summary }}</p>
               <span>{{ item.category }}</span>
+              <span>{{ item.relatedType }}</span>
+              <span>{{ item.region }}</span>
             </article>
           </section>
         </aside>
@@ -277,14 +240,12 @@
     <section v-else class="empty-panel">
       <div class="empty-card">
         <p class="eyebrow">Ready When You Are</p>
-        <h2>还没有生成路线</h2>
-        <p>从上方输入你的出行需求，系统会整理出一条可收藏、可回看的非遗体验路线。</p>
+        <h2>No Route Yet</h2>
+        <p>Enter your travel intent above and the planner will assemble a route you can review and save.</p>
       </div>
     </section>
   </div>
-</template>
-
-<script setup>
+</template><script setup>
 import { computed, onMounted, ref } from 'vue'
 import {
   deleteSavedHeritageRoute,
@@ -305,9 +266,9 @@ const favorites = ref([])
 const activeFavoriteId = ref(null)
 
 const prompts = [
-  '我想去北京玩 3 天，重点看戏曲和传统工艺，希望优先安排能报名参与的线下活动。',
-  '我想在杭州安排 2 天茶文化和手作体验，路线不要太赶。',
-  '我想找适合亲子体验的非遗活动，优先考虑周末可以参加的项目。'
+  'Plan a 3-day Beijing trip focused on opera, traditional crafts, and bookable offline experiences.',
+  'Build a relaxed 2-day Hangzhou route around tea culture and hands-on workshops.',
+  'Recommend family-friendly intangible heritage activities that are easy to join on weekends.'
 ]
 
 const normalizedRoute = computed(() => {
@@ -319,16 +280,15 @@ const normalizedRoute = computed(() => {
   return {
     id: raw.id ?? null,
     query: raw.query || userInput.value,
-    destination: raw.destination || '全国',
+    destination: raw.destination || 'Nationwide',
     days: Number(raw.days) || 1,
-    summary: raw.summary || '已根据你的偏好生成一条非遗体验路线。',
+    summary: raw.summary || 'Generated from your preferences.',
     preferences: Array.isArray(raw.preferences) && raw.preferences.length
       ? raw.preferences
-      : ['非遗体验'],
+      : ['Heritage experience'],
     itinerary: normalizeItinerary(raw.itinerary),
-    recommendedBusinesses: normalizeBusinesses(raw.recommendedBusinesses),
-    activities: normalizeSideItems(raw.activities),
-    officialHighlights: normalizeHighlights(raw.officialHighlights),
+    activities: normalizeActivityItems(raw.activities),
+    officialHighlights: normalizeHighlights(raw.officialHighlights, raw.activities),
     matchedCount: Number(raw.matchedCount) || 0
   }
 })
@@ -340,64 +300,119 @@ function normalizeItinerary(itinerary) {
 
   return itinerary.map((day, index) => ({
     day: Number(day?.day) || index + 1,
-    theme: day?.theme || `第 ${index + 1} 天`,
+    theme: day?.theme || `Day ${index + 1}`,
     activities: Array.isArray(day?.activities) && day.activities.length
-      ? day.activities.map(activity => ({
-        time: activity?.time || '全天',
-        name: activity?.name || '未命名行程',
-        description: activity?.description || '暂无详细说明。',
-        tags: Array.isArray(activity?.tags) ? activity.tags : [],
-        details: Array.isArray(activity?.details) ? activity.details : [],
-        business: activity?.business || null
-      }))
+      ? day.activities.map(activity => {
+        const type = resolveItineraryItemType(activity)
+        return {
+          type,
+          typeLabel: itineraryTypeLabel(type),
+          typeHint: itineraryTypeHint(type),
+          time: activity?.time || 'All day',
+          name: activity?.name || 'Untitled stop',
+          description: activity?.description || 'No description available.',
+          tags: Array.isArray(activity?.tags) ? activity.tags : [],
+          details: Array.isArray(activity?.details) ? activity.details : [],
+          business: activity?.business || null
+        }
+      })
       : [{
-        time: '全天',
-        name: '自由探索',
-        description: '当天没有更具体的行程安排，可结合官方内容继续补充路线。',
-        tags: ['自由行'],
+        type: 'fallback',
+        typeLabel: itineraryTypeLabel('fallback'),
+        typeHint: itineraryTypeHint('fallback'),
+        time: 'All day',
+        name: 'Free exploration',
+        description: 'No stronger match was found for this day, so this slot is left open for flexible exploration.',
+        tags: ['Flexible'],
         details: [],
         business: null
       }]
   }))
 }
 
-function normalizeBusinesses(businesses) {
-  if (!Array.isArray(businesses)) {
-    return []
+function resolveItineraryItemType(activity) {
+  const explicitType = typeof activity?.type === 'string' ? activity.type.trim().toLowerCase() : ''
+  if (explicitType) {
+    return explicitType
   }
 
-  return businesses.map(item => ({
-    name: item?.name || '合作商家',
-    description: item?.description || '提供当地非遗体验与文化服务。',
-    address: item?.address || '以活动详情为准',
-    tags: Array.isArray(item?.tags) ? item.tags : []
-  }))
+  if (activity?.business) {
+    return 'activity'
+  }
+
+  const tags = (Array.isArray(activity?.tags) ? activity.tags : [])
+    .filter(tag => typeof tag === 'string')
+    .map(tag => tag.toLowerCase())
+
+  if (tags.some(tag => tag.includes('official'))) {
+    return 'official'
+  }
+  if (tags.some(tag => tag.includes('free') || tag.includes('flex'))) {
+    return 'fallback'
+  }
+  return 'heritage'
 }
 
-function normalizeSideItems(items) {
+function itineraryTypeLabel(type) {
+  if (type === 'official') {
+    return 'Editorial Intro'
+  }
+  if (type === 'heritage') {
+    return 'Heritage Topic'
+  }
+  if (type === 'fallback') {
+    return 'Flexible Slot'
+  }
+  return 'Activity'
+}
+
+function itineraryTypeHint(type) {
+  if (type === 'official') {
+    return 'Background context for the route, not a bookable activity.'
+  }
+  if (type === 'heritage') {
+    return 'This is a heritage topic or project, not an activity title.'
+  }
+  if (type === 'fallback') {
+    return 'Use this time as a flexible slot when there is no stronger match.'
+  }
+  return 'This is a recommended experience activity for the route.'
+}
+
+function normalizeActivityItems(items) {
   if (!Array.isArray(items)) {
     return []
   }
 
   return items.map(item => ({
     id: item?.id ?? null,
-    title: item?.title || '未命名活动',
-    description: item?.description || '暂无详细介绍。',
-    date: item?.date || '时间待定',
-    location: item?.location || '地点待定'
+    title: item?.title || 'Untitled activity',
+    description: item?.description || 'No details available.',
+    date: item?.date || 'Time TBD',
+    location: item?.location || 'Location TBD'
   }))
 }
 
-function normalizeHighlights(items) {
+function normalizeHighlights(items, activityItems) {
   if (!Array.isArray(items)) {
     return []
   }
 
-  return items.map(item => ({
-    title: item?.title || '官方内容',
-    summary: item?.summary || '暂无摘要。',
-    category: item?.category || '非遗介绍'
-  }))
+  const activityTitles = new Set(
+    (Array.isArray(activityItems) ? activityItems : [])
+      .map(item => typeof item?.title === 'string' ? item.title.trim() : '')
+      .filter(Boolean)
+  )
+
+  return items
+    .map(item => ({
+      title: item?.title || 'Heritage introduction',
+      summary: item?.summary || 'No summary available.',
+      category: item?.category || 'Heritage overview',
+      relatedType: item?.relatedType || 'Related introduction',
+      region: item?.region || 'Region TBD'
+    }))
+    .filter(item => !activityTitles.has(item.title))
 }
 
 function fillPrompt(prompt) {
@@ -408,7 +423,7 @@ function fillPrompt(prompt) {
 
 async function generateRoute() {
   if (!userInput.value) {
-    error.value = '请输入你的路线需求。'
+    error.value = 'Please enter your route request first.'
     return
   }
 
@@ -422,13 +437,13 @@ async function generateRoute() {
     })
 
     if (response.code !== 200) {
-      throw new Error(response.message || '路线生成失败')
+      throw new Error(response.message || 'Failed to generate route.')
     }
 
     routeResult.value = response.data
     activeFavoriteId.value = null
   } catch (err) {
-    error.value = err?.response?.data?.message || err?.message || '路线生成失败，请稍后重试。'
+    error.value = err?.response?.data?.message || err?.message || 'Failed to generate route. Please try again later.'
     routeResult.value = null
   } finally {
     loading.value = false
@@ -437,7 +452,7 @@ async function generateRoute() {
 
 async function saveRoute() {
   if (!normalizedRoute.value) {
-    error.value = '请先生成路线，再进行收藏。'
+    error.value = 'Generate a route before saving it.'
     return
   }
 
@@ -452,15 +467,15 @@ async function saveRoute() {
     })
 
     if (response.code !== 200) {
-      throw new Error(response.message || '收藏失败')
+      throw new Error(response.message || 'Failed to save route.')
     }
 
     routeResult.value = response.data
     activeFavoriteId.value = response.data?.id ?? null
-    favoriteMessage.value = '路线已收藏，可在下方列表随时查看。'
+    favoriteMessage.value = 'Route saved. You can reopen it from the list below anytime.'
     await loadFavorites()
   } catch (err) {
-    error.value = err?.response?.data?.message || err?.message || '收藏失败，请稍后重试。'
+    error.value = err?.response?.data?.message || err?.message || 'Failed to save route. Please try again later.'
   } finally {
     savingFavorite.value = false
   }
@@ -472,12 +487,12 @@ async function loadFavorites() {
   try {
     const response = await getSavedHeritageRoutes()
     if (response.code !== 200) {
-      throw new Error(response.message || '获取收藏失败')
+      throw new Error(response.message || 'Failed to load saved routes.')
     }
     favorites.value = Array.isArray(response.data) ? response.data : []
   } catch (err) {
     favorites.value = []
-    error.value = err?.response?.data?.message || err?.message || '获取收藏失败，请稍后重试。'
+    error.value = err?.response?.data?.message || err?.message || 'Failed to load saved routes. Please try again later.'
   } finally {
     loadingFavorites.value = false
   }
@@ -490,14 +505,14 @@ async function openFavorite(id) {
   try {
     const response = await getSavedHeritageRouteDetail(id)
     if (response.code !== 200) {
-      throw new Error(response.message || '加载收藏路线失败')
+      throw new Error(response.message || 'Failed to load the saved route.')
     }
 
     routeResult.value = response.data
     userInput.value = response.data?.query || ''
     activeFavoriteId.value = id
   } catch (err) {
-    error.value = err?.response?.data?.message || err?.message || '加载收藏路线失败，请稍后重试。'
+    error.value = err?.response?.data?.message || err?.message || 'Failed to load the saved route. Please try again later.'
   }
 }
 
@@ -508,7 +523,7 @@ async function removeFavorite(id) {
   try {
     const response = await deleteSavedHeritageRoute(id)
     if (response.code !== 200) {
-      throw new Error(response.message || '删除收藏失败')
+      throw new Error(response.message || 'Failed to delete the saved route.')
     }
 
     if (activeFavoriteId.value === id) {
@@ -518,21 +533,21 @@ async function removeFavorite(id) {
       }
     }
 
-    favoriteMessage.value = '收藏路线已删除。'
+    favoriteMessage.value = 'Saved route deleted.'
     await loadFavorites()
   } catch (err) {
-    error.value = err?.response?.data?.message || err?.message || '删除收藏失败，请稍后重试。'
+    error.value = err?.response?.data?.message || err?.message || 'Failed to delete the saved route. Please try again later.'
   }
 }
 
 function formatDate(value) {
   if (!value) {
-    return '刚刚'
+    return 'Just now'
   }
 
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
-    return '刚刚'
+    return 'Just now'
   }
 
   const year = date.getFullYear()
@@ -546,9 +561,7 @@ function formatDate(value) {
 onMounted(() => {
   loadFavorites()
 })
-</script>
-
-<style scoped>
+</script><style scoped>
 .ai-route-page {
   min-height: 100vh;
   padding: 24px 20px 96px;
@@ -998,6 +1011,67 @@ textarea:focus {
   border-radius: 18px;
   background: #fffaf3;
   border: 1px solid rgba(234, 88, 12, 0.08);
+}
+
+.timeline-body--official {
+  background: linear-gradient(180deg, #fffaf0 0%, #fff4dd 100%);
+}
+
+.timeline-body--heritage {
+  background: linear-gradient(180deg, #fffaf5 0%, #fdf0e6 100%);
+  border-color: rgba(194, 65, 12, 0.12);
+}
+
+.timeline-body--activity {
+  background: linear-gradient(180deg, #fffdf8 0%, #fff7ea 100%);
+}
+
+.timeline-body--fallback {
+  background: linear-gradient(180deg, #fffdfa 0%, #f8efe2 100%);
+}
+
+.timeline-head {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.entry-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.entry-kind--official {
+  background: rgba(217, 119, 6, 0.14);
+  color: #9a3412;
+}
+
+.entry-kind--heritage {
+  background: rgba(180, 83, 9, 0.12);
+  color: #9a3412;
+}
+
+.entry-kind--activity {
+  background: rgba(22, 163, 74, 0.12);
+  color: #166534;
+}
+
+.entry-kind--fallback {
+  background: rgba(120, 53, 15, 0.12);
+  color: #7c2d12;
+}
+
+.entry-hint {
+  color: #8b6a4c;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .timeline-body h4,

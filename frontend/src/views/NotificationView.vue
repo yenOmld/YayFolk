@@ -757,15 +757,9 @@ onUnmounted(() => {
   font-size: 18px;
 }
 
-.main-container {
-  padding-top: 60px;
-  height: 100vh;
-}
 
 .chat-layout {
   display: flex;
-  height: calc(100vh - 60px);
-  max-width: 1200px;
   margin: 0 auto;
   background: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -1231,10 +1225,14 @@ onUnmounted(() => {
 }
 
 .top-nav,
-.main-container,
-.context-menu {
+.main-container {
   position: relative;
   z-index: 1;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 1000;
 }
 
 .top-nav {
@@ -1250,19 +1248,6 @@ onUnmounted(() => {
   box-shadow: none;
 }
 
-.nav-content {
-  border-radius: 24px;
-  border: 1px solid rgba(190, 157, 124, 0.28);
-  background:
-    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.88)),
-    rgba(255, 251, 246, 0.9);
-  box-shadow:
-    0 20px 40px rgba(74, 46, 23, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
 .logo {
   position: relative;
   padding-left: 16px;
@@ -1270,19 +1255,6 @@ onUnmounted(() => {
   font-weight: 800;
   letter-spacing: 0.06em;
   color: #2f241d;
-}
-
-.logo::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #9d2929, #c9913f);
-  transform: translateY(-50%);
-  box-shadow: 0 0 0 6px rgba(157, 41, 41, 0.08);
 }
 
 .nav-button {
@@ -1302,9 +1274,8 @@ onUnmounted(() => {
 }
 
 .main-container {
-  padding: 18px 16px 96px;
+  padding: 20px 16px 20px;
   height: auto;
-  min-height: calc(100vh - 24px);
 }
 
 .chat-layout {

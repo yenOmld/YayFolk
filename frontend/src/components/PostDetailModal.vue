@@ -312,6 +312,24 @@ const getCurrentUser = () => {
 
 const currentUser = getCurrentUser()
 
+const resolveFollowState = (payload, fallback = false) => {
+  if (typeof payload === 'boolean') {
+    return payload
+  }
+
+  if (payload && typeof payload === 'object') {
+    if ('following' in payload) {
+      return Boolean(payload.following)
+    }
+
+    if ('isFollowing' in payload) {
+      return Boolean(payload.isFollowing)
+    }
+  }
+
+  return fallback
+}
+
 watch(() => props.visible, (val) => {
   if (!val) {
     currentImageIndex.value = 0
@@ -324,7 +342,10 @@ watch(() => props.visible, (val) => {
 })
 
 watch(() => props.post, async (newPost) => {
-  if (!newPost) return
+  if (!newPost) {
+    isFollowing.value = false
+    return
+  }
   
   translatedPostText.value = ''
   showPostTranslation.value = false
@@ -332,15 +353,18 @@ watch(() => props.post, async (newPost) => {
   preferredLanguage.value = getPreferredLanguage()
   
   // 获取关注状态
-  if (newPost.author?.id && currentUser) {
+  if (newPost.author?.id && currentUser && newPost.author.id !== currentUser.id) {
     try {
       const response = await getFollowStatus(newPost.author.id)
       if (response.code === 200) {
-        isFollowing.value = response.data
+        isFollowing.value = resolveFollowState(response.data)
       }
     } catch (error) {
+      isFollowing.value = false
       console.error('获取关注状态失败:', error)
     }
+  } else {
+    isFollowing.value = false
   }
   
   // 检查是否需要高亮评论
@@ -698,9 +722,10 @@ const toggleFollow = async () => {
   
   followSubmitting.value = true
   try {
-    const response = isFollowing.value ? await unfollowUser(authorId) : await followUser(authorId)
+    const wasFollowing = isFollowing.value
+    const response = wasFollowing ? await unfollowUser(authorId) : await followUser(authorId)
     if (response.code === 200) {
-      isFollowing.value = !isFollowing.value
+      isFollowing.value = resolveFollowState(response.data, !wasFollowing)
       notify.success(isFollowing.value ? t('postDetail.followSuccess') : t('postDetail.unfollowSuccess'))
     } else {
       notify.error(response.message || t('postDetail.operationFailed'))
