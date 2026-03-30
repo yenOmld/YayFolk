@@ -553,7 +553,7 @@
                   type="button"
                   @click.stop="removeManagedAccount(account.account)"
                 >
-                  绉婚櫎
+                  删除
                 </button>
               </div>
             </div>
@@ -1061,7 +1061,7 @@ const parseStoredUser = () => {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('瑙ｆ瀽用户信息失败:', error)
+    console.error('解析用户信息失败:', error)
     return null
   }
 }
@@ -1378,7 +1378,7 @@ const showChangePassword = () => {
   resetPasswordForm()
 }
 
-// 关闭修改瀵嗙爜弹窗
+// 关闭修改密码弹窗
 const closePasswordModal = () => {
   showPasswordModal.value = false
   resetPasswordForm()
@@ -1471,7 +1471,7 @@ const submitPasswordChange = async () => {
       notify.error(data.message || t('personal.passwordChangeFailed'))
     }
   } catch (error) {
-    console.error('修改瀵嗙爜失败:', error)
+    console.error('修改密码失败:', error)
     notify.error(t('personal.networkError'))
   }
 }
@@ -1648,7 +1648,7 @@ const loadPersonalCenterData = async () => {
           userInfo.value.avatar = localDefaultAvatar
         }
       } catch (error) {
-        console.error('瑙ｆ瀽用户信息失败:', error)
+        console.error('解析用户信息失败:', error)
         userInfo.value = normalizeUserInfo({
           avatar: localDefaultAvatar
         })
@@ -2309,7 +2309,7 @@ onBeforeUnmount(() => {
   color: #999;
 }
 
-/* 鍥炬爣颜色 */
+/* 图标颜色 */
 .icon-blue { color: #4facfe; }
 .icon-yellow { color: #f6d365; }
 .icon-purple { color: #a18cd1; }

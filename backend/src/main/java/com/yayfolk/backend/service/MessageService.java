@@ -1,5 +1,7 @@
 package com.yayfolk.backend.service;
 
+import com.yayfolk.backend.dto.TranslateRequest;
+import com.yayfolk.backend.dto.TranslateResponse;
 import com.yayfolk.backend.entity.Conversation;
 import com.yayfolk.backend.entity.Message;
 import com.yayfolk.backend.entity.Notification;
@@ -58,8 +60,8 @@ public class MessageService {
         Long userId = currentUser.getId();
         List<Map<String, Object>> result = new ArrayList<>();
 
-        result.add(createSystemConversation("comment", "\u8BC4\u8BBA\u901A\u77E5", "\u8BC4\u8BBA\u901A\u77E5", getUnreadCommentCount(userId)));
-        result.add(createSystemConversation("collection", "\u6536\u85CF\u901A\u77E5", "\u6536\u85CF\u901A\u77E5", getUnreadCollectionCount(userId)));
+        result.add(createSystemConversation("comment", "评论通知", "评论通知", getUnreadCommentCount(userId)));
+        result.add(createSystemConversation("collection", "收藏通知", "收藏通知", getUnreadCollectionCount(userId)));
 
         List<Conversation> directConversations = conversationRepository.findDirectConversationsByUserId(userId);
         for (Conversation conversation : directConversations) {
@@ -302,6 +304,213 @@ public class MessageService {
         notificationRepository.save(notification);
     }
 
+
+    public Map<String, Object> translateMessage(String username, Long messageId, String targetLang) {
+        Long userId = findUserId(username);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
+        Conversation conversation = conversationRepository.findById(message.getConversationId())
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
+
+        if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
+            throw new RuntimeException("You do not have permission to translate this message");
+        }
+
+        String content = defaultString(message.getContent());
+        if (!StringUtils.hasText(content)) {
+            throw new RuntimeException("Message content is empty");
+        }
+
+        String normalizedSource = normalizeLangCode(StringUtils.hasText(message.getSourceLang()) ? message.getSourceLang() : detectLanguage(content));
+        String normalizedTarget = normalizeLangCode(targetLang);
+        Map<String, Object> result = new HashMap<>();
+
+        if (normalizedSource.equalsIgnoreCase(normalizedTarget)) {
+            result.put("translatedText", content);
+            result.put("sourceLang", normalizedSource);
+            result.put("targetLang", normalizedTarget);
+            result.put("fromCache", false);
+            return result;
+        }
+
+        String cacheKey = buildMessageTranslateCacheKey(messageId, normalizedTarget);
+        String cached = redisTemplate.opsForValue().get(cacheKey);
+        if (StringUtils.hasText(cached)) {
+            result.put("translatedText", cached);
+            result.put("sourceLang", normalizedSource);
+            result.put("targetLang", normalizedTarget);
+            result.put("fromCache", true);
+            return result;
+        }
+
+        TranslateRequest request = new TranslateRequest();
+        request.setText(content);
+        request.setSourceLang(normalizedSource);
+        request.setTargetLang(normalizedTarget);
+        TranslateResponse response = translateService.translate(request);
+        if (response == null || response.getCode() != 200 || !StringUtils.hasText(response.getTranslatedText())) {
+            String errorMessage = response != null && StringUtils.hasText(response.getMessage()) ? response.getMessage() : "Translation failed, please try again";
+            throw new RuntimeException(errorMessage);
+        }
+
+        redisTemplate.opsForValue().set(cacheKey, response.getTranslatedText(), 7, TimeUnit.DAYS);
+        result.put("translatedText", response.getTranslatedText());
+        result.put("sourceLang", normalizedSource);
+        result.put("targetLang", normalizedTarget);
+        result.put("fromCache", false);
+        return result;
+    }
+
+    @Transactional
+    public void deleteMessage(String username, Long messageId) {
+        Long userId = findUserId(username);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
+        Conversation conversation = conversationRepository.findById(message.getConversationId())
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
+
+        if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
+            throw new RuntimeException("You do not have permission to delete this message");
+        }
+
+        boolean changed = false;
+        if (userId.equals(message.getSenderId()) && !Boolean.TRUE.equals(message.getDeletedBySender())) {
+            message.setDeletedBySender(true);
+            changed = true;
+        }
+        if (userId.equals(message.getReceiverId()) && !Boolean.TRUE.equals(message.getDeletedByReceiver())) {
+            message.setDeletedByReceiver(true);
+            changed = true;
+        }
+        if (!changed) {
+            return;
+        }
+
+        if (Boolean.TRUE.equals(message.getDeletedBySender()) && Boolean.TRUE.equals(message.getDeletedByReceiver())) {
+            messageRepository.delete(message);
+        } else {
+            messageRepository.save(message);
+        }
+
+        refreshConversationPreview(conversation.getId());
+    }
+
+    @Transactional
+    public Map<String, Object> recallMessage(String username, Long messageId) {
+        Long userId = findUserId(username);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message does not exist"));
+
+        if (!userId.equals(message.getSenderId())) {
+            throw new RuntimeException("You can only recall messages you sent");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", defaultString(message.getContent()));
+        Long conversationId = message.getConversationId();
+        messageRepository.delete(message);
+        refreshConversationPreview(conversationId);
+        return result;
+    }
+
+    private void refreshConversationPreview(Long conversationId) {
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+        if (conversation == null) {
+            return;
+        }
+
+        List<Message> messages = messageRepository.findByConversationIdOrderByCreateTimeDesc(conversationId);
+        if (messages.isEmpty()) {
+            conversation.setLastMessage(null);
+            conversation.setLastMessageTime(null);
+        } else {
+            Message latest = messages.get(0);
+            conversation.setLastMessage(defaultString(latest.getContent()));
+            conversation.setLastMessageTime(latest.getCreateTime());
+        }
+        conversationRepository.save(conversation);
+    }
+
+    private String buildMessageTranslateCacheKey(Long messageId, String targetLang) {
+        return "messages:translate:" + messageId + ":" + normalizeLangCode(targetLang);
+    }
+
+    private String normalizeLangCode(String langCode) {
+        String code = defaultString(langCode).toLowerCase().replace('_', '-');
+        if (!StringUtils.hasText(code)) {
+            return "zh";
+        }
+        if ("zh-cn".equals(code) || "zh-hans".equals(code)) {
+            return "zh";
+        }
+        if ("zh-tw".equals(code) || "zh-hant".equals(code)) {
+            return "zh-TW";
+        }
+        if (code.contains("-")) {
+            return code.substring(0, code.indexOf('-'));
+        }
+        return code;
+    }
+
+    private String detectLanguage(String text) {
+        if (!StringUtils.hasText(text)) {
+            return "auto";
+        }
+        return detectLanguageByChars(text);
+    }
+
+    private String detectLanguageByChars(String text) {
+        int zhCount = 0;
+        int jaCount = 0;
+        int koCount = 0;
+        int enCount = 0;
+        int total = 0;
+
+        for (char c : text.toCharArray()) {
+            if (Character.isWhitespace(c) || Character.isDigit(c)) {
+                continue;
+            }
+            total++;
+            if (c >= 0x4E00 && c <= 0x9FFF) {
+                zhCount++;
+            } else if (c >= 0x3040 && c <= 0x309F) {
+                jaCount++;
+            } else if (c >= 0x30A0 && c <= 0x30FF) {
+                jaCount++;
+            } else if (c >= 0xAC00 && c <= 0xD7AF) {
+                koCount++;
+            } else if (c >= 0x1100 && c <= 0x11FF) {
+                koCount++;
+            } else if (c >= 0x3130 && c <= 0x318F) {
+                koCount++;
+            } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+                enCount++;
+            }
+        }
+
+        if (total == 0) {
+            return "auto";
+        }
+        if (jaCount > 0 && jaCount >= zhCount * 0.1) {
+            return "ja";
+        }
+        if (koCount > 0) {
+            return "ko";
+        }
+        if (zhCount > 0 && zhCount > enCount) {
+            return "zh";
+        }
+        if (enCount > 0 && enCount > zhCount) {
+            return "en";
+        }
+        if (zhCount > 0) {
+            return "zh";
+        }
+        if (enCount > 0) {
+            return "en";
+        }
+        return "auto";
+    }
     private Map<String, Object> toMessageMap(Message message, Long currentUserId) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", message.getId());
@@ -374,7 +583,7 @@ public class MessageService {
 
     private String conversationName(User currentUser, User otherUser, String type) {
         if ("service".equals(type) && !isAdmin(currentUser)) {
-            return "\u5728\u7EBF\u5BA2\u670D";
+            return "在线客服";
         }
         return displayName(otherUser);
     }
@@ -388,7 +597,7 @@ public class MessageService {
             .stream()
             .filter(admin -> admin.getId() != null && !admin.getId().equals(requesterId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("\u6682\u65E0\u53EF\u7528\u5BA2\u670D\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5"));
+            .orElseThrow(() -> new RuntimeException("暂无可用客服，请稍后再试"));
     }
 
     private Map<String, Object> buildConversationDetail(User currentUser, Conversation conversation, User otherUser) {
@@ -467,192 +676,12 @@ public class MessageService {
     @Transactional
     public void clearNotifications(String username, String type) {
         Long userId = findUserId(username);
-        List<Notification> notifications = notificationRepository.findByUserIdAndTypeOrderByCreateTimeDesc(userId, type);
+        List<Notification> notifications;
+        if (!StringUtils.hasText(type) || "all".equalsIgnoreCase(type)) {
+            notifications = notificationRepository.findByUserIdOrderByCreateTimeDesc(userId);
+        } else {
+            notifications = notificationRepository.findByUserIdAndTypeOrderByCreateTimeDesc(userId, type);
+        }
         notificationRepository.deleteAll(notifications);
-    }
-
-    @Transactional
-    public void deleteMessage(String username, Long messageId) {
-        Long userId = findUserId(username);
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("Message does not exist"));
-
-        if (!userId.equals(message.getSenderId()) && !userId.equals(message.getReceiverId())) {
-            throw new RuntimeException("You do not have permission to delete this message");
-        }
-
-        Long conversationId = message.getConversationId();
-        boolean wasLastMessage = false;
-
-        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
-        if (conversation != null && Objects.equals(message.getContent(), conversation.getLastMessage())) {
-            wasLastMessage = true;
-        }
-
-        if (userId.equals(message.getSenderId())) {
-            message.setDeletedBySender(true);
-        } else {
-            message.setDeletedByReceiver(true);
-        }
-
-        if (Boolean.TRUE.equals(message.getDeletedBySender()) && Boolean.TRUE.equals(message.getDeletedByReceiver())) {
-            messageRepository.delete(message);
-        } else {
-            messageRepository.save(message);
-        }
-
-        if (wasLastMessage && conversation != null) {
-            updateConversationLastMessage(conversation, userId);
-        }
-    }
-
-    private void updateConversationLastMessage(Conversation conversation, Long userId) {
-        List<Message> messages = messageRepository.findByConversationIdOrderByCreateTimeDesc(conversation.getId());
-        String newLastMessage = "";
-        Date newLastMessageTime = null;
-
-        for (Message message : messages) {
-            boolean visibleToUser = userId.equals(message.getSenderId())
-                ? !Boolean.TRUE.equals(message.getDeletedBySender())
-                : !Boolean.TRUE.equals(message.getDeletedByReceiver());
-
-            if (visibleToUser) {
-                newLastMessage = message.getContent();
-                newLastMessageTime = message.getCreateTime();
-                break;
-            }
-        }
-
-        conversation.setLastMessage(newLastMessage);
-        conversation.setLastMessageTime(newLastMessageTime);
-        conversationRepository.save(conversation);
-    }
-
-    @Transactional
-    public Map<String, Object> recallMessage(String username, Long messageId) {
-        Long userId = findUserId(username);
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("Message does not exist"));
-
-        if (!userId.equals(message.getSenderId())) {
-            throw new RuntimeException("You can only recall messages sent by yourself");
-        }
-
-        long timeDiff = System.currentTimeMillis() - message.getCreateTime().getTime();
-        if (timeDiff > 2 * 60 * 1000) {
-            throw new RuntimeException("Messages can only be recalled within 2 minutes");
-        }
-
-        String redisKey = "recall:message:" + messageId;
-        String content = message.getContent();
-        Long conversationId = message.getConversationId();
-        redisTemplate.opsForValue().set(redisKey, content, 1, TimeUnit.MINUTES);
-
-        messageRepository.delete(message);
-
-        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
-        if (conversation != null) {
-            updateConversationLastMessage(conversation, userId);
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("messageId", messageId);
-        result.put("content", visibleText(content));
-        result.put("conversationId", conversationId);
-        return result;
-    }
-
-    public String getRecalledMessage(Long messageId) {
-        String redisKey = "recall:message:" + messageId;
-        return redisTemplate.opsForValue().get(redisKey);
-    }
-
-    public Map<String, Object> translateMessage(String username, Long messageId, String targetLang) {
-        Long userId = findUserId(username);
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("Message does not exist"));
-
-        if (!userId.equals(message.getSenderId()) && !userId.equals(message.getReceiverId())) {
-            throw new RuntimeException("You do not have permission to translate this message");
-        }
-
-        String sourceLang = message.getSourceLang();
-        String content = visibleText(message.getContent());
-        if (sourceLang == null || "auto".equals(sourceLang)) {
-            sourceLang = detectLanguage(content);
-        }
-
-        com.yayfolk.backend.dto.TranslateRequest request = new com.yayfolk.backend.dto.TranslateRequest();
-        request.setText(content);
-        request.setSourceLang(sourceLang);
-        request.setTargetLang(targetLang);
-
-        com.yayfolk.backend.dto.TranslateResponse response = translateService.translate(request);
-        Map<String, Object> result = new HashMap<>();
-        result.put("translatedText", response.getTranslatedText());
-        result.put("sourceLang", sourceLang);
-        result.put("targetLang", targetLang);
-        return result;
-    }
-
-    private String detectLanguage(String text) {
-        if (!StringUtils.hasText(text)) {
-            return "auto";
-        }
-        return detectLanguageByChars(text);
-    }
-
-    private String detectLanguageByChars(String text) {
-        int zhCount = 0;
-        int jaCount = 0;
-        int koCount = 0;
-        int enCount = 0;
-        int total = 0;
-
-        for (char c : text.toCharArray()) {
-            if (Character.isWhitespace(c) || Character.isDigit(c)) {
-                continue;
-            }
-            total++;
-            if (c >= 0x4E00 && c <= 0x9FFF) {
-                zhCount++;
-            } else if (c >= 0x3040 && c <= 0x309F) {
-                jaCount++;
-            } else if (c >= 0x30A0 && c <= 0x30FF) {
-                jaCount++;
-            } else if (c >= 0xAC00 && c <= 0xD7AF) {
-                koCount++;
-            } else if (c >= 0x1100 && c <= 0x11FF) {
-                koCount++;
-            } else if (c >= 0x3130 && c <= 0x318F) {
-                koCount++;
-            } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
-                enCount++;
-            }
-        }
-
-        if (total == 0) {
-            return "auto";
-        }
-
-        if (jaCount > 0 && jaCount >= zhCount * 0.1) {
-            return "ja";
-        }
-        if (koCount > 0) {
-            return "ko";
-        }
-        if (zhCount > 0 && zhCount > enCount) {
-            return "zh";
-        }
-        if (enCount > 0 && enCount > zhCount) {
-            return "en";
-        }
-        if (zhCount > 0) {
-            return "zh";
-        }
-        if (enCount > 0) {
-            return "en";
-        }
-        return "auto";
     }
 }

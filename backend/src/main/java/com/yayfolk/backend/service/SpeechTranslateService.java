@@ -1,12 +1,10 @@
 package com.yayfolk.backend.service;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.yayfolk.backend.dto.SpeechTranslateResult;
 import com.yayfolk.backend.util.BaiduTranslateUtil;
 import com.yayfolk.backend.util.TencentTTSUtil;
-import com.yayfolk.backend.util.TencentTranslateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +17,6 @@ import java.io.IOException;
 public class SpeechTranslateService {
 
     private final BaiduTranslateUtil baiduTranslateUtil;
-    private final TencentTranslateUtil tencentTranslateUtil;
     private final TencentTTSUtil tencentTTSUtil;
     private final Gson gson = new Gson();
 
@@ -78,46 +75,5 @@ public class SpeechTranslateService {
             throw new RuntimeException(e.getMessage());
         }
         return null;
-    }
-
-    public SpeechTranslateResult translateText(String text, String from, String to) throws IOException {
-        String response = tencentTranslateUtil.translateText(text, from, to);
-        JsonObject jsonResponse = gson.fromJson(response, JsonObject.class);
-
-        String translatedText = "";
-        if (jsonResponse.has("trans_result")) {
-            JsonArray transResult = jsonResponse.getAsJsonArray("trans_result");
-            if (transResult.size() > 0) {
-                JsonObject firstResult = transResult.get(0).getAsJsonObject();
-                if (firstResult.has("dst")) {
-                    translatedText = firstResult.get("dst").getAsString();
-                }
-            }
-        }
-
-        String audioBase64 = null;
-        if (!translatedText.isEmpty() && isTTSSupported(to)) {
-            try {
-                String ttsResponse = tencentTTSUtil.textToSpeech(translatedText, to, null);
-                JsonObject ttsJson = gson.fromJson(ttsResponse, JsonObject.class);
-                if (ttsJson.has("audio")) {
-                    audioBase64 = ttsJson.get("audio").getAsString();
-                }
-            } catch (Exception e) {
-                log.warn("TTS failed: {}", e.getMessage());
-            }
-        }
-
-        return SpeechTranslateResult.builder()
-                .originalText(text)
-                .translatedText(translatedText)
-                .sourceLanguage(from)
-                .targetLanguage(to)
-                .audioUrl(audioBase64 != null ? "data:audio/mp3;base64," + audioBase64 : null)
-                .build();
-    }
-
-    private boolean isTTSSupported(String lang) {
-        return "zh".equals(lang) || "en".equals(lang) || "eng".equals(lang);
     }
 }

@@ -82,7 +82,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.markAsRead(username, conversationId);
-            return ResponseDto.success("\u5DF2\u6807\u8BB0\u4E3A\u5DF2\u8BFB");
+            return ResponseDto.success("已标记为已读");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -103,7 +103,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.markNotificationsAsRead(username, type);
-            return ResponseDto.success("\u5DF2\u6807\u8BB0\u4E3A\u5DF2\u8BFB");
+            return ResponseDto.success("已标记为已读");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -136,7 +136,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.deleteConversation(username, id);
-            return ResponseDto.success("\u4F1A\u8BDD\u5DF2\u5220\u9664");
+            return ResponseDto.success("会话已删除");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -147,7 +147,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.clearNotifications(username, type);
-            return ResponseDto.success("\u901A\u77E5\u5DF2\u6E05\u7A7A");
+            return ResponseDto.success("通知已清空");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -158,7 +158,7 @@ public class MessageController {
         try {
             String username = requireUsername(request);
             messageService.deleteMessage(username, id);
-            return ResponseDto.success("\u6D88\u606F\u5DF2\u5220\u9664");
+            return ResponseDto.success("消息已删除");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -177,7 +177,7 @@ public class MessageController {
     private String requireUsername(HttpServletRequest request) {
         Object usernameObj = request.getAttribute("username");
         if (usernameObj == null) {
-            throw new RuntimeException("\u672A\u767B\u5F55");
+            throw new RuntimeException("未登录");
         }
         return usernameObj.toString();
     }

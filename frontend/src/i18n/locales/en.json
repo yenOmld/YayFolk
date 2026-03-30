@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -20,10 +20,12 @@
   },
   "nav": {
     "home": "Home",
+    "activity": "Activity",
     "discover": "Discover",
     "personal": "Profile",
     "translate": "Translate",
     "post": "Post",
+    "tools": "Tools",
     "notification": "Notifications"
   },
   "login": {

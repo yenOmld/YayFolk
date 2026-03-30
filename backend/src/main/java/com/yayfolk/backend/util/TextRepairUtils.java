@@ -8,14 +8,13 @@ import java.nio.charset.StandardCharsets;
 public final class TextRepairUtils {
     private static final Charset GBK = Charset.forName("GBK");
     private static final String COMMON_READABLE_CJK =
-        "\u5728\u7EBF\u5BA2\u670D\u8BC4\u8BBA\u6536\u85CF\u901A\u77E5\u6D88\u606F\u4F1A\u8BDD\u52A0\u8F7D" +
-        "\u53D1\u9001\u521B\u5EFA\u5931\u8D25\u6682\u65E0\u8BF7\u7A0D\u540E\u518D\u8BD5\u5DF2\u6807\u8BB0\u8BFB" +
-        "\u5220\u9664\u6E05\u7A7A\u4F60\u597D\u5417\u56DE\u590D\u540C\u6B65\u5E73\u53F0\u6C9F\u901A\u8F93\u5165" +
-        "\u8BB0\u5F55\u9009\u62E9\u5E38\u51E0\u5206\u949F";
+        "在线客服评论收藏通知消息对话加载" +
+        "发送创建失败暂无请稍后再试已标记读" +
+        "删除清空你好吗回复同步平台沟通输入" +
+        "记录选择常用几分钟";
     private static final String COMMON_PUNCTUATION =
         " ,.!?;:'\"()[]{}<>-_/\\@#$%^&*+=~`|" +
-        "\uFF0C\u3002\uFF01\uFF1F\u3001\uFF1B\uFF1A\uFF08\uFF09\u300A\u300B" +
-        "\u201C\u201D\u2018\u2019\u3010\u3011\u00B7\u2026";
+        "，。！？、；：（）《》【】·…";
 
     private TextRepairUtils() {
     }

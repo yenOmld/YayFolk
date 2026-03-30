@@ -47,7 +47,7 @@ public class OAuth2Config {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/landmark/**", "/api/ocr/**", "/api/translate/**", "/api/public/**").permitAll()
+                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/translate/**", "/api/public/**").permitAll()
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2Login -> {
@@ -64,7 +64,7 @@ public class OAuth2Config {
                     .authenticationEntryPoint((request, response, authException) -> {
                         response.setStatus(401);
                         response.setContentType("application/json");
-                        response.getWriter().write("{\"code\": 401, \"message\": \"未授权，请重新登录\"}");
+                        response.getWriter().write("{\"code\": 401, \"message\": \"Unauthorized\"}");
                     })
             );
         return http.build();
@@ -113,3 +113,4 @@ public class OAuth2Config {
         return authorizedClientManager;
     }
 }
+

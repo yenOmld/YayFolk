@@ -1,21 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import HomeView from '../views/HomeView.vue'
-import ToolsView from '../views/Tools.vue'
-import TextTranslate from '../views/TextTranslate.vue'
 import DiscoverView from '../views/DiscoverView.vue'
 import PersonalCenter from '../views/PersonalCenter.vue'
 import Settings from '../views/Settings.vue'
 import EditProfile from '../views/EditProfile.vue'
 import EditHomepage from '../views/EditHomepage.vue'
 import UserHomepage from '../views/UserHomepage.vue'
-import CameraTranslate from '../views/CameraTranslate.vue'
-import VoiceTranslate from '../views/VoiceTranslate.vue'
 import ConversationMode from '../views/ConversationMode.vue'
 import NotificationView from '../views/NotificationView.vue'
 import ShareView from '../views/ShareView.vue'
 import IntangibleCulturalHeritage from '../views/IntangibleCulturalHeritage.vue'
+import AIHeritageRoute from '../views/AIHeritageRoute.vue'
 import ActivityList from '../views/activity/ActivityList.vue'
 import ActivityDetail from '../views/activity/ActivityDetail.vue'
 import ActivityBooking from '../views/activity/ActivityBooking.vue'
@@ -29,7 +26,7 @@ const readStoredUser = () => {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('读取用户信息失败', error)
+    console.error('读取用户信息错误', error)
     return {}
   }
 }
@@ -68,19 +65,19 @@ const routes = [
         path: 'heritage',
         name: 'heritage',
         component: IntangibleCulturalHeritage,
-        meta: { title: '中国非遗文化 - YayFolk' }
+        meta: { title: '中国非物质文化 - YayFolk' }
       },
       {
         path: 'activity',
         name: 'activity',
         component: ActivityList,
-        meta: { title: '精彩活动 - YayFolk' }
+        meta: { title: '非遗活动 - YayFolk' }
       },
       {
         path: 'tools',
         name: 'tools',
-        component: ToolsView,
-        meta: { title: '工具箱 - YayFolk' }
+        component: AIHeritageRoute,
+        meta: { title: '工具管理 - YayFolk' }
       },
       {
         path: 'discover',
@@ -97,28 +94,8 @@ const routes = [
     ]
   },
   {
-    path: '/text-translate',
-    name: 'text-translate',
-    component: TextTranslate,
-    meta: { title: '文本翻译 - YayFolk', requiresAuth: true }
-  },
-  {
-    path: '/camera-translate',
-    name: 'camera-translate',
-    component: CameraTranslate,
-    meta: { title: '拍照翻译 - YayFolk', requiresAuth: true }
-  },
-  {
-    path: '/voice-translate',
-    name: 'voice-translate',
-    component: VoiceTranslate,
-    meta: { title: '语音翻译 - YayFolk', requiresAuth: true }
-  },
-  {
     path: '/ai-heritage-route',
-    name: 'ai-heritage-route',
-    component: () => import('../views/AIHeritageRoute.vue'),
-    meta: { title: 'AI 非遗体验路线规划 - YayFolk', requiresAuth: true }
+    redirect: '/home/tools'
   },
   {
     path: '/conversation',
@@ -196,7 +173,7 @@ const routes = [
     path: '/activity/:id/booking',
     name: 'activity-booking',
     component: ActivityBooking,
-    meta: { title: '活动预约 - YayFolk', requiresAuth: true }
+    meta: { title: '活动预订 - YayFolk', requiresAuth: true }
   },
   {
     path: '/admin',
@@ -213,7 +190,7 @@ const routes = [
         path: 'merchants',
         name: 'admin-merchants',
         component: () => import('../views/admin/AdminMerchants.vue'),
-        meta: { title: '商家审核 - 管理后台' }
+        meta: { title: '商户审核 - 管理后台' }
       },
       {
         path: 'activities',
@@ -262,31 +239,31 @@ const routes = [
         path: 'apply',
         name: 'merchant-apply',
         component: () => import('../views/merchant/MerchantApply.vue'),
-        meta: { title: '商家认证 - 商家中心' }
+        meta: { title: '商户认证 - 商户中心' }
       },
       {
         path: 'activities',
         name: 'merchant-activities',
         component: () => import('../views/merchant/MerchantActivities.vue'),
-        meta: { title: '活动管理 - 商家中心' }
+        meta: { title: '活动管理 - 商户中心' }
       },
       {
         path: 'activities/create',
         name: 'merchant-activity-create',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '创建活动 - 商家中心' }
+        meta: { title: '创建活动 - 商户中心' }
       },
       {
         path: 'activities/:id/edit',
         name: 'merchant-activity-edit',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '编辑活动 - 商家中心' }
+        meta: { title: '编辑活动 - 商户中心' }
       },
       {
         path: 'bookings',
         name: 'merchant-bookings',
         component: () => import('../views/merchant/MerchantBookings.vue'),
-        meta: { title: '预约管理 - 商家中心' }
+        meta: { title: '预订管理 - 商户中心' }
       }
     ]
   }

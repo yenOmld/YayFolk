@@ -165,7 +165,19 @@ public class PublicContentService {
         result.put("activities", buildHomepageActivities());
         result.put("heritages", buildHomepageHeritages());
         result.put("works", buildHomepageWorks());
+        result.put("stats", buildHomepageStats());
         return result;
+    }
+
+    private Map<String, Object> buildHomepageStats() {
+        Map<String, Object> stats = new HashMap<String, Object>();
+        stats.put("activities", getPublicActivities(null, null).size());
+        stats.put("heritages", intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc().size());
+
+        List<DiscoverPost> posts = discoverPostRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
+        int workCount = posts == null ? 0 : Math.min(20, posts.size());
+        stats.put("works", workCount);
+        return stats;
     }
 
     private List<Map<String, Object>> buildHomepageActivities() {

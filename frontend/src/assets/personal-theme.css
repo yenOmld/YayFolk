@@ -4,8 +4,6 @@
 .edit-homepage-page,
 .user-homepage-page,
 .discover-page,
-.tools-page,
-.my-posts-page,
 .my-collections-page,
 .activities-page,
 .orders-page,
@@ -34,9 +32,7 @@
 .edit-profile-page,
 .edit-homepage-page,
 .user-homepage-page,
-.tools-page,
-.my-posts-page,
-.my-collections-page,
+.my-posts-pactions-page,
 .history-page {
   width: min(1180px, calc(100% - 32px)) !important;
   margin: 0 auto !important;
@@ -60,7 +56,6 @@
 .edit-homepage-page .settings-header,
 .user-homepage-page .page-topbar,
 .discover-page .top-nav,
-.tools-page .welcome-section,
 .my-posts-page .settings-header,
 .my-collections-page .settings-header,
 .history-page .settings-header,
@@ -108,7 +103,6 @@
 .edit-homepage-page .settings-header h1,
 .user-homepage-page h1,
 .discover-page h2,
-.tools-page .welcome-text h1,
 .my-posts-page .settings-header h1,
 .my-collections-page .settings-header h1,
 .history-page .settings-header h1,
@@ -165,7 +159,6 @@
 .discover-page .notification-item,
 .discover-page .sort-menu,
 .discover-page .image-preview-modal .modal-content,
-.tools-page .feature-card,
 .my-posts-page .empty-state,
 .my-posts-page .post-item,
 .my-posts-page .modal-content,
@@ -201,7 +194,6 @@
 .user-homepage-page .post-card,
 .discover-page .post-card,
 .discover-page .notification-item,
-.tools-page .feature-card,
 .my-collections-page .collection-card,
 .history-page .history-card,
 .my-posts-page .post-item {
@@ -430,7 +422,7 @@
 }
 
 .discover-page,
-.tools-page {
+.my-posts-page {
   width: min(1240px, calc(100% - 32px)) !important;
   margin: 0 auto !important;
   padding: 18px 0 48px !important;
@@ -449,8 +441,7 @@
 }
 
 .discover-page .logo,
-.discover-page .notification-user,
-.tools-page .welcome-text p {
+.discover-page .notification-user {
   color: var(--pc-ink) !important;
 }
 
@@ -538,55 +529,6 @@
 .discover-page .post-image,
 .discover-page .preview-image {
   background: #efe5d8;
-}
-
-.tools-page .main-content {
-  padding: 0 !important;
-}
-
-.tools-page .welcome-section {
-  padding: 28px !important;
-  margin-bottom: 22px !important;
-}
-
-.tools-page .welcome-content {
-  justify-content: flex-start !important;
-}
-
-.tools-page .welcome-text {
-  text-align: left !important;
-}
-
-.tools-page .welcome-text h1 {
-  color: var(--pc-ink) !important;
-}
-
-.tools-page .quick-features {
-  gap: 18px !important;
-}
-
-.tools-page .feature-card {
-  padding: 26px 22px !important;
-  background:
-    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.96)),
-    var(--pc-paper-strong) !important;
-}
-
-.tools-page .feature-card i {
-  color: var(--pc-accent) !important;
-}
-
-.tools-page .feature-card span {
-  color: var(--pc-ink) !important;
-}
-
-.tools-page .feature-card:hover {
-  background: linear-gradient(135deg, var(--pc-accent), var(--pc-accent-deep)) !important;
-}
-
-.tools-page .feature-card:hover i,
-.tools-page .feature-card:hover span {
-  color: #fff !important;
 }
 
 .user-homepage-page {
@@ -742,7 +684,6 @@
   .edit-homepage-page,
   .user-homepage-page,
   .discover-page,
-  .tools-page,
   .my-posts-page,
   .my-collections-page,
   .history-page,
@@ -762,7 +703,6 @@
   .edit-homepage-page .settings-header,
   .user-homepage-page .page-topbar,
   .discover-page .top-nav,
-  .tools-page .welcome-section,
   .my-posts-page .settings-header,
   .my-collections-page .settings-header,
   .history-page .settings-header,
@@ -777,7 +717,7 @@
   .discover-page .category-tabs-wrapper,
   .discover-page .notification-container,
   .discover-page .post-container,
-  .tools-page .welcome-section {
+  .welcome-section {
     padding: 16px !important;
   }
 }

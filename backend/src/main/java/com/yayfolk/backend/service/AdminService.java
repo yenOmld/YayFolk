@@ -94,9 +94,9 @@ public class AdminService {
 
     private User requireAdmin(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User does not exist"));
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
         if (!"admin".equals(user.getRole())) {
-            throw new RuntimeException("Only admins can access this resource");
+            throw new RuntimeException("只有管理员可以访问此资源");
         }
         return user;
     }
@@ -104,16 +104,16 @@ public class AdminService {
     private User requireSuperAdmin(String username) {
         User user = requireAdmin(username);
         if (!isSuperAdmin(user)) {
-            throw new RuntimeException("Only the super admin can manage administrator accounts");
+            throw new RuntimeException("只有超级管理员可以管理管理员账户");
         }
         return user;
     }
 
     private User requireAdminAccount(Long adminId) {
         User user = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Administrator does not exist"));
+                .orElseThrow(() -> new RuntimeException("管理员不存在"));
         if (!"admin".equals(user.getRole())) {
-            throw new RuntimeException("Target user is not an administrator");
+            throw new RuntimeException("目标用户不是管理员");
         }
         return user;
     }
@@ -199,7 +199,7 @@ public class AdminService {
         app.setApplicationStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("Please provide a rejection reason");
+            throw new RuntimeException("请提供拒绝原因");
         }
         app.setAuditRemark(approve ? null : trimmedRemark);
         app.setAuditAdminId(admin.getId());
@@ -207,7 +207,7 @@ public class AdminService {
         applicationRepository.save(app);
 
         User applicant = userRepository.findById(app.getUserId())
-                .orElseThrow(() -> new RuntimeException("Applicant does not exist"));
+                .orElseThrow(() -> new RuntimeException("申请人不存在"));
         if (approve) {
             applicant.setRole("merchant");
             applicant.setShopStatus("approved");
@@ -284,12 +284,12 @@ public class AdminService {
     public Map<String, Object> auditActivity(String adminUsername, Long activityId, boolean approve, String remark) {
         User admin = requireAdmin(adminUsername);
         Activity activity = activityRepository.findById(activityId)
-                .orElseThrow(() -> new RuntimeException("Activity does not exist"));
+                .orElseThrow(() -> new RuntimeException("活动不存在"));
 
         activity.setAuditStatus(approve ? "approved" : "rejected");
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("Please provide a rejection reason");
+            throw new RuntimeException("请提供拒绝原因");
         }
         activity.setAuditRemark(approve ? null : trimmedRemark);
         activityRepository.save(activity);
@@ -364,10 +364,10 @@ public class AdminService {
     public Map<String, Object> auditPost(String adminUsername, Long postId, boolean pass, String remark) {
         User admin = requireAdmin(adminUsername);
         DiscoverPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post does not exist"));
+                .orElseThrow(() -> new RuntimeException("帖子不存在"));
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("Please provide a rejection reason");
+            throw new RuntimeException("请提供拒绝原因");
         }
         post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
         post.setAuditRemark(pass ? null : trimmedRemark);
@@ -384,11 +384,11 @@ public class AdminService {
     public Map<String, Object> batchAuditPosts(String adminUsername, List<Long> postIds, boolean pass, String remark) {
         User admin = requireAdmin(adminUsername);
         if (postIds == null || postIds.isEmpty()) {
-            throw new RuntimeException("Please select posts first");
+            throw new RuntimeException("请先选择帖子");
         }
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!pass && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("Please provide a rejection reason");
+            throw new RuntimeException("请提供拒绝原因");
         }
 
         List<Long> successIds = new ArrayList<Long>();
@@ -399,7 +399,7 @@ public class AdminService {
             }
             try {
                 DiscoverPost post = postRepository.findById(postId)
-                        .orElseThrow(() -> new RuntimeException("Post does not exist"));
+                        .orElseThrow(() -> new RuntimeException("帖子不存在"));
                 post.setAuditStatus(pass ? AUDIT_STATUS_PASSED : AUDIT_STATUS_REJECTED);
                 post.setAuditRemark(pass ? null : trimmedRemark);
                 postRepository.save(post);
@@ -446,7 +446,7 @@ public class AdminService {
             }
             return countMap;
         } catch (DataAccessException e) {
-            log.warn("Failed to query pending report counts; fallback to zero counts", e);
+            log.warn("查询待处理举报数量失败;回退到零计数", e);
             return Collections.emptyMap();
         }
     }
@@ -465,7 +465,7 @@ public class AdminService {
             }
             postReportRepository.saveAll(pendingReports);
         } catch (DataAccessException e) {
-            log.warn("Failed to resolve pending reports for post {}", postId, e);
+            log.warn("解析帖子{}的待处理举报失败", postId, e);
         }
     }
 
@@ -503,14 +503,14 @@ public class AdminService {
     public void banUser(String adminUsername, Long userId, String reason) {
         User admin = requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User does not exist"));
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
         if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
-            throw new RuntimeException("Administrator accounts cannot be disabled");
+            throw new RuntimeException("管理员账户不能被禁用");
         }
 
         String trimmedReason = reason == null ? null : reason.trim();
         if (trimmedReason == null || trimmedReason.isEmpty()) {
-            throw new RuntimeException("Please provide a ban reason");
+            throw new RuntimeException("请提供封禁原因");
         }
 
         user.setStatus(0);
@@ -525,9 +525,9 @@ public class AdminService {
     public void unbanUser(String adminUsername, Long userId) {
         requireAdmin(adminUsername);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User does not exist"));
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
         if ("admin".equalsIgnoreCase(user.getRole()) || isSuperAdmin(user)) {
-            throw new RuntimeException("Administrator accounts cannot be restored by this action");
+            throw new RuntimeException("管理员账户不能通过此操作恢复");
         }
         user.setStatus(1);
         user.setBanReason(null);
@@ -561,18 +561,18 @@ public class AdminService {
                                                      String remark) {
         User admin = requireAdmin(adminUsername);
         UserUnbanApplication application = userUnbanApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Unban application does not exist"));
+                .orElseThrow(() -> new RuntimeException("解封申请不存在"));
 
         if (!"pending".equalsIgnoreCase(application.getStatus())) {
-            throw new RuntimeException("This unban application has already been processed");
+            throw new RuntimeException("此解封申请已被处理");
         }
 
         User targetUser = userRepository.findById(application.getUserId())
-                .orElseThrow(() -> new RuntimeException("Target user does not exist"));
+                .orElseThrow(() -> new RuntimeException("目标用户不存在"));
 
         String trimmedRemark = remark == null ? null : remark.trim();
         if (!approve && (trimmedRemark == null || trimmedRemark.isEmpty())) {
-            throw new RuntimeException("Please provide a rejection reason");
+            throw new RuntimeException("请提供拒绝原因");
         }
 
         application.setAdminId(admin.getId());
@@ -600,11 +600,11 @@ public class AdminService {
             return;
         }
 
-        String subject = "YayFolk account notice";
+        String subject = "YayFolk账户通知";
         StringBuilder content = new StringBuilder();
-        content.append("Your YayFolk account has been disabled.\n");
-        content.append("Reason: ").append(reason);
-        content.append("\n\nIf you believe this was a mistake, you can submit an unban application here:\n");
+        content.append("您的YayFolk账户已被禁用。\n");
+        content.append("原因: ").append(reason);
+        content.append("\n\n如果您认为这是误操作，可以在此提交解封申请:\n");
         content.append(buildUnbanApplicationUrl(user));
         emailService.sendSystemEmail(user.getEmail(), subject, content.toString());
     }
@@ -614,13 +614,13 @@ public class AdminService {
             return;
         }
 
-        String subject = "YayFolk account restored";
+        String subject = "YayFolk账户已恢复";
         StringBuilder content = new StringBuilder();
-        content.append("Your YayFolk account has been restored.");
+        content.append("您的YayFolk账户已恢复。");
         if (remark != null && !remark.trim().isEmpty()) {
-            content.append("\nRemark: ").append(remark.trim());
+            content.append("\n备注: ").append(remark.trim());
         }
-        content.append("\n\nYou can now log in and continue using YayFolk.");
+        content.append("\n\n您现在可以登录并继续使用YayFolk。");
         emailService.sendSystemEmail(user.getEmail(), subject, content.toString());
     }
 
@@ -665,7 +665,7 @@ public class AdminService {
     public void deleteOfficialContent(String adminUsername, Long id) {
         requireAdmin(adminUsername);
         OfficialContent content = officialContentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Official content does not exist"));
+                .orElseThrow(() -> new RuntimeException("官方内容不存在"));
         officialContentRepository.delete(content);
     }
 
@@ -683,17 +683,17 @@ public class AdminService {
     public Map<String, Object> createAdmin(String adminUsername, Map<String, Object> data) {
         requireSuperAdmin(adminUsername);
 
-        String username = getRequiredString(data, "username", "Administrator username is required");
-        String password = getRequiredString(data, "password", "Administrator password is required");
-        String confirmPassword = getRequiredString(data, "confirmPassword", "Please confirm the administrator password");
+        String username = getRequiredString(data, "username", "管理员用户名不能为空");
+        String password = getRequiredString(data, "password", "管理员密码不能为空");
+        String confirmPassword = getRequiredString(data, "confirmPassword", "请确认管理员密码");
         String nickname = getOptionalString(data, "nickname");
         String email = getOptionalString(data, "email");
 
         if (!password.equals(confirmPassword)) {
-            throw new RuntimeException("The two passwords do not match");
+            throw new RuntimeException("两次密码不匹配");
         }
         if (userRepository.existsByUsername(username)) {
-            throw new RuntimeException("Username already exists");
+            throw new RuntimeException("用户名已存在");
         }
         ensureUniqueAdminEmail(email, null);
 
@@ -731,10 +731,10 @@ public class AdminService {
         User admin = requireAdminAccount(adminId);
 
         if (newPassword == null || newPassword.trim().isEmpty()) {
-            throw new RuntimeException("New password cannot be empty");
+            throw new RuntimeException("新密码不能为空");
         }
         if (!newPassword.equals(confirmPassword)) {
-            throw new RuntimeException("The two passwords do not match");
+            throw new RuntimeException("两次密码不匹配");
         }
 
         admin.setPassword(passwordEncoder.encode(newPassword));
@@ -747,10 +747,10 @@ public class AdminService {
         User admin = requireAdminAccount(adminId);
 
         if (operator.getId().equals(admin.getId())) {
-            throw new RuntimeException("The super admin cannot delete the current logged-in account");
+            throw new RuntimeException("超级管理员不能删除当前登录的账户");
         }
         if (isSuperAdmin(admin)) {
-            throw new RuntimeException("The super admin account cannot be deleted");
+            throw new RuntimeException("超级管理员账户不能被删除");
         }
 
         userRepository.delete(admin);
@@ -871,8 +871,8 @@ public class AdminService {
         Activity activity = new Activity();
         activity.setMerchantId(admin.getId());
         applyActivityPayload(activity, data, false);
-        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("Activity title is required");
-        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("Start time and end time are required");
+        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("活动标题不能为空");
+        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("开始时间和结束时间不能为空");
         activity.setAuditStatus("approved");
         activity.setAuditRemark(null);
         activityRepository.save(activity);
@@ -881,10 +881,10 @@ public class AdminService {
 
     public Map<String, Object> updateOfficialActivity(String adminUsername, Long id, Map<String, Object> data) {
         requireAdmin(adminUsername);
-        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("Activity does not exist"));
+        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("活动不存在"));
         applyActivityPayload(activity, data, true);
-        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("Activity title is required");
-        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("Start time and end time are required");
+        if (normalizeText(activity.getTitle()) == null) throw new RuntimeException("活动标题不能为空");
+        if (activity.getStartTime() == null || activity.getEndTime() == null) throw new RuntimeException("开始时间和结束时间不能为空");
         activity.setAuditStatus("approved");
         activity.setAuditRemark(null);
         activityRepository.save(activity);
@@ -893,7 +893,7 @@ public class AdminService {
 
     public void deleteOfficialActivity(String adminUsername, Long id) {
         requireAdmin(adminUsername);
-        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("Activity does not exist"));
+        Activity activity = activityRepository.findById(id).orElseThrow(() -> new RuntimeException("活动不存在"));
         activityRepository.delete(activity);
     }
 
@@ -912,23 +912,23 @@ public class AdminService {
         requireAdmin(adminUsername);
         IntangibleCulturalHeritage heritage = new IntangibleCulturalHeritage();
         applyHeritagePayload(heritage, data, false);
-        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("Heritage name is required");
+        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("非遗名称不能为空");
         intangibleCulturalHeritageRepository.save(heritage);
         return heritageToAdminMap(heritage, Collections.<Long>emptyList());
     }
 
     public Map<String, Object> updateOfficialHeritage(String adminUsername, Long id, Map<String, Object> data) {
         requireAdmin(adminUsername);
-        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("Heritage does not exist"));
+        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("非遗不存在"));
         applyHeritagePayload(heritage, data, true);
-        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("Heritage name is required");
+        if (normalizeText(heritage.getName()) == null) throw new RuntimeException("非遗名称不能为空");
         intangibleCulturalHeritageRepository.save(heritage);
         return heritageToAdminMap(heritage, readPublishedIds(HOMEPAGE_HERITAGE_CATEGORY));
     }
 
     public void deleteOfficialHeritage(String adminUsername, Long id) {
         requireAdmin(adminUsername);
-        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("Heritage does not exist"));
+        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("非遗不存在"));
         intangibleCulturalHeritageRepository.delete(heritage);
     }
 
@@ -950,8 +950,8 @@ public class AdminService {
         DiscoverPost post = new DiscoverPost();
         post.setUserId(admin.getId());
         applyWorkPayload(post, data, false);
-        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("Work title is required");
-        if (normalizeText(post.getContent()) == null) throw new RuntimeException("Work content is required");
+        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("作品标题不能为空");
+        if (normalizeText(post.getContent()) == null) throw new RuntimeException("作品内容不能为空");
         post.setStatus(1);
         post.setAuditStatus(AUDIT_STATUS_PASSED);
         post.setAuditRemark(null);
@@ -961,10 +961,10 @@ public class AdminService {
 
     public Map<String, Object> updateOfficialWork(String adminUsername, Long id, Map<String, Object> data) {
         requireAdmin(adminUsername);
-        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Work does not exist"));
+        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("作品不存在"));
         applyWorkPayload(post, data, true);
-        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("Work title is required");
-        if (normalizeText(post.getContent()) == null) throw new RuntimeException("Work content is required");
+        if (normalizeText(post.getTitle()) == null) throw new RuntimeException("作品标题不能为空");
+        if (normalizeText(post.getContent()) == null) throw new RuntimeException("作品内容不能为空");
         post.setStatus(1);
         post.setAuditStatus(AUDIT_STATUS_PASSED);
         post.setAuditRemark(null);
@@ -974,7 +974,7 @@ public class AdminService {
 
     public void deleteOfficialWork(String adminUsername, Long id) {
         requireAdmin(adminUsername);
-        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Work does not exist"));
+        DiscoverPost post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("作品不存在"));
         post.setStatus(0);
         postRepository.save(post);
     }
@@ -1008,19 +1008,19 @@ public class AdminService {
     }
 
     private void validateHomepagePublish(String type, List<Long> ids) {
-        if (ids == null || ids.isEmpty()) throw new RuntimeException("Please select at least one item");
+        if (ids == null || ids.isEmpty()) throw new RuntimeException("请至少选择一项");
         if ("activity".equals(type)) {
-            if (ids.size() > HOMEPAGE_ACTIVITY_LIMIT) throw new RuntimeException("At most 3 activities can be published");
-            ensureIdsExist(ids, extractActivityIds(activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended")), "Some activities are unavailable");
+            if (ids.size() > HOMEPAGE_ACTIVITY_LIMIT) throw new RuntimeException("最多只能发布3个活动");
+            ensureIdsExist(ids, extractActivityIds(activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended")), "某些活动不可用");
             return;
         }
         if ("heritage".equals(type)) {
-            if (ids.size() > HOMEPAGE_HERITAGE_LIMIT) throw new RuntimeException("At most 6 heritage items can be published");
-            ensureIdsExist(ids, extractHeritageIds(intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc()), "Some heritage items are unavailable");
+            if (ids.size() > HOMEPAGE_HERITAGE_LIMIT) throw new RuntimeException("最多只能发布6个非遗项目");
+            ensureIdsExist(ids, extractHeritageIds(intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc()), "某些非遗项目不可用");
             return;
         }
         if ("work".equals(type)) {
-            if (ids.size() > HOMEPAGE_WORK_LIMIT) throw new RuntimeException("At most 6 works can be published");
+            if (ids.size() > HOMEPAGE_WORK_LIMIT) throw new RuntimeException("最多只能发布6个作品");
             List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
             List<Map<String, Object>> works = new ArrayList<>();
             for (DiscoverPost post : posts) works.add(workToAdminMap(post, Collections.<Long>emptyList()));
@@ -1031,10 +1031,10 @@ public class AdminService {
                 Long workId = toLong(item.get("id"));
                 if (workId != null) validIds.add(workId);
             }
-            ensureIdsExist(ids, validIds, "Works must come from the top 20 approved hot posts");
+            ensureIdsExist(ids, validIds, "作品必须来自前20个已批准的热门帖子");
             return;
         }
-        throw new RuntimeException("Unsupported publish type");
+        throw new RuntimeException("不支持的发布类型");
     }
 
     private void ensureIdsExist(List<Long> selectedIds, List<Long> validIds, String message) {
@@ -1047,7 +1047,7 @@ public class AdminService {
         if ("activity".equals(type)) return HOMEPAGE_ACTIVITY_CATEGORY;
         if ("heritage".equals(type)) return HOMEPAGE_HERITAGE_CATEGORY;
         if ("work".equals(type)) return HOMEPAGE_WORK_CATEGORY;
-        throw new RuntimeException("Unsupported publish type");
+        throw new RuntimeException("不支持的发布类型");
     }
 
     private List<Long> readPublishedIds(String category) {
@@ -1183,7 +1183,7 @@ public class AdminService {
         try {
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to write json");
+            throw new RuntimeException("写入JSON失败");
         }
     }
 
@@ -1244,7 +1244,7 @@ public class AdminService {
             } catch (Exception ignored) {
             }
         }
-        throw new RuntimeException("Invalid date value");
+        throw new RuntimeException("无效的日期值");
     }
 
     private Integer toNullableInteger(Object value) {

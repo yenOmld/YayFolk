@@ -20,10 +20,12 @@
   },
   "nav": {
     "home": "ホーム",
+    "activity": "アクティビティ",
     "discover": "発見",
     "personal": "マイページ",
     "translate": "翻訳",
     "post": "投稿",
+    "tools": "ツール",
     "notification": "通知"
   },
   "login": {

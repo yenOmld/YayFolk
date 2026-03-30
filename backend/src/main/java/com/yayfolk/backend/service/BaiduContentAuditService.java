@@ -27,6 +27,11 @@ public class BaiduContentAuditService {
     private static final String IMAGE_CENSOR_URL = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined";
     private static final String VIDEO_CENSOR_URL = "https://aip.baidubce.com/rest/2.0/solution/v1/video_censor/v1/user_defined";
 
+    private static final long API_CALL_DELAY_MS = 500;
+    private static final int MAX_RETRY_COUNT = 3;
+    private static final long RETRY_DELAY_MS = 1000;
+    private volatile long lastApiCallTimeMs = 0;
+
     private final BaiduConfig baiduConfig;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -92,6 +97,19 @@ public class BaiduContentAuditService {
         return requestAndParse("Video", VIDEO_CENSOR_URL, payload);
     }
 
+    private synchronized void waitForApiRateLimit() {
+        long currentTime = System.currentTimeMillis();
+        long timeSinceLastCall = currentTime - lastApiCallTimeMs;
+        if (timeSinceLastCall < API_CALL_DELAY_MS) {
+            try {
+                Thread.sleep(API_CALL_DELAY_MS - timeSinceLastCall);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        lastApiCallTimeMs = System.currentTimeMillis();
+    }
+
     private AuditOutcome requestAndParse(String scene, String apiUrl, MultiValueMap<String, String> payload) {
         String token = getAccessToken();
         if (!StringUtils.hasText(token)) {
@@ -102,17 +120,51 @@ public class BaiduContentAuditService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        try {
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(requestUrl, request, String.class);
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                return new AuditOutcome(Decision.REVIEW, scene + " review failed: HTTP " + response.getStatusCodeValue());
+        Exception lastException = null;
+        for (int retry = 0; retry <= MAX_RETRY_COUNT; retry++) {
+            if (retry > 0) {
+                try {
+                    log.warn("Retrying Baidu {} moderation (attempt {}/{})", scene, retry, MAX_RETRY_COUNT);
+                    Thread.sleep(RETRY_DELAY_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
-            return parseResult(scene, response.getBody());
-        } catch (Exception e) {
-            log.error("Baidu {} moderation request failed", scene, e);
-            return new AuditOutcome(Decision.REVIEW, scene + " review request failed");
+
+            waitForApiRateLimit();
+
+            try {
+                HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(payload, headers);
+                ResponseEntity<String> response = restTemplate.postForEntity(requestUrl, request, String.class);
+                if (!response.getStatusCode().is2xxSuccessful()) {
+                    return new AuditOutcome(Decision.REVIEW, scene + " review failed: HTTP " + response.getStatusCodeValue());
+                }
+                AuditOutcome result = parseResult(scene, response.getBody());
+                
+                if (isQpsLimitError(result)) {
+                    log.warn("Baidu {} moderation hit QPS limit, will retry", scene);
+                    lastException = new Exception("QPS limit reached");
+                    continue;
+                }
+                
+                return result;
+            } catch (Exception e) {
+                log.error("Baidu {} moderation request failed (attempt {}/{})", scene, retry + 1, MAX_RETRY_COUNT + 1, e);
+                lastException = e;
+            }
         }
+
+        log.error("Baidu {} moderation failed after {} attempts", scene, MAX_RETRY_COUNT + 1, lastException);
+        return new AuditOutcome(Decision.REVIEW, scene + " review request failed after retries");
+    }
+
+    private boolean isQpsLimitError(AuditOutcome outcome) {
+        if (outcome.getDecision() != Decision.REVIEW) {
+            return false;
+        }
+        String reason = outcome.getReason();
+        return reason != null && (reason.contains("qps") || reason.contains("QPS") || reason.contains("limit"));
     }
 
     private AuditOutcome parseResult(String scene, String body) {

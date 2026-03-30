@@ -65,21 +65,4 @@ public class SpeechTranslateController {
             return ApiResponse.error("TTS failed: " + e.getMessage());
         }
     }
-
-    @PostMapping("/translate-text")
-    public ApiResponse<SpeechTranslateResult> translateText(@RequestBody Map<String, String> request) {
-        try {
-            String text = request.get("text");
-            String from = request.containsKey("from") ? request.get("from") : "en";
-            String to = request.containsKey("to") ? request.get("to") : "zh";
-            if (text == null || text.trim().isEmpty()) {
-                return ApiResponse.error(400, "Text is required");
-            }
-            SpeechTranslateResult result = speechTranslateService.translateText(text, from, to);
-            return ApiResponse.success("Translation completed", result);
-        } catch (IOException e) {
-            log.error("Text translation failed", e);
-            return ApiResponse.error("Translation failed: " + e.getMessage());
-        }
-    }
 }

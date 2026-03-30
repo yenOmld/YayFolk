@@ -20,10 +20,12 @@
   },
   "nav": {
     "home": "홈",
+    "activity": "활동",
     "discover": "발견",
     "personal": "마이페이지",
     "translate": "번역",
     "post": "게시",
+    "tools": "도구",
     "notification": "알림"
   },
   "login": {

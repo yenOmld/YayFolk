@@ -32,7 +32,7 @@ public class AdminController {
     private String requireUsername(HttpServletRequest request) {
         Object username = request.getAttribute("username");
         if (username == null) {
-            throw new RuntimeException("Unauthorized, please login first");
+            throw new RuntimeException("未授权，请先登录");
         }
         return username.toString();
     }

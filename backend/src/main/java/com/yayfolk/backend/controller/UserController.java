@@ -70,7 +70,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             String username = usernameObj.toString();
             User user = userService.findByUsername(username);
@@ -85,7 +85,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             String username = usernameObj.toString();
             User user = userService.findByUsername(username);
@@ -93,35 +93,35 @@ public class UserController {
             if (updateData.containsKey("bio")) {
                 String bio = (String) updateData.get("bio");
                 if (bio != null && bio.length() > 200) {
-                    return ResponseDto.error(400, "涓婚〉绠€浠嬩笉鑳借秴杩?200 涓瓧绗?");
+                    return ResponseDto.error(400, "主页简介不能超过 200 个字符");
                 }
                 user.setBio(bio);
             }
             if (updateData.containsKey("location")) {
                 String location = (String) updateData.get("location");
                 if (location != null && location.length() > 100) {
-                    return ResponseDto.error(400, "涓婚〉鍦板尯涓嶈兘瓒呰繃 100 涓瓧绗?");
+                    return ResponseDto.error(400, "主页地区不能超过 100 个字符");
                 }
                 user.setLocation(location);
             }
             if (updateData.containsKey("shopName")) {
                 String shopName = (String) updateData.get("shopName");
                 if (shopName != null && shopName.length() > 100) {
-                    return ResponseDto.error(400, "涓婚〉鏍囬涓嶈兘瓒呰繃 100 涓瓧绗?");
+                    return ResponseDto.error(400, "主页标题不能超过 100 个字符");
                 }
                 user.setShopName(shopName);
             }
             if (updateData.containsKey("shopIntro")) {
                 String shopIntro = (String) updateData.get("shopIntro");
                 if (shopIntro != null && shopIntro.length() > 500) {
-                    return ResponseDto.error(400, "涓婚〉璇︽儏涓嶈兘瓒呰繃 500 涓瓧绗?");
+                    return ResponseDto.error(400, "主页详情不能超过 500 个字符");
                 }
                 user.setShopIntro(shopIntro);
             }
             if (updateData.containsKey("shopCover")) {
                 String shopCover = (String) updateData.get("shopCover");
                 if (shopCover != null && shopCover.length() > 255) {
-                    return ResponseDto.error(400, "涓婚〉灏侀潰鍦板潃杩囬暱");
+                    return ResponseDto.error(400, "主页封面地址过长");
                 }
                 user.setShopCover(shopCover);
             }
@@ -138,7 +138,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             return ResponseDto.success(userCenterService.followUser(usernameObj.toString(), userId));
         } catch (Exception e) {
@@ -151,7 +151,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             return ResponseDto.success(userCenterService.unfollowUser(usernameObj.toString(), userId));
         } catch (Exception e) {
@@ -164,7 +164,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             return ResponseDto.success(userCenterService.getFollowStatus(usernameObj.toString(), userId));
         } catch (Exception e) {
@@ -177,7 +177,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "閺堫亝宸块弶鍐跨礉鐠囧嘲鍘涢惂璇茬秿");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             return ResponseDto.success(userCenterService.getVisitorRecords(usernameObj.toString()));
         } catch (Exception e) {
@@ -404,7 +404,7 @@ public class UserController {
         try {
             Object usernameObj = request.getAttribute("username");
             if (usernameObj == null) {
-                return ResponseDto.error(401, "鏈巿鏉冿紝璇峰厛鐧诲綍");
+                return ResponseDto.error(401, "未授权，请先登录");
             }
             String username = usernameObj.toString();
             return ResponseDto.success(userCenterService.getAchievements(username));

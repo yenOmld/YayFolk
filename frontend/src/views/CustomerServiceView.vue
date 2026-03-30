@@ -23,7 +23,7 @@
                 >
                   <img
                     :src="message.isSelf ? currentUserAvatar : serviceAvatar"
-                    :alt="message.isSelf ? 'user avatar' : 'service avatar'"
+                    :alt="message.isSelf ? '用户头像' : '客服头像'"
                     class="message-avatar"
                   />
                   <div class="message-bubble">
@@ -81,30 +81,30 @@ const { locale } = useI18n()
 const uiText = computed(() => {
   if (String(locale.value || '').startsWith('zh')) {
     return {
-      title: '\u5728\u7ebf\u5ba2\u670d',
-      loadingList: '\u6b63\u5728\u52a0\u8f7d\u4f1a\u8bdd...',
-      emptyList: '\u6682\u65e0\u5ba2\u670d\u4f1a\u8bdd',
-      emptyMessages: '\u6682\u65e0\u6d88\u606f\u8bb0\u5f55',
-      inputPlaceholder: '\u8f93\u5165\u6d88\u606f...',
-      send: '\u53d1\u9001',
-      loadMessagesFailed: '\u52a0\u8f7d\u6d88\u606f\u5931\u8d25',
-      createConversationFailed: '\u521b\u5efa\u5ba2\u670d\u4f1a\u8bdd\u5931\u8d25',
-      loadConversationsFailed: '\u52a0\u8f7d\u4f1a\u8bdd\u5931\u8d25',
-      sendFailed: '\u53d1\u9001\u5931\u8d25'
+      title: '在线客服',
+      loadingList: '正在加载会话...',
+      emptyList: '暂无客服会话',
+      emptyMessages: '暂无消息记录',
+      inputPlaceholder: '输入消息...',
+      send: '发送',
+      loadMessagesFailed: '加载消息失败',
+      createConversationFailed: '创建客服会话失败',
+      loadConversationsFailed: '加载会话失败',
+      sendFailed: '发送失败'
     }
   }
 
   return {
-    title: 'Customer Service',
-    loadingList: 'Loading conversations...',
-    emptyList: 'No service conversations yet',
-    emptyMessages: 'No messages yet',
-    inputPlaceholder: 'Type a message...',
-    send: 'Send',
-    loadMessagesFailed: 'Failed to load messages',
-    createConversationFailed: 'Failed to create the service conversation',
-    loadConversationsFailed: 'Failed to load conversations',
-    sendFailed: 'Failed to send'
+    title: '在线客服',
+    loadingList: '正在加载会话...',
+    emptyList: '暂无客服会话',
+    emptyMessages: '暂无消息记录',
+    inputPlaceholder: '输入消息...',
+    send: '发送',
+    loadMessagesFailed: '加载消息失败',
+    createConversationFailed: '创建客服会话失败',
+    loadConversationsFailed: '加载会话失败',
+    sendFailed: '发送失败'
   }
 })
 
@@ -490,6 +490,175 @@ onMounted(() => {
 
   .message-bubble {
     max-width: 82%;
+  }
+}
+
+.modal-overlay {
+  background:
+    radial-gradient(circle at top, rgba(157, 41, 41, 0.18), transparent 30%),
+    rgba(19, 10, 6, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  border-radius: 28px;
+  border: 1px solid rgba(190, 157, 124, 0.26);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94));
+  box-shadow:
+    0 28px 56px rgba(74, 46, 23, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.modal-header {
+  min-height: 76px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(217, 207, 193, 0.82);
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.88)),
+    rgba(255, 251, 246, 0.92);
+}
+
+.modal-header h3 {
+  position: relative;
+  padding-left: 16px;
+  font-size: 20px;
+  color: #2f241d;
+}
+
+.modal-header h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #9d2929, #c9913f);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 6px rgba(157, 41, 41, 0.08);
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(157, 41, 41, 0.06);
+  color: #9d2929;
+}
+
+.close-btn:hover {
+  background: rgba(157, 41, 41, 0.12);
+  color: #7a1d1d;
+}
+
+.service-panel {
+  background:
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.08), transparent 20%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 238, 0.86));
+}
+
+.panel-empty {
+  color: #8f7b69;
+}
+
+.message-list {
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.3), transparent 30%),
+    rgba(247, 241, 233, 0.78);
+}
+
+.message-row {
+  margin-bottom: 18px;
+}
+
+.message-avatar {
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 18px rgba(74, 46, 23, 0.08);
+}
+
+.message-bubble {
+  max-width: min(68%, 560px);
+  padding: 14px 16px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(217, 207, 193, 0.76);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 240, 232, 0.96));
+  box-shadow:
+    0 14px 28px rgba(74, 46, 23, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.message-row.self .message-bubble {
+  background:
+    linear-gradient(135deg, #7a1d1d 0%, #9d2929 52%, #b33d2d 100%);
+  border-color: rgba(157, 41, 41, 0.28);
+  box-shadow: 0 18px 30px rgba(157, 41, 41, 0.18);
+}
+
+.message-content {
+  color: #2f241d;
+  line-height: 1.75;
+}
+
+.message-time {
+  color: #8f7b69;
+}
+
+.message-row.self .message-content,
+.message-row.self .message-time {
+  color: rgba(255, 249, 243, 0.9);
+}
+
+.composer {
+  padding: 18px 22px 20px;
+  border-top: 1px solid rgba(217, 207, 193, 0.82);
+  background: rgba(255, 251, 246, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.composer input {
+  min-height: 48px;
+  border-radius: 18px;
+  border-color: rgba(217, 207, 193, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 240, 232, 0.96));
+}
+
+.composer input:focus {
+  border-color: rgba(157, 41, 41, 0.42);
+  box-shadow: 0 0 0 4px rgba(157, 41, 41, 0.1);
+}
+
+.composer button {
+  min-height: 48px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #9d2929, #b33030);
+  font-weight: 700;
+  box-shadow: 0 14px 26px rgba(157, 41, 41, 0.18);
+}
+
+.composer button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #891f1f, #a72f2f);
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .message-list,
+  .composer {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }
 </style>

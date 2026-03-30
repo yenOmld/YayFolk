@@ -1,4 +1,4 @@
-﻿import request from '../utils/request'
+import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -18,22 +18,6 @@ export const sendCode = (params) => {
 
 export const resetPassword = (data) => {
   return request.post('/reset-password', data)
-}
-
-export const recognizeLandmark = (formData) => {
-  return request.post('/landmark/recognize', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    timeout: 30000
-  })
-}
-
-export const recognizeLandmarkBase64 = (data) => {
-  const body = typeof data === 'string' ? { image: data } : data
-  return request.post('/landmark/recognize-base64', body, {
-    timeout: 30000
-  })
 }
 
 export const getDiscoverPosts = (params) => {

@@ -89,8 +89,23 @@ onMounted(() => {
 
 <style>
 #app {
-  background: linear-gradient(90deg, #83b3f7ff, #c9d6ff);
+  position: relative;
   min-height: 100vh;
   width: 100%;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.72), transparent 34%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.68), rgba(247, 241, 232, 0.2));
+  isolation: isolate;
+}
+
+#app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(157, 41, 41, 0.08), transparent 18%),
+    radial-gradient(circle at 88% 80%, rgba(200, 154, 75, 0.12), transparent 22%);
+  z-index: -1;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-route-page">
+  <div class="ai-route-page tools-page">
     <section class="hero-panel">
       <div class="hero-copy">
         <p class="eyebrow">AI Heritage Planner</p>

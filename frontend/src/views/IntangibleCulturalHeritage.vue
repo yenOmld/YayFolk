@@ -30,16 +30,16 @@
             <p>我们汇集了来自全国各地的非遗技艺，包括传统工艺、戏曲、音乐、舞蹈等多个门类，为您呈现一场文化盛宴。</p>
             <div class="about-stats">
               <div class="stat-item animate-item" style="animation-delay: 0.1s">
-                <div class="stat-number">{{ events.length || '100+' }}</div>
-                <div class="stat-label">非遗项目</div>
+                <div class="stat-number">{{ homepageStats.activities }}</div>
+                <div class="stat-label">活动数量</div>
               </div>
               <div class="stat-item animate-item" style="animation-delay: 0.2s">
-                <div class="stat-number">{{ knowledgeData.length || '50+' }}</div>
-                <div class="stat-label">传承人</div>
+                <div class="stat-number">{{ homepageStats.heritages }}</div>
+                <div class="stat-label">非遗数量</div>
               </div>
               <div class="stat-item animate-item" style="animation-delay: 0.3s">
-                <div class="stat-number">{{ galleryWorks.length || '1000+' }}</div>
-                <div class="stat-label">精品作品</div>
+                <div class="stat-number">{{ homepageStats.works }}</div>
+                <div class="stat-label">作品数量</div>
               </div>
             </div>
           </div>
@@ -153,49 +153,11 @@
             <img :src="item.coverImage || fallbackCover" :alt="item.title || `作品${index + 1}`" />
             <div class="gallery-overlay">
               <h4>{{ item.title }}</h4>
-              <p>{{ item.subtitle }}</p>
             </div>
           </div>
           <div v-if="galleryWorks.length === 0" class="no-data">
             <p>暂无作品信息</p>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-section animate-section">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-brand">
-            <h3>非遗文化</h3>
-            <p>传承千年匠心，守护中华文明</p>
-          </div>
-          <div class="footer-links">
-            <div class="footer-column">
-              <h4>快速链接</h4>
-              <a href="#banner">首页</a>
-              <a href="#events">活动宣传</a>
-              <a href="#knowledge">非遗科普</a>
-              <a href="#gallery">作品展示</a>
-            </div>
-            <div class="footer-column">
-              <h4>联系方式</h4>
-              <a href="#"><i class='bx bx-phone'></i> 010-12345678</a>
-              <a href="#"><i class='bx bx-envelope'></i> contact@yayfolk.com</a>
-              <a href="#"><i class='bx bx-map'></i> 北京市东城区景山前街4号</a>
-            </div>
-            <div class="footer-column">
-              <h4>关注我们</h4>
-              <div class="social-links">
-                <a href="#"><i class='bx bxl-wechat'></i></a>
-                <a href="#"><i class='bx bxl-weibo'></i></a>
-                <a href="#"><i class='bx bxl-qq'></i></a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2026 YayFolk 非遗文化 版权所有</p>
         </div>
       </div>
     </div>
@@ -220,8 +182,8 @@
             <p>{{ selectedKnowledge.history || '暂无历史信息' }}</p>
             <h3>传承价值</h3>
             <p>{{ selectedKnowledge.inheritanceValue || '暂无传承价值信息' }}</p>
-            <h3>代表性传承人</h3>
-            <p>{{ selectedKnowledge.representativeInheritor || '暂无代表性传承人信息' }}</p>
+            <h3>代表性非遗数量</h3>
+            <p>{{ selectedKnowledge.representativeInheritor || '暂无代表性非遗数量信息' }}</p>
             <h3>相关诗词</h3>
             <p>{{ formatKnowledgeList(selectedKnowledge.relatedPoems, '暂无相关诗词信息') }}</p>
             <h3>相关节气</h3>
@@ -245,6 +207,7 @@ const heritageIcons = ['bx bx-cut', 'bx bx-palette', 'bx bx-paint', 'bx bx-music
 const events = ref([])
 const knowledgeData = ref([])
 const galleryWorks = ref([])
+const homepageStats = ref({ activities: 0, heritages: 0, works: 0 })
 const showKnowledgeModal = ref(false)
 const selectedKnowledge = ref({})
 
@@ -264,20 +227,20 @@ const heritageBaseInfo = computed(() => {
 
 const mapEventStatus = (status) => {
   const statusMap = {
-    signup: 'Open',
-    ongoing: 'Ongoing',
-    ended: 'Ended',
-    full: 'Full'
+    signup: '开放报名',
+    ongoing: '进行中',
+    ended: '已结束',
+    full: '已满'
   }
-  return statusMap[status] || 'Popular'
+  return statusMap[status] || '热门'
 }
 
 const formatDateTime = (value) => {
-  return value ? new Date(value).toLocaleString('zh-CN') : 'Time TBD'
+  return value ? new Date(value).toLocaleString('zh-CN') : '时间待定'
 }
 
 const formatLocation = (item) => {
-  return [item.locationProvince, item.locationCity, item.locationDistrict, item.locationDetail].filter(Boolean).join(' / ') || 'Location TBD'
+  return [item.locationProvince, item.locationCity, item.locationDistrict, item.locationDetail].filter(Boolean).join(' / ') || '位置待定'
 }
 
 const formatKnowledgeList = (value, fallback = '暂无相关信息') => {
@@ -295,11 +258,16 @@ const loadHomepageData = async () => {
   try {
     const res = await getHomepageOfficialContents()
     const data = res.data || {}
+    homepageStats.value = {
+      activities: Number(data.stats?.activities || 0),
+      heritages: Number(data.stats?.heritages || 0),
+      works: Number(data.stats?.works || 0)
+    }
     
     events.value = (data.activities || []).slice(0, 3).map((item) => ({
       ...item,
-      title: item.title || 'Untitled activity',
-      description: item.content || item.subtitle || 'No activity description',
+      title: item.title || '未命名活动',
+      description: item.content || item.subtitle || '暂无活动描述',
       dateText: `${formatDateTime(item.startTime)} - ${formatDateTime(item.endTime)}`,
       locationText: formatLocation(item),
       statusLabel: mapEventStatus(item.status),
@@ -317,12 +285,12 @@ const loadHomepageData = async () => {
     
     galleryWorks.value = (data.works || []).slice(0, 6).map((item) => ({
       ...item,
-      title: item.title || 'Untitled work',
-      subtitle: item.description || item.content || 'Tap to view work details',
+      title: item.title || '未命名作品',
+      subtitle: item.description || item.content || '点击查看作品详情',
       coverImage: item.coverImage || item.images || fallbackCover
     }))
   } catch (error) {
-    console.error('Failed to load homepage official content', error)
+    console.error('加载首页官方内容失败', error)
   }
 }
 
@@ -355,7 +323,7 @@ const goToActivity = (id) => {
 }
 
 const goToWork = (id) => {
-  if (id) router.push(`/share?postId=${id}`)
+  if (id) router.push(`/home/discover?postId=${id}`)
 }
 
 const scrollToSection = (sectionId) => {
@@ -683,6 +651,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 12px;
 }
 
 .features-section {
@@ -982,7 +951,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(139, 0, 0, 0.9) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -996,9 +965,9 @@ onUnmounted(() => {
 }
 
 .gallery-overlay h4 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #daa520;
+  color: #e2bc5aff;
   margin-bottom: 8px;
 }
 
@@ -1007,95 +976,7 @@ onUnmounted(() => {
   color: #fff;
 }
 
-.footer-section {
-  background: #1a1a1a;
-  color: #fff;
-  padding: 80px 0 0;
-}
 
-.footer-content {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 80px;
-  padding-bottom: 60px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footer-brand h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #daa520;
-  margin-bottom: 12px;
-}
-
-.footer-brand p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
-}
-
-.footer-links {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-}
-
-.footer-column h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #daa520;
-  margin-bottom: 20px;
-}
-
-.footer-column a {
-  display: block;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 12px;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.footer-column a:hover {
-  color: #daa520;
-}
-
-.footer-column a i {
-  margin-right: 8px;
-}
-
-.social-links {
-  display: flex;
-  gap: 16px;
-}
-
-.social-links a {
-  width: 44px;
-  height: 44px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #fff;
-  transition: all 0.3s ease;
-}
-
-.social-links a:hover {
-  background: #daa520;
-  color: #4f0915;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding: 24px 0;
-}
-
-.footer-bottom p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-}
 
 .no-data {
   text-align: center;
@@ -1285,4 +1166,319 @@ onUnmounted(() => {
   line-height: 1.8;
   margin: 0 0 16px 12px;
 }
+
+.promotion-page {
+  background:
+    radial-gradient(circle at top left, rgba(157, 41, 41, 0.1), transparent 20%),
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.12), transparent 18%),
+    linear-gradient(180deg, rgba(255, 249, 241, 0.96), rgba(244, 235, 222, 0.92));
+}
+
+.container {
+  max-width: 1240px;
+}
+
+.banner-section {
+  min-height: 720px;
+}
+
+.banner-bg::before {
+  background:
+    linear-gradient(180deg, rgba(38, 17, 14, 0.24), rgba(52, 16, 23, 0.62)),
+    radial-gradient(circle at top, rgba(218, 165, 32, 0.16), transparent 30%);
+}
+
+.banner-content {
+  max-width: 1080px;
+}
+
+.banner-subtitle {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.banner-title {
+  text-shadow: 0 18px 34px rgba(0, 0, 0, 0.3);
+}
+
+.banner-desc {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-primary,
+.btn-secondary {
+  min-height: 52px;
+  padding: 0 34px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.btn-primary {
+  box-shadow: 0 18px 30px rgba(218, 165, 32, 0.28);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.section-header {
+  margin-bottom: 54px;
+}
+
+.section-label {
+  position: relative;
+  padding-left: 18px;
+}
+
+.section-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #9d2929, #c9913f);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 6px rgba(157, 41, 41, 0.08);
+}
+
+.section-title {
+  font-size: clamp(32px, 3vw, 46px);
+  letter-spacing: -0.03em;
+  color: #2f241d;
+}
+
+.about-section,
+.events-section,
+.gallery-section {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 244, 0.78), rgba(247, 238, 226, 0.92));
+}
+
+.features-section,
+.knowledge-section {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(250, 246, 239, 0.9));
+}
+
+.about-image,
+.feature-item,
+.event-item,
+.knowledge-card,
+.gallery-item,
+.modal-content {
+  border: 1px solid rgba(190, 157, 124, 0.24);
+  box-shadow:
+    0 22px 46px rgba(74, 46, 23, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+.about-image {
+  border-radius: 26px;
+}
+
+.about-image img {
+  border-radius: 26px;
+}
+
+.about-text p {
+  color: #695647;
+}
+
+.stat-item {
+  min-width: 124px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(255, 251, 246, 0.76);
+  border: 1px solid rgba(190, 157, 124, 0.18);
+}
+
+.feature-item {
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 243, 236, 0.96));
+}
+
+.feature-item:hover {
+  box-shadow: 0 28px 50px rgba(74, 46, 23, 0.14);
+}
+
+.feature-icon {
+  box-shadow:
+    0 18px 30px rgba(79, 9, 21, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.event-item {
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94));
+}
+
+.event-image::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(17, 10, 7, 0.18));
+}
+
+.event-tag {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 20px rgba(44, 44, 44, 0.14);
+}
+
+.event-content {
+  padding: 42px;
+}
+
+.event-link {
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(157, 41, 41, 0.06);
+}
+
+.event-link:hover {
+  gap: 12px;
+  background: rgba(157, 41, 41, 0.1);
+}
+
+.knowledge-card {
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 243, 236, 0.94));
+}
+
+.knowledge-card:hover {
+  box-shadow: 0 28px 50px rgba(74, 46, 23, 0.14);
+}
+
+.knowledge-media,
+.gallery-item {
+  border-radius: 20px;
+}
+
+.knowledge-icon {
+  box-shadow:
+    0 16px 28px rgba(79, 9, 21, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.gallery-item {
+  box-shadow: 0 20px 40px rgba(74, 46, 23, 0.08);
+}
+
+.gallery-overlay {
+  padding: 28px;
+}
+
+.modal-overlay {
+  background:
+    radial-gradient(circle at top, rgba(157, 41, 41, 0.18), transparent 30%),
+    rgba(19, 10, 6, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 243, 236, 0.96));
+}
+
+.modal-close {
+  box-shadow: 0 14px 24px rgba(44, 44, 44, 0.16);
+}
+
+@media (max-width: 1024px) {
+  .banner-title {
+    font-size: 120px;
+    letter-spacing: 12px;
+  }
+
+  .about-content,
+  .event-item {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .features-grid,
+  .knowledge-list,
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .banner-section {
+    min-height: 620px;
+  }
+
+  .banner-content {
+    top: 88px;
+  }
+
+  .banner-title {
+    font-size: 72px;
+    letter-spacing: 8px;
+    white-space: normal;
+  }
+
+  .banner-desc {
+    font-size: 17px;
+  }
+
+  .banner-btns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .about-section,
+  .features-section,
+  .events-section,
+  .knowledge-section,
+  .gallery-section {
+    padding: 88px 0;
+  }
+
+  .about-stats,
+  .event-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .features-grid,
+  .knowledge-list,
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-item,
+  .knowledge-card,
+  .event-content {
+    padding: 26px 22px;
+  }
+
+  .modal-content {
+    border-radius: 24px;
+  }
+
+  .modal-header,
+  .modal-body {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
 </style>
+
+
+

@@ -20,10 +20,12 @@
   },
   "nav": {
     "home": "首页",
+    "activity": "活动",
     "discover": "发现",
     "personal": "个人中心",
     "translate": "翻译",
     "post": "发布",
+    "tools": "工具",
     "notification": "通知"
   },
   "login": {

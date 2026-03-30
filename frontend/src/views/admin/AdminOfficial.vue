@@ -2,13 +2,13 @@
   <div class="admin-page">
     <div class="page-header">
       <div>
-        <h2>Homepage Official Content</h2>
+        <h2>官网内容管理</h2>
         <p class="page-subtitle">
-          Manage the source tables for activities, heritage science cards, and featured works, then publish the selected items to the homepage.
+          管理活动、非遗科学卡片和精选作品的数据源表,然后将选中的项目发布到首页。
         </p>
       </div>
       <button class="publish-btn" :disabled="publishing || loading" @click="publishSelection">
-        {{ publishing ? 'Publishing...' : `Publish ${currentTab.limit} item(s)` }}
+        {{ publishing ? '发布中...' : `发布 ${currentTab.limit} 项` }}
       </button>
     </div>
 
@@ -21,7 +21,7 @@
         @click="switchTab(tab.key)"
       >
         <span>{{ tab.label }}</span>
-        <small>{{ datasetCount(tab.key) }} records</small>
+        <small>{{ datasetCount(tab.key) }} 条记录</small>
       </button>
     </div>
 
@@ -33,53 +33,53 @@
         </div>
         <div class="toolbar-actions">
           <div class="search-box">
-            <span class="search-label">Search</span>
+            <span class="search-label">搜索</span>
             <div class="search-control">
               <i class='bx bx-search'></i>
               <input v-model.trim="keyword" class="search-input" type="text" :placeholder="currentTab.searchPlaceholder" />
-              <button v-if="keyword" class="clear-search-btn" type="button" @click="keyword = ''">Clear</button>
+              <button v-if="keyword" class="clear-search-btn" type="button" @click="keyword = ''">清除</button>
             </div>
           </div>
-          <button class="secondary-btn" :disabled="loading" @click="loadAll">Refresh</button>
+          <button class="secondary-btn" :disabled="loading" @click="loadAll">刷新</button>
           <button class="primary-btn" @click="openCreate">{{ currentTab.createLabel }}</button>
         </div>
       </div>
 
       <div class="selection-hint">
-        <span>Selected {{ selectedIds.length }} / {{ currentTab.limit }}</span>
-        <span v-if="activeTab === 'works'">Choose 6 works from the top 20 hot posts.</span>
-        <span v-else-if="activeTab === 'heritages'">Choose 6 heritage items. Each selected item should have image URLs and a video URL.</span>
-        <span v-else>Choose 3 activities for the homepage activity module.</span>
+        <span>已选 {{ selectedIds.length }} / {{ currentTab.limit }}</span>
+        <span v-if="activeTab === 'works'">从热门前20条作品中选择6条。</span>
+        <span v-else-if="activeTab === 'heritages'">选择6个非遗项目。每个选中的项目应包含图片URL和视频URL。</span>
+        <span v-else>为首页活动模块选择3个活动。</span>
       </div>
 
-      <div v-if="loading" class="state-block">Loading...</div>
-      <div v-else-if="filteredRows.length === 0" class="state-block">No records found.</div>
+      <div v-if="loading" class="state-block">加载中...</div>
+      <div v-else-if="filteredRows.length === 0" class="state-block">未找到记录。</div>
       <div v-else class="table-wrap">
         <table class="data-table">
           <thead>
             <tr v-if="activeTab === 'activities'">
-              <th class="select-col">Select</th>
-              <th>Cover</th>
-              <th>Activity</th>
-              <th>Schedule</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th class="select-col">选择</th>
+              <th>封面</th>
+              <th>活动</th>
+              <th>时间安排</th>
+              <th>状态</th>
+              <th>操作</th>
             </tr>
             <tr v-else-if="activeTab === 'heritages'">
-              <th class="select-col">Select</th>
-              <th>Cover</th>
-              <th>Heritage</th>
-              <th>Video</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th class="select-col">选择</th>
+              <th>封面</th>
+              <th>非遗</th>
+              <th>视频</th>
+              <th>状态</th>
+              <th>操作</th>
             </tr>
             <tr v-else>
-              <th class="select-col">Select</th>
-              <th>Cover</th>
-              <th>Work</th>
-              <th>Author / Heat</th>
-              <th>Created At</th>
-              <th>Actions</th>
+              <th class="select-col">选择</th>
+              <th>封面</th>
+              <th>作品</th>
+              <th>作者 / 热度</th>
+              <th>创建时间</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody>
@@ -94,10 +94,10 @@
               </td>
 
               <template v-if="activeTab === 'activities'">
-                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="Activity cover" /></td>
+                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="活动封面" /></td>
                 <td>
-                  <div class="cell-title">{{ row.title || 'Untitled activity' }}</div>
-                  <div class="cell-subtitle">{{ row.subtitle || row.heritageType || 'No subtitle' }}</div>
+                  <div class="cell-title">{{ row.title || '未命名活动' }}</div>
+                  <div class="cell-subtitle">{{ row.subtitle || row.heritageType || '无副标题' }}</div>
                   <div class="cell-text">{{ truncate(row.content, 72) }}</div>
                 </td>
                 <td>
@@ -106,43 +106,43 @@
                 </td>
                 <td>
                   <div class="badge-row">
-                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? 'Published' : 'Draft' }}</span>
+                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? '已发布' : '草稿' }}</span>
                     <span class="badge neutral">{{ activityStatusLabel(row.status) }}</span>
                   </div>
                 </td>
               </template>
 
               <template v-else-if="activeTab === 'heritages'">
-                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="Heritage cover" /></td>
+                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="非遗封面" /></td>
                 <td>
-                  <div class="cell-title">{{ row.name || 'Untitled heritage item' }}</div>
-                  <div class="cell-subtitle">{{ row.category || 'No category' }} / {{ row.region || 'No region' }}</div>
+                  <div class="cell-title">{{ row.name || '未命名非遗项目' }}</div>
+                  <div class="cell-subtitle">{{ row.category || '无分类' }} / {{ row.region || '无地区' }}</div>
                   <div class="cell-text">{{ truncate(row.introduction, 72) }}</div>
                 </td>
                 <td>
-                  <div class="cell-text">{{ row.videoUrl || 'No video URL' }}</div>
-                  <div class="cell-text muted">Homepage cards will display the saved image and video URLs.</div>
+                  <div class="cell-text">{{ row.videoUrl || '无视频URL' }}</div>
+                  <div class="cell-text muted">首页卡片将显示保存的图片和视频URL。</div>
                 </td>
                 <td>
                   <div class="badge-row">
-                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? 'Published' : 'Draft' }}</span>
-                    <span class="badge neutral">Views {{ row.viewCount || 0 }}</span>
+                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? '已发布' : '草稿' }}</span>
+                    <span class="badge neutral">浏览 {{ row.viewCount || 0 }}</span>
                   </div>
                 </td>
               </template>
 
               <template v-else>
-                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="Work cover" /></td>
+                <td><img :src="row.coverImage || fallbackCover" class="thumb" alt="作品封面" /></td>
                 <td>
-                  <div class="cell-title">{{ row.title || 'Untitled work' }}</div>
-                  <div class="cell-subtitle">{{ row.category || 'No category' }}</div>
+                  <div class="cell-title">{{ row.title || '未命名作品' }}</div>
+                  <div class="cell-subtitle">{{ row.category || '无分类' }}</div>
                   <div class="cell-text">{{ truncate(row.content || row.description, 72) }}</div>
                 </td>
                 <td>
-                  <div class="cell-text">{{ row.authorName || 'Unknown author' }}</div>
+                  <div class="cell-text">{{ row.authorName || '未知作者' }}</div>
                   <div class="badge-row">
-                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? 'Published' : 'Draft' }}</span>
-                    <span class="badge neutral">Heat {{ row.heat || 0 }}</span>
+                    <span class="badge publish" :class="{ active: row.published }">{{ row.published ? '已发布' : '草稿' }}</span>
+                    <span class="badge neutral">热度 {{ row.heat || 0 }}</span>
                   </div>
                 </td>
                 <td><div class="cell-text">{{ formatTime(row.createTime) }}</div></td>
@@ -150,8 +150,8 @@
 
               <td>
                 <div class="action-row">
-                  <button class="link-btn" @click="openEdit(row)">Edit</button>
-                  <button class="danger-btn" @click="removeRow(row)">Delete</button>
+                  <button class="link-btn" @click="openEdit(row)">编辑</button>
+                  <button class="danger-btn" @click="removeRow(row)">删除</button>
                 </div>
               </td>
             </tr>
@@ -161,12 +161,12 @@
 
       <div v-if="filteredRows.length > 0" class="pagination-bar">
         <div class="pagination-summary">
-          Page {{ activePage }} / {{ totalPages }}
-          <span class="pagination-muted">Showing {{ pageStart }}-{{ pageEnd }} of {{ filteredRows.length }}</span>
+          第 {{ activePage }} / {{ totalPages }} 页
+          <span class="pagination-muted">显示 {{ pageStart }}-{{ pageEnd }} 条，共 {{ filteredRows.length }} 条</span>
         </div>
         <div class="pagination-actions">
-          <button class="secondary-btn" :disabled="activePage <= 1" @click="changePage(-1)">Previous</button>
-          <button class="secondary-btn" :disabled="activePage >= totalPages" @click="changePage(1)">Next</button>
+          <button class="secondary-btn" :disabled="activePage <= 1" @click="changePage(-1)">上一页</button>
+          <button class="secondary-btn" :disabled="activePage >= totalPages" @click="changePage(1)">下一页</button>
         </div>
       </div>
     </div>
@@ -174,80 +174,80 @@
     <div v-if="dialogVisible" class="dialog-mask" @click.self="closeDialog">
       <div class="dialog-card">
         <div class="dialog-head">
-          <h3>{{ dialogMode === 'create' ? currentTab.createLabel : `Edit ${currentTab.shortLabel}` }}</h3>
+          <h3>{{ dialogMode === 'create' ? currentTab.createLabel : `编辑 ${currentTab.shortLabel}` }}</h3>
           <button class="close-btn" @click="closeDialog">×</button>
         </div>
 
         <div v-if="activeTab === 'activities'" class="grid cols-2">
-          <label class="field"><span>Title</span><input v-model.trim="activityForm.title" type="text" maxlength="200" /></label>
-          <label class="field"><span>Subtitle</span><input v-model.trim="activityForm.subtitle" type="text" maxlength="100" /></label>
-          <label class="field"><span>Heritage Type</span><input v-model.trim="activityForm.heritageType" type="text" /></label>
-          <label class="field"><span>Activity Type</span><select v-model="activityForm.activityType"><option value="offline">Offline</option><option value="online">Online</option><option value="exhibition">Exhibition</option></select></label>
-          <label class="field"><span>Start Time</span><input v-model="activityForm.startTime" type="datetime-local" /></label>
-          <label class="field"><span>End Time</span><input v-model="activityForm.endTime" type="datetime-local" /></label>
-          <label class="field"><span>Province</span><input v-model.trim="activityForm.locationProvince" type="text" /></label>
-          <label class="field"><span>City</span><input v-model.trim="activityForm.locationCity" type="text" /></label>
-          <label class="field"><span>District</span><input v-model.trim="activityForm.locationDistrict" type="text" /></label>
-          <label class="field"><span>Address</span><input v-model.trim="activityForm.locationDetail" type="text" maxlength="200" /></label>
-          <label class="field"><span>Price</span><input v-model.trim="activityForm.price" type="number" min="0" /></label>
-          <label class="field"><span>Max Participants</span><input v-model.trim="activityForm.maxParticipants" type="number" min="1" /></label>
-          <label class="field cols-full"><span>Cover Image URL</span><input v-model.trim="activityForm.coverImage" type="text" /></label>
-          <label class="field cols-full"><span>Image URLs</span><textarea v-model="activityForm.imagesText" rows="3" placeholder="One URL per line or separated by commas"></textarea></label>
-          <label class="field cols-full"><span>Description</span><textarea v-model="activityForm.content" rows="6"></textarea></label>
+          <label class="field"><span>标题</span><input v-model.trim="activityForm.title" type="text" maxlength="200" /></label>
+          <label class="field"><span>副标题</span><input v-model.trim="activityForm.subtitle" type="text" maxlength="100" /></label>
+          <label class="field"><span>非遗类型</span><input v-model.trim="activityForm.heritageType" type="text" /></label>
+          <label class="field"><span>活动类型</span><select v-model="activityForm.activityType"><option value="offline">线下</option><option value="online">线上</option><option value="exhibition">展览</option></select></label>
+          <label class="field"><span>开始时间</span><input v-model="activityForm.startTime" type="datetime-local" /></label>
+          <label class="field"><span>结束时间</span><input v-model="activityForm.endTime" type="datetime-local" /></label>
+          <label class="field"><span>省份</span><input v-model.trim="activityForm.locationProvince" type="text" /></label>
+          <label class="field"><span>城市</span><input v-model.trim="activityForm.locationCity" type="text" /></label>
+          <label class="field"><span>区县</span><input v-model.trim="activityForm.locationDistrict" type="text" /></label>
+          <label class="field"><span>地址</span><input v-model.trim="activityForm.locationDetail" type="text" maxlength="200" /></label>
+          <label class="field"><span>价格</span><input v-model.trim="activityForm.price" type="number" min="0" /></label>
+          <label class="field"><span>最大人数</span><input v-model.trim="activityForm.maxParticipants" type="number" min="1" /></label>
+          <label class="field cols-full"><span>封面图片URL</span><input v-model.trim="activityForm.coverImage" type="text" /></label>
+          <label class="field cols-full"><span>图片URL</span><textarea v-model="activityForm.imagesText" rows="3" placeholder="每行一个URL或用逗号分隔"></textarea></label>
+          <label class="field cols-full"><span>描述</span><textarea v-model="activityForm.content" rows="6"></textarea></label>
         </div>
         <div v-else-if="activeTab === 'heritages'" class="grid cols-2">
-          <label class="field"><span>Name</span><input v-model.trim="heritageForm.name" type="text" maxlength="200" placeholder="Enter the heritage name" /></label>
-          <label class="field"><span>Category</span><input v-model.trim="heritageForm.category" type="text" placeholder="Traditional craftsmanship" /></label>
-          <label class="field"><span>Subcategory</span><input v-model.trim="heritageForm.subcategory" type="text" placeholder="Ceramic firing" /></label>
-          <label class="field"><span>Dynasty</span><input v-model.trim="heritageForm.dynasty" type="text" placeholder="Northern Song" /></label>
-          <label class="field"><span>Region</span><input v-model.trim="heritageForm.region" type="text" placeholder="Ruzhou, Henan" /></label>
-          <label class="field"><span>Level</span><select v-model="heritageForm.level"><option v-for="option in heritageLevelOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
+          <label class="field"><span>名称</span><input v-model.trim="heritageForm.name" type="text" maxlength="200" placeholder="请输入非遗名称" /></label>
+          <label class="field"><span>分类</span><input v-model.trim="heritageForm.category" type="text" placeholder="传统工艺" /></label>
+          <label class="field"><span>子分类</span><input v-model.trim="heritageForm.subcategory" type="text" placeholder="陶瓷烧制" /></label>
+          <label class="field"><span>朝代</span><input v-model.trim="heritageForm.dynasty" type="text" placeholder="北宋" /></label>
+          <label class="field"><span>地区</span><input v-model.trim="heritageForm.region" type="text" placeholder="河南汝州" /></label>
+          <label class="field"><span>级别</span><select v-model="heritageForm.level"><option v-for="option in heritageLevelOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
           <label class="field cols-full">
-            <span>Image URLs</span>
+            <span>图片URL</span>
             <div class="upload-row">
-              <button class="secondary-btn" type="button" :disabled="uploadingHeritageImage" @click="triggerHeritageImageUpload">{{ uploadingHeritageImage ? 'Uploading images...' : 'Upload images to OSS' }}</button>
+              <button class="secondary-btn" type="button" :disabled="uploadingHeritageImage" @click="triggerHeritageImageUpload">{{ uploadingHeritageImage ? '上传中...' : '上传图片到OSS' }}</button>
               <input ref="heritageImageInput" class="upload-input" type="file" accept="image/*" multiple @change="handleHeritageImageUpload" />
-              <span class="upload-tip">Supports multiple images. Uploaded URLs will be filled in automatically.</span>
+              <span class="upload-tip">支持多张图片。上传的URL将自动填充。</span>
             </div>
-            <textarea v-model="heritageForm.imagesText" rows="3" placeholder="One URL per line or separated by commas"></textarea>
+            <textarea v-model="heritageForm.imagesText" rows="3" placeholder="每行一个URL或用逗号分隔"></textarea>
             <div v-if="heritagePreviewImages.length" class="preview-grid">
-              <img v-for="(url, index) in heritagePreviewImages" :key="url + '-' + index" :src="url" :alt="'Heritage image ' + (index + 1)" />
+              <img v-for="(url, index) in heritagePreviewImages" :key="url + '-' + index" :src="url" :alt="'非遗图片 ' + (index + 1)" />
             </div>
           </label>
           <label class="field cols-full">
-            <span>Video URL</span>
+            <span>视频URL</span>
             <div class="upload-row">
-              <button class="secondary-btn" type="button" :disabled="uploadingHeritageVideo" @click="triggerHeritageVideoUpload">{{ uploadingHeritageVideo ? 'Uploading video...' : 'Upload video to OSS' }}</button>
+              <button class="secondary-btn" type="button" :disabled="uploadingHeritageVideo" @click="triggerHeritageVideoUpload">{{ uploadingHeritageVideo ? '上传中...' : '上传视频到OSS' }}</button>
               <input ref="heritageVideoInput" class="upload-input" type="file" accept="video/*" @change="handleHeritageVideoUpload" />
-              <span class="upload-tip">The uploaded video URL will be filled in automatically.</span>
+              <span class="upload-tip">上传的视频URL将自动填充。</span>
             </div>
             <input v-model.trim="heritageForm.videoUrl" type="text" />
             <div v-if="heritageForm.videoUrl" class="video-preview">
               <video :src="heritageForm.videoUrl" controls preload="metadata"></video>
             </div>
           </label>
-          <label class="field cols-full"><span>Introduction</span><textarea v-model="heritageForm.introduction" rows="4" placeholder="Write a concise introduction for the homepage modal."></textarea></label>
-          <label class="field cols-full"><span>History</span><textarea v-model="heritageForm.history" rows="4" placeholder="Describe the historical origin and development."></textarea></label>
-          <label class="field cols-full"><span>Inheritance Value</span><textarea v-model="heritageForm.inheritanceValue" rows="4" placeholder="Explain why this heritage item matters today."></textarea></label>
-          <label class="field"><span>Representative Inheritor</span><input v-model.trim="heritageForm.representativeInheritor" type="text" maxlength="100" placeholder="Representative inheritor" /></label>
-          <label class="field inline-field"><span>Featured</span><input v-model="heritageForm.isFeatured" type="checkbox" /></label>
+          <label class="field cols-full"><span>简介</span><textarea v-model="heritageForm.introduction" rows="4" placeholder="为首页弹窗编写简洁的介绍。"></textarea></label>
+          <label class="field cols-full"><span>历史</span><textarea v-model="heritageForm.history" rows="4" placeholder="描述历史渊源和发展。"></textarea></label>
+          <label class="field cols-full"><span>传承价值</span><textarea v-model="heritageForm.inheritanceValue" rows="4" placeholder="说明此非遗项目当今的重要性。"></textarea></label>
+          <label class="field"><span>代表性传承人</span><input v-model.trim="heritageForm.representativeInheritor" type="text" maxlength="100" placeholder="代表性传承人" /></label>
+          <label class="field inline-field"><span>推荐</span><input v-model="heritageForm.isFeatured" type="checkbox" /></label>
         </div>
 
         <div v-else class="grid cols-2">
-          <label class="field"><span>Title</span><input v-model.trim="workForm.title" type="text" maxlength="120" /></label>
-          <label class="field"><span>Category</span><input v-model.trim="workForm.category" type="text" /></label>
-          <label class="field"><span>Source Language</span><input v-model.trim="workForm.sourceLang" type="text" /></label>
-          <label class="field"><span>View Count</span><input v-model.trim="workForm.viewCount" type="number" min="0" /></label>
-          <label class="field"><span>Favorite Count</span><input v-model.trim="workForm.collectCount" type="number" min="0" /></label>
-          <label class="field"><span>Comment Count</span><input v-model.trim="workForm.commentCount" type="number" min="0" /></label>
-          <label class="field cols-full"><span>Image URLs</span><textarea v-model="workForm.imagesText" rows="3" placeholder="One URL per line or separated by commas"></textarea></label>
-          <label class="field cols-full"><span>Tags</span><textarea v-model="workForm.tagsText" rows="2" placeholder="One tag per line or separated by commas"></textarea></label>
-          <label class="field cols-full"><span>Content</span><textarea v-model="workForm.content" rows="6"></textarea></label>
+          <label class="field"><span>标题</span><input v-model.trim="workForm.title" type="text" maxlength="120" /></label>
+          <label class="field"><span>分类</span><input v-model.trim="workForm.category" type="text" /></label>
+          <label class="field"><span>源语言</span><input v-model.trim="workForm.sourceLang" type="text" /></label>
+          <label class="field"><span>浏览量</span><input v-model.trim="workForm.viewCount" type="number" min="0" /></label>
+          <label class="field"><span>收藏数</span><input v-model.trim="workForm.collectCount" type="number" min="0" /></label>
+          <label class="field"><span>评论数</span><input v-model.trim="workForm.commentCount" type="number" min="0" /></label>
+          <label class="field cols-full"><span>图片URL</span><textarea v-model="workForm.imagesText" rows="3" placeholder="每行一个URL或用逗号分隔"></textarea></label>
+          <label class="field cols-full"><span>标签</span><textarea v-model="workForm.tagsText" rows="2" placeholder="每行一个标签或用逗号分隔"></textarea></label>
+          <label class="field cols-full"><span>内容</span><textarea v-model="workForm.content" rows="6"></textarea></label>
         </div>
 
         <div class="dialog-actions">
-          <button class="secondary-btn" @click="closeDialog">Cancel</button>
-          <button class="primary-btn" :disabled="saving" @click="submitDialog">{{ saving ? 'Saving...' : 'Save' }}</button>
+          <button class="secondary-btn" @click="closeDialog">取消</button>
+          <button class="primary-btn" :disabled="saving" @click="submitDialog">{{ saving ? '保存中...' : '保存' }}</button>
         </div>
       </div>
     </div>
@@ -277,17 +277,17 @@ const { appContext } = getCurrentInstance()
 const notify = (message, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(message)
 const fallbackCover = 'https://picsum.photos/seed/yayfolk-official/320/220'
 const heritageLevelOptions = [
-  { value: 'national', label: 'National' },
-  { value: 'provincial', label: 'Provincial' },
-  { value: 'municipal', label: 'Municipal' }
+  { value: 'national', label: '国家级' },
+  { value: 'provincial', label: '省级' },
+  { value: 'municipal', label: '市级' }
 ]
 const maxHeritageImageSize = 10 * 1024 * 1024
 const maxHeritageVideoSize = 100 * 1024 * 1024
 
 const tabs = [
-  { key: 'activities', shortLabel: 'Activity', label: 'Activity Source Table', description: 'Manage the homepage activity candidates from the activity table. You can publish up to 3 items.', createLabel: 'Add Activity', limit: 3, publishType: 'activity', searchPlaceholder: 'Search title / location / heritage type' },
-  { key: 'heritages', shortLabel: 'Heritage', label: 'Heritage Source Table', description: 'Manage the homepage heritage science cards from the heritage library. You can publish up to 6 items.', createLabel: 'Add Heritage', limit: 6, publishType: 'heritage', searchPlaceholder: 'Search name / category / region' },
-  { key: 'works', shortLabel: 'Work', label: 'Work Source Table', description: 'Manage the homepage works from the top 20 hot posts. You can publish up to 6 items.', createLabel: 'Add Work', limit: 6, publishType: 'work', searchPlaceholder: 'Search title / author / content' }
+  { key: 'activities', shortLabel: '活动', label: '活动数据源表', description: '从活动表管理首页活动候选。最多可发布3项。', createLabel: '添加活动', limit: 3, publishType: 'activity', searchPlaceholder: '搜索标题 / 位置 / 非遗类型' },
+  { key: 'heritages', shortLabel: '非遗', label: '非遗数据源表', description: '从非遗库管理首页非遗科学卡片。最多可发布6项。', createLabel: '添加非遗', limit: 6, publishType: 'heritage', searchPlaceholder: '搜索名称 / 分类 / 地区' },
+  { key: 'works', shortLabel: '作品', label: '作品数据源表', description: '从热门前20条帖子管理首页作品。最多可发布6项。', createLabel: '添加作品', limit: 6, publishType: 'work', searchPlaceholder: '搜索标题 / 作者 / 内容' }
 ]
 
 const activeTab = ref('activities')
@@ -355,23 +355,23 @@ function toggleSelection(id, checked) { if (checked) { if (!selectedIds.value.in
 function changePage(step) { const nextPage = activePage.value + step; if (nextPage < 1 || nextPage > totalPages.value) return; currentPage.value = { ...currentPage.value, [activeTab.value]: nextPage } }
 function truncate(value, length = 60) { const text = typeof value === 'string' ? value : ''; if (!text) return '-'; return text.length > length ? `${text.slice(0, length)}...` : text }
 function formatTime(value) { return value ? new Date(value).toLocaleString('zh-CN') : '-' }
-function formatRange(startTime, endTime) { if (!startTime && !endTime) return 'Schedule TBD'; return `${formatTime(startTime)} - ${formatTime(endTime)}` }
-function formatLocation(row) { return [row.locationProvince, row.locationCity, row.locationDistrict, row.locationDetail].filter(Boolean).join(' / ') || 'Location TBD' }
+function formatRange(startTime, endTime) { if (!startTime && !endTime) return '时间待定'; return `${formatTime(startTime)} - ${formatTime(endTime)}` }
+function formatLocation(row) { return [row.locationProvince, row.locationCity, row.locationDistrict, row.locationDetail].filter(Boolean).join(' / ') || '位置待定' }
 function formatDateInput(value) { if (!value) return ''; const date = new Date(value); const offset = date.getTimezoneOffset(); const localDate = new Date(date.getTime() - offset * 60000); return localDate.toISOString().slice(0, 16) }
-function activityStatusLabel(status) { return { signup: 'Open for signup', ongoing: 'Ongoing', ended: 'Ended', full: 'Full' }[status] || (status || 'Unknown') }
+function activityStatusLabel(status) { return { signup: '开放报名', ongoing: '进行中', ended: '已结束', full: '已满' }[status] || (status || '未知') }
 function splitLines(value) { return String(value || '').split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean) }
 function normalizeNumber(value) { if (value === '' || value === null || value === undefined) return null; const number = Number(value); return Number.isFinite(number) ? number : null }
 function formatListInput(value) { if (Array.isArray(value)) return value.join('\n'); return typeof value === 'string' ? value : '' }
 function normalizeHeritageLevel(value) { return heritageLevelOptions.some((option) => option.value === value) ? value : 'national' }
 function getRequestErrorMessage(error, fallbackMessage) { return error?.response?.data?.message || error?.message || fallbackMessage }
 function validateHeritageMedia(file, kind) {
-  if (!file) throw new Error(kind === 'video' ? 'Please select a video file' : 'Please select an image file')
+  if (!file) throw new Error(kind === 'video' ? '请选择视频文件' : '请选择图片文件')
   const isVideo = kind === 'video'
   const expectedTypePrefix = isVideo ? 'video/' : 'image/'
   const maxSize = isVideo ? maxHeritageVideoSize : maxHeritageImageSize
   const maxSizeLabel = isVideo ? '100MB' : '10MB'
-  if (!String(file.type || '').startsWith(expectedTypePrefix)) throw new Error(isVideo ? 'Please upload a valid video file' : 'Please upload a valid image file')
-  if (file.size > maxSize) throw new Error(`${isVideo ? 'Video' : 'Image'} size must be ${maxSizeLabel} or smaller`)
+  if (!String(file.type || '').startsWith(expectedTypePrefix)) throw new Error(isVideo ? '请上传有效的视频文件' : '请上传有效的图片文件')
+  if (file.size > maxSize) throw new Error(`${isVideo ? '视频' : '图片'}大小必须为${maxSizeLabel}或更小`)
 }
 function triggerHeritageImageUpload() { heritageImageInput.value?.click() }
 function triggerHeritageVideoUpload() { heritageVideoInput.value?.click() }
@@ -387,14 +387,14 @@ async function handleHeritageImageUpload(event) {
       validateHeritageMedia(file, 'image')
       const formData = new FormData()
       formData.append('file', file)
-      const data = unwrap(await uploadMedia(formData, 'heritage/images'), 'Image upload failed')
-      if (!data?.url) throw new Error('Image upload failed')
+      const data = unwrap(await uploadMedia(formData, 'heritage/images'), '图片上传失败')
+      if (!data?.url) throw new Error('图片上传失败')
       uploadedUrls.push(data.url)
     }
     heritageForm.value = { ...heritageForm.value, imagesText: mergeMultilineUrls(heritageForm.value.imagesText, uploadedUrls) }
-    notify('Uploaded ' + uploadedUrls.length + ' image(s)', 'success')
+    notify('已上传 ' + uploadedUrls.length + ' 张图片', 'success')
   } catch (error) {
-    notify(getRequestErrorMessage(error, 'Image upload failed'), 'error')
+    notify(getRequestErrorMessage(error, '图片上传失败'), 'error')
   } finally {
     uploadingHeritageImage.value = false
     clearUploadInput(event)
@@ -408,12 +408,12 @@ async function handleHeritageVideoUpload(event) {
     validateHeritageMedia(file, 'video')
     const formData = new FormData()
     formData.append('file', file)
-    const data = unwrap(await uploadMedia(formData, 'heritage/videos'), 'Video upload failed')
-    if (!data?.url) throw new Error('Video upload failed')
+    const data = unwrap(await uploadMedia(formData, 'heritage/videos'), '视频上传失败')
+    if (!data?.url) throw new Error('视频上传失败')
     heritageForm.value = { ...heritageForm.value, videoUrl: data.url }
-    notify('Video uploaded successfully', 'success')
+    notify('视频上传成功', 'success')
   } catch (error) {
-    notify(getRequestErrorMessage(error, 'Video upload failed'), 'error')
+    notify(getRequestErrorMessage(error, '视频上传失败'), 'error')
   } finally {
     uploadingHeritageVideo.value = false
     clearUploadInput(event)
@@ -434,10 +434,10 @@ async function loadAll() {
   loading.value = true
   try {
     const [activityRes, heritageRes, workRes] = await Promise.all([getOfficialActivities(), getOfficialHeritages(), getOfficialWorks()])
-    datasets.value = { activities: unwrap(activityRes, 'Failed to load activities') || [], heritages: unwrap(heritageRes, 'Failed to load heritage items') || [], works: unwrap(workRes, 'Failed to load works') || [] }
+    datasets.value = { activities: unwrap(activityRes, '加载活动失败') || [], heritages: unwrap(heritageRes, '加载非遗项目失败') || [], works: unwrap(workRes, '加载作品失败') || [] }
     currentPage.value = { activities: 1, heritages: 1, works: 1 }
     syncSelectedFromPublished()
-  } catch (error) { notify(error.message || 'Load failed', 'error') } finally { loading.value = false }
+  } catch (error) { notify(error.message || '加载失败', 'error') } finally { loading.value = false }
 }
 function buildActivityPayload() { return { title: activityForm.value.title, subtitle: activityForm.value.subtitle, heritageType: activityForm.value.heritageType, activityType: activityForm.value.activityType, startTime: activityForm.value.startTime || null, endTime: activityForm.value.endTime || null, locationProvince: activityForm.value.locationProvince, locationCity: activityForm.value.locationCity, locationDistrict: activityForm.value.locationDistrict, locationDetail: activityForm.value.locationDetail, price: normalizeNumber(activityForm.value.price) ?? 0, maxParticipants: normalizeNumber(activityForm.value.maxParticipants), coverImage: activityForm.value.coverImage, images: splitLines(activityForm.value.imagesText), content: activityForm.value.content } }
 function buildHeritagePayload() { return { name: heritageForm.value.name, category: heritageForm.value.category, subcategory: heritageForm.value.subcategory, dynasty: heritageForm.value.dynasty, region: heritageForm.value.region, level: normalizeHeritageLevel(heritageForm.value.level), images: splitLines(heritageForm.value.imagesText), videoUrl: heritageForm.value.videoUrl, introduction: heritageForm.value.introduction, history: heritageForm.value.history, inheritanceValue: heritageForm.value.inheritanceValue, representativeInheritor: heritageForm.value.representativeInheritor, isFeatured: heritageForm.value.isFeatured ? 1 : 0 } }
@@ -447,43 +447,43 @@ async function submitDialog() {
   try {
     if (activeTab.value === 'activities') {
       const payload = buildActivityPayload()
-      if (!payload.title || !payload.startTime || !payload.endTime) throw new Error('Please fill in the title, start time, and end time')
-      if (dialogMode.value === 'create') unwrap(await createOfficialActivity(payload), 'Failed to create activity')
-      else unwrap(await updateOfficialActivity(editingId.value, payload), 'Failed to update activity')
+      if (!payload.title || !payload.startTime || !payload.endTime) throw new Error('请填写标题、开始时间和结束时间')
+      if (dialogMode.value === 'create') unwrap(await createOfficialActivity(payload), '创建活动失败')
+      else unwrap(await updateOfficialActivity(editingId.value, payload), '更新活动失败')
     } else if (activeTab.value === 'heritages') {
       const payload = buildHeritagePayload()
-      if (!payload.name) throw new Error('Please enter a heritage name')
-      if (payload.images.length === 0) throw new Error('Please upload at least one heritage image')
-      if (!payload.videoUrl) throw new Error('Please upload a heritage video')
-      if (dialogMode.value === 'create') unwrap(await createOfficialHeritage(payload), 'Failed to create heritage item')
-      else unwrap(await updateOfficialHeritage(editingId.value, payload), 'Failed to update heritage item')
+      if (!payload.name) throw new Error('请输入非遗名称')
+      if (payload.images.length === 0) throw new Error('请至少上传一张非遗图片')
+      if (!payload.videoUrl) throw new Error('请上传非遗视频')
+      if (dialogMode.value === 'create') unwrap(await createOfficialHeritage(payload), '创建非遗项目失败')
+      else unwrap(await updateOfficialHeritage(editingId.value, payload), '更新非遗项目失败')
     } else {
       const payload = buildWorkPayload()
-      if (!payload.title || !payload.content) throw new Error('Please fill in the work title and content')
-      if (dialogMode.value === 'create') unwrap(await createOfficialWork(payload), 'Failed to create work')
-      else unwrap(await updateOfficialWork(editingId.value, payload), 'Failed to update work')
+      if (!payload.title || !payload.content) throw new Error('请填写作品标题和内容')
+      if (dialogMode.value === 'create') unwrap(await createOfficialWork(payload), '创建作品失败')
+      else unwrap(await updateOfficialWork(editingId.value, payload), '更新作品失败')
     }
-    notify(dialogMode.value === 'create' ? 'Created successfully' : 'Saved successfully', 'success')
+    notify(dialogMode.value === 'create' ? '创建成功' : '保存成功', 'success')
     closeDialog()
     await loadAll()
-  } catch (error) { notify(getRequestErrorMessage(error, 'Save failed'), 'error') } finally { saving.value = false }
+  } catch (error) { notify(getRequestErrorMessage(error, '保存失败'), 'error') } finally { saving.value = false }
 }
 async function removeRow(row) {
   const label = activeTab.value === 'activities' ? row.title : (row.name || row.title)
-  if (!window.confirm('Delete ' + (label || 'this item') + '?')) return
+  if (!window.confirm('删除 ' + (label || '此项') + '？')) return
   try {
-    if (activeTab.value === 'activities') unwrap(await deleteOfficialActivity(row.id), 'Failed to delete activity')
-    else if (activeTab.value === 'heritages') unwrap(await deleteOfficialHeritage(row.id), 'Failed to delete heritage item')
-    else unwrap(await deleteOfficialWork(row.id), 'Failed to delete work')
-    notify('Deleted successfully', 'success')
+    if (activeTab.value === 'activities') unwrap(await deleteOfficialActivity(row.id), '删除活动失败')
+    else if (activeTab.value === 'heritages') unwrap(await deleteOfficialHeritage(row.id), '删除非遗项目失败')
+    else unwrap(await deleteOfficialWork(row.id), '删除作品失败')
+    notify('删除成功', 'success')
     await loadAll()
-  } catch (error) { notify(getRequestErrorMessage(error, 'Delete failed'), 'error') }
+  } catch (error) { notify(getRequestErrorMessage(error, '删除失败'), 'error') }
 }
 async function publishSelection() {
-  if (selectedIds.value.length === 0) return notify('Please select items first', 'error')
-  if (selectedIds.value.length > currentTab.value.limit) return notify('You can select up to ' + currentTab.value.limit + ' item(s)', 'error')
+  if (selectedIds.value.length === 0) return notify('请先选择项目', 'error')
+  if (selectedIds.value.length > currentTab.value.limit) return notify('最多可选择 ' + currentTab.value.limit + ' 项', 'error')
   publishing.value = true
-  try { unwrap(await publishToHomepage(currentTab.value.publishType, selectedIds.value), 'Failed to publish to homepage'); notify('Homepage selection updated', 'success'); await loadAll() } catch (error) { notify(getRequestErrorMessage(error, 'Publish failed'), 'error') } finally { publishing.value = false }
+  try { unwrap(await publishToHomepage(currentTab.value.publishType, selectedIds.value), '发布到首页失败'); notify('首页选中项已更新', 'success'); await loadAll() } catch (error) { notify(getRequestErrorMessage(error, '发布失败'), 'error') } finally { publishing.value = false }
 }
 watch(keyword, () => { resetPage() })
 watch(filteredRows, () => {
@@ -511,6 +511,8 @@ onMounted(loadAll)
 .search-control { display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 12px; background: #fff; }
 .search-control i { color: #64748b; font-size: 18px; }
 .search-input, .field input, .field select, .field textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 12px; padding: 10px 12px; font-size: 14px; box-sizing: border-box; }
+.field select { color: #111827; background: #fff; font-weight: 600; }
+.field select option { color: #111827; background: #fff; }
 .search-input { width: 100%; border: none; padding: 10px 0; }
 .clear-search-btn { border: none; background: transparent; color: #7c3aed; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; }
 .field textarea { resize: vertical; line-height: 1.6; }
@@ -565,6 +567,7 @@ onMounted(loadAll)
 .video-preview video { width: 100%; max-height: 240px; border-radius: 14px; background: #000; }
 @media (max-width: 960px) { .page-header, .panel-toolbar, .pagination-bar { flex-direction: column; align-items: stretch; } .toolbar-actions, .pagination-actions { width: 100%; } .search-input { width: 100%; } .grid.cols-2 { grid-template-columns: 1fr; } }
 </style>
+
 
 
 

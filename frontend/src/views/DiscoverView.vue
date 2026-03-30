@@ -69,7 +69,7 @@
 
     <div class="main-container">
       <div v-if="currentPage === 'discover'" class="main-content">
-        <div class="category-tabs-wrapper">
+        <div class="category-tabs-wrapper" :class="{ 'is-hidden': isCategoryTabsHidden }">
           <div class="category-tabs">
             <div 
               v-for="category in categories" 
@@ -339,7 +339,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, getCurrentInstance } from 'vue'
+import { computed, onMounted, onUnmounted, ref, getCurrentInstance } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
@@ -364,11 +364,11 @@ const route = useRoute()
 
 const categories = computed(() => [
   { id: 'all', name: t('discover.categoryAll') },
-  { id: '\u670d\u9970\u5986\u9020', name: t('discover.presetTags.costume') },
-  { id: '\u7f8e\u672f\u9020\u7269', name: t('discover.presetTags.artistry') },
-  { id: '\u6c11\u4fd7\u8282\u6c14', name: t('discover.presetTags.folklore') },
-  { id: '\u620f\u66f2\u6f14\u7ece', name: t('discover.presetTags.opera') },
-  { id: '\u7ec7\u7269\u624b\u5de5', name: t('discover.presetTags.textile') }
+  { id: '服饰妆造', name: t('discover.presetTags.costume') },
+  { id: '美妆造物', name: t('discover.presetTags.artistry') },
+  { id: '民族节气', name: t('discover.presetTags.folklore') },
+  { id: '戏曲演绎', name: t('discover.presetTags.opera') },
+  { id: '织物手工', name: t('discover.presetTags.textile') }
 ])
 
 const posts = ref([])
@@ -384,10 +384,12 @@ const showMobileMenu = ref(false)
 const sortBy = ref('latest')
 const showSortMenu = ref(false)
 const isRefreshing = ref(false)
+const isCategoryTabsHidden = ref(false)
+const lastScrollY = ref(0)
 const postForm = ref({
   title: '',
   content: '',
-  category: '\u670d\u9970\u5986\u9020',
+  category: '服饰妆造',
   tags: [],
   images: []
 })
@@ -401,11 +403,11 @@ const presetTags = computed(() => [
   t('discover.presetTags.textile')
 ])
 const classifierTagMap = computed(() => ({
-  '\u670d\u9970\u5986\u9020': t('discover.presetTags.costume'),
-  '\u7f8e\u672f\u9020\u7269': t('discover.presetTags.artistry'),
-  '\u6c11\u4fd7\u8282\u6c14': t('discover.presetTags.folklore'),
-  '\u620f\u66f2\u6f14\u7ece': t('discover.presetTags.opera'),
-  '\u7ec7\u7269\u624b\u5de5': t('discover.presetTags.textile')
+  '服饰妆造': t('discover.presetTags.costume'),
+  '美妆造物': t('discover.presetTags.artistry'),
+  '民族节气': t('discover.presetTags.folklore'),
+  '戏曲演绎': t('discover.presetTags.opera'),
+  '织物手工': t('discover.presetTags.textile')
 }))
 const bestClassification = ref({
   tag: '',
@@ -481,10 +483,10 @@ const classifySelectedImage = async (file) => {
     }
 
     if (response.code === 503) {
-      console.warn('Local image classifier is unavailable.', response.message)
+      console.warn('本地图片分类器不可用。', response.message)
     }
   } catch (error) {
-    console.error('Discover image classification failed.', error)
+    console.error('发现页图片分类失败。', error)
   }
 }
 
@@ -497,12 +499,39 @@ const closeMobileMenu = () => {
   showSortMenu.value = false
 }
 
+const handleWindowScroll = () => {
+  const currentY = window.scrollY || window.pageYOffset || 0
+  const delta = currentY - lastScrollY.value
+
+  if (currentPage.value !== 'discover') {
+    isCategoryTabsHidden.value = false
+    lastScrollY.value = currentY
+    return
+  }
+
+  if (showMobileMenu.value || showSortMenu.value || currentY < 140) {
+    isCategoryTabsHidden.value = false
+    lastScrollY.value = currentY
+    return
+  }
+
+  if (delta > 8) {
+    isCategoryTabsHidden.value = true
+  } else if (delta < -8) {
+    isCategoryTabsHidden.value = false
+  }
+
+  lastScrollY.value = currentY
+}
+
 const switchPage = (page) => {
   if (page === 'notification') {
     router.push('/notification')
     return
   }
   currentPage.value = page
+  isCategoryTabsHidden.value = false
+  lastScrollY.value = window.scrollY || window.pageYOffset || 0
   if (page === 'discover') {
     loadPosts()
   }
@@ -712,7 +741,7 @@ const resetPostForm = () => {
   postForm.value = {
     title: '',
     content: '',
-    category: '\u670d\u9970\u5986\u9020',
+    category: '服饰妆造',
     tags: [],
     images: []
   }
@@ -853,7 +882,7 @@ const submitPost = async () => {
           ossUrls.push(response.data.url)
           index++
         } else {
-          throw new Error(response.message || 'Image upload failed')
+          throw new Error(response.message || '图片上传失败')
         }
       }
     }
@@ -882,6 +911,8 @@ const submitPost = async () => {
 }
 
 onMounted(async () => {
+  lastScrollY.value = window.scrollY || window.pageYOffset || 0
+  window.addEventListener('scroll', handleWindowScroll, { passive: true })
   await loadPosts()
   loadUnreadCount()
   const postId = route.query.postId
@@ -899,9 +930,13 @@ onMounted(async () => {
         }
       }
     } catch (error) {
-      console.error('Failed to load post detail', error)
+      console.error('加载帖子详情失败', error)
     }
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleWindowScroll)
 })
 
 const loadUnreadCount = async () => {
@@ -911,7 +946,7 @@ const loadUnreadCount = async () => {
       unreadCount.value = response.data
     }
   } catch (error) {
-    console.error('Failed to load unread count', error)
+    console.error('加载未读数量失败', error)
   }
 }
 </script>
@@ -1226,6 +1261,18 @@ body {
   position: sticky;
   top: 60px;
   z-index: 10;
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease,
+    box-shadow 0.24s ease;
+  will-change: transform, opacity;
+}
+
+.category-tabs-wrapper.is-hidden {
+  transform: translateY(calc(-100% - 18px));
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: none !important;
 }
 
 .category-tabs {
@@ -2220,6 +2267,536 @@ body {
   .notification-container {
     padding: 20px;
     width: 100%;
+  }
+}
+
+.discover-page {
+  bottom: 50px;
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 28px;
+  color: var(--pc-ink);
+}
+
+.discover-page::before,
+.discover-page::after {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(8px);
+}
+
+.discover-page::before {
+  top: 112px;
+  left: -72px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(157, 41, 41, 0.16), transparent 68%);
+}
+
+.discover-page::after {
+  right: -80px;
+  bottom: 72px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 145, 63, 0.14), transparent 70%);
+}
+
+.top-nav,
+.main-container,
+.image-preview-modal {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-content {
+  align-items: center !important;
+  gap: 18px !important;
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.8)),
+    rgba(255, 251, 246, 0.92) !important;
+}
+
+.logo {
+  position: relative;
+  padding-left: 16px;
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  color: #2f241d !important;
+}
+
+.logo::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #9d2929, #c9913f);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 6px rgba(157, 41, 41, 0.08);
+}
+
+.search-input {
+  position: relative;
+  flex: 1;
+  min-height: 56px;
+  padding: 0 18px !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(249, 243, 235, 0.9)) !important;
+}
+
+.search-input::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.search-input i {
+  color: var(--pc-accent) !important;
+}
+
+.search-input input {
+  height: 100%;
+  padding: 0 !important;
+  font-size: 15px !important;
+  color: var(--pc-ink) !important;
+}
+
+.search-input input::placeholder {
+  color: var(--pc-soft) !important;
+}
+
+.main-nav-buttons {
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+.nav-button {
+  min-height: 48px;
+  padding: 0 16px !important;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.nav-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(157, 41, 41, 0.08) !important;
+}
+
+.nav-button .badge,
+.mobile-menu-item .badge {
+  box-shadow: 0 8px 16px rgba(157, 41, 41, 0.22) !important;
+}
+
+.hamburger-menu {
+  color: var(--pc-accent) !important;
+  background: rgba(157, 41, 41, 0.06);
+}
+
+.mobile-menu {
+  padding: 6px;
+  border-radius: 18px !important;
+  background: rgba(255, 251, 246, 0.98) !important;
+}
+
+.mobile-menu-item {
+  border-radius: 14px !important;
+}
+
+.main-container {
+  max-width: 1240px !important;
+}
+
+.category-tabs-wrapper {
+  top: 118px !important;
+  gap: 18px;
+  padding: 18px 20px !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.08), transparent 22%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(249, 244, 237, 0.92)) !important;
+}
+
+.category-tabs {
+  gap: 12px !important;
+}
+
+.tab {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+}
+
+.tab:hover {
+  box-shadow: 0 10px 18px rgba(157, 41, 41, 0.08);
+}
+
+.action-buttons {
+  gap: 12px !important;
+}
+
+.sort-btn,
+.refresh-btn {
+  min-height: 42px;
+  border-radius: 16px !important;
+}
+
+.sort-btn {
+  padding: 0 14px !important;
+  font-weight: 600;
+}
+
+.refresh-btn {
+  width: 42px !important;
+  height: 42px !important;
+}
+
+.sort-menu {
+  padding: 6px;
+  border-radius: 18px !important;
+}
+
+.sort-option {
+  border-radius: 14px !important;
+  font-weight: 600;
+}
+
+.content-list {
+  padding: 0 !important;
+  margin-top: 20px;
+  gap: 18px !important;
+  align-items: stretch;
+}
+
+.post-card {
+  border-radius: 24px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.92)) !important;
+  overflow: hidden;
+}
+
+.post-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 22px 38px rgba(74, 46, 23, 0.1) !important;
+}
+
+.image-grid {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-grid::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 44%;
+  background: linear-gradient(180deg, transparent, rgba(22, 15, 10, 0.12));
+  pointer-events: none;
+}
+
+.post-image,
+.preview-image {
+  transition: transform 0.4s ease, filter 0.4s ease !important;
+}
+
+.post-card:hover .post-image {
+  transform: scale(1.04) !important;
+  filter: saturate(1.04);
+}
+
+.post-content {
+  padding: 16px 16px 12px !important;
+}
+
+.post-title {
+  margin-bottom: 10px !important;
+  font-size: 17px !important;
+  line-height: 1.45;
+}
+
+.post-content p {
+  line-height: 1.75 !important;
+}
+
+.post-footer {
+  padding: 0 16px 16px !important;
+  gap: 12px;
+}
+
+.author-info {
+  min-width: 0;
+}
+
+.author-avatar {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.author-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.post-stats {
+  gap: 10px !important;
+}
+
+.stat-item {
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(157, 41, 41, 0.05);
+}
+
+.stat-item:hover {
+  background: rgba(157, 41, 41, 0.1);
+}
+
+.loading-container,
+.empty-state {
+  min-height: 280px;
+}
+
+.loading-spinner {
+  color: var(--pc-accent) !important;
+}
+
+.post-page,
+.notification-page {
+  padding: 0 !important;
+}
+
+.post-container,
+.notification-container {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.08), transparent 18%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94)) !important;
+}
+
+.post-container h2,
+.notification-container h2 {
+  margin-bottom: 24px !important;
+  font-size: 28px !important;
+}
+
+.post-form-horizontal {
+  gap: 24px !important;
+}
+
+.form-group {
+  gap: 10px !important;
+}
+
+.form-group label {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  color: var(--pc-accent) !important;
+  text-transform: uppercase;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select,
+.tag-input-container input {
+  min-height: 52px;
+  padding: 14px 16px !important;
+}
+
+.form-group textarea {
+  min-height: 180px !important;
+}
+
+.selected-tags {
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(217, 207, 193, 0.8) !important;
+}
+
+.selected-tag-item,
+.tag-item.active {
+  border: 1px solid rgba(157, 41, 41, 0.1);
+}
+
+.tag-item {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+}
+
+.tag-item:hover {
+  transform: translateY(-1px);
+}
+
+.image-upload-area {
+  min-height: 186px;
+  border-style: solid !important;
+  border-color: rgba(157, 41, 41, 0.14) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 244, 238, 0.92)) !important;
+}
+
+.image-upload-area:hover {
+  box-shadow: 0 16px 30px rgba(157, 41, 41, 0.08) !important;
+}
+
+.image-upload-area i {
+  color: var(--pc-accent) !important;
+}
+
+.selected-images {
+  gap: 12px !important;
+}
+
+.image-preview-item,
+.preview-image {
+  width: 80px !important;
+  height: 80px !important;
+}
+
+.image-preview-item {
+  border-radius: 14px;
+  overflow: visible;
+}
+
+.preview-image {
+  border-radius: 14px !important;
+  border: 1px solid rgba(217, 207, 193, 0.8);
+  box-shadow: 0 10px 18px rgba(44, 44, 44, 0.08);
+}
+
+.remove-image-btn {
+  top: -8px !important;
+  right: -8px !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 999px !important;
+}
+
+.drag-handle {
+  bottom: -8px !important;
+  padding: 4px 8px !important;
+  border-radius: 999px !important;
+}
+
+.submit-post-btn {
+  min-height: 54px;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  box-shadow: 0 16px 28px rgba(157, 41, 41, 0.18);
+}
+
+.submit-post-btn:hover {
+  box-shadow: 0 22px 34px rgba(157, 41, 41, 0.24);
+}
+
+.notification-list {
+  gap: 12px !important;
+}
+
+.notification-item {
+  padding: 18px !important;
+}
+
+.notification-avatar {
+  width: 46px !important;
+  height: 46px !important;
+}
+
+.notification-user {
+  color: var(--pc-ink) !important;
+}
+
+.image-preview-modal .modal-content {
+  max-width: min(980px, 92vw);
+  padding: 0 !important;
+  border-radius: 26px !important;
+  overflow: hidden;
+}
+
+.image-preview-modal .close-btn {
+  top: 16px !important;
+  right: 16px !important;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(24, 18, 12, 0.54);
+}
+
+.preview-image-full {
+  border-radius: 0 !important;
+}
+
+@media (max-width: 1024px) {
+  .nav-content {
+    gap: 14px !important;
+  }
+
+  .main-nav-buttons {
+    gap: 8px !important;
+  }
+
+  .content-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .discover-page::before,
+  .discover-page::after {
+    display: none;
+  }
+
+  .nav-content {
+    gap: 10px !important;
+  }
+
+  .logo {
+    font-size: 22px !important;
+  }
+
+  .search-input {
+    min-height: 50px;
+  }
+
+  .category-tabs-wrapper {
+    top: 106px !important;
+    gap: 14px;
+  }
+
+  .content-list {
+    grid-template-columns: 1fr !important;
+    margin-top: 16px;
+  }
+
+  .post-form-horizontal {
+    gap: 18px !important;
   }
 }
 </style>

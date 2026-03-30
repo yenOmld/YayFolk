@@ -1111,7 +1111,8 @@ public class DiscoverService {
         request.setTargetLang(normalizedTarget);
         TranslateResponse response = translateService.translate(request);
         if (response == null || response.getCode() != 200 || !StringUtils.hasText(response.getTranslatedText())) {
-            throw new RuntimeException("翻译失败，请重试");
+            String errorMessage = response != null && StringUtils.hasText(response.getMessage()) ? response.getMessage() : "Translation failed, please try again";
+            throw new RuntimeException(errorMessage);
         }
 
         redisTemplate.opsForValue().set(cacheKey, response.getTranslatedText(), TRANSLATE_CACHE_DAYS, TimeUnit.DAYS);

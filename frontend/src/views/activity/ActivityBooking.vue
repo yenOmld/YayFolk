@@ -516,4 +516,239 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+.activity-booking-page {
+  position: relative;
+  max-width: 1240px;
+  padding: 28px 20px 104px;
+  background:
+    radial-gradient(circle at top left, rgba(157, 41, 41, 0.12), transparent 24%),
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.12), transparent 20%),
+    linear-gradient(180deg, rgba(255, 249, 241, 0.9), rgba(244, 235, 222, 0.94));
+}
+
+.activity-booking-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  opacity: 0.45;
+}
+
+.header-nav,
+.booking-layout {
+  position: relative;
+  z-index: 1;
+}
+
+.header-nav {
+  position: sticky;
+  top: 106px;
+  z-index: 10;
+  padding: 16px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(190, 157, 124, 0.28);
+  background:
+    linear-gradient(135deg, rgba(157, 41, 41, 0.05), rgba(255, 255, 255, 0.86)),
+    rgba(255, 251, 246, 0.86);
+  box-shadow:
+    0 18px 40px rgba(74, 46, 23, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.back-button {
+  min-height: 42px;
+  border-radius: 16px;
+  font-weight: 700;
+  color: #6b5949;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(74, 46, 23, 0.08);
+}
+
+.breadcrumb {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.state-card,
+.section-card {
+  border-radius: 24px;
+  border: 1px solid rgba(190, 157, 124, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 244, 238, 0.92));
+  box-shadow:
+    0 22px 44px rgba(74, 46, 23, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.booking-layout {
+  gap: 26px;
+}
+
+.booking-main {
+  gap: 22px;
+}
+
+.section-card {
+  padding: 28px;
+}
+
+.section-card h1,
+.section-card h3 {
+  margin-bottom: 12px;
+}
+
+.section-card h1 {
+  font-size: clamp(28px, 3vw, 36px);
+}
+
+.section-desc {
+  line-height: 1.75;
+}
+
+.activity-summary {
+  margin-top: 24px;
+  gap: 20px;
+  padding: 18px;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(247, 240, 232, 0.96));
+  border: 1px solid rgba(217, 207, 193, 0.74);
+  box-shadow: 0 16px 28px rgba(74, 46, 23, 0.05);
+}
+
+.activity-summary img {
+  height: 180px;
+  border-radius: 18px;
+  box-shadow: 0 16px 28px rgba(74, 46, 23, 0.08);
+}
+
+.summary-info h2 {
+  font-size: 26px;
+  line-height: 1.35;
+}
+
+.summary-tags span {
+  border-radius: 999px;
+  border: 1px solid rgba(157, 41, 41, 0.08);
+  font-weight: 700;
+}
+
+.form-grid {
+  gap: 20px;
+}
+
+.field span {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a2b2b;
+}
+
+.field input,
+.field textarea {
+  min-height: 52px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 240, 232, 0.96));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field textarea {
+  min-height: 132px;
+}
+
+.field input:focus,
+.field textarea:focus {
+  box-shadow: 0 0 0 4px rgba(157, 41, 41, 0.1);
+}
+
+.quantity-box {
+  max-width: 196px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 240, 232, 0.96));
+}
+
+.quantity-box button {
+  font-weight: 700;
+  color: #9d2929;
+  transition: background-color 0.2s ease;
+}
+
+.quantity-box button:hover {
+  background: rgba(157, 41, 41, 0.08);
+}
+
+.sticky-card {
+  top: 106px;
+}
+
+.summary-line {
+  min-height: 52px;
+  align-items: center;
+}
+
+.summary-line strong,
+.total-box strong {
+  color: #2f241d;
+}
+
+.total-box {
+  padding: 22px 0;
+  align-items: center;
+  border-bottom: 1px solid rgba(217, 207, 193, 0.7);
+}
+
+.submit-btn {
+  min-height: 54px;
+  margin-top: 20px;
+  border-radius: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 16px 28px rgba(157, 41, 41, 0.18);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 34px rgba(157, 41, 41, 0.24);
+}
+
+@media (max-width: 960px) {
+  .header-nav {
+    position: static;
+  }
+
+  .sticky-card {
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .activity-booking-page {
+    padding: 16px 12px 96px;
+  }
+
+  .state-card,
+  .section-card,
+  .activity-summary {
+    border-radius: 20px;
+  }
+
+  .section-card {
+    padding: 20px;
+  }
+}
 </style>

@@ -26,30 +26,30 @@
     </header>
 
     <main class="conversation-main">
-      <!-- 语言选择器 -->
+      <!-- 璇█閫夋嫨鍣?-->
       <div class="language-selector">
         <select v-model="sourceLang" class="lang-select">
-          <option value="zh">中文</option>
+          <option value="zh">涓枃</option>
           <option value="en">English</option>
-          <option value="jp">日本語</option>
-          <option value="kor">한국어</option>
-          <option value="fra">Français</option>
+          <option value="jp">Japanese</option>
+          <option value="kor">Korean</option>
+          <option value="fra">Fran莽ais</option>
           <option value="de">Deutsch</option>
         </select>
         <button class="swap-btn" @click="swapLanguages" :disabled="isRecording" :class="{ 'rotate-arrow': !isRightToLeft }">
           <i class='bx bx-arrow-back'></i>
         </button>
         <select v-model="targetLang" class="lang-select">
-          <option value="zh">中文</option>
+          <option value="zh">涓枃</option>
           <option value="en">English</option>
-          <option value="jp">日本語</option>
-          <option value="kor">한국어</option>
-          <option value="fra">Français</option>
+          <option value="jp">Japanese</option>
+          <option value="kor">Korean</option>
+          <option value="fra">Fran莽ais</option>
           <option value="de">Deutsch</option>
         </select>
       </div>
 
-      <!-- 左右分栏对话区域 -->
+      <!-- 宸﹀彸鍒嗘爮瀵硅瘽鍖哄煙 -->
       <div class="conversation-area">
         <div class="left-panel">
           <div class="panel-content" ref="leftPanel">
@@ -105,7 +105,7 @@
         </div>
       </div>
 
-      <!-- 录音按钮 -->
+      <!-- 褰曢煶鎸夐挳 -->
       <div class="record-area">
         <button class="record-btn" :class="{ recording: isRecording }" @click="toggleRecording">
           <i class='bx bx-microphone'></i>
@@ -127,7 +127,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
-// 获取通知实例
+// 鑾峰彇閫氱煡瀹炰緥
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
@@ -147,7 +147,7 @@ const autoPlay = ref(true)
 const currentAudio = ref(null)
 const isPlaying = ref(false)
 
-// 计算属性来过滤消息
+// 璁＄畻灞炴€ф潵杩囨护娑堟伅
 const leftMessages = computed(() => {
   return messages.value.filter(msg => msg && msg.direction === 'left')
 })
@@ -184,13 +184,13 @@ const playAudio = (audioUrl) => {
   audio.onerror = () => {
     isPlaying.value = false
     currentAudio.value = null
-    console.error('音频播放失败')
+    console.error('闊抽鎾斁澶辫触')
   }
   
   audio.play().catch(() => {
     isPlaying.value = false
     currentAudio.value = null
-    console.error('音频播放失败')
+    console.error('闊抽鎾斁澶辫触')
   })
 }
 
@@ -205,7 +205,7 @@ const resumeAudio = () => {
   if (currentAudio.value && !isPlaying.value) {
     currentAudio.value.play().catch(() => {
       isPlaying.value = false
-      console.error('音频播放失败')
+      console.error('闊抽鎾斁澶辫触')
     })
     isPlaying.value = true
   }
@@ -239,7 +239,7 @@ const startRecording = async () => {
     recordedBuffers = []
     audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 })
     
-    // 加载AudioWorklet处理器
+    // 鍔犺浇AudioWorklet澶勭悊鍣?
     await audioContext.audioWorklet.addModule('/audio-processor.js')
     
     mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -253,10 +253,10 @@ const startRecording = async () => {
 
     const source = audioContext.createMediaStreamSource(mediaStream)
     
-    // 创建AudioWorkletNode
+    // 鍒涘缓AudioWorkletNode
     audioWorkletNode = new AudioWorkletNode(audioContext, 'pcm-processor')
     
-    // 处理从AudioWorkletNode接收的PCM数据
+    // 澶勭悊浠嶢udioWorkletNode鎺ユ敹鐨凱CM鏁版嵁
     audioWorkletNode.port.onmessage = (event) => {
       const { type, data } = event.data
       if (type === 'pcmData') {
@@ -276,7 +276,7 @@ const startRecording = async () => {
       }
     }, 1000)
   } catch (err) {
-    console.error('录音启动失败:', err)
+    console.error('褰曢煶鍚姩澶辫触:', err)
     notify.error(t('voice.micAccessFailed'))
   }
 }
@@ -423,10 +423,10 @@ const processAudio = async (audioBlob) => {
         playAudio(response.data.data.audioUrl)
       }
     } else {
-      error.value = response.data.message || '语音翻译失败'
+      error.value = response.data.message || '璇煶缈昏瘧澶辫触'
     }
   } catch (err) {
-    error.value = err.response?.data?.message || err.message || '语音翻译请求失败'
+    error.value = err.response?.data?.message || err.message || '璇煶缈昏瘧璇锋眰澶辫触'
   }
 }
 
@@ -472,7 +472,7 @@ const copyText = async (text) => {
 }
 
 const goBack = () => {
-  router.push('/voice-translate')
+  router.push('/home/tools')
 }
 
 onUnmounted(() => {
