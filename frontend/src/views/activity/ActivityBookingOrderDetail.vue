@@ -3,23 +3,23 @@
     <div class="header-nav">
       <button class="back-btn" @click="goBack">
         <i class="bx bx-arrow-back"></i>
-        <span>Back</span>
+        <span>返回</span>
       </button>
       <div class="breadcrumb">
-        <span @click="goBack">My Activities</span>
+        <span @click="goBack">我的活动</span>
         <i class="bx bx-chevron-right"></i>
-        <span>Order Detail</span>
+        <span>订单详情</span>
       </div>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading booking detail...</p>
+      <p>加载订单详情中...</p>
     </div>
 
     <div v-else-if="!booking" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>Booking detail is unavailable.</p>
+      <p>订单详情不可用。</p>
     </div>
 
     <div v-else class="detail-layout">
@@ -28,61 +28,61 @@
           <img
             v-if="coverImage"
             :src="coverImage"
-            :alt="booking.activityTitle || 'Activity cover'"
+            :alt="booking.activityTitle || '活动封面'"
             class="cover-image"
           >
           <div class="activity-copy">
             <div class="title-row">
               <div>
-                <h1>{{ booking.activityTitle || 'Activity Booking' }}</h1>
-                <p>{{ booking.activitySubtitle || booking.heritageType || 'Cultural activity' }}</p>
+                <h1>{{ booking.activityTitle || '活动报名' }}</h1>
+                <p>{{ booking.activitySubtitle || booking.heritageType || '文化活动' }}</p>
               </div>
               <span :class="['status-tag', displayStatus.code]">{{ displayStatus.label }}</span>
             </div>
             <div class="meta-grid">
-              <p>Activity Time: {{ formatRange(booking.startTime, booking.endTime) }}</p>
-              <p>Location: {{ fullLocation }}</p>
-              <p>Merchant: {{ booking.shopName || booking.merchantName || '-' }}</p>
-              <p>Created: {{ formatTime(booking.createTime) }}</p>
+              <p>活动时间: {{ formatRange(booking.startTime, booking.endTime) }}</p>
+              <p>地点: {{ fullLocation }}</p>
+              <p>商家: {{ booking.shopName || booking.merchantName || '-' }}</p>
+              <p>创建时间: {{ formatTime(booking.createTime) }}</p>
             </div>
             <p v-if="booking.activityContent" class="activity-content">{{ booking.activityContent }}</p>
           </div>
         </article>
 
         <article class="info-card">
-          <h2>Order Information</h2>
+          <h2>订单信息</h2>
           <div class="meta-grid">
-            <p>Booking No: {{ booking.reserveNo || '-' }}</p>
-            <p>Payment Status: {{ paymentStatusText }}</p>
-            <p>Participant: {{ booking.participantName || '-' }}</p>
-            <p>Phone: {{ booking.participantPhone || '-' }}</p>
-            <p>Participants: {{ booking.participantCount || 1 }}</p>
-            <p>Payment Type: {{ booking.paymentType || '-' }}</p>
-            <p>Total Amount: {{ formatMoney(booking.totalAmount) }}</p>
-            <p>Paid Amount: {{ formatMoney(booking.payAmount) }}</p>
-            <p v-if="booking.paymentTime">Paid At: {{ formatTime(booking.paymentTime) }}</p>
-            <p v-if="booking.verificationTime">Checked In At: {{ formatTime(booking.verificationTime) }}</p>
+            <p>订单号: {{ booking.reserveNo || '-' }}</p>
+            <p>支付状态: {{ paymentStatusText }}</p>
+            <p>参与者: {{ booking.participantName || '-' }}</p>
+            <p>电话: {{ booking.participantPhone || '-' }}</p>
+            <p>参与人数: {{ booking.participantCount || 1 }}</p>
+            <p>支付方式: {{ booking.paymentType || '-' }}</p>
+            <p>总金额: {{ formatMoney(booking.totalAmount) }}</p>
+            <p>已支付金额: {{ formatMoney(booking.payAmount) }}</p>
+            <p v-if="booking.paymentTime">支付时间: {{ formatTime(booking.paymentTime) }}</p>
+            <p v-if="booking.verificationTime">核销时间: {{ formatTime(booking.verificationTime) }}</p>
           </div>
-          <p v-if="booking.remark" class="remark-line">Remark: {{ booking.remark }}</p>
+          <p v-if="booking.remark" class="remark-line">备注: {{ booking.remark }}</p>
         </article>
 
         <article v-if="timeline.length" class="info-card">
-          <h2>Status Timeline</h2>
+          <h2>状态时间线</h2>
           <div class="timeline-list">
             <div v-for="item in timeline" :key="item.id" class="timeline-item">
               <strong>{{ formatTime(item.createTime) }}</strong>
               <span>{{ timelineStatus(item.newStatus) }}</span>
-              <small>{{ item.operatorName || item.operatorType || 'System' }}{{ item.remark ? ` · ${item.remark}` : '' }}</small>
+              <small>{{ item.operatorName || item.operatorType || '系统' }}{{ item.remark ? ` · ${item.remark}` : '' }}</small>
             </div>
           </div>
         </article>
 
         <article class="info-card">
-          <h2>{{ hasReviewed ? 'Your Review' : 'Activity Review' }}</h2>
+          <h2>{{ hasReviewed ? '我的评价' : '活动评价' }}</h2>
           <div v-if="hasReviewed" class="review-box">
             <strong>{{ reviewScoreText }}</strong>
-            <p>{{ booking.reviewContent || 'No written review provided.' }}</p>
-            <small>Reviewed At: {{ formatTime(booking.reviewTime) }}</small>
+            <p>{{ booking.reviewContent || '未提供文字评价。' }}</p>
+            <small>评价时间: {{ formatTime(booking.reviewTime) }}</small>
           </div>
           <div v-else-if="booking.canReview" class="review-form">
             <div class="star-row">
@@ -102,31 +102,31 @@
               v-model.trim="reviewForm.content"
               rows="4"
               maxlength="500"
-              placeholder="Share your experience with this activity"
+              placeholder="分享您的活动体验"
             ></textarea>
             <button class="submit-btn" :disabled="submittingReview" @click="submitReview">
-              {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+              {{ submittingReview ? '提交中...' : '提交评价' }}
             </button>
           </div>
           <p v-else class="muted-text">
-            Reviews become available after a successful check-in or after the activity is completed.
+            活动核销成功或结束后即可评价。
           </p>
         </article>
       </section>
 
       <aside class="side-column">
         <article class="info-card sticky-card">
-          <h2>Next Step</h2>
+          <h2>下一步操作</h2>
           <p class="side-tip">{{ actionHint }}</p>
 
           <div class="action-list">
             <button v-if="booking.canPay" class="pay-btn" @click="payNow">
-              Continue Payment
+              继续支付
             </button>
             <button v-if="booking.canOpenQr" class="checkin-btn" @click="openCheckin">
-              Open Check-in QR
+              打开核销二维码
             </button>
-            <button class="link-btn" @click="openActivity">Open Activity Page</button>
+            <button class="link-btn" @click="openActivity">打开活动页面</button>
           </div>
         </article>
       </aside>
@@ -169,37 +169,37 @@ const fullLocation = computed(() => (
 ))
 const timeline = computed(() => Array.isArray(booking.value?.timeline) ? booking.value.timeline : [])
 const paymentStatusText = computed(() => ({
-  paid: 'Paid',
-  unpaid: 'Unpaid',
-  refunded: 'Refunded'
-}[booking.value?.paymentStatus] || booking.value?.paymentStatus || 'Unpaid'))
+  paid: '已支付',
+  unpaid: '未支付',
+  refunded: '已退款'
+}[booking.value?.paymentStatus] || booking.value?.paymentStatus || '未支付'))
 const reviewScoreText = computed(() => (
   booking.value?.reviewScore === null || booking.value?.reviewScore === undefined || booking.value?.reviewScore === ''
-    ? 'Reviewed'
+    ? '已评价'
     : `${Number(booking.value.reviewScore).toFixed(1)} / 5`
 ))
 const actionHint = computed(() => {
   if (booking.value?.canPay) {
-    return 'Payment is still pending. Complete payment first to unlock your check-in QR code.'
+    return '支付尚未完成。请先完成支付以获取核销二维码。'
   }
   if (booking.value?.canOpenQr) {
-    return 'This booking is ready for on-site check-in. Open the QR code and show it to the merchant.'
+    return '该订单已准备好现场核销。打开二维码并向商家出示。'
   }
   if (booking.value?.canReview) {
-    return 'The activity is finished for this booking. You can leave a review now.'
+    return '该活动已完成。您可以现在留下评价。'
   }
-  return 'Use this page to review payment, check-in, and review details for the booking.'
+  return '在此页面查看支付、核销和评价详情。'
 })
 
-const showError = (message) => notify?.error?.(message) ?? window.alert(message)
-const showSuccess = (message) => notify?.success?.(message) ?? window.alert(message)
+const showError = (message) => notify?.error?.(message)
+const showSuccess = (message) => notify?.success?.(message)
 
 const loadBooking = async () => {
   loading.value = true
   try {
     const response = await getActivityBookingDetail(route.params.id)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Failed to load booking detail')
+      throw new Error(response.message || '加载订单详情失败')
     }
     booking.value = response.data
     if (!hasReviewed.value && route.query.focus === 'review') {
@@ -208,7 +208,7 @@ const loadBooking = async () => {
     }
   } catch (error) {
     booking.value = null
-    showError(error.message || 'Failed to load booking detail')
+    showError(error.message || '加载订单详情失败')
   } finally {
     loading.value = false
   }
@@ -237,12 +237,12 @@ const submitReview = async () => {
       content: reviewForm.value.content || ''
     })
     if (response.code !== 200) {
-      throw new Error(response.message || 'Failed to submit review')
+      throw new Error(response.message || '提交评价失败')
     }
-    showSuccess('Review submitted')
+    showSuccess('评价已提交')
     await loadBooking()
   } catch (error) {
-    showError(error.message || 'Failed to submit review')
+    showError(error.message || '提交评价失败')
   } finally {
     submittingReview.value = false
   }
@@ -275,13 +275,13 @@ const openActivity = () => {
 }
 
 const timelineStatus = (status) => ({
-  registered: 'Registered',
-  checked_in: 'Checked In',
-  rejected: 'Rejected',
-  cancelled: 'Cancelled'
+  registered: '已报名',
+  checked_in: '已核销',
+  rejected: '已拒绝',
+  cancelled: '已取消'
 }[status] || status)
 
-const formatMoney = (value) => `$${(Number(value || 0) / 100).toFixed(2)}`
+const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')
 const formatRange = (start, end) => {
   const startText = start ? formatTime(start) : 'TBD'

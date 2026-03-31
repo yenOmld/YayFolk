@@ -3,30 +3,30 @@
     <div class="result-card">
       <div v-if="loading" class="state-box">
         <i class="bx bx-loader-circle bx-spin"></i>
-        <p>Syncing payment result...</p>
+        <p>同步支付结果中...</p>
       </div>
 
       <div v-else-if="paid" class="state-box success">
         <i class="bx bx-check-circle"></i>
-        <h1>Payment Successful</h1>
-        <p>{{ booking?.activityTitle || 'Activity Booking' }}</p>
-        <p class="meta">Booking No: {{ booking?.reserveNo || '-' }}</p>
-        <p class="amount">Paid Amount: {{ formatMoney(booking?.payAmount) }}</p>
-        <p class="hint">You can open the order detail or go straight to the QR code for merchant check-in.</p>
+        <h1>支付成功</h1>
+        <p>{{ booking?.activityTitle || '活动报名' }}</p>
+        <p class="meta">订单号: {{ booking?.reserveNo || '-' }}</p>
+        <p class="amount">支付金额: {{ formatMoney(booking?.payAmount) }}</p>
+        <p class="hint">您可以查看订单详情或直接打开二维码进行商家核销。</p>
       </div>
 
       <div v-else class="state-box pending">
         <i class="bx bx-time-five"></i>
-        <h1>Payment Still Pending</h1>
-        <p>The booking is not marked as paid yet. You can reopen the order detail and try again later.</p>
+        <h1>支付待处理</h1>
+        <p>订单尚未标记为支付成功。您可以重新打开订单详情稍后再试。</p>
       </div>
 
       <div class="action-row">
-        <button class="primary-btn" @click="openDetail">Open Order Detail</button>
+        <button class="primary-btn" @click="openDetail">查看订单详情</button>
         <button v-if="paid && booking?.canOpenQr" class="checkin-btn" @click="openCheckin">
-          Open Check-in QR
+          打开核销二维码
         </button>
-        <button class="ghost-btn" @click="goBack">Go Back</button>
+        <button class="ghost-btn" @click="goBack">返回</button>
       </div>
     </div>
   </div>
@@ -51,7 +51,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const loadDetail = async () => {
   const response = await getActivityBookingDetail(route.params.id)
   if (response.code !== 200 || !response.data) {
-    throw new Error(response.message || 'Failed to load payment result')
+    throw new Error(response.message || '加载支付结果失败')
   }
   booking.value = response.data
 }
@@ -69,7 +69,7 @@ const loadData = async () => {
       }
     }
   } catch (error) {
-    notify?.error?.(error.message || 'Failed to load payment result')
+    notify?.error?.(error.message || '加载支付结果失败')
   } finally {
     loading.value = false
   }
@@ -99,7 +99,7 @@ const goBack = () => {
   router.push('/personal/activities')
 }
 
-const formatMoney = (value) => `$${(Number(value || 0) / 100).toFixed(2)}`
+const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 
 onMounted(loadData)
 </script>

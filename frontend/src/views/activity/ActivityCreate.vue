@@ -223,9 +223,9 @@ const form = ref({
 
 const isEdit = computed(() => Boolean(route.params.id))
 
-const showError = (message) => notify?.error?.(message) ?? window.alert(message)
-const showSuccess = (message) => notify?.success?.(message) ?? window.alert(message)
-const showWarning = (message) => notify?.warning?.(message) ?? window.alert(message)
+const showError = (message) => notify?.error?.(message)
+const showSuccess = (message) => notify?.success?.(message)
+const showWarning = (message) => notify?.warning?.(message)
 
 const readStoredUser = () => {
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')

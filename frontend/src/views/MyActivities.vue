@@ -204,8 +204,8 @@ const noteClass = (booking) => {
   return 'info-note'
 }
 
-const showError = (message) => notify?.error?.(message) ?? window.alert(message)
-const showSuccess = (message) => notify?.success?.(message) ?? window.alert(message)
+const showError = (message) => notify?.error?.(message)
+const showSuccess = (message) => notify?.success?.(message)
 
 const loadData = async () => {
   loading.value = true
@@ -255,46 +255,50 @@ const handleCancel = async (booking) => {
   if (!canCancel(booking) || busyId.value) {
     return
   }
-  if (!window.confirm(`确定取消报名 ${booking.reserveNo || booking.id}？`)) {
-    return
-  }
-
-  busyId.value = booking.id
-  try {
-    const response = await cancelActivityBooking(booking.id)
-    if (response.code !== 200) {
-      throw new Error(response.message || '取消报名失败')
+  confirm({
+    title: '取消报名',
+    message: `确定取消报名 ${booking.reserveNo || booking.id}？`,
+    onConfirm: async () => {
+      busyId.value = booking.id
+      try {
+        const response = await cancelActivityBooking(booking.id)
+        if (response.code !== 200) {
+          throw new Error(response.message || '取消报名失败')
+        }
+        showSuccess('报名已取消')
+        await loadData()
+      } catch (error) {
+        showError(error.message || '取消报名失败')
+      } finally {
+        busyId.value = null
+      }
     }
-    showSuccess('报名已取消')
-    await loadData()
-  } catch (error) {
-    showError(error.message || '取消报名失败')
-  } finally {
-    busyId.value = null
-  }
+  })
 }
 
 const handleDelete = async (booking) => {
   if (!canDelete(booking) || busyId.value) {
     return
   }
-  if (!window.confirm(`确定删除报名记录 ${booking.reserveNo || booking.id}？`)) {
-    return
-  }
-
-  busyId.value = booking.id
-  try {
-    const response = await deleteActivityBooking(booking.id)
-    if (response.code !== 200) {
-      throw new Error(response.message || '删除报名记录失败')
+  confirm({
+    title: '删除报名记录',
+    message: `确定删除报名记录 ${booking.reserveNo || booking.id}？`,
+    onConfirm: async () => {
+      busyId.value = booking.id
+      try {
+        const response = await deleteActivityBooking(booking.id)
+        if (response.code !== 200) {
+          throw new Error(response.message || '删除报名记录失败')
+        }
+        showSuccess('报名记录已删除')
+        await loadData()
+      } catch (error) {
+        showError(error.message || '删除报名记录失败')
+      } finally {
+        busyId.value = null
+      }
     }
-    showSuccess('报名记录已删除')
-    await loadData()
-  } catch (error) {
-    showError(error.message || '删除报名记录失败')
-  } finally {
-    busyId.value = null
-  }
+  })
 }
 
 const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')

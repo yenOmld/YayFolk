@@ -2,7 +2,7 @@
   <div class="merchant-info-page">
     <section class="hero-card">
       <div>
-        <p class="hero-eyebrow">MERCHANT PROFILE</p>
+        <p class="hero-eyebrow">商家资料</p>
         <h1>{{ pageTitle }}</h1>
         <p class="hero-copy">{{ pageDescription }}</p>
       </div>
@@ -13,14 +13,14 @@
         :disabled="loading || submitting"
         @click="resetFormToStored"
       >
-        Reset To Saved Data
+        恢复已保存数据
       </button>
     </section>
 
     <section v-if="hasApplication" class="status-card" :class="statusClass">
       <div class="status-head">
         <div>
-          <p class="status-eyebrow">REVIEW STATUS</p>
+          <p class="status-eyebrow">审核状态</p>
           <h2>{{ statusTitle }}</h2>
           <p>{{ statusDescription }}</p>
         </div>
@@ -29,45 +29,45 @@
 
       <div class="detail-grid">
         <div class="detail-item">
-          <span>Real Name</span>
+          <span>真实姓名</span>
           <strong>{{ displayValue(storedInfo.realName) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Phone</span>
+          <span>联系电话</span>
           <strong>{{ displayValue(storedInfo.phone) }}</strong>
         </div>
         <div class="detail-item">
-          <span>ID Card</span>
+          <span>身份证号</span>
           <strong>{{ displayValue(storedInfo.idCard) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Heritage Type</span>
+          <span>非遗品类</span>
           <strong>{{ displayValue(storedInfo.heritageType) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Shop Name</span>
+          <span>店铺名称</span>
           <strong>{{ displayValue(storedInfo.shopName) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Region</span>
+          <span>所在地区</span>
           <strong>{{ displayValue(regionText(storedInfo)) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Shop Address</span>
+          <span>店铺地址</span>
           <strong>{{ displayValue(storedInfo.shopAddress) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Heritage Description</span>
+          <span>非遗描述</span>
           <strong>{{ displayValue(storedInfo.heritageDescription) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Shop Intro</span>
+          <span>店铺简介</span>
           <strong>{{ displayValue(storedInfo.intro) }}</strong>
         </div>
       </div>
 
       <div class="proof-section">
-        <span>Qualification Images</span>
+        <span>资质图片</span>
         <div v-if="storedProofImages.length" class="proof-grid">
           <a
             v-for="(image, index) in storedProofImages"
@@ -77,31 +77,31 @@
             target="_blank"
             rel="noreferrer"
           >
-            <img :src="image" :alt="`Qualification image ${index + 1}`">
+            <img :src="image" :alt="`资质图片 ${index + 1}`">
           </a>
         </div>
-        <p v-else class="proof-empty">No saved qualification images yet.</p>
+        <p v-else class="proof-empty">暂无已保存的资质图片。</p>
       </div>
 
       <div v-if="storedInfo.auditRemark" class="remark-box">
-        <span>Review Remark</span>
+        <span>审核备注</span>
         <p>{{ storedInfo.auditRemark }}</p>
       </div>
 
       <div class="status-meta">
-        <span>Submitted At: {{ formatTime(storedInfo.createTime) }}</span>
-        <span>Last Updated: {{ formatTime(storedInfo.updateTime || storedInfo.createTime) }}</span>
+        <span>提交时间：{{ formatTime(storedInfo.createTime) }}</span>
+        <span>最后更新：{{ formatTime(storedInfo.updateTime || storedInfo.createTime) }}</span>
       </div>
 
       <div class="review-note">
-        Every save will submit the merchant profile for qualification review again.
+        每次保存都会将商家资料重新提交资格审核。
       </div>
     </section>
 
     <section class="form-card">
       <div class="section-head">
         <div>
-          <p class="section-eyebrow">APPLICATION FORM</p>
+          <p class="section-eyebrow">申请表</p>
           <h2>{{ formTitle }}</h2>
           <p>{{ formDescription }}</p>
         </div>
@@ -109,66 +109,66 @@
 
       <div v-if="loading" class="loading-card">
         <span class="loading-spinner"></span>
-        <p>Loading merchant profile...</p>
+        <p>正在加载商家资料...</p>
       </div>
 
       <form v-else class="apply-form" @submit.prevent="submitApplication">
         <div class="form-grid">
           <label class="form-field">
-            <span>Real Name <em>*</em></span>
+            <span>真实姓名 <em>*</em></span>
             <input v-model.trim="form.realName" type="text" maxlength="50" required>
           </label>
 
           <label class="form-field">
-            <span>ID Card</span>
+            <span>身份证号</span>
             <input v-model.trim="form.idCard" type="text" maxlength="18">
           </label>
 
           <label class="form-field">
-            <span>Phone <em>*</em></span>
+            <span>联系电话 <em>*</em></span>
             <input v-model.trim="form.phone" type="text" maxlength="20" required>
           </label>
 
           <label class="form-field">
-            <span>Heritage Type <em>*</em></span>
+            <span>非遗品类 <em>*</em></span>
             <select v-model="form.heritageType" required>
-              <option value="">Select</option>
+              <option value="">请选择</option>
               <option v-for="item in heritageTypes" :key="item" :value="item">{{ item }}</option>
             </select>
           </label>
 
           <label class="form-field">
-            <span>Shop Name <em>*</em></span>
+            <span>店铺名称 <em>*</em></span>
             <input v-model.trim="form.shopName" type="text" maxlength="100" required>
           </label>
 
           <label class="form-field">
-            <span>Province</span>
+            <span>省份</span>
             <input v-model.trim="form.province" type="text" maxlength="32">
           </label>
 
           <label class="form-field">
-            <span>City</span>
+            <span>城市</span>
             <input v-model.trim="form.city" type="text" maxlength="32">
           </label>
 
           <label class="form-field full-span">
-            <span>Shop Address</span>
+            <span>店铺地址</span>
             <input v-model.trim="form.shopAddress" type="text" maxlength="200">
           </label>
 
           <label class="form-field full-span">
-            <span>Heritage Description <em>*</em></span>
+            <span>非遗描述 <em>*</em></span>
             <textarea v-model.trim="form.heritageDescription" rows="5" maxlength="1000" required></textarea>
           </label>
 
           <label class="form-field full-span">
-            <span>Shop Intro</span>
+            <span>店铺简介</span>
             <textarea v-model.trim="form.intro" rows="4" maxlength="255"></textarea>
           </label>
 
           <div class="form-field full-span">
-            <span>Qualification Images</span>
+            <span>资质图片</span>
             <div class="uploader-card">
               <div class="uploader-actions">
                 <button
@@ -177,7 +177,7 @@
                   :disabled="uploadingProofs || submitting"
                   @click="triggerProofInput"
                 >
-                  {{ uploadingProofs ? 'Uploading...' : 'Upload Images' }}
+                  {{ uploadingProofs ? '上传中...' : '上传图片' }}
                 </button>
                 <button
                   type="button"
@@ -185,7 +185,7 @@
                   :disabled="!form.proofImages.length || submitting"
                   @click="clearProofImages"
                 >
-                  Clear All
+                  清除全部
                 </button>
               </div>
               <input
@@ -203,19 +203,19 @@
                   :key="`${image}-${index}`"
                   class="proof-thumb proof-thumb--editable"
                 >
-                  <img :src="image" :alt="`Proof image ${index + 1}`">
+                  <img :src="image" :alt="`证明图片 ${index + 1}`">
                   <button
                     type="button"
                     class="remove-proof-btn"
                     :disabled="submitting"
                     @click="removeProofImage(index)"
                   >
-                    Remove
+                    移除
                   </button>
                 </div>
               </div>
               <p v-else class="proof-empty">
-                Upload business certificates, inheritor proof, or any supporting qualification images.
+                上传营业执照、传承人证明或其他资质图片。
               </p>
             </div>
           </div>
@@ -231,7 +231,7 @@
               :disabled="submitting"
               @click="resetFormToStored"
             >
-              Reset
+              重置
             </button>
             <button type="submit" class="primary-btn" :disabled="submitting || uploadingProofs">
               {{ submitButtonText }}
@@ -255,18 +255,18 @@ const notify = (type, message) => {
 }
 
 const heritageTypes = [
-  'Embroidery',
-  'Paper Cutting',
-  'Ceramics',
-  'Lacquerware',
-  'Carving',
-  'Opera',
-  'Kunqu',
-  'Guqin',
-  'Tai Chi',
-  'Traditional Medicine',
-  'New Year Painting',
-  'Other'
+  '刺绣',
+  '剪纸',
+  '陶瓷',
+  '漆器',
+  '雕刻',
+  '戏曲',
+  '昆曲',
+  '古琴',
+  '太极拳',
+  '传统医药',
+  '年画',
+  '其他'
 ]
 
 const createEmptyForm = () => ({
@@ -301,18 +301,18 @@ const hasApplication = computed(() => {
 
 const storedProofImages = computed(() => parseProofImages(storedInfo.value?.proofImages))
 
-const pageTitle = computed(() => (hasApplication.value ? 'Merchant Info' : 'Merchant Application'))
+const pageTitle = computed(() => (hasApplication.value ? '商家信息' : '商家入驻申请'))
 const pageDescription = computed(() => (
   hasApplication.value
-    ? 'Review and update the merchant details submitted during your application. Saving will trigger a new review.'
-    : 'Complete the merchant application form to submit your merchant verification request.'
+    ? '查看和更新申请时提交的商家资料。保存后将触发新的审核流程。'
+    : '填写商家申请表并提交商家认证申请。'
 ))
 
-const formTitle = computed(() => (hasApplication.value ? 'Edit Merchant Details' : 'Application Details'))
+const formTitle = computed(() => (hasApplication.value ? '编辑商家资料' : '申请详情'))
 const formDescription = computed(() => (
   hasApplication.value
-    ? 'This page manages the same merchant qualification details used during merchant onboarding.'
-    : 'Provide complete merchant details to help the admin team review your application.'
+    ? '此页面管理商家入驻时使用的相同资质信息。'
+    : '提供完整的商家资料，以便管理员审核您的申请。'
 ))
 
 const statusClass = computed(() => {
@@ -330,54 +330,54 @@ const statusClass = computed(() => {
 
 const statusTitle = computed(() => {
   if (appStatus.value === 'approved') {
-    return 'Approved'
+    return '已通过'
   }
   if (appStatus.value === 'rejected') {
-    return 'Rejected'
+    return '已驳回'
   }
   if (appStatus.value === 'pending') {
-    return 'In Review'
+    return '审核中'
   }
-  return 'Not Submitted'
+  return '未提交'
 })
 
 const statusDescription = computed(() => {
   if (appStatus.value === 'approved') {
-    return 'Your current merchant profile is active, but every new save will send it back for review.'
+    return '当前商家资料已生效，但每次保存都会将状态重置为待审核。'
   }
   if (appStatus.value === 'rejected') {
-    return 'Update the required fields based on the review remark and submit again.'
+    return '请根据审核备注更新相应字段后重新提交。'
   }
   if (appStatus.value === 'pending') {
-    return 'The admin team is currently reviewing the latest merchant details you submitted.'
+    return '管理员正在审核您最新提交的商家资料。'
   }
-  return 'No merchant application has been submitted yet.'
+  return '尚未提交任何商家申请。'
 })
 
 const statusBadge = computed(() => {
   if (appStatus.value === 'approved') {
-    return 'Approved'
+    return '已通过'
   }
   if (appStatus.value === 'rejected') {
-    return 'Rejected'
+    return '已驳回'
   }
   if (appStatus.value === 'pending') {
-    return 'Pending'
+    return '待审核'
   }
-  return 'Draft'
+  return '草稿'
 })
 
 const submitButtonText = computed(() => {
   if (submitting.value) {
-    return hasApplication.value ? 'Saving...' : 'Submitting...'
+    return hasApplication.value ? '保存中...' : '提交中...'
   }
-  return hasApplication.value ? 'Save And Resubmit' : 'Submit Application'
+  return hasApplication.value ? '保存并重新提交' : '提交申请'
 })
 
 const submitHint = computed(() => (
   hasApplication.value
-    ? 'Saving the profile will reset its status to pending review.'
-    : 'After submission, please wait for the review result.'
+    ? '保存后将把资料状态重置为待审核。'
+    : '提交后请等待审核结果。'
 ))
 
 function normalizeStatus(value) {
@@ -461,7 +461,7 @@ function regionText(source = {}) {
 }
 
 function displayValue(value) {
-  return value ? value : 'Not provided'
+  return value ? value : '未填写'
 }
 
 function formatTime(value) {
@@ -499,7 +499,7 @@ async function uploadProofImage(file) {
 
   const response = await uploadImage(formData, 'merchant-proof')
   if (response.code !== 200 || !response.data?.url) {
-    throw new Error(response.message || 'Failed to upload qualification image')
+    throw new Error(response.message || '上传资质图片失败')
   }
 
   return response.data.url
@@ -515,11 +515,11 @@ async function handleProofChange(event) {
 
   for (const file of files) {
     if (!file.type.startsWith('image/')) {
-      notify('warning', 'Only image files are supported.')
+      notify('warning', '仅支持图片文件。')
       return
     }
     if (file.size > 10 * 1024 * 1024) {
-      notify('warning', 'Each image must be smaller than 10MB.')
+      notify('warning', '每张图片大小不能超过 10MB。')
       return
     }
   }
@@ -528,9 +528,9 @@ async function handleProofChange(event) {
   try {
     const uploadedUrls = await Promise.all(files.map(uploadProofImage))
     form.proofImages = [...form.proofImages, ...uploadedUrls]
-    notify('success', 'Qualification images uploaded successfully.')
+    notify('success', '资质图片上传成功。')
   } catch (error) {
-    notify('error', error.message || 'Failed to upload qualification images.')
+    notify('error', error.message || '上传资质图片失败。')
   } finally {
     uploadingProofs.value = false
   }
@@ -541,7 +541,7 @@ async function loadApplication() {
   try {
     const response = await getMyApplication()
     if (response.code !== 200) {
-      throw new Error(response.message || 'Failed to load merchant profile')
+      throw new Error(response.message || '加载商家资料失败')
     }
 
     const data = response.data || {}
@@ -556,7 +556,7 @@ async function loadApplication() {
     storedInfo.value = {}
     appStatus.value = 'none'
     applyForm(createEmptyForm())
-    notify('error', error.message || 'Failed to load merchant profile')
+    notify('error', error.message || '加载商家资料失败')
   } finally {
     loading.value = false
   }
@@ -564,7 +564,7 @@ async function loadApplication() {
 
 function validateForm() {
   if (!form.realName || !form.phone || !form.heritageType || !form.shopName || !form.heritageDescription) {
-    notify('warning', 'Please complete all required fields first.')
+    notify('warning', '请先填写所有必填项。')
     return false
   }
   return true
@@ -594,14 +594,14 @@ async function submitApplication() {
     })
 
     if (response.code !== 200) {
-      throw new Error(response.message || 'Failed to submit merchant profile')
+      throw new Error(response.message || '提交商家资料失败')
     }
 
     notify(
       'success',
       isResubmission
-        ? 'Merchant profile saved and resubmitted for review.'
-        : 'Merchant application submitted successfully.'
+        ? '商家资料已保存并重新提交审核。'
+        : '商家申请提交成功。'
     )
     syncStoredUser({
       shopName: form.shopName,
@@ -609,7 +609,7 @@ async function submitApplication() {
     })
     await loadApplication()
   } catch (error) {
-    notify('error', error.message || 'Failed to submit merchant profile')
+    notify('error', error.message || '提交商家资料失败')
   } finally {
     submitting.value = false
   }

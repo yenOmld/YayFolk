@@ -3,41 +3,41 @@
     <div class="header-nav">
       <button class="back-button" @click="goBack">
         <i class="bx bx-arrow-back"></i>
-        <span>Back</span>
+        <span>返回</span>
       </button>
       <div class="breadcrumb">
-        <span @click="router.push('/home/activity')">Activities</span>
+        <span @click="router.push('/home/activity')">活动</span>
         <i class="bx bx-chevron-right"></i>
-        <span @click="goBack">Detail</span>
+        <span @click="goBack">详情</span>
         <i class="bx bx-chevron-right"></i>
-        <span>Booking</span>
+        <span>报名</span>
       </div>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading activity...</p>
+      <p>加载活动中...</p>
     </div>
 
     <div v-else-if="!activity" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>This activity is unavailable for booking.</p>
+      <p>该活动当前无法报名。</p>
     </div>
 
     <div v-else class="booking-layout">
       <section class="booking-main">
         <div class="section-card">
-          <h1>Booking Information</h1>
+          <h1>报名信息</h1>
           <p class="section-desc">
-            Submit your booking first. If payment is required, you will continue to the payment page next.
+            请先提交报名信息。如需支付，将进入支付页面。
           </p>
 
           <div class="activity-summary">
-            <img :src="activity.coverImage || placeholderCover" :alt="activity.title || 'Activity cover'">
+            <img :src="activity.coverImage || placeholderCover" :alt="activity.title || '活动封面'">
             <div class="summary-info">
               <h2>{{ activity.title }}</h2>
               <div class="summary-tags">
-                <span>{{ activity.heritageType || 'Cultural activity' }}</span>
+                <span>{{ activity.heritageType || '文化活动' }}</span>
                 <span>{{ activityTypeLabel(activity.activityType) }}</span>
               </div>
               <p>{{ formatDateTime(activity.startTime) }}</p>
@@ -49,32 +49,32 @@
         <div class="section-card">
           <div class="form-grid">
             <label class="field">
-              <span>Name</span>
-              <input v-model.trim="form.participantName" type="text" placeholder="Your name">
+              <span>姓名</span>
+              <input v-model.trim="form.participantName" type="text" placeholder="请输入您的姓名">
             </label>
 
             <label class="field">
-              <span>Phone</span>
-              <input v-model.trim="form.participantPhone" type="tel" placeholder="Your phone number">
+              <span>电话</span>
+              <input v-model.trim="form.participantPhone" type="tel" placeholder="请输入您的手机号码">
             </label>
 
             <label class="field">
-              <span>Participants</span>
+              <span>参与人数</span>
               <div class="quantity-box">
                 <button type="button" @click="changeCount(-1)">-</button>
                 <input v-model.number="form.participantCount" type="number" min="1" :max="remainingSlots">
                 <button type="button" @click="changeCount(1)">+</button>
               </div>
-              <small>Remaining slots: {{ remainingSlots }}</small>
+              <small>剩余名额: {{ remainingSlots }}</small>
             </label>
 
             <label class="field full">
-              <span>Remark</span>
+              <span>备注</span>
               <textarea
                 v-model.trim="form.remark"
                 rows="4"
                 maxlength="200"
-                placeholder="Optional note for the merchant"
+                placeholder="给商家的留言（选填）"
               ></textarea>
             </label>
           </div>
@@ -83,31 +83,31 @@
 
       <aside class="booking-side">
         <div class="section-card sticky-card">
-          <h3>Booking Summary</h3>
+          <h3>报名汇总</h3>
 
           <div class="summary-line">
-            <span>Unit Price</span>
+            <span>单价</span>
             <strong>{{ priceText }}</strong>
           </div>
           <div class="summary-line">
-            <span>Participants</span>
+            <span>人数</span>
             <strong>{{ form.participantCount }}</strong>
           </div>
           <div class="summary-line">
-            <span>Activity Time</span>
+            <span>活动时间</span>
             <strong>{{ shortDateTime(activity.startTime) }}</strong>
           </div>
 
           <div class="total-box">
-            <span>Total</span>
+            <span>总计</span>
             <strong>{{ totalPriceText }}</strong>
           </div>
 
           <button class="submit-btn" :disabled="submitting || !canSubmit" @click="submitBooking">
-            {{ submitting ? 'Submitting...' : submitText }}
+            {{ submitting ? '提交中...' : submitText }}
           </button>
           <p class="pay-tip">
-            Free activities complete immediately. Paid activities continue to the payment step after booking creation.
+            免费活动提交后立即完成。付费活动提交后将进入支付步骤。
           </p>
         </div>
       </aside>
@@ -171,16 +171,16 @@ const canSubmit = computed(() => {
 })
 
 const priceValue = computed(() => Number(activity.value?.price || 0) / 100)
-const priceText = computed(() => (priceValue.value > 0 ? `$${priceValue.value.toFixed(2)}` : 'Free'))
+const priceText = computed(() => (priceValue.value > 0 ? `¥${priceValue.value.toFixed(2)}` : '免费'))
 const totalPriceText = computed(() => {
   const total = priceValue.value * Number(form.value.participantCount || 0)
-  return total > 0 ? `$${total.toFixed(2)}` : 'Free'
+  return total > 0 ? `¥${total.toFixed(2)}` : '免费'
 })
-const submitText = computed(() => (priceValue.value > 0 ? 'Continue To Payment' : 'Confirm Booking'))
+const submitText = computed(() => (priceValue.value > 0 ? '去支付' : '确认报名'))
 
-const showError = (message) => notify?.error?.(message) ?? window.alert(message)
-const showSuccess = (message) => notify?.success?.(message) ?? window.alert(message)
-const showWarning = (message) => notify?.warning?.(message) ?? window.alert(message)
+const showError = (message) => notify?.error?.(message)
+const showSuccess = (message) => notify?.success?.(message)
+const showWarning = (message) => notify?.warning?.(message)
 
 const loadActivity = async () => {
   loading.value = true
@@ -269,19 +269,19 @@ const submitBooking = async () => {
   }
 }
 
-const formatDateTime = (value) => (value ? new Date(value).toLocaleString() : 'TBD')
-const shortDateTime = (value) => (value ? new Date(value).toLocaleString() : 'TBD')
+const formatDateTime = (value) => (value ? new Date(value).toLocaleString() : '待定')
+const shortDateTime = (value) => (value ? new Date(value).toLocaleString() : '待定')
 const formatLocation = (item) => (
   [item.locationProvince, item.locationCity, item.locationDistrict, item.locationDetail]
     .filter(Boolean)
-    .join(' / ') || 'TBD'
+    .join(' / ') || '待定'
 )
 
 const activityTypeLabel = (type) => ({
-  offline: 'Offline',
-  online: 'Online',
-  exhibition: 'Exhibition'
-}[type] || 'Activity')
+  offline: '线下',
+  online: '线上',
+  exhibition: '展览'
+}[type] || '活动')
 
 onMounted(() => {
   const user = readStoredUser()
@@ -312,7 +312,7 @@ onMounted(() => {
 
 .header-nav {
   position: sticky;
-  top: 106px;
+  top: 20px;
   z-index: 10;
   display: flex;
   align-items: center;

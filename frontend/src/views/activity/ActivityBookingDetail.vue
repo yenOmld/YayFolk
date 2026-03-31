@@ -3,41 +3,41 @@
     <div class="header-nav">
       <button class="back-btn" @click="goBack">
         <i class="bx bx-arrow-back"></i>
-        <span>Back</span>
+        <span>返回</span>
       </button>
       <div class="breadcrumb">
-        <span @click="goBack">Check-in Center</span>
+        <span @click="goBack">核销中心</span>
         <i class="bx bx-chevron-right"></i>
-        <span>QR Code</span>
+        <span>二维码</span>
       </div>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading check-in information...</p>
+      <p>加载核销信息中...</p>
     </div>
 
     <div v-else-if="!booking" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>This booking is unavailable.</p>
+      <p>该订单不可用。</p>
     </div>
 
     <div v-else class="page-layout">
       <section class="qr-panel">
         <div class="qr-card">
-          <p class="eyebrow">Check-in Code</p>
-          <h1>{{ booking.activityTitle || 'Activity Booking' }}</h1>
-          <p class="sub-copy">{{ booking.shopName || booking.merchantName || 'Merchant' }}</p>
+          <p class="eyebrow">核销码</p>
+          <h1>{{ booking.activityTitle || '活动报名' }}</h1>
+          <p class="sub-copy">{{ booking.shopName || booking.merchantName || '商家' }}</p>
 
           <div v-if="booking.canOpenQr && qrCodeUrl" class="qr-box">
-            <img :src="qrCodeUrl" alt="Booking QR code">
+            <img :src="qrCodeUrl" alt="报名二维码">
             <strong>{{ booking.reserveNo }}</strong>
-            <span>Show this QR code to the merchant on site for check-in.</span>
+            <span>现场向商家出示此二维码进行核销。</span>
           </div>
 
           <div v-else-if="booking.canOpenQr && !qrError" class="qr-loading">
             <i class="bx bx-loader-alt bx-spin"></i>
-            <span>Generating QR code...</span>
+            <span>生成二维码中...</span>
           </div>
 
           <div v-else class="qr-fallback">
@@ -48,33 +48,33 @@
 
           <div class="action-row">
             <button v-if="booking.canPay" class="pay-btn" @click="payNow">
-              Continue Payment
+              继续支付
             </button>
-            <button class="detail-btn" @click="openDetail">Order Detail</button>
+            <button class="detail-btn" @click="openDetail">订单详情</button>
           </div>
         </div>
       </section>
 
       <aside class="info-panel">
         <article class="info-card">
-          <h2>Check-in Tips</h2>
+          <h2>核销提示</h2>
           <ul class="tip-list">
-            <li>Confirm the activity time, location, and participant count before arrival.</li>
-            <li>After merchant verification, the booking status will update to checked in.</li>
-            <li>If the QR code cannot load, you can still show the booking number to the merchant.</li>
+            <li>到达前请确认活动时间、地点和参与人数。</li>
+            <li>商家核销后，订单状态将更新为已核销。</li>
+            <li>如果二维码无法加载，您仍可以向商家出示订单号。</li>
           </ul>
         </article>
 
         <article class="info-card">
-          <h2>Booking Summary</h2>
+          <h2>订单汇总</h2>
           <div class="meta-list">
-            <p>Booking No: {{ booking.reserveNo || '-' }}</p>
-            <p>Payment Status: {{ paymentStatusText }}</p>
-            <p>Activity Time: {{ formatRange(booking.startTime, booking.endTime) }}</p>
-            <p>Location: {{ fullLocation }}</p>
-            <p>Participant: {{ booking.participantName || '-' }} / {{ booking.participantPhone || '-' }}</p>
-            <p>Participants: {{ booking.participantCount || 1 }}</p>
-            <p v-if="booking.verificationTime">Checked In At: {{ formatTime(booking.verificationTime) }}</p>
+            <p>订单号: {{ booking.reserveNo || '-' }}</p>
+            <p>支付状态: {{ paymentStatusText }}</p>
+            <p>活动时间: {{ formatRange(booking.startTime, booking.endTime) }}</p>
+            <p>地点: {{ fullLocation }}</p>
+            <p>参与者: {{ booking.participantName || '-' }} / {{ booking.participantPhone || '-' }}</p>
+            <p>参与人数: {{ booking.participantCount || 1 }}</p>
+            <p v-if="booking.verificationTime">核销时间: {{ formatTime(booking.verificationTime) }}</p>
           </div>
         </article>
       </aside>
@@ -104,15 +104,15 @@ const fullLocation = computed(() => (
 ))
 
 const paymentStatusText = computed(() => ({
-  paid: 'Paid',
-  unpaid: 'Unpaid',
-  refunded: 'Refunded'
-}[booking.value?.paymentStatus] || booking.value?.paymentStatus || 'Unpaid'))
+  paid: '已支付',
+  unpaid: '未支付',
+  refunded: '已退款'
+}[booking.value?.paymentStatus] || booking.value?.paymentStatus || '未支付'))
 
 const qrFallbackText = computed(() => (
   booking.value?.canPay
-    ? 'Payment is still pending. The QR code will be available after payment is completed.'
-    : 'The QR code could not be loaded right now. You can still show the booking number to the merchant.'
+    ? '支付尚未完成。支付完成后二维码将可用。'
+    : '二维码暂时无法加载。您仍可以向商家出示订单号。'
 ))
 
 const loadBooking = async () => {
@@ -122,7 +122,7 @@ const loadBooking = async () => {
   try {
     const response = await getActivityBookingDetail(route.params.id)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Failed to load check-in information')
+      throw new Error(response.message || '加载核销信息失败')
     }
     booking.value = response.data
     if (response.data.canOpenQr) {
@@ -130,7 +130,7 @@ const loadBooking = async () => {
     }
   } catch (error) {
     booking.value = null
-    notify?.error?.(error.message || 'Failed to load check-in information')
+    notify?.error?.(error.message || '加载核销信息失败')
   } finally {
     loading.value = false
   }
@@ -140,7 +140,7 @@ const loadQrCode = async () => {
   try {
     const response = await getActivityBookingQrCode(route.params.id)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Failed to load QR code')
+      throw new Error(response.message || '加载二维码失败')
     }
     qrCodeUrl.value = typeof response.data === 'string' && !response.data.startsWith('data:image/')
       ? `data:image/png;base64,${response.data}`

@@ -7,16 +7,16 @@
         <div class="merchant-shell__brand">
           <div class="brand-mark">YF</div>
           <div class="brand-copy">
-            <strong>Merchant Center</strong>
-            <span>Manage merchant details, activities, and bookings in one place.</span>
+            <strong>商家中心</strong>
+            <span>一站式管理商家详情、活动和报名记录。</span>
           </div>
         </div>
 
         <div class="merchant-shell__shop">
-          <p class="shop-kicker">{{ isMerchant ? 'Merchant Workspace' : 'Merchant Application' }}</p>
+          <p class="shop-kicker">{{ isMerchant ? '商家工作台' : '商家入驻申请' }}</p>
           <h2>{{ shopName }}</h2>
           <p>
-            {{ isMerchant ? 'Review updates, merchant details, and booking operations are handled here.' : 'Submit your merchant details and track the latest review updates here.' }}
+            {{ isMerchant ? '在此处理商家信息更新、报名审核和核销操作。' : '在此提交商家资料并查看审核进度。' }}
           </p>
         </div>
 
@@ -41,11 +41,11 @@
         <div class="merchant-shell__footer">
           <div v-if="isMerchant" class="merchant-shell__status">
             <span class="status-dot"></span>
-            <span>Merchant access enabled</span>
+            <span>商家权限已开通</span>
           </div>
           <button class="back-btn" @click="goBack">
             <i class="bx bx-left-arrow-alt"></i>
-            <span>Back To App</span>
+            <span>返回应用</span>
           </button>
         </div>
       </aside>
@@ -82,22 +82,22 @@ function readStoredUser() {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('Failed to read merchant user info', error)
+    console.error('读取商家用户信息失败', error)
     return {}
   }
 }
 
 const userInfo = ref(readStoredUser())
 const isMerchant = computed(() => ['merchant', 'admin'].includes(userInfo.value.role))
-const shopName = computed(() => userInfo.value.shopName || userInfo.value.nickname || 'My Shop')
+const shopName = computed(() => userInfo.value.shopName || userInfo.value.nickname || '我的店铺')
 
 const navItems = computed(() => {
   const baseItems = [
     {
       key: 'apply',
       to: '/merchant/apply',
-      label: isMerchant.value ? 'Merchant Info' : 'Apply Now',
-      desc: isMerchant.value ? 'Update merchant details and review status' : 'Submit merchant verification details',
+      label: isMerchant.value ? '商家信息' : '立即申请',
+      desc: isMerchant.value ? '更新商家资料和审核状态' : '提交商家认证资料',
       icon: 'bx-file-find'
     }
   ]
@@ -111,15 +111,15 @@ const navItems = computed(() => {
     {
       key: 'activities',
       to: '/merchant/activities',
-      label: 'Activities',
-      desc: 'Manage published activities and review results',
+      label: '活动管理',
+      desc: '管理已发布活动和审核结果',
       icon: 'bx-calendar-event'
     },
     {
       key: 'bookings',
       to: '/merchant/bookings',
-      label: 'Bookings',
-      desc: 'Review signups and check-in records',
+      label: '报名管理',
+      desc: '处理报名和核销记录',
       icon: 'bx-clipboard'
     }
   ]

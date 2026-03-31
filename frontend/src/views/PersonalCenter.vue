@@ -133,8 +133,8 @@
                 <i class='bx bxs-store-alt'></i>
               </div>
               <div class="card-info">
-                <h4>Merchant Info</h4>
-                <p>Manage your merchant application details and review status</p>
+                <h4>商家信息</h4>
+                <p>管理商家申请资料和审核状态</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyPosts">
