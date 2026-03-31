@@ -19,6 +19,17 @@
       </aside>
 
       <main class="main-content">
+        <div v-if="isMerchant" class="role-banner">
+          <div>
+            <strong>当前是商家视角</strong>
+            <p>商家账号在活动广场不能预约活动，但可以直接发布、管理和编辑自己的活动。</p>
+          </div>
+          <div class="role-actions">
+            <button class="manage-btn" @click="goCreate">发布活动</button>
+            <button class="manage-btn secondary" @click="goManage">管理我的活动</button>
+          </div>
+        </div>
+
         <div class="toolbar">
           <div class="search-box">
             <i class='bx bx-search'></i>
@@ -27,6 +38,18 @@
           </div>
 
           <div class="toolbar-right">
+            <button class="activity-notice-btn" @click="goToActivityNotifications">
+              <div class="activity-notice-icon">
+                <i class='bx bxs-bell-ring'></i>
+                <span v-if="activityNotificationUnread > 0" class="activity-notice-badge">
+                  {{ activityNotificationUnread > 99 ? '99+' : activityNotificationUnread }}
+                </span>
+              </div>
+              <div class="activity-notice-copy">
+                <strong>活动通知</strong>
+                <span>{{ activityNotificationHint }}</span>
+              </div>
+            </button>
             <div class="city-box">
               <i class='bx bx-map-pin'></i>
               <input v-model.trim="city" type="text" placeholder="按城市筛选" @keyup.enter="loadActivities" />
@@ -55,6 +78,7 @@
           <article v-for="item in paginatedActivities" :key="item.id" class="activity-card" @click="goToDetail(item.id)">
             <div class="image-wrapper">
               <img :src="item.coverImage || placeholderCover" :alt="item.title" />
+              <span v-if="Number(item.merchantId || 0) === currentUserId" class="owner-badge">我的活动</span>
               <span class="status-badge" :class="item.status">{{ statusLabel(item.status) }}</span>
             </div>
 
@@ -103,7 +127,7 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getPublicActivities } from '../../api/app'
+import { getActivityNotificationUnreadCount, getPublicActivities } from '../../api/app'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -119,6 +143,17 @@ const statusFilter = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(6)
 const allActivities = ref([])
+const activityNotificationUnread = ref(0)
+const currentUser = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || localStorage.getItem('userInfo') || 'null') || {}
+  } catch (error) {
+    return {}
+  }
+})
+const currentUserId = computed(() => Number(currentUser.value?.id || 0))
+const isMerchant = computed(() => currentUser.value?.role === 'merchant')
+const activityNotificationHint = computed(() => (isMerchant.value ? '预约 / 订单 / 到账' : '支付 / 核销提醒'))
 
 const categories = computed(() => {
   const values = new Set(
@@ -170,6 +205,15 @@ const loadActivities = async () => {
   }
 }
 
+const loadActivityNotificationUnread = async () => {
+  try {
+    const response = await getActivityNotificationUnreadCount()
+    activityNotificationUnread.value = response?.code === 200 ? Number(response.data || 0) : 0
+  } catch (error) {
+    activityNotificationUnread.value = 0
+  }
+}
+
 const selectCategory = (value) => {
   selectedCategory.value = value
   currentPage.value = 1
@@ -195,6 +239,18 @@ const goToDetail = (id) => {
   router.push(`/activity/${id}`)
 }
 
+const goToActivityNotifications = () => {
+  router.push({ name: 'activity-notifications', query: { returnTo: '/home/activity' } })
+}
+
+const goCreate = () => {
+  router.push('/merchant/activities/create')
+}
+
+const goManage = () => {
+  router.push('/merchant/activities')
+}
+
 const formatDateTime = (value) => {
   if (!value) return '时间待定'
   return new Date(value).toLocaleString('zh-CN', {
@@ -217,7 +273,10 @@ const statusLabel = (status) => ({
   full: '已满员'
 }[status] || '待开始')
 
-onMounted(loadActivities)
+onMounted(() => {
+  loadActivities()
+  loadActivityNotificationUnread()
+})
 </script>
 
 <style scoped>
@@ -281,6 +340,51 @@ onMounted(loadActivities)
 .main-content {
   flex: 1;
   min-width: 0;
+}
+
+.role-banner {
+  margin-bottom: 18px;
+  padding: 18px 22px;
+  border-radius: 18px;
+  border: 1px solid #d9cfc1;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(251, 191, 36, 0.12));
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.role-banner strong {
+  display: block;
+  color: #7c2d12;
+  margin-bottom: 6px;
+}
+
+.role-banner p {
+  margin: 0;
+  color: #7c2d12;
+  line-height: 1.6;
+}
+
+.role-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.manage-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: #9d2929;
+  color: #fff;
+}
+
+.manage-btn.secondary {
+  background: #fff;
+  color: #9d2929;
+  border: 1px solid rgba(157, 41, 41, 0.28);
 }
 
 .toolbar {
@@ -353,6 +457,65 @@ onMounted(loadActivities)
   flex-wrap: wrap;
 }
 
+.activity-notice-btn {
+  border: 1px solid rgba(157, 41, 41, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(255, 204, 102, 0.28), transparent 52%),
+    linear-gradient(135deg, rgba(157, 41, 41, 0.1), rgba(195, 113, 54, 0.12));
+  color: #7f1d1d;
+  border-radius: 24px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(157, 41, 41, 0.08);
+}
+
+.activity-notice-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 22px;
+}
+
+.activity-notice-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.activity-notice-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.activity-notice-copy strong {
+  font-size: 14px;
+}
+
+.activity-notice-copy span {
+  font-size: 12px;
+  color: #7c2d12;
+}
+
 .status-options span {
   font-size: 14px;
   color: #5a5045;
@@ -391,6 +554,19 @@ onMounted(loadActivities)
 .image-wrapper {
   position: relative;
   height: 190px;
+}
+
+.owner-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.92);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 1;
 }
 
 .image-wrapper img {
@@ -541,310 +717,126 @@ onMounted(loadActivities)
     padding: 12px;
   }
 
+  .role-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .toolbar {
     padding: 16px;
+    padding-top: 0;
+    position: relative;
+  }
+
+  /* 状态筛选框缩短放在右上角 */
+  .toolbar-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+  }
+
+  .city-box {
+    display: none; /* 手机端隐藏城市筛选框 */
+  }
+
+  .status-options {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .status-options span {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .search-box {
+    padding: 10px 12px 10px 18px;
+    min-width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .search-box input {
+    font-size: 13px;
+  }
+
+  .search-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .sidebar {
+    display: none; /* 手机端隐藏侧边栏 */
+  }
+
+  .activity-container {
+    display: block;
   }
 
   .activity-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.activity-page {
-  position: relative;
-  padding: 28px 20px 104px;
-  background:
-    radial-gradient(circle at top left, rgba(157, 41, 41, 0.12), transparent 24%),
-    radial-gradient(circle at top right, rgba(201, 145, 63, 0.12), transparent 22%),
-    linear-gradient(180deg, rgba(255, 249, 241, 0.9), rgba(244, 235, 222, 0.92));
-}
-
-.activity-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  opacity: 0.45;
-}
-
-.activity-container {
-  position: relative;
-  z-index: 1;
-  max-width: 1240px;
-  gap: 28px;
-}
-
-.sidebar,
-.toolbar,
-.activity-card,
-.loading-state,
-.empty-state,
-.pagination button {
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.sidebar,
-.toolbar {
-  border-radius: 24px;
-  border: 1px solid rgba(190, 157, 124, 0.32);
-  background:
-    linear-gradient(135deg, rgba(157, 41, 41, 0.06), rgba(255, 255, 255, 0.86)),
-    rgba(255, 251, 246, 0.86);
-  box-shadow:
-    0 20px 42px rgba(74, 46, 23, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.66);
-}
-
-.sidebar {
-  top: 106px;
-  overflow: hidden;
-}
-
-.sidebar::before {
-  content: '';
-  display: block;
-  width: 54px;
-  height: 3px;
-  margin-bottom: 18px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #9d2929, #c9913f);
-}
-
-.filter-title {
-  margin-bottom: 20px;
-  font-size: 18px;
-  letter-spacing: 0.03em;
-}
-
-.category-list li {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  border-radius: 14px;
-  font-weight: 600;
-}
-
-.category-list li:hover,
-.category-list li.active {
-  box-shadow: 0 10px 20px rgba(157, 41, 41, 0.08);
-}
-
-.toolbar {
-  position: sticky;
-  top: 106px;
-  z-index: 8;
-  padding: 20px 22px;
-}
-
-.search-box,
-.city-box {
-  min-height: 52px;
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 240, 232, 0.95));
-}
-
-.search-box {
-  padding: 6px 6px 6px 16px;
-}
-
-.search-box input,
-.city-box input {
-  font-size: 15px;
-}
-
-.search-btn {
-  min-height: 40px;
-  padding: 0 22px;
-  border-radius: 14px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  box-shadow: 0 12px 24px rgba(157, 41, 41, 0.18);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-
-.search-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 28px rgba(157, 41, 41, 0.24);
-}
-
-.status-options span {
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid rgba(157, 41, 41, 0.08);
-  background: rgba(255, 250, 244, 0.9);
-  font-weight: 600;
-}
-
-.status-options span.active {
-  border-color: transparent;
-  box-shadow: 0 10px 18px rgba(157, 41, 41, 0.14);
-}
-
-.activity-grid {
-  gap: 22px;
-}
-
-.activity-card {
-  position: relative;
-  border-radius: 24px;
-  border: 1px solid rgba(190, 157, 124, 0.28);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94));
-  box-shadow:
-    0 20px 44px rgba(74, 46, 23, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
-
-.activity-card::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 44%;
-  background: linear-gradient(180deg, transparent, rgba(32, 19, 11, 0.06));
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.activity-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 26px 50px rgba(74, 46, 23, 0.14);
-}
-
-.activity-card:hover::after {
-  opacity: 1;
-}
-
-.image-wrapper {
-  height: 220px;
-}
-
-.image-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 44%;
-  background: linear-gradient(180deg, transparent, rgba(20, 11, 6, 0.2));
-}
-
-.image-wrapper img {
-  transition: transform 0.45s ease, filter 0.45s ease;
-}
-
-.activity-card:hover .image-wrapper img {
-  transform: scale(1.05);
-  filter: saturate(1.04);
-}
-
-.status-badge {
-  top: 16px;
-  right: 16px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 22px rgba(44, 44, 44, 0.12);
-}
-
-.activity-info {
-  padding: 20px;
-}
-
-.activity-title {
-  font-size: 20px;
-  line-height: 1.45;
-}
-
-.meta-item {
-  min-height: 24px;
-}
-
-.meta-item i {
-  color: #9d2929;
-}
-
-.activity-bottom {
-  padding-top: 16px;
-}
-
-.activity-category {
-  border-radius: 999px;
-  padding: 7px 12px;
-  font-weight: 600;
-}
-
-.activity-price {
-  letter-spacing: -0.02em;
-}
-
-.loading-state,
-.empty-state {
-  border-radius: 24px;
-  border: 1px solid rgba(190, 157, 124, 0.26);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 244, 238, 0.9));
-}
-
-.reset-btn,
-.pagination button {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.reset-btn {
-  min-height: 44px;
-  border-radius: 14px;
-  background: rgba(255, 251, 246, 0.96);
-  font-weight: 700;
-}
-
-.reset-btn:hover,
-.pagination button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 24px rgba(74, 46, 23, 0.08);
-}
-
-.pagination {
-  margin-top: 36px;
-}
-
-.pagination button {
-  min-height: 46px;
-  border-radius: 16px;
-}
-
-.page-info {
-  color: #6b5949;
-  font-weight: 600;
-}
-
-@media (max-width: 900px) {
-  .toolbar,
-  .sidebar {
-    position: static;
-  }
-}
-
-@media (max-width: 768px) {
-  .activity-page {
-    padding: 16px 12px 96px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
-  .sidebar,
-  .toolbar,
-  .activity-card,
-  .loading-state,
-  .empty-state {
-    border-radius: 20px;
+  .activity-card {
+    border-radius: 12px;
   }
 
   .image-wrapper {
-    height: 210px;
+    height: 120px;
+  }
+
+  .status-badge {
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 10px;
+  }
+
+  .activity-info {
+    padding: 12px;
+  }
+
+  .activity-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .activity-meta {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .meta-item {
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .activity-bottom {
+    padding-top: 10px;
+  }
+
+  .activity-category {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .activity-price {
+    font-size: 14px;
+  }
+
+  .pagination button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .page-info {
+    font-size: 13px;
   }
 }
 </style>

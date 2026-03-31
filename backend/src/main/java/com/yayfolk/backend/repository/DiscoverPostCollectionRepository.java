@@ -14,6 +14,8 @@ public interface DiscoverPostCollectionRepository extends JpaRepository<Discover
 
     List<DiscoverPostCollection> findByUserIdOrderByCreateTimeDesc(Long userId);
 
+    List<DiscoverPostCollection> findByPostIdInOrderByCreateTimeDesc(List<Long> postIds);
+
     long countByUserId(Long userId);
 
     void deleteByPostId(Long postId);

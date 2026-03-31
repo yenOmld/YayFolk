@@ -33,6 +33,12 @@ public class Activity {
     @Column(name = "images", columnDefinition = "JSON")
     private String images;
 
+    @Column(name = "video_url", length = 500)
+    private String videoUrl;
+
+    @Column(name = "video_cover_url", length = 500)
+    private String videoCoverUrl;
+
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 

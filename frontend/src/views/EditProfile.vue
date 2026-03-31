@@ -13,15 +13,15 @@
     <div class="edit-content">
       <div class="avatar-section">
         <div class="avatar-container">
-          <img :src="editForm.avatar" alt="Avatar" class="avatar">
+          <img :src="editForm.avatar || defaultAvatar" alt="Avatar" class="avatar">
           <div class="avatar-upload-btn" @click="triggerFileInput">
             <i class='bx bxs-camera'></i>
             <span>{{ $t('editProfile.changeAvatar') }}</span>
           </div>
-          <input 
-            type="file" 
-            ref="fileInput" 
-            accept="image/*" 
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
             @change="handleAvatarUpload"
             style="display: none;"
           >
@@ -31,18 +31,38 @@
       <div class="form-section">
         <div class="form-item">
           <label>{{ $t('editProfile.nickname') }}</label>
-          <input 
-            type="text" 
+          <input
             v-model="editForm.nickname"
+            type="text"
             :placeholder="$t('editProfile.nicknamePlaceholder')"
             maxlength="20"
           >
         </div>
 
         <div class="form-item">
+          <label>{{ $t('editProfile.signature') }}</label>
+          <textarea
+            v-model="editForm.signature"
+            rows="3"
+            maxlength="60"
+            :placeholder="$t('editProfile.signaturePlaceholder')"
+          ></textarea>
+        </div>
+
+        <div class="form-item">
+          <label>{{ $t('editProfile.bio') }}</label>
+          <textarea
+            v-model="editForm.bio"
+            rows="5"
+            maxlength="200"
+            :placeholder="$t('editProfile.bioPlaceholder')"
+          ></textarea>
+        </div>
+
+        <div class="form-item">
           <label>{{ $t('editProfile.phone') }}</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             :value="editForm.phone || $t('editProfile.notSet')"
             disabled
           >
@@ -51,8 +71,8 @@
 
         <div class="form-item">
           <label>{{ $t('editProfile.email') }}</label>
-          <input 
-            type="email" 
+          <input
+            type="email"
             :value="editForm.email || $t('editProfile.notSet')"
             disabled
           >
@@ -61,8 +81,8 @@
 
         <div class="form-item">
           <label>{{ $t('editProfile.username') }}</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             :value="editForm.username"
             disabled
           >
@@ -71,9 +91,9 @@
 
         <div class="form-item">
           <label>{{ $t('editProfile.country') }}</label>
-          <input 
-            type="text" 
-            :value="editForm.country"
+          <input
+            type="text"
+            :value="editForm.country || $t('editProfile.notSet')"
             disabled
           >
           <span class="hint">{{ $t('editProfile.autoDetected') }}</span>
@@ -84,12 +104,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, getCurrentInstance } from 'vue'
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { getHomepageSettings, getUserProfile, updateHomepageSettings, updateUserProfile } from '../api/app'
 import request from '../utils/request'
 
-// 获取通知实例
+const defaultAvatar = '/default-avatar.svg'
+
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
@@ -97,68 +119,55 @@ const router = useRouter()
 const { t } = useI18n()
 const fileInput = ref(null)
 const isSaving = ref(false)
+const selectedFile = ref(null)
 
-// 编辑表单
 const editForm = reactive({
   nickname: '',
   username: '',
   phone: '',
   email: '',
   country: '',
-  avatar: ''
+  avatar: defaultAvatar,
+  signature: '',
+  bio: ''
 })
 
-// 存储选择的文件（暂不上传）
-const selectedFile = ref(null)
+const applyProfile = (profile = {}) => {
+  editForm.nickname = profile.nickname || ''
+  editForm.username = profile.username || ''
+  editForm.phone = profile.phone || ''
+  editForm.email = profile.email || ''
+  editForm.country = profile.country || ''
+  editForm.avatar = profile.avatar || defaultAvatar
+}
 
-// 返回上一页
+const applyHomepageSettings = (settings = {}) => {
+  editForm.signature = settings.signature || ''
+  editForm.bio = settings.bio || ''
+}
+
+const syncLocalUser = (avatarUrl) => {
+  const userStr = localStorage.getItem('user')
+  if (!userStr) return
+
+  const user = JSON.parse(userStr)
+  user.nickname = editForm.nickname.trim()
+  user.avatar = avatarUrl
+  user.signature = editForm.signature.trim()
+  user.bio = editForm.bio.trim()
+  localStorage.setItem('user', JSON.stringify(user))
+}
+
 const goBack = () => {
   router.back()
 }
 
-// 触发文件输入
 const triggerFileInput = () => {
-  fileInput.value.click()
+  fileInput.value?.click()
 }
 
-// 压缩图片
-const compressImage = (base64String, maxWidth = 300, maxHeight = 300) => {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.src = base64String
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      let width = img.width
-      let height = img.height
-
-      // 计算缩放比例
-      if (width > height) {
-        if (width > maxWidth) {
-          height *= maxWidth / width
-          width = maxWidth
-        }
-      } else {
-        if (height > maxHeight) {
-          width *= maxHeight / height
-          height = maxHeight
-        }
-      }
-
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0, width, height)
-
-      // 压缩为 JPEG，质量 0.8
-      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8)
-      resolve(compressedBase64)
-    }
-  })
-}
-
-// 处理头像上传
 const handleAvatarUpload = (event) => {
-  const file = event.target.files[0]
+  const file = event.target.files?.[0]
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
@@ -171,20 +180,28 @@ const handleAvatarUpload = (event) => {
     return
   }
 
-  // 存储文件但暂不上传
   selectedFile.value = file
-  
-  // 生成本地预览
   const reader = new FileReader()
-  reader.onload = (e) => {
-    editForm.avatar = e.target.result
+  reader.onload = ({ target }) => {
+    editForm.avatar = target?.result || defaultAvatar
   }
   reader.readAsDataURL(file)
-  
-  console.log('文件已选择，等待保存时上传')
 }
 
-// 保存个人资料
+const uploadAvatarIfNeeded = async () => {
+  if (!selectedFile.value) {
+    return editForm.avatar || defaultAvatar
+  }
+
+  const formData = new FormData()
+  formData.append('file', selectedFile.value)
+  const uploadRes = await request.post('/upload/avatar', formData, { timeout: 60000 })
+  if (uploadRes.code !== 200 || !uploadRes.data?.url) {
+    throw new Error(uploadRes.message || 'upload avatar failed')
+  }
+  return uploadRes.data.url
+}
+
 const saveProfile = async () => {
   if (!editForm.nickname.trim()) {
     notify.warning(t('editProfile.enterNickname'))
@@ -194,140 +211,68 @@ const saveProfile = async () => {
   isSaving.value = true
 
   try {
-    let avatarUrl = editForm.avatar
-    
-    // 如果有新选择的文件，先上传到OSS
-    if (selectedFile.value) {
-      console.log('开始上传头像到 OSS...')
-      const formData = new FormData()
-      formData.append('file', selectedFile.value)
-      
-      // 添加上传进度监听和明确指定超时时间
-      const uploadRes = await request.post('/upload/avatar', formData, {
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          console.log(`上传进度：${percentCompleted}%`)
-        },
-        timeout: 60000
-      })
-      
-      if (uploadRes.code === 200) {
-        avatarUrl = uploadRes.data.url
-        console.log('头像上传成功:', avatarUrl)
-      } else {
-        notify.error('头像上传失败：' + uploadRes.message)
-        isSaving.value = false
-        return
-      }
+    const avatarUrl = await uploadAvatarIfNeeded()
+    const nickname = editForm.nickname.trim()
+    const signature = editForm.signature.trim()
+    const bio = editForm.bio.trim()
+
+    const [profileRes, homepageRes] = await Promise.all([
+      updateUserProfile({ nickname, avatar: avatarUrl }),
+      updateHomepageSettings({ signature, bio })
+    ])
+
+    if (profileRes.code !== 200) {
+      notify.error(profileRes.message || t('editProfile.saveFailed'))
+      return
     }
 
-    const updateData = {
-      nickname: editForm.nickname,
-      avatar: avatarUrl
+    if (homepageRes.code !== 200) {
+      notify.error(homepageRes.message || t('editProfile.saveFailed'))
+      return
     }
 
-    console.log('更新用户资料:', updateData)
-    const res = await request.put('/user/profile', updateData)
-
-    if (res.code === 200) {
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        const user = JSON.parse(userStr)
-        user.nickname = editForm.nickname
-        user.avatar = avatarUrl
-        localStorage.setItem('user', JSON.stringify(user))
-      }
-
-      notify.success(t('editProfile.saveSuccess'))
-      router.back()
-    } else {
-      notify.error(res.message || t('editProfile.saveFailed'))
-    }
+    editForm.avatar = avatarUrl
+    syncLocalUser(avatarUrl)
+    notify.success(t('editProfile.saveSuccess'))
+    router.back()
   } catch (error) {
-    console.error('保存失败:', error)
+    console.error('save profile failed:', error)
     notify.error(t('editProfile.saveFailedRetry'))
   } finally {
     isSaving.value = false
   }
 }
 
-// 本地默认头像（用于网络不可用时的回退）
-const localDefaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzc0OTRlYyIvPgogIDxjaXJjbGUgY3g9IjUwIiBjeT0iMzAiIHI9IjIwIiBmaWxsPSIjNzQ5NGVjIi8+CiAgPGNpcmNsZSBjeD0iNTUiIGN5PSI0NSIgcj0iNSIgZmlsbD0iI2ZmZiIvPgogIDxjaXJjbGUgY3g9IjQ1IiBjeT0iNDUiIHI9IjUiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjYwIiByPSIyIiBmaWxsPSIjNzQ5NGVjIi8+CiAgPHRleHQgeD0iNTAiIHk9Ijc1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiMzMzMiIG5hbWU9ImNvbnRlbnQiPldyb3lhbC4uLjwvdGV4dD4KPC9zdmc+'
-
-// 检查头像URL是否可访问
-const checkAvatarAccessibility = (url) => {
-  return new Promise((resolve) => {
-    if (!url || url === localDefaultAvatar) {
-      resolve(true)
-      return
-    }
-    
-    const img = new Image()
-    img.onload = () => resolve(true)
-    img.onerror = () => resolve(false)
-    img.src = url
-  })
-}
-
-// 页面加载时获取用户信息
 onMounted(async () => {
   try {
-    // 先从后端获取最新用户信息
-    const res = await request.get('/user/profile')
-    if (res.code === 200 && res.data) {
-      const user = res.data
-      editForm.nickname = user.nickname || ''
-      editForm.username = user.username || ''
-      editForm.phone = user.phone || ''
-      editForm.email = user.email || ''
-      editForm.country = user.country || ''
-      editForm.avatar = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'
-      
-      // 更新 localStorage 中的用户信息
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        const localUser = JSON.parse(userStr)
-        localUser.nickname = user.nickname
-        localUser.avatar = user.avatar
-        localUser.country = user.country
-        localUser.regionCode = user.regionCode
-        localStorage.setItem('user', JSON.stringify(localUser))
-      }
-    } else {
-      // 如果后端获取失败，使用 localStorage 的数据
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        const user = JSON.parse(userStr)
-        editForm.nickname = user.nickname || ''
-        editForm.username = user.username || ''
-        editForm.phone = user.phone || ''
-        editForm.email = user.email || ''
-        editForm.country = user.country || ''
-        editForm.avatar = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'
-      }
+    const [profileRes, homepageRes] = await Promise.all([
+      getUserProfile(),
+      getHomepageSettings()
+    ])
+
+    if (profileRes.code === 200 && profileRes.data) {
+      applyProfile(profileRes.data)
     }
-    
-    // 检查头像是否可访问，如果不可访问则使用本地默认头像
-    const isAccessible = await checkAvatarAccessibility(editForm.avatar)
-    if (!isAccessible) {
-      editForm.avatar = localDefaultAvatar
+
+    if (homepageRes.code === 200 && homepageRes.data) {
+      applyHomepageSettings(homepageRes.data)
     }
   } catch (error) {
-    console.error('获取用户信息失败:', error)
-    // 使用 localStorage 的数据作为回退
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      const user = JSON.parse(userStr)
-      editForm.nickname = user.nickname || ''
-      editForm.username = user.username || ''
-      editForm.phone = user.phone || ''
-      editForm.email = user.email || ''
-      editForm.country = user.country || ''
-      editForm.avatar = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'
-    } else {
-      editForm.avatar = localDefaultAvatar
-    }
+    console.error('load profile failed:', error)
   }
+
+  const userStr = localStorage.getItem('user')
+  if (!userStr) return
+
+  const user = JSON.parse(userStr)
+  if (!editForm.nickname) editForm.nickname = user.nickname || ''
+  if (!editForm.username) editForm.username = user.username || ''
+  if (!editForm.phone) editForm.phone = user.phone || ''
+  if (!editForm.email) editForm.email = user.email || ''
+  if (!editForm.country) editForm.country = user.country || ''
+  if (!editForm.avatar || editForm.avatar === defaultAvatar) editForm.avatar = user.avatar || defaultAvatar
+  if (!editForm.signature) editForm.signature = user.signature || ''
+  if (!editForm.bio) editForm.bio = user.bio || ''
 })
 </script>
 
@@ -359,7 +304,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #eee;
-  border-radius: 0px 0px 12px 12px;
+  border-radius: 0 0 12px 12px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -410,7 +355,7 @@ onMounted(async () => {
   padding: 30px;
   text-align: center;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-container {
@@ -430,7 +375,7 @@ onMounted(async () => {
 }
 
 .avatar-upload-btn {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -438,19 +383,20 @@ onMounted(async () => {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 35px;
+  justify-content: center;
+  gap: 10px;
   transition: background-color 0.2s;
 }
 
 .avatar-upload-btn:hover {
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .form-section {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-item {
@@ -470,18 +416,21 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
-.form-item input {
+.form-item input,
+.form-item textarea {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 15px;
   transition: border-color 0.2s;
+  resize: vertical;
 }
 
-.form-item input:focus {
+.form-item input:focus,
+.form-item textarea:focus {
   outline: none;
-  border-color: #7494ec;
+  border-color: #ff2442;
 }
 
 .form-item input:disabled {

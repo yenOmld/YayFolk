@@ -2,7 +2,15 @@ package com.yayfolk.backend.controller;
 
 import com.yayfolk.backend.dto.ResponseDto;
 import com.yayfolk.backend.service.DiscoverService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -110,7 +118,7 @@ public class DiscoverController {
         try {
             String username = requireUsername(request);
             discoverService.deleteComment(username, commentId);
-            return ResponseDto.success("删除成功");
+            return ResponseDto.success("Deleted successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -126,12 +134,25 @@ public class DiscoverController {
         }
     }
 
+    @PutMapping("/my/posts/{id}/visibility")
+    public ResponseDto updateMyPostVisibility(@PathVariable("id") Long postId,
+                                              @RequestBody(required = false) Map<String, String> payload,
+                                              HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            String visibility = payload == null ? null : payload.get("visibility");
+            return ResponseDto.success(discoverService.updatePostVisibility(username, postId, visibility));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     @DeleteMapping("/my/posts/{id}")
     public ResponseDto deleteMyPost(@PathVariable("id") Long postId, HttpServletRequest request) {
         try {
             String username = requireUsername(request);
             discoverService.deleteMyPost(username, postId);
-            return ResponseDto.success("删除成功");
+            return ResponseDto.success("Deleted successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -152,7 +173,7 @@ public class DiscoverController {
         try {
             String username = requireUsername(request);
             discoverService.removeMyCollection(username, postId);
-            return ResponseDto.success("取消收藏成功");
+            return ResponseDto.success("Collection removed successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -173,7 +194,7 @@ public class DiscoverController {
         try {
             String username = requireUsername(request);
             discoverService.clearMyHistory(username);
-            return ResponseDto.success("清空成功");
+            return ResponseDto.success("Cleared successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -201,7 +222,7 @@ public class DiscoverController {
     private String requireUsername(HttpServletRequest request) {
         Object usernameObj = request.getAttribute("username");
         if (usernameObj == null) {
-            throw new RuntimeException("未授权，请先登录");
+            throw new RuntimeException("Please log in first");
         }
         return usernameObj.toString();
     }

@@ -128,13 +128,13 @@
                 <p>处理用户报名与到店核销</p>
               </div>
             </div>
-            <div class="content-card" @click="navigateToSettings">
+            <div class="content-card" @click="navigateToMerchantApply">
               <div class="card-icon" style="background: #eef2ff; color: #4f46e5;">
                 <i class='bx bxs-store-alt'></i>
               </div>
               <div class="card-info">
-                <h4>店铺设置</h4>
-                <p>配置资料、语言与账台</p>
+                <h4>Merchant Info</h4>
+                <p>Manage your merchant application details and review status</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyPosts">
@@ -162,15 +162,6 @@
               <div class="card-info">
                 <h4>我的预约</h4>
                 <p>查看活动报名与当前状态</p>
-              </div>
-            </div>
-            <div class="content-card" @click="navigateToAchievements">
-              <div class="card-icon" style="background: #f6ffed; color: #52c41a;">
-                <i class='bx bxs-medal'></i>
-              </div>
-              <div class="card-info">
-                <h4>我的成就</h4>
-                <p>查看打卡、勋章与成长记录</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyCollections">

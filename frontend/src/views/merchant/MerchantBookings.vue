@@ -1,687 +1,419 @@
 <template>
-  <div class="merchant-reservations">
+  <div class="merchant-bookings-page">
     <div class="page-header">
-      <button class="back-btn" @click="goBack">
-        <i class='bx bx-arrow-back'></i>
-      </button>
-      <div class="header-text">
-        <h1>预约订单管理</h1>
-        <p v-if="activityTitle" class="activity-filter">活动：{{ activityTitle }}</p>
+      <div class="page-header__main">
+        <button class="back-btn" @click="goBack">
+          <i class="bx bx-arrow-back"></i>
+        </button>
+        <div>
+          <h1>{{ pageTitle }}</h1>
+          <p>{{ pageDescription }}</p>
+          <p v-if="currentActivityTitle" class="activity-note">当前活动：{{ currentActivityTitle }}</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-btn" @click="goScanPage">打开扫码</button>
+        <button class="ghost-btn" @click="goRecordsPage">查看记录</button>
       </div>
     </div>
 
-    <div class="tabs">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.key"
-        :class="['tab-item', { 'active': activeTab === tab.key }]"
-        @click="switchTab(tab.key)"
-      >
-        {{ tab.label }}
-        <span class="count" v-if="tab.count > 0">{{ tab.count }}</span>
-      </button>
+    <section class="toolbar-card">
+      <div class="tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          :class="['tab-item', { active: activeTab === tab.key }]"
+          @click="switchTab(tab.key)"
+        >
+          {{ tab.label }}
+          <span>{{ tab.count }}</span>
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
+          v-model.trim="keyword"
+          type="text"
+          class="keyword-input"
+          placeholder="搜索报名编号、联系人、电话或活动"
+          @keyup.enter="applyFilters"
+        >
+        <select v-model="selectedActivityId" class="activity-select" @change="applyFilters">
+          <option value="">全部活动</option>
+          <option v-for="item in activities" :key="item.id" :value="String(item.id)">{{ item.title }}</option>
+        </select>
+        <button class="primary-btn" @click="applyFilters">筛选</button>
+      </div>
+    </section>
+
+    <div v-if="loading" class="state-card">
+      <i class="bx bx-loader-alt bx-spin"></i>
+      <p>正在加载商家报名...</p>
     </div>
 
-    <div class="reservations-list">
-      <div 
-        v-for="reservation in filteredReservations" 
-        :key="reservation.id"
-        class="reservation-card"
-      >
-        <div class="reservation-header">
-          <div class="order-info">
-            <span class="order-id">订单号: {{ reservation.id }}</span>
-            <span class="order-time">{{ formatTime(reservation.createTime) }}</span>
-          </div>
-          <span :class="['status-badge', reservation.status]">
-            {{ getStatusText(reservation.status) }}
-          </span>
-        </div>
-
-        <div class="reservation-content">
-          <div class="user-section">
-            <div class="user-info">
-              <i class='bx bx-user'></i>
-              <div class="user-details">
-                <span class="user-name">{{ reservation.participantName }}</span>
-                <span class="user-phone">{{ reservation.participantPhone }}</span>
-              </div>
-            </div>
-            <div class="product-info">
-              <span class="product-name">{{ reservation.productName }}</span>
-              <div class="reservation-details">
-                <span><i class='bx bx-calendar'></i> {{ reservation.reservationTime }}</span>
-                <span><i class='bx bx-user'></i> {{ reservation.participantCount }} 人</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="price-section">
-            <span class="price-label">订单金额</span>
-            <span class="price-value">¥{{ formatPrice(reservation.totalPrice) }}</span>
-            <span :class="['pay-badge', reservation.paymentStatus]">{{ getPayStatusText(reservation.paymentStatus) }}</span>
-          </div>
-        </div>
-
-        <div class="qr-section" v-if="reservation.status === 'checked_in'">
-          <div class="qr-info">
-            <div class="qr-code">
-              <i class='bx bx-check-shield'></i>
-            </div>
-            <span class="qr-text">核销时间：{{ formatTime(reservation.verificationTime) }}</span>
-          </div>
-        </div>
-
-        <div class="reservation-actions">
-          <template v-if="reservation.status === 'registered'">
-            <button class="btn reject" @click="rejectReservation(reservation)">
-              <i class='bx bx-x-circle'></i> 拒绝
-            </button>
-            <button class="btn confirm" @click="verifyReservation(reservation)">
-              <i class='bx bx-check-circle'></i> 核销
-            </button>
-          </template>
-          <template v-else-if="reservation.status === 'checked_in'">
-            <button class="btn secondary" disabled>
-              <i class='bx bx-check-double'></i> 已核销
-            </button>
-          </template>
-          <template v-else-if="reservation.status === 'rejected'">
-            <button class="btn secondary" disabled>
-              <i class='bx bx-block'></i> 已拒绝
-            </button>
-          </template>
-          <template v-else-if="reservation.status === 'cancelled'">
-            <button class="btn secondary" disabled>
-              <i class='bx bx-x-circle'></i> 用户已取消
-            </button>
-          </template>
-        </div>
-      </div>
-
-      <div v-if="filteredReservations.length === 0" class="empty-state">
-        <i class='bx bx-calendar-x'></i>
-        <p>暂无预约订单</p>
-      </div>
+    <div v-else-if="bookings.length === 0" class="state-card">
+      <i class="bx bx-calendar-x"></i>
+      <p>没有符合当前筛选条件的报名。</p>
     </div>
 
-    <div class="modal" v-if="showVerifyModal" @click="showVerifyModal = false">
-      <div class="modal-content" @click.stop>
-        <h3>核销确认</h3>
-        <p>确认核销此预约订单吗？</p>
-        <div class="verify-info" v-if="selectedReservation">
-          <p><strong>用户：</strong>{{ selectedReservation.participantName }}</p>
-          <p><strong>活动：</strong>{{ selectedReservation.productName }}</p>
-          <p><strong>人数：</strong>{{ selectedReservation.participantCount }}</p>
+    <div v-else class="booking-list">
+      <article v-for="booking in bookings" :key="booking.id" class="booking-card">
+        <div class="booking-card__top">
+          <div>
+            <strong>{{ booking.activityTitle || '活动' }}</strong>
+            <span>报名编号：{{ booking.reserveNo || booking.id }}</span>
+          </div>
+          <em :class="['status-badge', booking.status]">{{ statusText(booking.status) }}</em>
         </div>
-        <div class="modal-buttons">
-          <button class="btn secondary" @click="showVerifyModal = false">取消</button>
-          <button class="btn primary" @click="doVerify">确认核销</button>
+
+        <div class="booking-card__body">
+          <div class="booking-user">
+            <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="Customer avatar" class="avatar">
+            <div>
+              <strong>{{ booking.customerName || booking.participantName || `用户 ${booking.userId}` }}</strong>
+              <span>{{ booking.participantPhone || '-' }}</span>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div><span>活动时间</span><strong>{{ booking.activityTime || formatRange(booking) }}</strong></div>
+            <div><span>地点</span><strong>{{ formatLocation(booking) }}</strong></div>
+            <div><span>人数</span><strong>{{ booking.participantCount || 1 }}</strong></div>
+            <div><span>支付状态</span><strong>{{ paymentText(booking.paymentStatus) }}</strong></div>
+            <div><span>金额</span><strong>{{ formatCurrency(booking.payAmount ?? booking.totalAmount) }}</strong></div>
+            <div><span>创建时间</span><strong>{{ formatTime(booking.createTime) }}</strong></div>
+          </div>
+
+          <p v-if="booking.remark" class="remark">备注：{{ booking.remark }}</p>
+
+          <div v-if="booking.timeline?.length" class="timeline">
+            <div v-for="item in booking.timeline" :key="item.id" class="timeline-item">
+              <span>{{ formatTime(item.createTime) }}</span>
+              <strong>{{ statusText(item.newStatus) }}</strong>
+              <small>{{ item.operatorName || item.operatorType || '系统' }}{{ item.remark ? ` · ${item.remark}` : '' }}</small>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="booking-card__actions">
+          <button class="ghost-btn" @click="goDetailPage(booking)">订单详情</button>
+          <button class="ghost-btn" @click="goScanPage(booking.reserveNo || booking.id)">扫码/查询</button>
+          <button
+            v-if="booking.canReject"
+            class="danger-btn"
+            :disabled="submittingId === booking.id"
+            @click="handleReject(booking)"
+          >
+            {{ submittingId === booking.id ? '处理中...' : '拒绝报名' }}
+          </button>
+          <button
+            v-if="booking.canCheckin"
+            class="primary-btn"
+            :disabled="submittingId === booking.id"
+            @click="handleCheckin(booking)"
+          >
+            {{ submittingId === booking.id ? '处理中...' : '确认核销' }}
+          </button>
+        </div>
+      </article>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  checkinBooking,
-  getMerchantActivities,
-  getMerchantActivityBookings,
-  rejectBooking
-} from '@/api/app.js'
+import { checkinBooking, getMerchantActivities, getMerchantBookings, rejectBooking } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
 const notify = (message, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(message)
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
+
+const loading = ref(false)
+const submittingId = ref(null)
+const activities = ref([])
+const bookings = ref([])
+const summary = ref({})
+const keyword = ref('')
 const activeTab = ref('registered')
-const reservations = ref([])
-const showVerifyModal = ref(false)
-const selectedReservation = ref(null)
-const activityId = ref(route.query.activityId || null)
-const activityTitle = ref(route.query.title || '')
+const selectedActivityId = ref('')
+const currentActivityTitle = ref('')
 
-const tabs = computed(() => [
-  { key: 'registered', label: '待核销', count: reservations.value.filter(r => r.status === 'registered').length },
-  { key: 'checked_in', label: '已核销', count: reservations.value.filter(r => r.status === 'checked_in').length },
-  { key: 'rejected', label: '已拒绝', count: reservations.value.filter(r => r.status === 'rejected').length },
-  { key: 'cancelled', label: '已取消', count: reservations.value.filter(r => r.status === 'cancelled').length }
-])
+const isRecordPage = computed(() => route.name === 'merchant-bookings-records')
+const pageTitle = computed(() => (isRecordPage.value ? '报名记录' : '报名管理'))
+const pageDescription = computed(() => (
+  isRecordPage.value
+    ? '查看已完成、已拒绝、已取消及历史的报名记录。'
+    : '处理实时报名、按活动筛选，并快速进入扫码核销。'
+))
 
-const filteredReservations = computed(() => {
-  return reservations.value.filter(r => r.status === activeTab.value)
+const emptySummary = () => ({
+  bookingCount: 0,
+  pendingCheckinCount: 0,
+  checkedInCount: 0,
+  rejectedCount: 0,
+  cancelledCount: 0
 })
 
-const getStatusText = (status) => {
-  const statusMap = {
-    registered: '待核销',
-    checked_in: '已核销',
-    rejected: '已拒绝',
-    cancelled: '已取消'
+const tabs = computed(() => [
+  { key: 'registered', label: '待核销', count: Number(summary.value.pendingCheckinCount || 0) },
+  { key: 'checked_in', label: '已核销', count: Number(summary.value.checkedInCount || 0) },
+  { key: 'rejected', label: '已拒绝', count: Number(summary.value.rejectedCount || 0) },
+  { key: 'cancelled', label: '已取消', count: Number(summary.value.cancelledCount || 0) },
+  { key: 'all', label: '全部', count: Number(summary.value.bookingCount || 0) }
+])
+
+const normalizeRouteState = () => {
+  keyword.value = typeof route.query.keyword === 'string' ? route.query.keyword : ''
+  selectedActivityId.value = typeof route.query.activityId === 'string' ? route.query.activityId : ''
+  currentActivityTitle.value = typeof route.query.title === 'string' ? route.query.title : ''
+
+  if (typeof route.query.status === 'string') {
+    activeTab.value = route.query.status
+    return
   }
-  return statusMap[status] || status
+
+  activeTab.value = isRecordPage.value ? 'all' : 'registered'
 }
 
-const getPayStatusText = (status) => {
-  const statusMap = {
-    unpaid: '未付款',
-    paid: '已付款',
-    refunded: '已退款'
-  }
-  return statusMap[status] || status || '未付款'
+const buildSummary = (items = []) => {
+  return items.reduce((acc, item) => {
+    acc.bookingCount += 1
+    if (item.status === 'registered') acc.pendingCheckinCount += 1
+    if (item.status === 'checked_in') acc.checkedInCount += 1
+    if (item.status === 'rejected') acc.rejectedCount += 1
+    if (item.status === 'cancelled') acc.cancelledCount += 1
+    return acc
+  }, emptySummary())
 }
 
-const switchTab = (key) => {
-  activeTab.value = key
+const loadActivities = async () => {
+  const response = await getMerchantActivities()
+  activities.value = response.code === 200 && Array.isArray(response.data) ? response.data : []
+  if (!currentActivityTitle.value && selectedActivityId.value) {
+    currentActivityTitle.value = activities.value.find(item => String(item.id) === selectedActivityId.value)?.title || ''
+  }
+}
+
+const loadBookings = async () => {
+  loading.value = true
+  try {
+    const response = await getMerchantBookings({
+      activityId: selectedActivityId.value || undefined,
+      keyword: keyword.value || undefined,
+      status: activeTab.value === 'all' ? undefined : activeTab.value
+    })
+    if (response.code !== 200) {
+      throw new Error(response.message || 'Failed to load bookings')
+    }
+    const items = Array.isArray(response.data?.items) ? response.data.items : []
+    bookings.value = items
+    summary.value = response.data?.summary || buildSummary(items)
+  } catch (error) {
+    bookings.value = []
+    summary.value = emptySummary()
+    notify(error.message || 'Failed to load bookings', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const syncRoute = () => {
+  const title = selectedActivityId.value
+    ? activities.value.find(item => String(item.id) === selectedActivityId.value)?.title || currentActivityTitle.value
+    : ''
+
+  currentActivityTitle.value = title
+  router.replace({
+    path: isRecordPage.value ? '/merchant/bookings/records' : '/merchant/bookings',
+    query: {
+      ...(selectedActivityId.value ? { activityId: selectedActivityId.value, title } : {}),
+      ...(keyword.value ? { keyword: keyword.value } : {}),
+      ...(activeTab.value && activeTab.value !== (isRecordPage.value ? 'all' : 'registered') ? { status: activeTab.value } : {})
+    }
+  })
+}
+
+const applyFilters = async () => {
+  syncRoute()
+  await loadBookings()
+}
+
+const switchTab = async (tab) => {
+  activeTab.value = tab
+  await applyFilters()
 }
 
 const goBack = () => {
-  router.back()
+  if (typeof route.query.backTo === 'string' && route.query.backTo) {
+    router.push(route.query.backTo)
+    return
+  }
+  router.push('/merchant/activities')
 }
 
-const loadReservations = async () => {
+const goScanPage = (code = '') => {
+  router.push({
+    path: '/merchant/bookings/scan',
+    query: {
+      ...(selectedActivityId.value ? { activityId: selectedActivityId.value } : {}),
+      ...(currentActivityTitle.value ? { title: currentActivityTitle.value } : {}),
+      ...(keyword.value ? { keyword: keyword.value } : {}),
+      ...(code ? { code } : {}),
+      backTo: route.fullPath
+    }
+  })
+}
+
+const goRecordsPage = () => {
+  router.push({
+    path: '/merchant/bookings/records',
+    query: {
+      ...(selectedActivityId.value ? { activityId: selectedActivityId.value } : {}),
+      ...(currentActivityTitle.value ? { title: currentActivityTitle.value } : {}),
+      ...(keyword.value ? { keyword: keyword.value } : {}),
+      backTo: route.fullPath
+    }
+  })
+}
+
+const goDetailPage = (booking) => {
+  if (!booking?.id) {
+    return
+  }
+  router.push({
+    name: 'merchant-booking-detail',
+    params: { id: booking.id },
+    query: {
+      ...(selectedActivityId.value ? { activityId: selectedActivityId.value } : {}),
+      ...(currentActivityTitle.value ? { title: currentActivityTitle.value } : {}),
+      ...(keyword.value ? { keyword: keyword.value } : {}),
+      backTo: route.fullPath
+    }
+  })
+}
+
+const handleCheckin = async (booking) => {
+  if (!window.confirm(`确认核销报名 ${booking.reserveNo || booking.id}？`)) {
+    return
+  }
+  submittingId.value = booking.id
   try {
-    const activitiesRes = await getMerchantActivities()
-    const activities = Array.isArray(activitiesRes.data) ? activitiesRes.data : []
-    const activityMap = new Map(activities.map(item => [String(item.id), item]))
-
-    if (activityId.value) {
-      const response = await getMerchantActivityBookings(activityId.value)
-      const activity = activityMap.get(String(activityId.value))
-      reservations.value = (response.data || []).map(item => mapReservation(item, activity))
-      if (!activityTitle.value) {
-        activityTitle.value = activity?.title || ''
-      }
-    } else {
-      const merged = []
-      for (const activity of activities) {
-        const response = await getMerchantActivityBookings(activity.id)
-        const list = (response.data || []).map(item => mapReservation(item, activity))
-        merged.push(...list)
-      }
-      reservations.value = merged.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+    const response = await checkinBooking(booking.id)
+    if (response.code !== 200) {
+      throw new Error(response.message || '核销失败')
     }
-
-    if (!tabs.value.some(tab => tab.key === activeTab.value && tab.count > 0)) {
-      activeTab.value = tabs.value.find(tab => tab.count > 0)?.key || 'registered'
-    }
+    notify('报名已核销', 'success')
+    await loadBookings()
   } catch (error) {
-    console.error('获取预约列表失败:', error)
-    notify(error?.response?.data?.message || '获取预约列表失败', 'error')
+    notify(error.message || '核销失败', 'error')
+  } finally {
+    submittingId.value = null
   }
 }
 
-const rejectReservation = async (reservation) => {
-  if (window.confirm('确认拒绝该用户参加活动？拒绝后该用户不可再次报名该活动。')) {
-    try {
-      await rejectBooking(reservation.id)
-      reservation.status = 'rejected'
-      notify('已拒绝该报名', 'success')
-    } catch (error) {
-      console.error('拒绝失败:', error)
-      notify(error?.response?.data?.message || '拒绝报名失败', 'error')
+const handleReject = async (booking) => {
+  if (!window.confirm(`拒绝报名 ${booking.reserveNo || booking.id}？`)) {
+    return
+  }
+  submittingId.value = booking.id
+  try {
+    const response = await rejectBooking(booking.id)
+    if (response.code !== 200) {
+      throw new Error(response.message || '拒绝失败')
     }
+    notify('已拒绝该报名', 'success')
+    await loadBookings()
+  } catch (error) {
+    notify(error.message || '拒绝失败', 'error')
+  } finally {
+    submittingId.value = null
   }
 }
 
-const verifyReservation = (reservation) => {
-  selectedReservation.value = reservation
-  showVerifyModal.value = true
+const formatTime = (value) => (value ? new Date(value).toLocaleString() : '未记录')
+const formatCurrency = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
+const formatRange = (booking) => {
+  if (!booking?.startTime && !booking?.endTime) return '待定'
+  const start = booking.startTime ? formatTime(booking.startTime) : '待定'
+  const end = booking.endTime ? formatTime(booking.endTime) : ''
+  return end ? `${start} - ${end}` : start
 }
+const formatLocation = (booking) => [booking.locationProvince, booking.locationCity, booking.locationDistrict, booking.locationDetail].filter(Boolean).join(' / ') || '待定'
+const paymentText = (status) => ({ paid: '已支付', unpaid: '未支付', refunded: '已退款' }[status] || status || '未支付')
+const statusText = (status) => ({ registered: '待核销', checked_in: '已核销', rejected: '已拒绝', cancelled: '已取消' }[status] || status)
 
-const doVerify = async () => {
-  if (selectedReservation.value) {
-    try {
-      await checkinBooking(selectedReservation.value.id)
-      selectedReservation.value.status = 'checked_in'
-      selectedReservation.value.verificationTime = new Date().toISOString()
-      showVerifyModal.value = false
-      notify('核销成功', 'success')
-    } catch (error) {
-      console.error('核销失败:', error)
-      notify(error?.response?.data?.message || '核销失败', 'error')
-      showVerifyModal.value = false
-    }
-  }
-}
-
-const mapReservation = (reservation, activity) => ({
-  ...reservation,
-  participantName: reservation.participantName || `用户${reservation.userId}`,
-  participantPhone: reservation.participantPhone || '-',
-  productName: activity?.title || activityTitle.value || '活动预约',
-  reservationTime: buildReservationTime(activity),
-  participantCount: reservation.participantCount || 1,
-  totalPrice: Number(activity?.price || 0),
-  paymentStatus: reservation.paymentStatus || 'unpaid'
+watch(() => route.fullPath, async () => {
+  normalizeRouteState()
+  await loadBookings()
 })
 
-const buildReservationTime = (activity) => {
-  if (!activity?.startTime && !activity?.endTime) {
-    return '-'
-  }
-  const start = formatTime(activity?.startTime)
-  const end = formatTime(activity?.endTime)
-  return activity?.endTime ? `${start} - ${end}` : start
-}
-
-const formatTime = (value) => {
-  if (!value) {
-    return '-'
-  }
-  return new Date(value).toLocaleString('zh-CN')
-}
-
-const formatPrice = (value) => {
-  const amount = Number(value || 0)
-  return Number.isFinite(amount) ? amount.toFixed(2) : '0.00'
-}
-
-onMounted(() => {
-  loadReservations()
+onMounted(async () => {
+  normalizeRouteState()
+  await loadActivities()
+  await loadBookings()
 })
 </script>
 
 <style scoped>
-.merchant-reservations {
-  min-height: 100vh;
-  background: #f5f7fa;
-  padding-bottom: 80px;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  background: white;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #333;
-  cursor: pointer;
-  padding: 5px;
-  margin-right: 15px;
-}
-
-.page-header h1 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.activity-filter {
-  margin: 0;
-  font-size: 12px;
-  color: #999;
-}
-
-.tabs {
-  display: flex;
-  background: white;
-  padding: 10px;
-  gap: 10px;
-  overflow-x: auto;
-}
-
-.tab-item {
-  flex: 1;
-  min-width: 70px;
-  padding: 10px 15px;
-  border: none;
-  background: #f5f5f5;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
-.tab-item.active {
-  background: #7494ec;
-  color: white;
-}
-
-.tab-item .count {
-  background: rgba(255,255,255,0.3);
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 12px;
-}
-
-.reservations-list {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.reservation-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.reservation-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background: #fafafa;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.order-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.order-id {
-  font-size: 13px;
-  color: #333;
-  font-weight: 500;
-}
-
-.order-time {
-  font-size: 12px;
-  color: #999;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-badge.registered {
-  background: #fff7e6;
-  color: #fa8c16;
-}
-
-.status-badge.checked_in {
-  background: #f6ffed;
-  color: #52c41a;
-}
-
-.status-badge.rejected {
-  background: #fff1f0;
-  color: #ff4d4f;
-}
-
-.status-badge.cancelled {
-  background: #f5f5f5;
-  color: #999;
-}
-
-.reservation-content {
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.user-section {
-  flex: 1;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.user-info i {
-  font-size: 20px;
-  color: #7494ec;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-}
-
-.user-phone {
-  font-size: 12px;
-  color: #999;
-}
-
-.product-info {
-  margin-left: 30px;
-}
-
-.product-name {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.reservation-details {
-  display: flex;
-  gap: 15px;
-}
-
-.reservation-details span {
-  font-size: 12px;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.price-section {
-  text-align: right;
-}
-
-.price-label {
-  font-size: 12px;
-  color: #999;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.price-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ff4757;
-}
-
-.pay-badge {
-  margin-top: 8px;
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.pay-badge.unpaid {
-  background: #fff7e6;
-  color: #fa8c16;
-}
-
-.pay-badge.paid {
-  background: #f6ffed;
-  color: #52c41a;
-}
-
-.pay-badge.refunded {
-  background: #f5f5f5;
-  color: #999;
-}
-
-.qr-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background: #e6f7ff;
-  border-top: 1px solid #f5f5f5;
-}
-
-.qr-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.qr-code {
-  width: 40px;
-  height: 40px;
-  background: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: #1890ff;
-}
-
-.qr-text {
-  font-size: 13px;
-  color: #1890ff;
-  font-weight: 500;
-}
-
-.reservation-actions {
-  display: flex;
-  gap: 10px;
-  padding: 15px;
-  border-top: 1px solid #f5f5f5;
-}
-
-.btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.3s;
-}
-
-.btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn.primary {
-  background: #7494ec;
-  color: white;
-}
-
-.btn.secondary {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.btn.confirm {
-  background: #52c41a;
-  color: white;
-}
-
-.btn.reject {
-  background: white;
-  color: #ff4757;
-  border: 1px solid #ff4757;
-}
-
-.btn.verify {
-  background: #1890ff;
-  color: white;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-}
-
-.empty-state i {
-  font-size: 60px;
-  margin-bottom: 15px;
-  opacity: 0.5;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  width: 90%;
-  max-width: 400px;
-}
-
-.modal-content h3 {
-  margin: 0 0 15px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.modal-content p {
-  color: #666;
-  margin-bottom: 15px;
-}
-
-.verify-info {
-  background: #f5f5f5;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.verify-info p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: #333;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 10px;
+.merchant-bookings-page { max-width: 1100px; margin: 0 auto; }
+.page-header, .page-header__main, .header-actions, .tabs, .filters, .booking-card__top, .booking-card__actions, .booking-user, .timeline-item { display: flex; }
+.page-header, .booking-card__top, .booking-card__actions { justify-content: space-between; }
+.page-header { align-items: flex-start; gap: 18px; margin-bottom: 20px; }
+.page-header__main { gap: 14px; align-items: flex-start; }
+.page-header h1 { margin: 0; font-size: 28px; color: #0f172a; }
+.page-header p { margin: 8px 0 0; color: #64748b; line-height: 1.7; }
+.activity-note { color: #1661ab; font-weight: 600; }
+.back-btn, .tab-item, .primary-btn, .ghost-btn, .danger-btn { border: none; cursor: pointer; }
+.back-btn { width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: 0 8px 20px rgba(15,23,42,0.08); font-size: 22px; }
+.header-actions, .filters { gap: 12px; }
+.toolbar-card, .booking-card, .state-card { border-radius: 20px; border: 1px solid #e5e7eb; background: rgba(255,255,255,0.94); box-shadow: 0 16px 36px rgba(15,23,42,0.05); }
+.toolbar-card { padding: 18px; margin-bottom: 18px; }
+.tabs { gap: 12px; flex-wrap: wrap; }
+.tab-item { padding: 10px 16px; border-radius: 999px; background: #f8fafc; color: #475569; font-weight: 700; }
+.tab-item.active { background: #c04851; color: #fff; }
+.tab-item span { margin-left: 8px; }
+.filters { margin-top: 16px; align-items: center; flex-wrap: wrap; }
+.keyword-input, .activity-select { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d9e0; background: #fff; color: #1f2937; }
+.keyword-input { flex: 1 1 280px; }
+.activity-select { min-width: 220px; }
+.primary-btn, .ghost-btn, .danger-btn { min-height: 44px; padding: 0 18px; border-radius: 12px; font-weight: 700; }
+.primary-btn { background: #1661ab; color: #fff; }
+.ghost-btn { background: #f4f6fb; color: #334155; }
+.danger-btn { background: #fdecec; color: #b42318; }
+.state-card { padding: 72px 20px; text-align: center; color: #94a3b8; }
+.state-card i { font-size: 40px; }
+.booking-list { display: flex; flex-direction: column; gap: 16px; }
+.booking-card { padding: 18px; }
+.booking-card__top { align-items: flex-start; gap: 16px; }
+.booking-card__top strong { display: block; color: #111827; font-size: 18px; }
+.booking-card__top span { display: block; margin-top: 6px; color: #6b7280; }
+.status-badge { padding: 6px 12px; border-radius: 999px; font-style: normal; font-weight: 700; background: #f3f4f6; }
+.status-badge.registered { color: #c04851; background: rgba(192,72,81,0.12); }
+.status-badge.checked_in { color: #1661ab; background: rgba(22,97,171,0.12); }
+.status-badge.rejected { color: #b45309; background: #fef3c7; }
+.status-badge.cancelled { color: #6b7280; background: #e5e7eb; }
+.booking-card__body { margin-top: 16px; }
+.booking-user { gap: 12px; align-items: center; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.booking-user span { display: block; margin-top: 4px; color: #6b7280; }
+.info-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 16px; }
+.info-grid span { display: block; color: #7c8694; font-size: 13px; }
+.info-grid strong { display: block; margin-top: 6px; color: #1f2937; line-height: 1.6; }
+.remark { margin: 16px 0 0; color: #475569; line-height: 1.7; }
+.timeline { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.timeline-item { gap: 14px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #faf8f5; }
+.timeline-item span, .timeline-item small { color: #6b7280; }
+.timeline-item strong { color: #1f2937; }
+.timeline-item small { flex: 1; }
+.booking-card__actions { gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+@media (max-width: 900px) { .info-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 760px) {
+  .page-header, .page-header__main, .booking-card__top { flex-direction: column; }
+  .header-actions, .filters, .booking-card__actions { width: 100%; }
+  .keyword-input, .activity-select, .primary-btn, .ghost-btn, .danger-btn { width: 100%; }
+  .info-grid { grid-template-columns: 1fr; }
+  .timeline-item { flex-direction: column; gap: 6px; }
 }
 </style>

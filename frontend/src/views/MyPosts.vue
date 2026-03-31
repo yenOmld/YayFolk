@@ -75,7 +75,7 @@
 
     <div v-if="showEditModal" class="edit-modal">
       <div class="modal-overlay" @click="closeEditModal"></div>
-      <div class="modal-content">
+      <div class="modal-content post-container">
         <div class="edit-header">
           <h2>{{ $t('myPosts.editPost') }}</h2>
           <button class="close-btn" @click="closeEditModal">
@@ -194,7 +194,7 @@
   <!-- 图片预览模态框 -->
   <div v-if="showImagePreview" class="image-preview-modal">
     <div class="modal-overlay" @click="closeImagePreview"></div>
-    <div class="modal-content">
+    <div class="modal-content post-container">
       <button class="close-btn" @click="closeImagePreview">
         <i class='bx bx-x'></i>
       </button>
@@ -865,6 +865,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .edit-modal .modal-overlay {
@@ -873,27 +875,30 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
 }
 
 .edit-modal .modal-content {
   position: relative;
-  background: white;
-  border-radius: 16px;
-  width: 90%;
+  width: min(1200px, 100%);
   max-width: 1200px;
   max-height: 90vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .edit-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30px 30px 20px 30px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0 0 20px 0;
 }
 
 .edit-header h2 {
@@ -919,9 +924,7 @@ onMounted(() => {
 .post-form-horizontal {
   display: flex;
   gap: 30px;
-  padding: 30px;
-  flex: 1;
-  overflow-y: auto;
+  padding: 0;
 }
 
 .post-form-left {
@@ -964,6 +967,8 @@ onMounted(() => {
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+  background: #fff;
+  color: #333;
   transition: border-color 0.3s;
   box-sizing: border-box;
 }
@@ -1217,6 +1222,139 @@ onMounted(() => {
   box-shadow: none;
 }
 
+.edit-modal {
+  --pc-accent: #9d2929;
+  --pc-ink: #2b2118;
+  --pc-soft: #7d6754;
+}
+
+.edit-modal .post-container {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(201, 145, 63, 0.08), transparent 18%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94)) !important;
+}
+
+.edit-modal .post-container h2 {
+  margin-bottom: 24px !important;
+  font-size: 28px !important;
+}
+
+.edit-modal .post-form-horizontal {
+  gap: 24px !important;
+}
+
+.edit-modal .form-group {
+  gap: 10px !important;
+}
+
+.edit-modal .form-group label {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  color: var(--pc-accent) !important;
+  text-transform: uppercase;
+}
+
+.edit-modal .form-group input,
+.edit-modal .form-group textarea,
+.edit-modal .form-group select,
+.edit-modal .tag-input-container input {
+  min-height: 52px;
+  padding: 14px 16px !important;
+}
+
+.edit-modal .form-group textarea {
+  min-height: 180px !important;
+}
+
+.edit-modal .selected-tags {
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(217, 207, 193, 0.8) !important;
+}
+
+.edit-modal .selected-tag-item,
+.edit-modal .tag-item.active {
+  border: 1px solid rgba(157, 41, 41, 0.1);
+}
+
+.edit-modal .tag-item {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+}
+
+.edit-modal .tag-item:hover {
+  transform: translateY(-1px);
+}
+
+.edit-modal .image-upload-area {
+  min-height: 186px;
+  border-style: solid !important;
+  border-color: rgba(157, 41, 41, 0.14) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 244, 238, 0.92)) !important;
+}
+
+.edit-modal .image-upload-area:hover {
+  box-shadow: 0 16px 30px rgba(157, 41, 41, 0.08) !important;
+}
+
+.edit-modal .image-upload-area i {
+  color: var(--pc-accent) !important;
+}
+
+.edit-modal .selected-images {
+  gap: 12px !important;
+}
+
+.edit-modal .image-preview-item,
+.edit-modal .preview-image {
+  width: 80px !important;
+  height: 80px !important;
+}
+
+.edit-modal .image-preview-item {
+  border-radius: 14px;
+  overflow: visible;
+}
+
+.edit-modal .preview-image {
+  border-radius: 14px !important;
+  border: 1px solid rgba(217, 207, 193, 0.8);
+  box-shadow: 0 10px 18px rgba(44, 44, 44, 0.08);
+}
+
+.edit-modal .remove-image-btn {
+  top: -8px !important;
+  right: -8px !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 999px !important;
+}
+
+.edit-modal .drag-handle {
+  bottom: -8px !important;
+  padding: 4px 8px !important;
+  border-radius: 999px !important;
+}
+
+.edit-modal .submit-post-btn {
+  min-height: 54px;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  box-shadow: 0 16px 28px rgba(157, 41, 41, 0.18);
+}
+
+.edit-modal .submit-post-btn:hover {
+  box-shadow: 0 22px 34px rgba(157, 41, 41, 0.24);
+}
+
 @media (max-width: 900px) {
   .post-form-horizontal {
     flex-direction: column;
@@ -1252,18 +1390,30 @@ onMounted(() => {
     margin-top: 10px;
   }
   
+  .edit-modal {
+    padding: 12px;
+  }
+  
   .edit-modal .modal-content {
-    width: 95%;
     max-height: 95vh;
+    padding: 20px;
   }
   
   .edit-header {
-    padding: 20px 20px 15px 20px;
+    padding: 0 0 16px 0;
   }
   
   .post-form-horizontal {
-    padding: 20px;
     gap: 20px;
+  }
+
+  .edit-modal .post-container {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .edit-modal .post-container h2 {
+    font-size: 28px !important;
   }
 }
 
@@ -1278,6 +1428,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .image-preview-modal .modal-overlay {

@@ -2,7 +2,14 @@ package com.yayfolk.backend.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Data
@@ -40,6 +47,9 @@ public class DiscoverPost {
 
     @Column(name = "tags", columnDefinition = "TEXT")
     private String tags;
+
+    @Column(name = "visibility", length = 20)
+    private String visibility;
 
     @Column(name = "status", columnDefinition = "tinyint(1) default 1")
     private Integer status;
@@ -84,6 +94,9 @@ public class DiscoverPost {
         }
         if (auditStatus == null) {
             auditStatus = "pending";
+        }
+        if (visibility == null || visibility.isEmpty()) {
+            visibility = "public";
         }
     }
 

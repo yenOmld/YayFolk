@@ -51,11 +51,33 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseDto getOrderDetail(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMyOrderDetail(username, id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     @GetMapping("/overview")
     public ResponseDto getMyOrderOverview(HttpServletRequest request) {
         try {
             String username = requireUsername(request);
             return ResponseDto.success(merchantService.getMyOrderOverview(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/pay")
+    public ResponseDto payOrder(@PathVariable Long id,
+                                @RequestBody(required = false) Map<String, Object> data,
+                                HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.payForOrder(username, id, data));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -89,6 +111,50 @@ public class OrderController {
             String username = requireUsername(request);
             merchantService.deleteActivityBooking(username, id);
             return ResponseDto.success("Activity booking deleted successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/bookings/{id}")
+    public ResponseDto getActivityBookingDetail(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMyActivityBookingDetail(username, id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/bookings/{id}/pay")
+    public ResponseDto payActivityBooking(@PathVariable Long id,
+                                          @RequestBody(required = false) Map<String, Object> data,
+                                          HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.payForActivityBooking(username, id, data));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/bookings/{id}/qrcode")
+    public ResponseDto getActivityBookingQrCode(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getActivityBookingQrCode(username, id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/bookings/{id}/review")
+    public ResponseDto submitActivityBookingReview(@PathVariable Long id,
+                                                   @RequestBody Map<String, Object> data,
+                                                   HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.submitActivityBookingReview(username, id, data));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

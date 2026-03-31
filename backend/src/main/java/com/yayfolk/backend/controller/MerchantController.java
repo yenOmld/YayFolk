@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class MerchantController {
     private String requireUsername(HttpServletRequest request) {
         Object username = request.getAttribute("username");
         if (username == null) {
-            throw new RuntimeException("未授权，请先登录");
+            throw new RuntimeException("Unauthorized, please login first");
         }
         return username.toString();
     }
@@ -89,7 +90,7 @@ public class MerchantController {
         try {
             String username = requireUsername(request);
             merchantService.deleteActivity(username, id);
-            return ResponseDto.success("删除成功");
+            return ResponseDto.success("Deleted successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -100,6 +101,49 @@ public class MerchantController {
         try {
             String username = requireUsername(request);
             return ResponseDto.success(merchantService.getActivityBookings(username, id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/bookings")
+    public ResponseDto getMerchantBookings(@RequestParam(required = false) Long activityId,
+                                           @RequestParam(required = false) String status,
+                                           @RequestParam(required = false) String keyword,
+                                           HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMerchantBookings(username, activityId, status, keyword));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/bookings/{id}")
+    public ResponseDto getMerchantBookingDetail(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMerchantBookingDetail(username, id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/bookings/lookup")
+    public ResponseDto lookupBooking(@RequestParam String code, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.lookupBookingForCheckin(username, code));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/bookings/lookup-image")
+    public ResponseDto lookupBookingByImage(@RequestBody Map<String, Object> data, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.lookupBookingForCheckinImage(username, String.valueOf(data.get("imageData"))));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }
@@ -162,7 +206,7 @@ public class MerchantController {
         try {
             String username = requireUsername(request);
             merchantService.deleteProduct(username, id);
-            return ResponseDto.success("删除成功");
+            return ResponseDto.success("Deleted successfully");
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

@@ -136,6 +136,10 @@ export const getUnreadCount = () => {
   return request.get('/messages/unread-count')
 }
 
+export const getActivityNotificationUnreadCount = () => {
+  return getUnreadCount()
+}
+
 export const deleteConversation = (conversationId) => {
   return request.delete(`/messages/conversations/${conversationId}`)
 }
@@ -201,7 +205,7 @@ export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favo
 export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
 export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
 
-// ========== 鍏叡娲诲姩鐩稿叧鎺ュ彛 ==========
+// ========== 閸忣剙鍙″ú璇插З閻╃鍙ч幒銉ュ經 ==========
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
@@ -209,7 +213,7 @@ export const getHomepageOfficialContents = () => request.get('/public/official/h
 export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
 export const getLatestUnbanApplication = (account) => request.get('/public/unban-applications/latest', { params: { account } })
 
-// ========== 鍏叡娲诲姩鐩稿叧鎺ュ彛 ==========
+// ========== 閸忣剙鍙″ú璇插З閻╃鍙ч幒銉ュ經 ==========
 export const applyMerchant = (data) => request.post('/merchant/apply', data)
 export const getMyApplication = () => request.get('/merchant/apply/status')
 
@@ -218,12 +222,16 @@ export const createMerchantActivity = (data) => request.post('/merchant/activiti
 export const updateMerchantActivity = (id, data) => request.put(`/merchant/activities/${id}`, data)
 export const deleteMerchantActivity = (id) => request.delete(`/merchant/activities/${id}`)
 export const getMerchantActivityBookings = (id) => request.get(`/merchant/activities/${id}/bookings`)
+export const getMerchantBookings = (params) => request.get('/merchant/bookings', { params })
+export const getMerchantBookingDetail = (id) => request.get(`/merchant/bookings/${id}`)
+export const lookupMerchantBooking = (code) => request.get('/merchant/bookings/lookup', { params: { code } })
+export const lookupMerchantBookingByImage = (imageData) => request.post('/merchant/bookings/lookup-image', { imageData })
 export const checkinBooking = (id) => request.post(`/merchant/bookings/${id}/checkin`)
 export const rejectBooking = (id) => request.post(`/merchant/bookings/${id}/reject`)
 
 
 
-// ========== 鍟嗗绠＄悊 ==========
+// ========== 閸熷棗顔嶇粻锛勬倞 ==========
 export const getAdminMerchants = (status) => request.get('/admin/merchants', { params: { status } })
 export const auditMerchant = (id, approve, remark) => request.post(`/admin/merchants/${id}/audit`, { approve, remark })
 export const getAdminActivities = (auditStatus) => request.get('/admin/activities', { params: { auditStatus } })
@@ -245,7 +253,7 @@ export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}
 export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
 export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
 
-// ========== 官方内容管理 ==========
+// ========== 瀹樻柟鍐呭绠＄悊 ==========
 export const getOfficialActivities = () => request.get('/admin/official/activities')
 export const createOfficialActivity = (data) => request.post('/admin/official/activities', data)
 export const updateOfficialActivity = (id, data) => request.put(`/admin/official/activities/${id}`, data)
@@ -261,11 +269,17 @@ export const updateOfficialWork = (id, data) => request.put(`/admin/official/wor
 export const deleteOfficialWork = (id) => request.delete(`/admin/official/works/${id}`)
 export const publishToHomepage = (type, ids) => request.post('/admin/official/publish', { type, ids })
 
-// ========== 璁㈠崟 & 鎴愬氨 ==========
+// ========== 鐠併垹宕?& 閹存劕姘?==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
+export const getMyOrders = () => request.get('/orders')
+export const cancelOrder = (id) => request.post(`/orders/${id}/cancel`)
 export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
 export const cancelActivityBooking = (id) => request.post(`/orders/bookings/${id}/cancel`)
 export const deleteActivityBooking = (id) => request.delete(`/orders/bookings/${id}`)
+export const getActivityBookingDetail = (id) => request.get(`/orders/bookings/${id}`)
+export const payActivityBooking = (id, data = {}) => request.post(`/orders/bookings/${id}/pay`, data)
+export const getActivityBookingQrCode = (id) => request.get(`/orders/bookings/${id}/qrcode`)
+export const submitActivityBookingReview = (id, data) => request.post(`/orders/bookings/${id}/review`, data)
 export const getMyAchievements = () => request.get('/user/achievements')
 export const getUserHomepage = (userId) => request.get(`/user/homepage/${userId}`)
 export const getHomepageSettings = () => request.get('/user/homepage-settings')
@@ -293,3 +307,17 @@ export const uploadMedia = (formData, folder = 'media') => request.post(`/upload
 
 
 
+export const getUserProfile = () => request.get('/user/profile')
+export const updateUserProfile = (data) => request.put('/user/profile', data)
+export const getFollowers = (userId) => request.get(`/user/${userId}/followers`)
+export const getFollowing = (userId) => request.get(`/user/${userId}/following`)
+export const getCollectedBy = (userId) => request.get(`/user/${userId}/collected-by`)
+export const updateDiscoverPostVisibility = (postId, visibility) => request.put(`/discover/my/posts/${postId}/visibility`, { visibility })
+export const uploadAvatar = (formData) => request.post('/upload/avatar', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  },
+  timeout: 60000
+})
+
+export const uploadVideo = (formData, folder = 'media') => uploadMedia(formData, folder)

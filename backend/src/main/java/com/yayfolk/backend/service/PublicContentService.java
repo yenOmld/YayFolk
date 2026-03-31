@@ -175,8 +175,15 @@ public class PublicContentService {
         stats.put("heritages", intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc().size());
 
         List<DiscoverPost> posts = discoverPostRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
-        int workCount = posts == null ? 0 : Math.min(20, posts.size());
-        stats.put("works", workCount);
+        int workCount = 0;
+        if (posts != null) {
+            for (DiscoverPost post : posts) {
+                if (isPublicVisibleWork(post)) {
+                    workCount++;
+                }
+            }
+        }
+        stats.put("works", Math.min(20, workCount));
         return stats;
     }
 
@@ -200,7 +207,9 @@ public class PublicContentService {
         List<DiscoverPost> posts = discoverPostRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
         List<Map<String, Object>> candidates = new ArrayList<Map<String, Object>>();
         for (DiscoverPost post : posts) {
-            candidates.add(workToMap(post));
+            if (isPublicVisibleWork(post)) {
+                candidates.add(workToMap(post));
+            }
         }
         Collections.sort(candidates, (left, right) -> Integer.valueOf(valueAsInt(right.get("heat"))).compareTo(valueAsInt(left.get("heat"))));
         if (candidates.size() > 20) {
@@ -237,10 +246,6 @@ public class PublicContentService {
                 break;
             }
         }
-
-        if (result.isEmpty()) {
-            return new ArrayList<Map<String, Object>>(candidates.subList(0, Math.min(limit, candidates.size())));
-        }
         return result;
     }
 
@@ -254,6 +259,20 @@ public class PublicContentService {
         } catch (Exception e) {
             return Collections.emptyList();
         }
+    }
+
+    private boolean isPublicVisibleWork(DiscoverPost post) {
+        if (post == null) {
+            return false;
+        }
+        return post.getStatus() != null
+                && post.getStatus() == 1
+                && APPROVED_POST_AUDIT_STATUSES.contains(defaultString(post.getAuditStatus()))
+                && !"private".equalsIgnoreCase(defaultString(post.getVisibility()));
+    }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
     }
 
     private Map<String, Object> heritageToMap(IntangibleCulturalHeritage heritage) {
@@ -369,6 +388,8 @@ public class PublicContentService {
         m.put("subtitle", a.getSubtitle());
         m.put("coverImage", a.getCoverImage());
         m.put("images", a.getImages());
+        m.put("videoUrl", a.getVideoUrl());
+        m.put("videoCoverUrl", a.getVideoCoverUrl());
         m.put("heritageType", a.getHeritageType());
         m.put("activityType", a.getActivityType());
         m.put("startTime", a.getStartTime());

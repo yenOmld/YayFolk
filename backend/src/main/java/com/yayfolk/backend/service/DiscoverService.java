@@ -28,52 +28,39 @@ public class DiscoverService {
     private static final String AUDIT_STATUS_REJECTED = "rejected";
     private static final String AUDIT_STATUS_MANUAL_REVIEW = "manual_review";
     private static final String REPORT_STATUS_PENDING = "pending";
+    private static final String VISIBILITY_PUBLIC = "public";
+    private static final String VISIBILITY_PRIVATE = "private";
     private static final long TRANSLATE_CACHE_DAYS = 7;
     private static final List<String> FORBIDDEN_KEYWORDS = Arrays.asList(
-        "微信", "v信", "vx", "wechat", "qq", "二维码", "扫码", "联系方式", "广告", "代购", "返利", "引流", "推广"
+        "wechat", "vx", "wx", "qq", "contact", "advertisement", "agent", "rebate", "promotion"
     );
     private static final Pattern PHONE_PATTERN = Pattern.compile("(?<!\\d)1\\d{10}(?!\\d)");
-    private static final Pattern WECHAT_PATTERN = Pattern.compile("(?i)(微信|vx|v信|wechat|wx)\\s*[:：]?[\\s\\-_]*[a-z][a-z0-9\\-_]{5,19}");
-    private static final Pattern QQ_PATTERN = Pattern.compile("(?i)(qq|q号|企鹅号)?\\s*[:：]?[\\s\\-_]*[1-9][0-9]{4,11}");
-    
+    private static final Pattern WECHAT_PATTERN = Pattern.compile("(?i)(wechat|wx|vx)\\s*[:：]?\\s*[a-z][a-z0-9\\-_]{5,19}");
+    private static final Pattern QQ_PATTERN = Pattern.compile("(?i)(qq)\\s*[:：]?\\s*[1-9][0-9]{4,11}");
+
     private static final List<String> MODERATION_KEYWORDS = Arrays.asList(
-        "微信", "v信", "vx", "wechat", "wx", "qq",
-        "二维码", "扫码", "联系方式", "联系电话", "加我",
-        "广告", "推广", "引流", "代购", "返利", "私聊",
-        "品牌合作", "品牌广告", "招商", "代理", "加盟"
+        "wechat", "vx", "wx", "qq", "contact", "phone", "advertisement", "promotion", "agent", "rebate", "private chat"
     );
     private static final Pattern MODERATION_PHONE_PATTERN = Pattern.compile("(?<!\\d)(?:1\\d{10}|0\\d{2,3}-?\\d{7,8})(?!\\d)");
-    private static final Pattern MODERATION_WECHAT_PATTERN = Pattern.compile("(?i)(微信|wechat|wx|vx|v信)\\s*[:：]?[\\s\\-_]*[a-z][a-z0-9\\-_]{5,19}");
-    private static final Pattern MODERATION_QQ_PATTERN = Pattern.compile("(?i)(qq|q号|企鹅号)\\s*[:：]?[\\s\\-_]*[1-9][0-9]{4,11}");
+    private static final Pattern MODERATION_WECHAT_PATTERN = Pattern.compile("(?i)(wechat|wx|vx)\\s*[:：]?\\s*[a-z][a-z0-9\\-_]{5,19}");
+    private static final Pattern MODERATION_QQ_PATTERN = Pattern.compile("(?i)(qq)\\s*[:：]?\\s*[1-9][0-9]{4,11}");
     private static final Pattern MODERATION_URL_PATTERN = Pattern.compile("(?i)\\b(?:https?://|www\\.)\\S+");
 
     private static final Map<String, Set<String>> TAG_I18N_MAP = new HashMap<>();
     static {
-        Set<String> travelTags = new HashSet<>(Arrays.asList("旅行", "travel", "travel", "여행"));
-        Set<String> foodTags = new HashSet<>(Arrays.asList("美食", "food", "グルメ", "음식"));
-        Set<String> sceneryTags = new HashSet<>(Arrays.asList("风景", "scenery", "風景", "풍경"));
-        Set<String> guideTags = new HashSet<>(Arrays.asList("攻略", "guide", "攻略", "가이드"));
-        Set<String> hotelTags = new HashSet<>(Arrays.asList("住宿", "hotel", "宿泊", "숙박"));
-        Set<String> transportTags = new HashSet<>(Arrays.asList("交通", "transport", "交通", "교통"));
-        Set<String> costumeTags = new HashSet<>(Arrays.asList("服饰妆造", "服饰", "妆造", "clothing and styling", "costume", "服飾と化粧", "의상과 메이크업"));
-        Set<String> artistryTags = new HashSet<>(Arrays.asList("美术造物", "美术", "造物", "arts and craft", "artistry", "美術と造物", "미술 조형"));
-        Set<String> folkloreTags = new HashSet<>(Arrays.asList("民俗节气", "民俗", "节气", "folk customs and solar terms", "folklore", "民俗と節気", "민속 절기"));
-        Set<String> operaTags = new HashSet<>(Arrays.asList("戏曲演绎", "戏曲", "演绎", "opera performance", "opera", "戯曲演繹", "희곡 공연"));
-        Set<String> textileTags = new HashSet<>(Arrays.asList("织物手工", "织物", "手工", "textile handcraft", "textile", "織物手工", "직물 공예"));
-        
-        TAG_I18N_MAP.put("travel", travelTags);
-        TAG_I18N_MAP.put("food", foodTags);
-        TAG_I18N_MAP.put("scenery", sceneryTags);
-        TAG_I18N_MAP.put("guide", guideTags);
-        TAG_I18N_MAP.put("hotel", hotelTags);
-        TAG_I18N_MAP.put("transport", transportTags);
-        TAG_I18N_MAP.put("服饰妆造", costumeTags);
-        TAG_I18N_MAP.put("美术造物", artistryTags);
-        TAG_I18N_MAP.put("民俗节气", folkloreTags);
-        TAG_I18N_MAP.put("戏曲演绎", operaTags);
-        TAG_I18N_MAP.put("织物手工", textileTags);
+        TAG_I18N_MAP.put("travel", new HashSet<>(Arrays.asList("travel", "trip", "journey")));
+        TAG_I18N_MAP.put("food", new HashSet<>(Arrays.asList("food", "meal", "taste")));
+        TAG_I18N_MAP.put("scenery", new HashSet<>(Arrays.asList("scenery", "view", "landscape")));
+        TAG_I18N_MAP.put("guide", new HashSet<>(Arrays.asList("guide", "tips", "strategy")));
+        TAG_I18N_MAP.put("hotel", new HashSet<>(Arrays.asList("hotel", "stay", "lodging")));
+        TAG_I18N_MAP.put("transport", new HashSet<>(Arrays.asList("transport", "traffic", "bus", "train")));
+        TAG_I18N_MAP.put("costume", new HashSet<>(Arrays.asList("costume", "style", "clothing")));
+        TAG_I18N_MAP.put("artistry", new HashSet<>(Arrays.asList("art", "craft", "artistry")));
+        TAG_I18N_MAP.put("folklore", new HashSet<>(Arrays.asList("folklore", "custom", "festival")));
+        TAG_I18N_MAP.put("opera", new HashSet<>(Arrays.asList("opera", "performance", "stage")));
+        TAG_I18N_MAP.put("textile", new HashSet<>(Arrays.asList("textile", "weaving", "fabric")));
     }
-    
+
     private final DiscoverPostRepository postRepository;
     private final DiscoverPostCollectionRepository collectionRepository;
     private final DiscoverPostCommentRepository commentRepository;
@@ -127,6 +114,7 @@ public class DiscoverService {
         Map<Long, User> authorMap = getAuthorMap(allPosts);
 
         List<DiscoverPost> filteredPosts = allPosts.stream()
+            .filter(post -> isPostVisibleToViewer(post, userId))
             .filter(post -> {
                 if (!StringUtils.hasText(normalizedCategory) || "all".equalsIgnoreCase(normalizedCategory)) {
                     return true;
@@ -190,7 +178,7 @@ public class DiscoverService {
         DiscoverPost post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post does not exist"));
 
-        boolean publicVisible = isApprovedPost(post);
+        boolean publicVisible = isPubliclyVisiblePost(post);
         boolean ownerAccess = canOwnerAccessPost(post, userId);
         if (!publicVisible && !ownerAccess) {
             throw new RuntimeException("Post does not exist");
@@ -202,7 +190,7 @@ public class DiscoverService {
             postRepository.save(post);
         }
 
-        boolean bookmarked = publicVisible && collectionRepository.existsByUserIdAndPostId(userId, postId);
+        boolean bookmarked = publiclyVisibleOrOwnerAccessible(post, userId) && collectionRepository.existsByUserIdAndPostId(userId, postId);
         User author = userRepository.findById(post.getUserId()).orElse(null);
         Map<String, Object> detail = toPostSummary(post, author, bookmarked);
 
@@ -260,6 +248,7 @@ public class DiscoverService {
         post.setStatus(1);
         post.setAuditStatus(decision.getAuditStatus());
         post.setAuditRemark(decision.getAuditRemark());
+        post.setVisibility(normalizePostVisibility(payload.get("visibility") == null ? null : String.valueOf(payload.get("visibility"))));
 
         DiscoverPost saved = postRepository.save(post);
         return toPostSummary(saved, author, false);
@@ -312,6 +301,11 @@ public class DiscoverService {
         post.setStatus(1);
         post.setAuditStatus(decision.getAuditStatus());
         post.setAuditRemark(decision.getAuditRemark());
+        if (payload.containsKey("visibility")) {
+            post.setVisibility(normalizePostVisibility(payload.get("visibility") == null ? null : String.valueOf(payload.get("visibility"))));
+        } else {
+            post.setVisibility(normalizePostVisibility(post.getVisibility()));
+        }
         DiscoverPost saved = postRepository.save(post);
         clearPostTranslateCache(postId);
 
@@ -323,7 +317,7 @@ public class DiscoverService {
         Long userId = findUserId(username);
         DiscoverPost post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post does not exist"));
-        if (!isApprovedPost(post)) {
+        if (!publiclyVisibleOrOwnerAccessible(post, userId)) {
             throw new RuntimeException("Post does not exist");
         }
 
@@ -364,7 +358,7 @@ public class DiscoverService {
         Long userId = findUserId(username);
         DiscoverPost post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post does not exist"));
-        if (!isApprovedPost(post)) {
+        if (!publiclyVisibleOrOwnerAccessible(post, userId)) {
             throw new RuntimeException("Post does not exist");
         }
 
@@ -434,7 +428,7 @@ public class DiscoverService {
     public Map<String, Object> toggleCommentLike(String username, Long commentId) {
         Long userId = findUserId(username);
         DiscoverPostComment comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new RuntimeException("评论不存在"));
+            .orElseThrow(() -> new RuntimeException("Comment does not exist"));
 
         boolean liked;
         if (commentLikeRepository.existsByUserIdAndCommentId(userId, commentId)) {
@@ -461,13 +455,13 @@ public class DiscoverService {
     public void deleteComment(String username, Long commentId) {
         Long userId = findUserId(username);
         DiscoverPostComment comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new RuntimeException("评论不存在"));
+            .orElseThrow(() -> new RuntimeException("Comment does not exist"));
 
         DiscoverPost post = postRepository.findById(comment.getPostId())
-            .orElseThrow(() -> new RuntimeException("帖子不存在"));
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
 
         if (!userId.equals(comment.getUserId()) && !userId.equals(post.getUserId())) {
-            throw new RuntimeException("无权限删除该评论");
+            throw new RuntimeException("You do not have permission to delete this comment");
         }
 
         List<DiscoverPostComment> postComments = commentRepository.findByPostIdOrderByCreateTimeAsc(post.getId());
@@ -539,18 +533,38 @@ public class DiscoverService {
     }
 
     @Transactional
+    public Map<String, Object> updatePostVisibility(String username, Long postId, String visibility) {
+        Long userId = findUserId(username);
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!userId.equals(post.getUserId())) {
+            throw new RuntimeException("You do not have permission to update this post");
+        }
+        if (!canOwnerEditPost(post, userId)) {
+            throw new RuntimeException("Post does not exist");
+        }
+
+        post.setVisibility(normalizePostVisibility(visibility));
+        DiscoverPost saved = postRepository.save(post);
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("id", saved.getId());
+        result.put("visibility", normalizePostVisibility(saved.getVisibility()));
+        return result;
+    }
+
+    @Transactional
     public void deleteMyPost(String username, Long postId) {
         Long userId = findUserId(username);
-        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("帖子不存在"));
+        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post does not exist"));
         if (!userId.equals(post.getUserId())) {
-            throw new RuntimeException("无权限删除该帖子");
+            throw new RuntimeException("You do not have permission to delete this post");
         }
 
         List<String> images = readStringArray(post.getImages());
         for (String image : images) {
             if (ossUtil.isOssUrl(image)) {
                 ossUtil.deleteFile(image);
-                System.out.println("删除帖子图片：" + image);
+                System.out.println("Deleted post image: " + image);
             }
         }
 
@@ -734,7 +748,7 @@ public class DiscoverService {
     public Map<String, Object> getSharePostDetail(Long postId) {
         DiscoverPost post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post does not exist"));
-        if (!isApprovedPost(post)) {
+        if (!isPubliclyVisiblePost(post)) {
             throw new RuntimeException("Post does not exist");
         }
 
@@ -757,8 +771,14 @@ public class DiscoverService {
     }
 
     public Map<String, Object> translateComment(String username, Long commentId, String targetLang) {
-        findUserId(username);
-        DiscoverPostComment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("评论不存在"));
+        Long userId = findUserId(username);
+        DiscoverPostComment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new RuntimeException("Comment does not exist"));
+        DiscoverPost post = postRepository.findById(comment.getPostId())
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!publiclyVisibleOrOwnerAccessible(post, userId)) {
+            throw new RuntimeException("Post does not exist");
+        }
         String sourceLang = normalizeSourceLang(comment.getSourceLang(), comment.getContent());
         return translateWithCache(buildCommentCacheKey(commentId, targetLang), comment.getContent(), sourceLang, targetLang);
     }
@@ -779,6 +799,7 @@ public class DiscoverService {
         item.put("bookmarked", bookmarked);
         item.put("auditStatus", defaultString(post.getAuditStatus()));
         item.put("auditRemark", defaultString(post.getAuditRemark()));
+        item.put("visibility", normalizePostVisibility(post.getVisibility()));
 
         Map<String, Object> authorMap = new HashMap<String, Object>();
         authorMap.put("id", author == null ? null : author.getId());
@@ -802,6 +823,24 @@ public class DiscoverService {
         return isActivePost(post) && AUDIT_STATUS_PASSED.equalsIgnoreCase(defaultString(post.getAuditStatus()));
     }
 
+    private String normalizePostVisibility(String visibility) {
+        return VISIBILITY_PRIVATE.equalsIgnoreCase(defaultString(visibility)) ? VISIBILITY_PRIVATE : VISIBILITY_PUBLIC;
+    }
+
+    private boolean isPostVisibleToViewer(DiscoverPost post, Long viewerUserId) {
+        if (post == null) {
+            return false;
+        }
+        if (viewerUserId != null && viewerUserId.equals(post.getUserId())) {
+            return true;
+        }
+        return VISIBILITY_PRIVATE.equalsIgnoreCase(normalizePostVisibility(post.getVisibility())) ? false : isApprovedPost(post);
+    }
+
+    private boolean isPubliclyVisiblePost(DiscoverPost post) {
+        return isApprovedPost(post) && VISIBILITY_PUBLIC.equalsIgnoreCase(normalizePostVisibility(post.getVisibility()));
+    }
+
     private boolean isOwnerPost(DiscoverPost post, Long userId) {
         return post != null && userId != null && userId.equals(post.getUserId());
     }
@@ -815,7 +854,7 @@ public class DiscoverService {
     }
 
     private boolean publiclyVisibleOrOwnerAccessible(DiscoverPost post, Long userId) {
-        return isApprovedPost(post) || canOwnerAccessPost(post, userId);
+        return isPubliclyVisiblePost(post) || canOwnerAccessPost(post, userId);
     }
 
     private boolean shouldShowInMyPosts(DiscoverPost post) {
@@ -985,7 +1024,7 @@ public class DiscoverService {
 
     private String displayName(User user) {
         if (user == null) {
-            return "未知用户";
+            return "閺堫亞鐓￠悽銊﹀煕";
         }
         if (StringUtils.hasText(user.getNickname())) {
             return user.getNickname();
@@ -1083,7 +1122,7 @@ public class DiscoverService {
         String normalizedTarget = normalizeTargetLang(targetLang);
         String normalizedSource = normalizeSourceLang(sourceLang, originalText);
         if (!StringUtils.hasText(originalText)) {
-            throw new RuntimeException("原文不能为空");
+            throw new RuntimeException("Original text cannot be empty");
         }
 
         if (normalizedSource.equalsIgnoreCase(normalizedTarget)) {
@@ -1247,3 +1286,21 @@ public class DiscoverService {
         return "auto";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

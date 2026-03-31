@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import HomeView from '../views/HomeView.vue'
@@ -6,7 +6,6 @@ import DiscoverView from '../views/DiscoverView.vue'
 import PersonalCenter from '../views/PersonalCenter.vue'
 import Settings from '../views/Settings.vue'
 import EditProfile from '../views/EditProfile.vue'
-import EditHomepage from '../views/EditHomepage.vue'
 import UserHomepage from '../views/UserHomepage.vue'
 import ConversationMode from '../views/ConversationMode.vue'
 import NotificationView from '../views/NotificationView.vue'
@@ -26,7 +25,7 @@ const readStoredUser = () => {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    console.error('读取用户信息错误', error)
+    console.error('Failed to read stored user info', error)
     return {}
   }
 }
@@ -38,13 +37,13 @@ const routes = [
     path: '/login',
     name: 'login-page',
     component: WelcomeView,
-    meta: { title: '登录 - YayFolk' }
+    meta: { title: 'Login - YayFolk' }
   },
   {
     path: '/admin-login',
     name: 'admin-login',
     component: AdminLoginView,
-    meta: { title: '管理员登录 - YayFolk' }
+    meta: { title: 'Admin Login - YayFolk' }
   },
   {
     path: '/',
@@ -54,7 +53,7 @@ const routes = [
     path: '/share',
     name: 'share',
     component: ShareView,
-    meta: { title: '分享 - YayFolk' }
+    meta: { title: 'Share - YayFolk' }
   },
   {
     path: '/home',
@@ -65,31 +64,31 @@ const routes = [
         path: 'heritage',
         name: 'heritage',
         component: IntangibleCulturalHeritage,
-        meta: { title: '中国非物质文化 - YayFolk' }
+        meta: { title: 'Heritage - YayFolk' }
       },
       {
         path: 'activity',
         name: 'activity',
         component: ActivityList,
-        meta: { title: '非遗活动 - YayFolk' }
+        meta: { title: 'Activities - YayFolk' }
       },
       {
         path: 'tools',
         name: 'tools',
         component: AIHeritageRoute,
-        meta: { title: '工具管理 - YayFolk' }
+        meta: { title: 'Tools - YayFolk' }
       },
       {
         path: 'discover',
         name: 'discover',
         component: DiscoverView,
-        meta: { title: '发现 - YayFolk' }
+        meta: { title: 'Discover - YayFolk' }
       },
       {
         path: 'personal',
         name: 'personal',
         component: PersonalCenter,
-        meta: { title: '个人中心 - YayFolk' }
+        meta: { title: 'Personal Center - YayFolk' }
       }
     ]
   },
@@ -101,79 +100,120 @@ const routes = [
     path: '/conversation',
     name: 'conversation',
     component: ConversationMode,
-    meta: { title: '对话模式 - YayFolk', requiresAuth: true }
+    meta: { title: 'Conversation - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/settings',
     name: 'settings',
     component: Settings,
-    meta: { title: '设置 - YayFolk', requiresAuth: true }
+    meta: { title: 'Settings - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/edit-profile',
     name: 'edit-profile',
     component: EditProfile,
-    meta: { title: '编辑资料 - YayFolk', requiresAuth: true }
+    meta: { title: 'Edit Profile - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/edit-homepage',
     name: 'edit-homepage',
-    component: EditHomepage,
-    meta: { title: 'YayFolk 编辑个人主页', requiresAuth: true }
+    redirect: '/merchant/apply'
   },
   {
     path: '/user-homepage/:userId',
     name: 'user-homepage',
     component: UserHomepage,
-    meta: { title: 'YayFolk 用户主页', requiresAuth: true }
+    meta: { title: 'User Homepage - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/my-posts',
     name: 'my-posts',
     component: () => import('../views/MyPosts.vue'),
-    meta: { title: '我的发布 - Travelate', requiresAuth: true }
+    meta: { title: 'My Posts - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/my-collections',
     name: 'my-collections',
     component: () => import('../views/MyCollections.vue'),
-    meta: { title: '我的收藏 - Travelate', requiresAuth: true }
+    meta: { title: 'My Collections - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/activities',
     name: 'my-activities',
     component: () => import('../views/MyActivities.vue'),
-    meta: { title: '我的活动 - YayFolk', requiresAuth: true }
+    meta: { title: 'My Activities - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/checkins',
+    name: 'my-activity-checkins',
+    component: () => import('../views/MyActivityCheckins.vue'),
+    meta: { title: 'Activity Check-ins - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/activities/:id/detail',
+    name: 'activity-booking-detail',
+    component: () => import('../views/activity/ActivityBookingOrderDetail.vue'),
+    meta: { title: 'Activity Booking Detail - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/activities/:id/pay',
+    name: 'activity-booking-payment',
+    component: () => import('../views/activity/ActivityBookingPayment.vue'),
+    meta: { title: 'Activity Booking Payment - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/activities/:id/checkin',
+    name: 'activity-booking-checkin',
+    component: () => import('../views/activity/ActivityBookingDetail.vue'),
+    meta: { title: 'Activity Check-in - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/activities/:id/pay-result',
+    name: 'activity-booking-pay-result',
+    component: () => import('../views/activity/ActivityReservePayResult.vue'),
+    meta: { title: 'Activity Payment Result - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/orders',
+    name: 'my-orders',
+    component: () => import('../views/MyOrders.vue'),
+    meta: { title: 'My Orders - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/achievements',
     name: 'my-achievements',
     component: () => import('../views/MyAchievements.vue'),
-    meta: { title: '打卡成就 - YayFolk', requiresAuth: true }
+    meta: { title: 'My Achievements - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/history',
     name: 'history',
     component: () => import('../views/History.vue'),
-    meta: { title: '浏览历史 - YayFolk', requiresAuth: true }
+    meta: { title: 'History - YayFolk', requiresAuth: true }
   },
   {
     path: '/notification',
     name: 'notification',
     component: NotificationView,
-    meta: { title: '消息通知 - YayFolk', requiresAuth: true }
+    meta: { title: 'Notifications - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/activity-notifications',
+    name: 'activity-notifications',
+    component: NotificationView,
+    meta: { title: 'Activity Notifications - YayFolk', requiresAuth: true }
   },
   {
     path: '/activity/:id',
     name: 'activity-detail',
     component: ActivityDetail,
-    meta: { title: '活动详情 - YayFolk', requiresAuth: true }
+    meta: { title: 'Activity Detail - YayFolk', requiresAuth: true }
   },
   {
     path: '/activity/:id/booking',
     name: 'activity-booking',
     component: ActivityBooking,
-    meta: { title: '活动预订 - YayFolk', requiresAuth: true }
+    meta: { title: 'Activity Booking - YayFolk', requiresAuth: true }
   },
   {
     path: '/admin',
@@ -184,43 +224,43 @@ const routes = [
         path: 'admins',
         name: 'admin-admins',
         component: () => import('../views/admin/AdminAdmins.vue'),
-        meta: { title: '管理员管理 - 管理后台', requiresSuperAdmin: true }
+        meta: { title: 'Admin Accounts - Admin Console', requiresSuperAdmin: true }
       },
       {
         path: 'merchants',
         name: 'admin-merchants',
         component: () => import('../views/admin/AdminMerchants.vue'),
-        meta: { title: '商户审核 - 管理后台' }
+        meta: { title: 'Merchant Review - Admin Console' }
       },
       {
         path: 'activities',
         name: 'admin-activities',
         component: () => import('../views/admin/AdminActivities.vue'),
-        meta: { title: '活动审核 - 管理后台' }
+        meta: { title: 'Activity Review - Admin Console' }
       },
       {
         path: 'posts',
         name: 'admin-posts',
         component: () => import('../views/admin/AdminPosts.vue'),
-        meta: { title: '内容审核 - 管理后台' }
+        meta: { title: 'Post Review - Admin Console' }
       },
       {
         path: 'service',
         name: 'admin-service',
         component: () => import('../views/admin/AdminCustomerService.vue'),
-        meta: { title: '客服工作台 - 管理后台', normalAdminOnly: true }
+        meta: { title: 'Customer Service - Admin Console', normalAdminOnly: true }
       },
       {
         path: 'users',
         name: 'admin-users',
         component: () => import('../views/admin/AdminUsers.vue'),
-        meta: { title: '用户管理 - 管理后台' }
+        meta: { title: 'User Management - Admin Console' }
       },
       {
         path: 'official',
         name: 'admin-official',
         component: () => import('../views/admin/AdminOfficial.vue'),
-        meta: { title: '官方内容 - 管理后台' }
+        meta: { title: 'Official Content - Admin Console' }
       }
     ]
   },
@@ -228,7 +268,7 @@ const routes = [
     path: '/unban-application',
     name: 'unban-application',
     component: () => import('../views/UnbanApplicationView.vue'),
-    meta: { title: '账号解封申请 - YayFolk' }
+    meta: { title: 'Unban Application - YayFolk' }
   },
   {
     path: '/merchant',
@@ -239,31 +279,49 @@ const routes = [
         path: 'apply',
         name: 'merchant-apply',
         component: () => import('../views/merchant/MerchantApply.vue'),
-        meta: { title: '商户认证 - 商户中心' }
+        meta: { title: 'Merchant Application - Merchant Center' }
       },
       {
         path: 'activities',
         name: 'merchant-activities',
         component: () => import('../views/merchant/MerchantActivities.vue'),
-        meta: { title: '活动管理 - 商户中心' }
+        meta: { title: 'Merchant Activities - Merchant Center' }
       },
       {
         path: 'activities/create',
         name: 'merchant-activity-create',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '创建活动 - 商户中心' }
+        meta: { title: 'Create Activity - Merchant Center' }
       },
       {
         path: 'activities/:id/edit',
         name: 'merchant-activity-edit',
         component: () => import('../views/activity/ActivityCreate.vue'),
-        meta: { title: '编辑活动 - 商户中心' }
+        meta: { title: 'Edit Activity - Merchant Center' }
       },
       {
         path: 'bookings',
         name: 'merchant-bookings',
         component: () => import('../views/merchant/MerchantBookings.vue'),
-        meta: { title: '预订管理 - 商户中心' }
+        meta: { title: 'Merchant Bookings - Merchant Center' }
+      },
+      {
+        path: 'bookings/:id/detail',
+        name: 'merchant-booking-detail',
+        component: () => import('../views/merchant/MerchantBookingDetail.vue'),
+        meta: { title: 'Merchant Booking Detail - Merchant Center' }
+      },
+      {
+        path: 'bookings/scan',
+        name: 'merchant-bookings-scan',
+        component: () => import('../views/merchant/MerchantCheckinScanner.vue'),
+        meta: { title: 'Booking Scanner - Merchant Center' }
+      },
+      {
+        path: 'bookings/records',
+        name: 'merchant-bookings-records',
+        component: () => import('../views/merchant/MerchantBookings.vue'),
+        meta: { title: 'Booking Records - Merchant Center' }
       }
     ]
   }
@@ -275,7 +333,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'YayFolk - 非遗文化传承平台'
+  document.title = to.meta.title || 'YayFolk'
 
   const isAuthenticated = localStorage.getItem('token')
 

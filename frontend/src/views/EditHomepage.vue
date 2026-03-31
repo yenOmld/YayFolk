@@ -1,101 +1,117 @@
 <template>
-  <div class="edit-homepage-page">
-    <div class="settings-header">
-      <button class="back-btn" @click="goBack">
+  <div class="shop-info-page">
+    <div class="page-header">
+      <button class="back-btn" @click="goBack" aria-label="返回">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>编辑个人主页</h1>
-      <button class="save-btn" :disabled="saving" @click="saveHomepage">
-        {{ saving ? '保存中...' : '保存' }}
+      <div class="page-title">
+        <p class="page-eyebrow">SHOP PROFILE</p>
+        <h1>店铺信息</h1>
+        <p>这里维护商家主页展示使用的店铺资料，不属于系统设置。</p>
+      </div>
+      <button class="save-btn" @click="saveShopInfo" :disabled="isSaving">
+        {{ isSaving ? '保存中...' : '保存' }}
       </button>
     </div>
 
-    <div class="page-content">
-      <section class="preview-card">
-        <div class="preview-cover" :style="coverStyle">
-          <button class="cover-upload-btn" @click="triggerCoverInput">
-            <i class='bx bx-image-add'></i>
-            更换封面
-          </button>
-          <input
-            ref="coverInput"
-            type="file"
-            accept="image/*"
-            @change="handleCoverUpload"
-            style="display: none"
-          >
+    <div v-if="!isMerchantRole" class="empty-card">
+      <i class='bx bx-store-alt'></i>
+      <h2>当前账号不是商家</h2>
+      <p>店铺信息页仅对商家账号开放。</p>
+    </div>
+
+    <template v-else>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>基础信息</h2>
+          <span>这些信息会展示在商家主页与店铺入口。</span>
         </div>
 
-        <div class="preview-main">
-          <img :src="form.avatar || defaultAvatar" alt="avatar" class="preview-avatar" />
-          <div class="preview-info">
-            <h2>{{ form.nickname || 'YayFolk 用户' }}</h2>
-            <p class="preview-handle">@{{ form.username || 'user' }}</p>
-            <p class="preview-bio">{{ form.bio || '这里会展示你的主页简介。' }}</p>
-            <div class="preview-meta">
-              <span v-if="form.location"><i class='bx bx-map'></i>{{ form.location }}</span>
-              <span v-if="form.isMerchant && form.shopName"><i class='bx bxs-store'></i>{{ form.shopName }}</span>
-            </div>
+        <div class="form-grid">
+          <div class="form-item full-span">
+            <label for="shop-name">店铺名称</label>
+            <input
+              id="shop-name"
+              v-model.trim="form.shopName"
+              type="text"
+              maxlength="100"
+              placeholder="请输入店铺名称"
+            >
+          </div>
+
+          <div class="form-item full-span">
+            <label for="shop-intro">店铺简介</label>
+            <textarea
+              id="shop-intro"
+              v-model.trim="form.shopIntro"
+              rows="6"
+              maxlength="500"
+              placeholder="介绍你的店铺、非遗项目、服务特色和线下体验亮点"
+            ></textarea>
+            <span class="field-count">{{ form.shopIntro.length }}/500</span>
           </div>
         </div>
       </section>
 
-      <section class="form-card">
-        <div class="section-title">
-          <h3>主页展示信息</h3>
-          <button class="secondary-btn" @click="previewHomepage">查看主页</button>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>展示图片</h2>
+          <span>店铺封面和主页背景图会用于商家主页视觉展示。</span>
         </div>
 
-        <div class="form-item">
-          <label>主页简介</label>
-          <textarea
-            v-model="form.bio"
-            maxlength="200"
-            rows="4"
-            placeholder="一句话介绍你自己，或者告诉别人你在分享什么。"
-          ></textarea>
-          <span class="hint">{{ form.bio.length }}/200</span>
-        </div>
+        <div class="media-grid">
+          <article class="media-card">
+            <div class="media-head">
+              <strong>店铺封面</strong>
+              <span>适合展示店铺空间或主打项目</span>
+            </div>
+            <div class="media-preview">
+              <img v-if="form.shopCover" :src="form.shopCover" alt="店铺封面预览">
+              <div v-else class="media-placeholder">
+                <i class='bx bx-image-add'></i>
+                <span>暂无店铺封面</span>
+              </div>
+            </div>
+            <div class="media-actions">
+              <button class="secondary-btn" @click="triggerShopCoverInput">上传图片</button>
+              <button class="ghost-btn danger" @click="clearImage('shopCover')" :disabled="!form.shopCover">清空</button>
+            </div>
+            <input
+              ref="shopCoverInput"
+              type="file"
+              accept="image/*"
+              class="hidden-input"
+              @change="handleImageChange($event, 'shopCover')"
+            >
+          </article>
 
-        <div class="form-item">
-          <label>主页地点</label>
-          <input
-            v-model="form.location"
-            maxlength="100"
-            type="text"
-            placeholder="例如：杭州 / 西安 / 景德镇"
-          >
-          <span class="hint">显示在主页头部，用于告诉别人你所在或活跃的地区。</span>
+          <article class="media-card">
+            <div class="media-head">
+              <strong>主页背景图</strong>
+              <span>适合用作商家主页顶部大图</span>
+            </div>
+            <div class="media-preview">
+              <img v-if="form.coverPhoto" :src="form.coverPhoto" alt="主页背景图预览">
+              <div v-else class="media-placeholder">
+                <i class='bx bx-landscape'></i>
+                <span>暂无主页背景图</span>
+              </div>
+            </div>
+            <div class="media-actions">
+              <button class="secondary-btn" @click="triggerCoverPhotoInput">上传图片</button>
+              <button class="ghost-btn danger" @click="clearImage('coverPhoto')" :disabled="!form.coverPhoto">清空</button>
+            </div>
+            <input
+              ref="coverPhotoInput"
+              type="file"
+              accept="image/*"
+              class="hidden-input"
+              @change="handleImageChange($event, 'coverPhoto')"
+            >
+          </article>
         </div>
       </section>
-
-      <section class="form-card">
-        <div class="section-title">
-          <h3>{{ form.isMerchant ? '商家主页卡片' : '主页标题卡片' }}</h3>
-        </div>
-
-        <div class="form-item">
-          <label>{{ form.isMerchant ? '商家名称' : '主页标题' }}</label>
-          <input
-            v-model="form.shopName"
-            maxlength="100"
-            type="text"
-            :placeholder="form.isMerchant ? '例如：西湖纸伞工坊' : '例如：阿青的非遗手作日记'"
-          >
-        </div>
-
-        <div class="form-item">
-          <label>{{ form.isMerchant ? '商家介绍' : '卡片介绍' }}</label>
-          <textarea
-            v-model="form.shopIntro"
-            maxlength="500"
-            rows="5"
-            :placeholder="form.isMerchant ? '介绍你的店铺、手艺、服务和特色内容。' : '补充你的主页介绍，比如擅长分享的内容方向。'"
-          ></textarea>
-          <span class="hint">{{ form.shopIntro.length }}/500</span>
-        </div>
-      </section>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -108,400 +124,495 @@ const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-
-const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user'
-const saving = ref(false)
-const coverInput = ref(null)
-
+const shopCoverInput = ref(null)
+const coverPhotoInput = ref(null)
+const isSaving = ref(false)
+const uploadFiles = reactive({
+  shopCover: null,
+  coverPhoto: null
+})
 const form = reactive({
-  id: null,
-  username: '',
-  nickname: '',
-  avatar: '',
-  role: 'user',
-  bio: '',
-  location: '',
+  role: '',
   shopName: '',
   shopIntro: '',
   shopCover: '',
-  isMerchant: false
+  coverPhoto: ''
 })
 
-const coverStyle = computed(() => {
-  if (form.shopCover) {
-    return { backgroundImage: `url(${form.shopCover})` }
+const isMerchantRole = computed(() => ['merchant', 'admin'].includes(form.role))
+
+const readStoredUser = () => {
+  const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
+  if (!raw) {
+    return null
   }
-  return {
-    backgroundImage: 'linear-gradient(135deg, #1f6feb 0%, #22c55e 100%)'
+
+  try {
+    return JSON.parse(raw)
+  } catch (error) {
+    console.error('读取本地用户信息失败:', error)
+    return null
   }
-})
+}
+
+const syncStoredUser = (payload = {}) => {
+  const user = readStoredUser()
+  if (!user) {
+    return
+  }
+
+  const nextUser = {
+    ...user,
+    ...payload
+  }
+
+  localStorage.setItem('user', JSON.stringify(nextUser))
+  localStorage.setItem('userInfo', JSON.stringify(nextUser))
+}
+
+const applySettings = (settings = {}) => {
+  form.role = settings.role || form.role || readStoredUser()?.role || ''
+  form.shopName = settings.shopName || ''
+  form.shopIntro = settings.shopIntro || ''
+  form.shopCover = settings.shopCover || ''
+  form.coverPhoto = settings.coverPhoto || ''
+}
 
 const goBack = () => {
   router.back()
 }
 
-const triggerCoverInput = () => {
-  coverInput.value?.click()
+const triggerShopCoverInput = () => {
+  shopCoverInput.value?.click()
 }
 
-const handleCoverUpload = async (event) => {
+const triggerCoverPhotoInput = () => {
+  coverPhotoInput.value?.click()
+}
+
+const handleImageChange = (event, field) => {
   const file = event.target.files?.[0]
-  if (!file) return
+  if (!file) {
+    return
+  }
 
   if (!file.type.startsWith('image/')) {
     notify.warning('请选择图片文件')
+    event.target.value = ''
     return
   }
 
   if (file.size > 10 * 1024 * 1024) {
-    notify.warning('封面图片不能超过 10MB')
+    notify.warning('图片大小不能超过 10MB')
+    event.target.value = ''
     return
   }
 
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const response = await uploadImage(formData, 'homepage')
-    if (response.code === 200 && response.data?.url) {
-      form.shopCover = response.data.url
-      notify.success('主页封面已更新')
-    } else {
-      notify.error(response.message || '上传封面失败')
-    }
-  } catch (error) {
-    notify.error('上传封面失败，请稍后重试')
-  } finally {
-    event.target.value = ''
-  }
+  uploadFiles[field] = file
+  form[field] = URL.createObjectURL(file)
+  event.target.value = ''
 }
 
-const loadHomepageSettings = async () => {
+const clearImage = (field) => {
+  uploadFiles[field] = null
+  form[field] = ''
+}
+
+const uploadImageIfNeeded = async (field) => {
+  const file = uploadFiles[field]
+  if (!file) {
+    return form[field] || ''
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await uploadImage(formData, 'homepage')
+  if (response.code !== 200 || !response.data?.url) {
+    throw new Error(response.message || '图片上传失败')
+  }
+  uploadFiles[field] = null
+  return response.data.url
+}
+
+const saveShopInfo = async () => {
+  if (!isMerchantRole.value) {
+    return
+  }
+
+  if (!form.shopName.trim()) {
+    notify.warning('请输入店铺名称')
+    return
+  }
+
+  isSaving.value = true
   try {
-    const response = await getHomepageSettings()
+    const [shopCover, coverPhoto] = await Promise.all([
+      uploadImageIfNeeded('shopCover'),
+      uploadImageIfNeeded('coverPhoto')
+    ])
+
+    const response = await updateHomepageSettings({
+      shopName: form.shopName.trim(),
+      shopIntro: form.shopIntro.trim(),
+      shopCover,
+      coverPhoto
+    })
+
     if (response.code !== 200 || !response.data) {
-      notify.error(response.message || '加载主页设置失败')
+      notify.error(response.message || '保存店铺信息失败')
       return
     }
 
-    Object.assign(form, {
-      id: response.data.id || null,
-      username: response.data.username || '',
-      nickname: response.data.nickname || '',
-      avatar: response.data.avatar || defaultAvatar,
-      role: response.data.role || 'user',
-      bio: response.data.bio || '',
-      location: response.data.location || '',
+    applySettings(response.data)
+    syncStoredUser({
       shopName: response.data.shopName || '',
       shopIntro: response.data.shopIntro || '',
       shopCover: response.data.shopCover || '',
-      isMerchant: Boolean(response.data.isMerchant)
+      coverPhoto: response.data.coverPhoto || ''
     })
+    notify.success('店铺信息已保存')
   } catch (error) {
-    notify.error('加载主页设置失败，请稍后重试')
-  }
-}
-
-const saveHomepage = async () => {
-  saving.value = true
-  try {
-    const payload = {
-      bio: form.bio.trim(),
-      location: form.location.trim(),
-      shopName: form.shopName.trim(),
-      shopIntro: form.shopIntro.trim(),
-      shopCover: form.shopCover
-    }
-
-    const response = await updateHomepageSettings(payload)
-    if (response.code !== 200) {
-      notify.error(response.message || '保存主页失败')
-      return
-    }
-
-    const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
-    if (raw) {
-      try {
-        const storedUser = JSON.parse(raw)
-        const nextUser = {
-          ...storedUser,
-          bio: payload.bio,
-          location: payload.location,
-          shopName: payload.shopName,
-          shopIntro: payload.shopIntro,
-          shopCover: payload.shopCover
-        }
-        localStorage.setItem('user', JSON.stringify(nextUser))
-        localStorage.setItem('userInfo', JSON.stringify(nextUser))
-      } catch (error) {
-        console.error('更新本地主页数据失败', error)
-      }
-    }
-
-    notify.success('主页装修已保存')
-    previewHomepage()
-  } catch (error) {
-    notify.error('保存主页失败，请稍后重试')
+    console.error('保存店铺信息失败:', error)
+    notify.error(error.message || '保存店铺信息失败，请稍后重试')
   } finally {
-    saving.value = false
+    isSaving.value = false
   }
 }
 
-const previewHomepage = () => {
-  if (!form.id) return
-  router.push(`/user-homepage/${form.id}`)
-}
+onMounted(async () => {
+  const user = readStoredUser()
+  if (user) {
+    form.role = user.role || ''
+  }
 
-onMounted(() => {
-  loadHomepageSettings()
+  try {
+    const response = await getHomepageSettings()
+    if (response.code === 200 && response.data) {
+      applySettings(response.data)
+    }
+  } catch (error) {
+    console.error('获取店铺信息失败:', error)
+  }
 })
 </script>
 
 <style scoped>
-.edit-homepage-page {
+.shop-info-page {
   min-height: 100vh;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 25%),
-    radial-gradient(circle at top right, rgba(31, 111, 235, 0.14), transparent 30%),
-    #f4f7fb;
+    radial-gradient(circle at top left, rgba(201, 122, 40, 0.1), transparent 24%),
+    linear-gradient(180deg, #f8f4ec 0%, #fbfaf7 100%);
 }
 
-.settings-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+.page-header,
+.panel-head,
+.media-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.page-header {
+  gap: 16px;
+  padding: 20px 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #eadfce;
+  box-shadow: 0 18px 36px rgba(58, 69, 88, 0.08);
 }
 
 .back-btn,
 .save-btn,
 .secondary-btn,
-.cover-upload-btn {
+.ghost-btn {
   border: none;
+  border-radius: 12px;
   cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .back-btn {
-  background: none;
-  color: #16324f;
-  font-size: 22px;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: #f4ede4;
+  color: #6b4f2b;
+  font-size: 20px;
 }
 
-.settings-header h1 {
-  margin: 0;
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  color: #16324f;
-}
-
-.save-btn {
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: #16324f;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.save-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.page-content {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.preview-card,
-.form-card {
-  margin-bottom: 18px;
-  border-radius: 24px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-}
-
-.preview-cover {
-  height: 220px;
-  position: relative;
-  background-size: cover;
-  background-position: center;
-}
-
-.cover-upload-btn {
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.72);
-  color: #fff;
-  font-size: 14px;
-}
-
-.preview-main {
-  margin-top: -52px;
-  position: relative;
-  z-index: 1;
-  padding: 0 24px 24px;
-  display: flex;
-  gap: 18px;
-  align-items: flex-end;
-}
-
-.preview-avatar {
-  width: 104px;
-  height: 104px;
-  object-fit: cover;
-  border-radius: 26px;
-  border: 4px solid #fff;
-  background: #fff;
-}
-
-.preview-info {
+.page-title {
   flex: 1;
 }
 
-.preview-info h2 {
+.page-eyebrow {
+  margin: 0 0 8px;
+  color: #a06a2b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.page-title h1 {
   margin: 0;
+  color: #243447;
   font-size: 30px;
-  color: #16324f;
 }
 
-.preview-handle {
-  margin: 6px 0 0;
-  color: #6b7a90;
-  font-size: 14px;
-}
-
-.preview-bio {
-  margin: 12px 0 0;
-  color: #31445d;
-  font-size: 15px;
+.page-title p {
+  margin: 8px 0 0;
+  color: #7a8699;
   line-height: 1.7;
 }
 
-.preview-meta {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  color: #6b7a90;
-  font-size: 13px;
+.save-btn {
+  padding: 11px 18px;
+  background: linear-gradient(135deg, #c97a28, #e5a548);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.preview-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.save-btn:disabled,
+.secondary-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
-.form-card {
+.panel,
+.empty-card {
   padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #eadfce;
+  box-shadow: 0 18px 36px rgba(58, 69, 88, 0.08);
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.panel-head {
+  gap: 16px;
+  align-items: flex-start;
   margin-bottom: 18px;
 }
 
-.section-title h3 {
+.panel-head h2 {
   margin: 0;
-  color: #16324f;
-  font-size: 18px;
+  color: #243447;
+  font-size: 20px;
 }
 
-.secondary-btn {
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: #eaf1f9;
-  color: #1f6feb;
-  font-size: 14px;
-  font-weight: 600;
+.panel-head span {
+  color: #8b98ab;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .form-item {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 18px;
 }
 
-.form-item:last-child {
-  margin-bottom: 0;
+.full-span {
+  grid-column: 1 / -1;
 }
 
 .form-item label {
+  color: #4a5568;
   font-size: 14px;
   font-weight: 600;
-  color: #16324f;
 }
 
 .form-item input,
 .form-item textarea {
   width: 100%;
-  border: 1px solid #d7e1ec;
-  border-radius: 16px;
-  background: #f9fbfd;
-  padding: 14px 16px;
+  padding: 12px 14px;
+  border: 1px solid #d9dee7;
+  border-radius: 12px;
+  background: #fffdf9;
+  color: #243447;
   font-size: 14px;
-  color: #22344d;
-  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-item input:focus,
 .form-item textarea:focus {
-  border-color: #1f6feb;
-  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.12);
+  outline: none;
+  border-color: #c97a28;
+  box-shadow: 0 0 0 3px rgba(201, 122, 40, 0.14);
 }
 
-.form-item textarea {
-  resize: vertical;
-  min-height: 110px;
-}
-
-.hint {
-  color: #7b8aa0;
+.field-count {
+  display: block;
+  text-align: right;
+  color: #98a2b3;
   font-size: 12px;
 }
 
-@media (max-width: 768px) {
-  .settings-header h1 {
-    font-size: 16px;
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.media-card {
+  padding: 16px;
+  border: 1px solid #edf0f5;
+  border-radius: 18px;
+  background: #fafbfd;
+}
+
+.media-head strong,
+.media-head span {
+  display: block;
+}
+
+.media-head strong {
+  color: #243447;
+  font-size: 15px;
+}
+
+.media-head span {
+  margin-top: 4px;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.media-preview {
+  margin-top: 14px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #eef2f7;
+}
+
+.media-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #98a2b3;
+}
+
+.media-placeholder i {
+  font-size: 30px;
+}
+
+.media-actions {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.secondary-btn,
+.ghost-btn {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.secondary-btn {
+  background: #edf2ff;
+  color: #4b67d1;
+}
+
+.ghost-btn {
+  background: #f3f4f6;
+  color: #5b6472;
+}
+
+.ghost-btn.danger {
+  background: #fff1f1;
+  color: #d9485f;
+}
+
+.save-btn:hover:not(:disabled),
+.secondary-btn:hover:not(:disabled),
+.ghost-btn:hover:not(:disabled),
+.back-btn:hover {
+  transform: translateY(-1px);
+}
+
+.empty-card {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #7a8699;
+}
+
+.empty-card i {
+  font-size: 42px;
+  margin-bottom: 12px;
+  color: #c97a28;
+}
+
+.empty-card h2 {
+  margin: 0;
+  color: #243447;
+  font-size: 22px;
+}
+
+.empty-card p {
+  margin: 10px 0 0;
+}
+
+.hidden-input {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .form-grid,
+  .media-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .shop-info-page {
+    padding: 14px 12px 32px;
   }
 
-  .page-content {
-    padding: 14px;
+  .page-header,
+  .panel {
+    padding: 18px;
+    border-radius: 20px;
   }
 
-  .preview-cover {
-    height: 160px;
-  }
-
-  .preview-main {
+  .page-header,
+  .panel-head,
+  .media-actions {
     flex-direction: column;
-    align-items: flex-start;
-    margin-top: -40px;
+    align-items: stretch;
   }
 
-  .preview-info h2 {
-    font-size: 24px;
+  .save-btn {
+    width: 100%;
   }
 }
 </style>

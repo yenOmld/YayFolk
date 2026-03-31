@@ -7,15 +7,17 @@
         <div class="merchant-shell__brand">
           <div class="brand-mark">YF</div>
           <div class="brand-copy">
-            <strong>商家中心</strong>
-            <span>活动、预约与审核动态集中处理</span>
+            <strong>Merchant Center</strong>
+            <span>Manage merchant details, activities, and bookings in one place.</span>
           </div>
         </div>
 
         <div class="merchant-shell__shop">
-          <p class="shop-kicker">{{ isMerchant ? '商家工作台' : '商家申请' }}</p>
+          <p class="shop-kicker">{{ isMerchant ? 'Merchant Workspace' : 'Merchant Application' }}</p>
           <h2>{{ shopName }}</h2>
-          <p>{{ isMerchant ? '新的活动审核结果会在这里同步红标提醒。' : '提交入驻资料后，新的审核结果会在这里显示红标提醒。' }}</p>
+          <p>
+            {{ isMerchant ? 'Review updates, merchant details, and booking operations are handled here.' : 'Submit your merchant details and track the latest review updates here.' }}
+          </p>
         </div>
 
         <nav class="merchant-shell__nav">
@@ -39,11 +41,11 @@
         <div class="merchant-shell__footer">
           <div v-if="isMerchant" class="merchant-shell__status">
             <span class="status-dot"></span>
-            <span>商家身份已开通</span>
+            <span>Merchant access enabled</span>
           </div>
           <button class="back-btn" @click="goBack">
             <i class="bx bx-left-arrow-alt"></i>
-            <span>返回应用</span>
+            <span>Back To App</span>
           </button>
         </div>
       </aside>
@@ -71,7 +73,7 @@ const router = useRouter()
 const route = useRoute()
 let badgeTimer = null
 
-const readStoredUser = () => {
+function readStoredUser() {
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
   if (!raw) {
     return {}
@@ -86,35 +88,38 @@ const readStoredUser = () => {
 }
 
 const userInfo = ref(readStoredUser())
-const isMerchant = computed(() => userInfo.value.role === 'merchant' || userInfo.value.role === 'admin')
-const shopName = computed(() => userInfo.value.shopName || userInfo.value.nickname || '我的店铺')
+const isMerchant = computed(() => ['merchant', 'admin'].includes(userInfo.value.role))
+const shopName = computed(() => userInfo.value.shopName || userInfo.value.nickname || 'My Shop')
 
 const navItems = computed(() => {
+  const baseItems = [
+    {
+      key: 'apply',
+      to: '/merchant/apply',
+      label: isMerchant.value ? 'Merchant Info' : 'Apply Now',
+      desc: isMerchant.value ? 'Update merchant details and review status' : 'Submit merchant verification details',
+      icon: 'bx-file-find'
+    }
+  ]
+
   if (!isMerchant.value) {
-    return [
-      {
-        key: 'apply',
-        to: '/merchant/apply',
-        label: '申请入驻',
-        desc: '提交商家认证资料',
-        icon: 'bx-file-find'
-      }
-    ]
+    return baseItems
   }
 
   return [
+    ...baseItems,
     {
       key: 'activities',
       to: '/merchant/activities',
-      label: '活动管理',
-      desc: '查看活动审核结果与活动状态',
+      label: 'Activities',
+      desc: 'Manage published activities and review results',
       icon: 'bx-calendar-event'
     },
     {
       key: 'bookings',
       to: '/merchant/bookings',
-      label: '预约管理',
-      desc: '查看报名和核销情况',
+      label: 'Bookings',
+      desc: 'Review signups and check-in records',
       icon: 'bx-clipboard'
     }
   ]
@@ -126,11 +131,11 @@ const navBadgeCountMap = computed(() => ({
   bookings: 0
 }))
 
-const getNavBadgeCount = (key) => Number(navBadgeCountMap.value[key] || 0)
-const formatBadgeCount = (count) => (count > 99 ? '99+' : String(count))
+const getNavBadgeCount = key => Number(navBadgeCountMap.value[key] || 0)
+const formatBadgeCount = count => (count > 99 ? '99+' : String(count))
 const goBack = () => router.push('/home/heritage')
 
-const syncSeenStateWithRoute = () => {
+function syncSeenStateWithRoute() {
   if (!route.path.startsWith('/merchant')) {
     return
   }
@@ -144,7 +149,7 @@ const syncSeenStateWithRoute = () => {
   }
 }
 
-const refreshBadges = async () => {
+async function refreshBadges() {
   await refreshWorkbenchBadges()
   syncSeenStateWithRoute()
 }

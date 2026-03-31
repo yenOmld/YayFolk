@@ -57,6 +57,9 @@ public class User {
     @Column(name = "bio", length = 200)
     private String bio;
 
+    @Column(name = "signature", length = 120)
+    private String signature;
+
     @Column(name = "follower_count")
     private Integer followerCount;
 
@@ -78,8 +81,14 @@ public class User {
     @Column(name = "shop_cover", length = 255)
     private String shopCover;
 
+    @Column(name = "cover_photo", length = 255)
+    private String coverPhoto;
+
     @Column(name = "shop_intro", length = 500)
     private String shopIntro;
+
+    @Column(name = "collection_visibility", length = 20)
+    private String collectionVisibility;
 
     @Column(name = "is_merchant", columnDefinition = "tinyint(1) default 0")
     private Integer isMerchant;
@@ -114,6 +123,7 @@ public class User {
         status = 1;
         if (role == null) role = "user";
         if (shopStatus == null) shopStatus = "none";
+        if (collectionVisibility == null || collectionVisibility.isEmpty()) collectionVisibility = "public";
         if (followerCount == null) followerCount = 0;
         if (followingCount == null) followingCount = 0;
         if (isSuperAdmin == null) isSuperAdmin = 0;

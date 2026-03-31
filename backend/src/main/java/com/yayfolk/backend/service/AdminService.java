@@ -827,6 +827,8 @@ public class AdminService {
         m.put("coverImage", activity.getCoverImage());
         m.put("images", imageList);
         m.put("imageList", imageList);
+        m.put("videoUrl", activity.getVideoUrl());
+        m.put("videoCoverUrl", activity.getVideoCoverUrl());
         m.put("heritageType", activity.getHeritageType());
         m.put("activityType", activity.getActivityType());
         m.put("startTime", activity.getStartTime());
@@ -938,7 +940,9 @@ public class AdminService {
         List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
         List<Map<String, Object>> result = new ArrayList<>();
         for (DiscoverPost post : posts) {
-            result.add(workToAdminMap(post, publishedIds));
+            if (isPublicVisibleWork(post)) {
+                result.add(workToAdminMap(post, publishedIds));
+            }
         }
         result.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
         if (result.size() > 20) return new ArrayList<>(result.subList(0, 20));
@@ -1023,7 +1027,11 @@ public class AdminService {
             if (ids.size() > HOMEPAGE_WORK_LIMIT) throw new RuntimeException("最多只能发布6个作品");
             List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
             List<Map<String, Object>> works = new ArrayList<>();
-            for (DiscoverPost post : posts) works.add(workToAdminMap(post, Collections.<Long>emptyList()));
+            for (DiscoverPost post : posts) {
+                if (isPublicVisibleWork(post)) {
+                    works.add(workToAdminMap(post, Collections.<Long>emptyList()));
+                }
+            }
             works.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
             if (works.size() > 20) works = new ArrayList<>(works.subList(0, 20));
             List<Long> validIds = new ArrayList<>();
@@ -1048,6 +1056,16 @@ public class AdminService {
         if ("heritage".equals(type)) return HOMEPAGE_HERITAGE_CATEGORY;
         if ("work".equals(type)) return HOMEPAGE_WORK_CATEGORY;
         throw new RuntimeException("不支持的发布类型");
+    }
+
+    private boolean isPublicVisibleWork(DiscoverPost post) {
+        if (post == null) {
+            return false;
+        }
+        return post.getStatus() != null
+                && post.getStatus() == 1
+                && APPROVED_POST_AUDIT_STATUSES.contains(defaultString(post.getAuditStatus()))
+                && !"private".equalsIgnoreCase(defaultString(post.getVisibility()));
     }
 
     private List<Long> readPublishedIds(String category) {
@@ -1281,6 +1299,10 @@ public class AdminService {
         if (value == null) return 0;
         if (value instanceof Number) return ((Number) value).intValue();
         try { return Integer.parseInt(value.toString()); } catch (Exception e) { return 0; }
+    }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
     }
 
     private int calculatePostHeat(DiscoverPost post) {

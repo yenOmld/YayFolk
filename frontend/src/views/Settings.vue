@@ -1,15 +1,14 @@
 <template>
   <div class="settings-page">
     <div class="settings-header">
-      <button class="back-btn" @click="goBack">
+      <button class="back-btn" @click="goBack" aria-label="返回">
         <i class='bx bxs-chevron-left'></i>
       </button>
       <h1>{{ $t('settings.title') }}</h1>
     </div>
 
     <div class="settings-content">
-      <!-- 语言设置 -->
-      <div class="setting-section">
+      <section class="setting-section">
         <h3>{{ $t('settings.language') }}</h3>
         <div class="setting-item">
           <span>{{ $t('settings.appLanguage') }}</span>
@@ -19,10 +18,9 @@
             </option>
           </select>
         </div>
-      </div>
+      </section>
 
-      <!-- 通知设置 -->
-      <div class="setting-section">
+      <section class="setting-section">
         <h3>{{ $t('settings.notification') }}</h3>
         <div class="setting-item">
           <span>{{ $t('settings.pushNotification') }}</span>
@@ -38,26 +36,24 @@
             <span class="slider round"></span>
           </label>
         </div>
-      </div>
+      </section>
 
-      <!-- 其他设置 -->
-      <div class="setting-section">
-          <h3>{{ $t('settings.other') }}</h3>
-          <div class="setting-item" @click="clearCache">
-            <span>{{ $t('settings.clearCache') }}</span>
-            <i class='bx bxs-chevron-right'></i>
-          </div>
-          <div class="setting-item">
-            <span>{{ $t('settings.nightMode') }}</span>
-            <label class="switch">
-              <input type="checkbox" v-model="nightMode">
-              <span class="slider round"></span>
-            </label>
-          </div>
+      <section class="setting-section">
+        <h3>{{ $t('settings.other') }}</h3>
+        <div class="setting-item" @click="clearCache">
+          <span>{{ $t('settings.clearCache') }}</span>
+          <i class='bx bxs-chevron-right'></i>
         </div>
+        <div class="setting-item">
+          <span>{{ $t('settings.nightMode') }}</span>
+          <label class="switch">
+            <input type="checkbox" v-model="nightMode">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </section>
 
-      <!-- 关于 -->
-      <div class="setting-section">
+      <section class="setting-section">
         <h3>{{ $t('settings.about') }}</h3>
         <div class="setting-item">
           <span>{{ $t('settings.version') }}</span>
@@ -75,25 +71,23 @@
           <span>{{ $t('settings.checkUpdate') }}</span>
           <i class='bx bxs-chevron-right'></i>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { getCurrentInstance, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from '../i18n'
 
-// 获取通知实例
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
 const { t, locale } = useI18n()
 
-// 语言选项 - 仅支持中英日韩
 const languages = [
   { code: 'zh', name: '中文' },
   { code: 'en', name: 'English' },
@@ -101,29 +95,39 @@ const languages = [
   { code: 'ko', name: '한국어' }
 ]
 
-// 当前语言
 const currentLanguage = ref(locale.value)
-
-// 通知设置
 const notificationSettings = ref({
   push: true,
   email: true
 })
-
-// 夜间模式
 const nightMode = ref(false)
 
-// 返回上一页
+const syncStoredUser = (payload = {}) => {
+  const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
+  if (!raw) {
+    return
+  }
+
+  try {
+    const nextUser = {
+      ...JSON.parse(raw),
+      ...payload
+    }
+    localStorage.setItem('user', JSON.stringify(nextUser))
+    localStorage.setItem('userInfo', JSON.stringify(nextUser))
+  } catch (error) {
+    console.error('同步本地用户信息失败:', error)
+  }
+}
+
 const goBack = () => {
   router.back()
 }
 
-// 切换语言
 const changeLanguage = async (langCode) => {
   setLocale(langCode)
   currentLanguage.value = langCode
-  
-  // 调用后端API更新用户语言偏好
+
   try {
     const response = await fetch('/api/user/language', {
       method: 'PUT',
@@ -133,56 +137,42 @@ const changeLanguage = async (langCode) => {
       },
       body: JSON.stringify({ langCode })
     })
-    
+
     const data = await response.json()
     if (data.code === 200) {
-      // 更新本地存储中的用户信息
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        const user = JSON.parse(userStr)
-        user.langCode = langCode
-        localStorage.setItem('user', JSON.stringify(user))
-      }
-      notify.success(t('settings.languageChanged', languages.find(lang => lang.code === langCode).name))
+      syncStoredUser({ langCode })
+      notify.success(t('settings.languageChanged', languages.find(lang => lang.code === langCode)?.name || langCode))
     }
   } catch (error) {
     console.error('更新语言偏好失败:', error)
   }
 }
 
-// 清除缓存
 const clearCache = () => {
   localStorage.removeItem('cache')
   notify.success(t('settings.cacheCleared'))
 }
 
-// 显示用户协议
 const showUserAgreement = () => {
   notify.info(t('settings.userAgreement') + t('common.comingSoon'))
 }
 
-// 显示隐私政策
 const showPrivacyPolicy = () => {
   notify.info(t('settings.privacyPolicy') + t('common.comingSoon'))
 }
 
-// 检查更新
 const checkUpdate = () => {
   notify.info(t('settings.latestVersion'))
 }
 
-// 页面加载时获取设置
 onMounted(() => {
-  // 从 i18n 获取当前语言
   currentLanguage.value = locale.value
-  
-  // 从本地存储获取通知设置
+
   const savedNotifications = localStorage.getItem('notifications')
   if (savedNotifications) {
     notificationSettings.value = JSON.parse(savedNotifications)
   }
-  
-  // 从本地存储获取夜间模式设置
+
   const savedNightMode = localStorage.getItem('nightMode')
   if (savedNightMode) {
     nightMode.value = JSON.parse(savedNightMode)
@@ -200,14 +190,12 @@ onMounted(() => {
 @media (min-width: 768px) {
   .settings-page {
     width: 85%;
-    margin: 0 auto;
   }
 }
 
 @media (min-width: 1024px) {
   .settings-page {
     width: 70%;
-    margin: 0 auto;
   }
 }
 
@@ -216,8 +204,9 @@ onMounted(() => {
   padding: 15px 20px;
   display: flex;
   align-items: center;
+  gap: 15px;
   border-bottom: 1px solid #eee;
-  border-radius: 0px 0px 12px 12px;
+  border-radius: 0 0 12px 12px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -229,7 +218,6 @@ onMounted(() => {
   font-size: 20px;
   cursor: pointer;
   color: #333;
-  margin-right: 15px;
 }
 
 .settings-header h1 {
@@ -247,7 +235,7 @@ onMounted(() => {
   border-radius: 12px;
   margin-bottom: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .setting-section h3 {
@@ -293,7 +281,6 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* 语言选择器 */
 .language-select {
   padding: 8px 12px;
   border: 1px solid #ddd;
@@ -310,7 +297,6 @@ onMounted(() => {
   border-color: #7494ec;
 }
 
-/* 开关样式 */
 .switch {
   position: relative;
   display: inline-block;
@@ -327,12 +313,9 @@ onMounted(() => {
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
 }
 
 .slider:before {
@@ -343,7 +326,7 @@ onMounted(() => {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
@@ -370,7 +353,7 @@ input:checked + .slider:before {
   .settings-content {
     padding: 10px;
   }
-  
+
   .setting-item {
     padding: 12px 15px;
   }

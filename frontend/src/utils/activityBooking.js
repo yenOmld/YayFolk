@@ -2,37 +2,37 @@ const DISPLAY_STATUS_MAP = {
   pending_start: {
     code: 'pending_start',
     label: '待开始',
-    description: '活动还未开始，请按时到场参与。'
+    description: '您的报名已确认，请按时到达活动地点。'
   },
   pending_checkin: {
     code: 'pending_checkin',
-    label: '待签到/核销',
-    description: '活动进行中，请现场签到或由商家核销。'
+    label: '待核销',
+    description: '活动进行中，请出示报名二维码给商家进行核销。'
   },
   checked_in: {
     code: 'checked_in',
-    label: '已签到/核销',
-    description: '已完成签到或核销，等待活动结束后自动归档。'
+    label: '已核销',
+    description: '该报名已核销成功。'
   },
   completed: {
     code: 'completed',
     label: '已完成',
-    description: '活动已结束，本次报名已完成。'
+    description: '活动已结束，该报名已完成。'
   },
   cancelled: {
     code: 'cancelled',
     label: '已取消',
-    description: '该报名记录已取消，用户可直接重新报名同一活动。'
+    description: '该报名已取消。'
   },
   rejected: {
     code: 'rejected',
-    label: '商家已拒绝',
-    description: '商家已拒绝本次报名，当前不可再次申请该活动。'
+    label: '已拒绝',
+    description: '商家已拒绝该报名。'
   },
   missed: {
     code: 'missed',
-    label: '已结束',
-    description: '活动已结束，未完成签到或核销。'
+    label: '已错过',
+    description: '活动已结束但未完成核销。'
   }
 }
 
@@ -81,10 +81,29 @@ export const resolveActivityBookingDisplayStatus = (booking) => {
   return DISPLAY_STATUS_MAP.pending_checkin
 }
 
-export const isCancelableActivityBooking = (booking) => {
-  return booking?.status === 'registered'
-}
+export const isCancelableActivityBooking = (booking) => booking?.status === 'registered'
 
-export const isDeletableActivityBooking = (booking) => {
-  return booking?.status === 'cancelled'
+export const isDeletableActivityBooking = (booking) => booking?.status === 'cancelled'
+
+export const isPayableActivityBooking = (booking) => (
+  booking?.status === 'registered'
+  && booking?.paymentStatus === 'unpaid'
+  && Number(booking?.payAmount || 0) > 0
+)
+
+export const canOpenActivityCheckin = (booking) => (
+  !['cancelled', 'rejected'].includes(booking?.status)
+  && booking?.paymentStatus === 'paid'
+)
+
+export const hasReviewedActivityBooking = (booking) => Boolean(
+  booking?.reviewId
+  || booking?.reviewTime
+  || booking?.reviewScore
+  || booking?.reviewContent
+)
+
+export const isReviewableActivityBooking = (booking) => {
+  const status = resolveActivityBookingDisplayStatus(booking).code
+  return !hasReviewedActivityBooking(booking) && (status === 'checked_in' || status === 'completed')
 }
