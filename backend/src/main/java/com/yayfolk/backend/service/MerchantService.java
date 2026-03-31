@@ -28,6 +28,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -639,6 +642,40 @@ public class MerchantService {
         for (Order order : orders) {
             result.add(orderToMap(order));
         }
+        return result;
+    }
+
+    public Map<String, Object> getMerchantStats(String username) {
+        User user = getUser(username);
+        List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
+        List<ActivityReserve> bookings = activityReserveRepository.findByMerchantIdOrderByUpdateTimeDesc(user.getId());
+        List<MerchantReview> reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
+
+        Map<Long, Activity> activityMap = buildActivityMap(activities);
+        Map<Long, ActivityReserve> bookingMap = new HashMap<Long, ActivityReserve>();
+        int totalRevenue = 0;
+        for (ActivityReserve booking : bookings) {
+            bookingMap.put(booking.getId(), booking);
+            if (Integer.valueOf(1).equals(booking.getPayStatus())) {
+                totalRevenue += safeInt(booking.getPayAmount());
+            }
+        }
+
+        Map<String, Object> summary = new LinkedHashMap<String, Object>();
+        summary.put("activityCount", activities.size());
+        summary.putAll(buildMerchantBookingSummary(bookings));
+        summary.put("reviewCount", reviews.size());
+        summary.put("totalRevenue", totalRevenue);
+        summary.put("bookingRevenue", totalRevenue);
+        summary.put("averageScore", resolveAverageScore(reviews));
+        summary.put("followerCount", resolveFollowerCount(user));
+
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put("summary", summary);
+        result.put("bookingStatus", buildBookingStatusStats(bookings));
+        result.put("salesTrend", buildSalesTrend(bookings));
+        result.put("topActivities", buildTopActivities(bookings, activityMap));
+        result.put("recentReviews", buildMerchantReviews(reviews, bookingMap, activityMap));
         return result;
     }
 
@@ -1692,6 +1729,209 @@ public class MerchantService {
         return merchant == null ? "" : defaultString(merchant.getShopIntro());
     }
 
+    private Map<Long, Activity> buildActivityMap(List<Activity> activities) {
+        Map<Long, Activity> activityMap = new HashMap<Long, Activity>();
+        for (Activity activity : activities) {
+            if (activity.getId() != null) {
+                activityMap.put(activity.getId(), activity);
+            }
+        }
+        return activityMap;
+    }
+    private List<Map<String, Object>> buildMerchantReviews(List<MerchantReview> reviews,
+                                                            Map<Long, ActivityReserve> bookingMap,
+                                                            Map<Long, Activity> activityMap) {
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        int limit = Math.min(reviews.size(), 5);
+        for (int index = 0; index < limit; index++) {
+            MerchantReview review = reviews.get(index);
+            Map<String, Object> item = new LinkedHashMap<String, Object>();
+            item.put("id", review.getId());
+            item.put("score", review.getScore());
+            item.put("content", review.getContent());
+            item.put("reviewType", review.getReviewType());
+            item.put("createTime", review.getCreateTime());
+            ActivityReserve booking = review.getReserveId() == null ? null : bookingMap.get(review.getReserveId());
+            if (booking != null) {
+                item.put("reserveId", booking.getId());
+                item.put("activityId", booking.getActivityId());
+                item.put("targetName", StringUtils.hasText(booking.getActivityTitle()) ? booking.getActivityTitle() : "Activity Review");
+            }
+            if (!item.containsKey("targetName") && booking != null && booking.getActivityId() != null) {
+                Activity activity = activityMap.get(booking.getActivityId());
+                if (activity != null && StringUtils.hasText(activity.getTitle())) {
+                    item.put("targetName", activity.getTitle());
+                }
+            }
+            if (!item.containsKey("targetName")) {
+                item.put("targetName", "activity".equalsIgnoreCase(defaultString(review.getReviewType())) ? "Activity Review" : "Product Review");
+            }
+            userRepository.findById(review.getUserId()).ifPresent(user -> {
+                item.put("userId", user.getId());
+                item.put("userName", displayName(user));
+                item.put("userAvatar", resolveUserAvatar(user));
+            });
+            result.add(item);
+        }
+        return result;
+    }
+    private List<Map<String, Object>> buildBookingStatusStats(List<ActivityReserve> bookings) {
+        int registeredCount = 0;
+        int checkedInCount = 0;
+        int rejectedCount = 0;
+        int cancelledCount = 0;
+        for (ActivityReserve booking : bookings) {
+            String status = toClientReserveStatus(booking.getReserveStatus());
+            if ("registered".equals(status)) {
+                registeredCount++;
+            } else if ("checked_in".equals(status)) {
+                checkedInCount++;
+            } else if ("rejected".equals(status)) {
+                rejectedCount++;
+            } else if ("cancelled".equals(status)) {
+                cancelledCount++;
+            }
+        }
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        result.add(statusSummary("registered", "Active", "#1661ab", registeredCount));
+        result.add(statusSummary("checked_in", "Checked In", "#1f8a70", checkedInCount));
+        result.add(statusSummary("rejected", "Rejected", "#c04851", rejectedCount));
+        result.add(statusSummary("cancelled", "Cancelled", "#6b7280", cancelledCount));
+        return result;
+    }
+    private Map<String, Object> statusSummary(String key, String label, String color, int count) {
+        Map<String, Object> item = new LinkedHashMap<String, Object>();
+        item.put("key", key);
+        item.put("label", label);
+        item.put("color", color);
+        item.put("count", count);
+        return item;
+    }
+    private List<Map<String, Object>> buildSalesTrend(List<ActivityReserve> bookings) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate endDate = LocalDate.now(zoneId);
+        LocalDate startDate = endDate.minusDays(6);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        Map<LocalDate, Map<String, Object>> bucketMap = new LinkedHashMap<LocalDate, Map<String, Object>>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDate = startDate.plusDays(i);
+            Map<String, Object> bucket = new LinkedHashMap<String, Object>();
+            bucket.put("date", currentDate.toString());
+            bucket.put("label", currentDate.format(formatter));
+            bucket.put("bookingCount", 0);
+            bucket.put("participantCount", 0);
+            bucket.put("bookingRevenue", 0);
+            bucketMap.put(currentDate, bucket);
+        }
+        for (ActivityReserve booking : bookings) {
+            LocalDate bookingDate = toLocalDate(booking.getCreateTime());
+            if (bookingDate != null && !bookingDate.isBefore(startDate) && !bookingDate.isAfter(endDate)) {
+                Map<String, Object> bookingBucket = bucketMap.get(bookingDate);
+                if (bookingBucket != null) {
+                    bookingBucket.put("bookingCount", safeInt(bookingBucket.get("bookingCount")) + 1);
+                    bookingBucket.put("participantCount", safeInt(bookingBucket.get("participantCount")) + safeInt(booking.getParticipantNum()));
+                }
+            }
+            if (Integer.valueOf(1).equals(booking.getPayStatus())) {
+                Date revenueSourceDate = booking.getPaymentTime() == null ? booking.getCreateTime() : booking.getPaymentTime();
+                LocalDate revenueDate = toLocalDate(revenueSourceDate);
+                if (revenueDate != null && !revenueDate.isBefore(startDate) && !revenueDate.isAfter(endDate)) {
+                    Map<String, Object> revenueBucket = bucketMap.get(revenueDate);
+                    if (revenueBucket != null) {
+                        revenueBucket.put("bookingRevenue", safeInt(revenueBucket.get("bookingRevenue")) + safeInt(booking.getPayAmount()));
+                    }
+                }
+            }
+        }
+        return new ArrayList<Map<String, Object>>(bucketMap.values());
+    }
+    private List<Map<String, Object>> buildTopActivities(List<ActivityReserve> bookings, Map<Long, Activity> activityMap) {
+        Map<Long, Map<String, Object>> grouped = new LinkedHashMap<Long, Map<String, Object>>();
+        for (ActivityReserve booking : bookings) {
+            Long activityId = booking.getActivityId();
+            if (activityId == null) {
+                continue;
+            }
+            Map<String, Object> item = grouped.get(activityId);
+            if (item == null) {
+                item = new LinkedHashMap<String, Object>();
+                item.put("activityId", activityId);
+                Activity activity = activityMap.get(activityId);
+                String title = activity != null && StringUtils.hasText(activity.getTitle())
+                        ? activity.getTitle()
+                        : defaultString(booking.getActivityTitle());
+                item.put("title", title);
+                item.put("bookingCount", 0);
+                item.put("participantCount", 0);
+                item.put("revenue", 0);
+                grouped.put(activityId, item);
+            }
+            item.put("bookingCount", safeInt(item.get("bookingCount")) + 1);
+            item.put("participantCount", safeInt(item.get("participantCount")) + safeInt(booking.getParticipantNum()));
+            if (Integer.valueOf(1).equals(booking.getPayStatus())) {
+                item.put("revenue", safeInt(item.get("revenue")) + safeInt(booking.getPayAmount()));
+            }
+        }
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>(grouped.values());
+        Collections.sort(result, new java.util.Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> left, Map<String, Object> right) {
+                int revenueCompare = Integer.compare(safeInt(right.get("revenue")), safeInt(left.get("revenue")));
+                if (revenueCompare != 0) {
+                    return revenueCompare;
+                }
+                int bookingCompare = Integer.compare(safeInt(right.get("bookingCount")), safeInt(left.get("bookingCount")));
+                if (bookingCompare != 0) {
+                    return bookingCompare;
+                }
+                return Integer.compare(safeInt(right.get("participantCount")), safeInt(left.get("participantCount")));
+            }
+        });
+        if (result.size() > 5) {
+            return new ArrayList<Map<String, Object>>(result.subList(0, 5));
+        }
+        return result;
+    }
+    private BigDecimal resolveAverageScore(List<MerchantReview> reviews) {
+        if (reviews.isEmpty()) {
+            return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
+        }
+        BigDecimal total = BigDecimal.ZERO;
+        int counted = 0;
+        for (MerchantReview review : reviews) {
+            if (review.getScore() == null) {
+                continue;
+            }
+            total = total.add(review.getScore());
+            counted++;
+        }
+        if (counted <= 0) {
+            return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
+        }
+        return total.divide(BigDecimal.valueOf(counted), 1, RoundingMode.HALF_UP);
+    }
+    private int resolveFollowerCount(User user) {
+        if (user == null) {
+            return 0;
+        }
+        return safeInt(user.getFollowerCount());
+    }
+    private String resolveUserAvatar(User user) {
+        if (user == null || !StringUtils.hasText(user.getAvatar())) {
+            return "/default-avatar.svg";
+        }
+        return user.getAvatar();
+    }
+    private LocalDate toLocalDate(Date value) {
+        if (value == null) {
+            return null;
+        }
+        return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+    private int safeInt(Object value) {
+        Integer resolved = intValue(value, 0);
+        return resolved == null ? 0 : resolved;
+    }
     private String displayName(User user) {
         if (user == null) {
             return "";

@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import i18n from './i18n'
 import Notification from './components/Notification.vue'
 import 'boxicons/css/boxicons.min.css'
 import './assets/personal-theme.css'
@@ -10,7 +9,6 @@ import './assets/main.css'
 const app = createApp(App)
 
 app.use(router)
-app.use(i18n)
 
 // 注册Notification组件为全局组件
 app.component('Notification', Notification)

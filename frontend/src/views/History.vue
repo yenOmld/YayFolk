@@ -4,18 +4,18 @@
       <button class="back-btn" @click="goBack">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>{{ $t('history.title') }}</h1>
+      <h1>浏览历史</h1>
       <button class="clear-btn" @click="clearHistory" v-if="history.length > 0">
-        {{ $t('common.clear') }}
+        清空
       </button>
     </div>
 
     <div class="history-content">
       <div class="empty-state" v-if="history.length === 0">
         <i class='bx bxs-history'></i>
-        <h3>{{ $t('history.emptyTitle') }}</h3>
-        <p>{{ $t('history.emptyHint') }}</p>
-        <button class="btn primary" @click="goToTranslate">{{ $t('history.goTranslate') }}</button>
+        <h3>暂无浏览历史</h3>
+        <p>去浏览帖子，查看历史记录</p>
+        <button class="btn primary" @click="goToTranslate">去浏览</button>
       </div>
 
       <div class="history-grid" v-else>
@@ -32,7 +32,7 @@
             <i class='bx bx-image'></i>
           </div>
           <div class="card-info">
-            <h4 class="card-title">{{ item.title || $t('history.untitled') }}</h4>
+            <h4 class="card-title">{{ item.title || '未命名' }}</h4>
             <div class="card-meta">
               <span class="card-time">{{ item.viewedAt }}</span>
               <span class="card-views" v-if="item.viewCount">
@@ -49,7 +49,6 @@
 <script setup>
 import { onMounted, ref, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { clearMyDiscoverHistory, getMyDiscoverHistory } from '../api/app'
 
 // 获取通知实例
@@ -58,7 +57,6 @@ const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
 
 const router = useRouter()
-const { t } = useI18n()
 const history = ref([])
 
 const goBack = () => {
@@ -82,30 +80,30 @@ const loadHistory = async () => {
     if (response.code === 200) {
       history.value = Array.isArray(response.data) ? response.data : []
     } else {
-      notify.error(response.message || t('history.loadFailed'))
+      notify.error(response.message || '加载失败')
     }
   } catch (error) {
-    notify.error(t('history.loadFailedRetry'))
+    notify.error('加载失败，请重试')
   }
 }
 
 const clearHistory = async () => {
   confirm({
-    title: t('history.confirmClearTitle'),
-    message: t('history.confirmClear'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认清空',
+    message: '确定要清空所有浏览历史吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await clearMyDiscoverHistory()
         if (response.code === 200) {
           history.value = []
-          notify.success(t('history.clearSuccess'))
+          notify.success('清空成功')
         } else {
-          notify.error(response.message || t('history.clearFailed'))
+          notify.error(response.message || '清空失败')
         }
       } catch (error) {
-        notify.error(t('history.clearFailedRetry'))
+        notify.error('清空失败，请重试')
       }
     }
   })

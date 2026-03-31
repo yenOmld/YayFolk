@@ -5,13 +5,13 @@
         <button class="back-btn" @click="goBack">
           <i class='bx bx-arrow-back'></i>
         </button>
-        <h1>{{ $t('conversation.title') }}</h1>
+        <h1>对话模式</h1>
         <div class="header-right">
           <div class="autoplay-toggle">
             <label class="toggle-label">
               <input type="checkbox" v-model="autoPlay" />
               <span class="toggle-slider"></span>
-              <span class="toggle-text">{{ $t('conversation.autoPlay') }}</span>
+              <span class="toggle-text">自动播放</span>
             </label>
           </div>
           
@@ -19,17 +19,17 @@
             <button class="control-btn" @click="isPlaying ? pauseAudio() : resumeAudio()">
               <i :class="isPlaying ? 'bx bx-pause' : 'bx bx-play'"></i>
             </button>
-            <span class="audio-status">{{ isPlaying ? $t('conversation.playing') : $t('conversation.paused') }}</span>
+            <span class="audio-status">{{ isPlaying ? '播放中' : '已暂停' }}</span>
           </div>
         </div>
       </div>
     </header>
 
     <main class="conversation-main">
-      <!-- 璇█閫夋嫨鍣?-->
+      <!-- 语言选择器 -->
       <div class="language-selector">
         <select v-model="sourceLang" class="lang-select">
-          <option value="zh">涓枃</option>
+          <option value="zh">中文</option>
           <option value="en">English</option>
           <option value="jp">Japanese</option>
           <option value="kor">Korean</option>
@@ -40,7 +40,7 @@
           <i class='bx bx-arrow-back'></i>
         </button>
         <select v-model="targetLang" class="lang-select">
-          <option value="zh">涓枃</option>
+          <option value="zh">中文</option>
           <option value="en">English</option>
           <option value="jp">Japanese</option>
           <option value="kor">Korean</option>
@@ -49,12 +49,12 @@
         </select>
       </div>
 
-      <!-- 宸﹀彸鍒嗘爮瀵硅瘽鍖哄煙 -->
+      <!-- 左右分栏对话区域 -->
       <div class="conversation-area">
         <div class="left-panel">
           <div class="panel-content" ref="leftPanel">
             <div v-if="messages.length === 0" class="empty-state">
-              <p>{{ $t('conversation.startConversation') }}</p>
+              <p>开始对话</p>
             </div>
             <div class="messages-container">
               <div
@@ -80,7 +80,7 @@
         <div class="right-panel">
           <div class="panel-content" ref="rightPanel">
             <div v-if="messages.length === 0" class="empty-state">
-              <p>{{ $t('conversation.startConversation') }}</p>
+              <p>开始对话</p>
             </div>
             <div class="messages-container">
               <div
@@ -105,12 +105,12 @@
         </div>
       </div>
 
-      <!-- 褰曢煶鎸夐挳 -->
+      <!-- 录音按钮 -->
       <div class="record-area">
         <button class="record-btn" :class="{ recording: isRecording }" @click="toggleRecording">
           <i class='bx bx-microphone'></i>
         </button>
-        <p class="record-hint">{{ isRecording ? $t('voice.clickToStop') : $t('voice.clickToStart') }}</p>
+        <p class="record-hint">{{ isRecording ? '点击停止' : '点击开始' }}</p>
         <div v-if="isRecording" class="recording-indicator">
           <span class="recording-time">{{ recordingTime }}s / 60s</span>
         </div>
@@ -124,15 +124,13 @@
 <script setup>
 import { ref, nextTick, onUnmounted, computed, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
-// 鑾峰彇閫氱煡瀹炰緥
+// 获取通知实例
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-const { t } = useI18n()
 
 const sourceLang = ref('zh')
 const targetLang = ref('en')
@@ -276,8 +274,8 @@ const startRecording = async () => {
       }
     }, 1000)
   } catch (err) {
-    console.error('褰曢煶鍚姩澶辫触:', err)
-    notify.error(t('voice.micAccessFailed'))
+    console.error('录音启动失败:', err)
+    notify.error('麦克风访问失败')
   }
 }
 
@@ -432,13 +430,13 @@ const processAudio = async (audioBlob) => {
 
 const playMessageAudio = async (msg) => {
   if (!msg) {
-    notify.error(t('conversation.messageNotFound'))
+    notify.error('消息未找到')
     return
   }
   if (msg.audioUrl) {
     const audio = new Audio(msg.audioUrl)
     audio.play().catch(() => {
-      notify.error(t('conversation.audioPlayFailed'))
+      notify.error('音频播放失败')
     })
     return
   }
@@ -451,23 +449,23 @@ const playMessageAudio = async (msg) => {
       const audio = new Audio(response.data.data.audioUrl)
       audio.play()
     } else {
-      notify.error(t('conversation.audioFetchFailed'))
+      notify.error('音频获取失败')
     }
   } catch {
-    notify.error(t('conversation.audioFetchFailed'))
+    notify.error('音频获取失败')
   }
 }
 
 const copyText = async (text) => {
   if (!text) {
-    notify.error(t('conversation.noContentToCopy'))
+    notify.error('没有内容可复制')
     return
   }
   try {
     await navigator.clipboard.writeText(text)
-    notify.success(t('conversation.copied'))
+    notify.success('已复制')
   } catch {
-    notify.error(t('conversation.copyFailed'))
+    notify.error('复制失败')
   }
 }
 

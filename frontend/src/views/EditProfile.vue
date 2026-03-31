@@ -4,9 +4,9 @@
       <button class="back-btn" @click="goBack">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>{{ $t('editProfile.title') }}</h1>
+      <h1>编辑个人资料</h1>
       <button class="save-btn" @click="saveProfile" :disabled="isSaving">
-        {{ isSaving ? $t('editProfile.saving') : $t('common.save') }}
+        {{ isSaving ? '保存中...' : '保存' }}
       </button>
     </div>
 
@@ -16,7 +16,7 @@
           <img :src="editForm.avatar || defaultAvatar" alt="Avatar" class="avatar">
           <div class="avatar-upload-btn" @click="triggerFileInput">
             <i class='bx bxs-camera'></i>
-            <span>{{ $t('editProfile.changeAvatar') }}</span>
+            <span>更换头像</span>
           </div>
           <input
             ref="fileInput"
@@ -30,73 +30,73 @@
 
       <div class="form-section">
         <div class="form-item">
-          <label>{{ $t('editProfile.nickname') }}</label>
+          <label>昵称</label>
           <input
             v-model="editForm.nickname"
             type="text"
-            :placeholder="$t('editProfile.nicknamePlaceholder')"
+            placeholder="请输入昵称"
             maxlength="20"
           >
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.signature') }}</label>
+          <label>个性签名</label>
           <textarea
             v-model="editForm.signature"
             rows="3"
             maxlength="60"
-            :placeholder="$t('editProfile.signaturePlaceholder')"
+            placeholder="请输入个性签名"
           ></textarea>
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.bio') }}</label>
+          <label>个人简介</label>
           <textarea
             v-model="editForm.bio"
             rows="5"
             maxlength="200"
-            :placeholder="$t('editProfile.bioPlaceholder')"
+            placeholder="请输入个人简介"
           ></textarea>
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.phone') }}</label>
+          <label>手机号</label>
           <input
             type="text"
-            :value="editForm.phone || $t('editProfile.notSet')"
+            :value="editForm.phone || '未设置'"
             disabled
           >
-          <span class="hint">{{ $t('editProfile.notEditable') }}</span>
+          <span class="hint">不可编辑</span>
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.email') }}</label>
+          <label>邮箱</label>
           <input
             type="email"
-            :value="editForm.email || $t('editProfile.notSet')"
+            :value="editForm.email || '未设置'"
             disabled
           >
-          <span class="hint">{{ $t('editProfile.notEditable') }}</span>
+          <span class="hint">不可编辑</span>
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.username') }}</label>
+          <label>用户名</label>
           <input
             type="text"
             :value="editForm.username"
             disabled
           >
-          <span class="hint">{{ $t('editProfile.notEditable') }}</span>
+          <span class="hint">不可编辑</span>
         </div>
 
         <div class="form-item">
-          <label>{{ $t('editProfile.country') }}</label>
+          <label>国家/地区</label>
           <input
             type="text"
-            :value="editForm.country || $t('editProfile.notSet')"
+            :value="editForm.country || '未设置'"
             disabled
           >
-          <span class="hint">{{ $t('editProfile.autoDetected') }}</span>
+          <span class="hint">自动检测</span>
         </div>
       </div>
     </div>
@@ -106,7 +106,6 @@
 <script setup>
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { getHomepageSettings, getUserProfile, updateHomepageSettings, updateUserProfile } from '../api/app'
 import request from '../utils/request'
 
@@ -116,7 +115,6 @@ const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-const { t } = useI18n()
 const fileInput = ref(null)
 const isSaving = ref(false)
 const selectedFile = ref(null)
@@ -171,12 +169,12 @@ const handleAvatarUpload = (event) => {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    notify.warning(t('editProfile.selectImage'))
+    notify.warning('请选择图片文件')
     return
   }
 
   if (file.size > 5 * 1024 * 1024) {
-    notify.warning(t('editProfile.imageSizeLimit'))
+    notify.warning('图片大小不能超过5MB')
     return
   }
 
@@ -204,7 +202,7 @@ const uploadAvatarIfNeeded = async () => {
 
 const saveProfile = async () => {
   if (!editForm.nickname.trim()) {
-    notify.warning(t('editProfile.enterNickname'))
+    notify.warning('请输入昵称')
     return
   }
 
@@ -222,22 +220,22 @@ const saveProfile = async () => {
     ])
 
     if (profileRes.code !== 200) {
-      notify.error(profileRes.message || t('editProfile.saveFailed'))
+      notify.error(profileRes.message || '保存失败')
       return
     }
 
     if (homepageRes.code !== 200) {
-      notify.error(homepageRes.message || t('editProfile.saveFailed'))
+      notify.error(homepageRes.message || '保存失败')
       return
     }
 
     editForm.avatar = avatarUrl
     syncLocalUser(avatarUrl)
-    notify.success(t('editProfile.saveSuccess'))
+    notify.success('保存成功')
     router.back()
   } catch (error) {
     console.error('save profile failed:', error)
-    notify.error(t('editProfile.saveFailedRetry'))
+    notify.error('保存失败，请重试')
   } finally {
     isSaving.value = false
   }

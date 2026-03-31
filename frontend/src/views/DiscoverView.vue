@@ -5,7 +5,7 @@
         <div class="logo">YayFolk</div>
         <div class="search-input">
           <i class='bx bx-search'></i>
-          <input v-model="searchKeyword" type="text" :placeholder="$t('discover.searchPlaceholder')" @keyup.enter="loadPosts" />
+          <input v-model="searchKeyword" type="text" placeholder="搜索" @keyup.enter="loadPosts" />
         </div>
         <div class="nav-buttons main-nav-buttons">
           <div 
@@ -14,7 +14,7 @@
             @click="switchPage('discover')"
           >
             <i class='bx bx-compass'></i>
-            <span>{{ $t('nav.discover') }}</span>
+            <span>发现</span>
           </div>
           <div 
             class="nav-button" 
@@ -22,7 +22,7 @@
             @click="switchPage('post')"
           >
             <i class='bx bx-edit-alt'></i>
-            <span>{{ $t('nav.post') }}</span>
+            <span>发布</span>
           </div>
           <div 
             class="nav-button" 
@@ -30,7 +30,7 @@
             @click="switchPage('notification')"
           >
             <i class='bx bx-bell'></i>
-            <span>{{ $t('nav.notification') }}</span>
+            <span>通知</span>
             <span v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </div>
         </div>
@@ -44,7 +44,7 @@
             @click="switchPageMobile('discover')"
           >
             <i class='bx bx-compass'></i>
-            <span>{{ $t('nav.discover') }}</span>
+            <span>发现</span>
           </div>
           <div 
             class="mobile-menu-item" 
@@ -52,7 +52,7 @@
             @click="switchPageMobile('post')"
           >
             <i class='bx bx-edit-alt'></i>
-            <span>{{ $t('nav.post') }}</span>
+            <span>发布</span>
           </div>
           <div 
             class="mobile-menu-item" 
@@ -60,7 +60,7 @@
             @click="switchPageMobile('notification')"
           >
             <i class='bx bx-bell'></i>
-            <span>{{ $t('nav.notification') }}</span>
+            <span>通知</span>
             <span v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </div>
         </div>
@@ -85,7 +85,7 @@
             <div class="sort-dropdown" @click.stop>
               <button class="sort-btn" @click="toggleSortMenu">
                 <i class='bx bx-sort-alt-2'></i>
-                <span>{{ sortBy === 'latest' ? $t('discover.latest') : $t('discover.hot') }}</span>
+                <span>{{ sortBy === 'latest' ? '最新' : '热门' }}</span>
                 <i class='bx bx-chevron-down'></i>
               </button>
               <div v-if="showSortMenu" class="sort-menu">
@@ -95,7 +95,7 @@
                   @click="changeSort('latest')"
                 >
                   <i class='bx bx-time'></i>
-                  <span>{{ $t('discover.latest') }}</span>
+                  <span>最新</span>
                 </div>
                 <div 
                   class="sort-option" 
@@ -103,7 +103,7 @@
                   @click="changeSort('hot')"
                 >
                   <i class='bx bx-hot'></i>
-                  <span>{{ $t('discover.hot') }}</span>
+                  <span>热门</span>
                 </div>
               </div>
             </div>
@@ -118,12 +118,12 @@
             <div class="loading-spinner">
               <i class='bx bx-loader-alt bx-spin'></i>
             </div>
-            <p class="loading-text">{{ $t('discover.loading') }}</p>
+            <p class="loading-text">加载中...</p>
           </div>
           <template v-else>
             <div v-if="displayPosts.length === 0" class="empty-state">
               <i class='bx bx-file-blank'></i>
-              <p>{{ $t('discover.noPosts') }}</p>
+              <p>暂无帖子</p>
             </div>
             <div 
               v-else
@@ -175,19 +175,19 @@
 
       <div v-else-if="currentPage === 'post'" class="main-content post-page">
         <div class="post-container">
-          <h2>{{ $t('discover.newPost') }}</h2>
+          <h2>发布新帖子</h2>
           <div class="post-form-horizontal">
             <div class="post-form-left">
               <div class="form-group">
-                <label>{{ $t('discover.title') }}</label>
-                <input v-model="postForm.title" type="text" :placeholder="$t('discover.title')" />
+                <label>标题</label>
+                <input v-model="postForm.title" type="text" placeholder="标题" />
               </div>
               <div class="form-group">
-                <label>{{ $t('discover.content') }}</label>
-                <textarea v-model="postForm.content" :placeholder="$t('discover.content')"></textarea>
+                <label>内容</label>
+                <textarea v-model="postForm.content" placeholder="内容"></textarea>
               </div>
               <div class="form-group">
-                <label>{{ $t('discover.category') }}</label>
+                <label>分类</label>
                 <select v-model="postForm.category">
                   <option v-for="category in categories.filter(item => item.id !== 'all')" :key="category.id" :value="category.id">
                     {{ category.name }}
@@ -198,10 +198,10 @@
             
             <div class="post-form-right">
               <div class="form-group">
-                <label>{{ $t('discover.addImage') }}</label>
+                <label>添加图片</label>
                 <div class="image-upload-area" @click="$refs.imageInput.click()">
                   <i class='bx bx-plus-circle'></i>
-                  <span>{{ $t('discover.addImage') }}</span>
+                  <span>添加图片</span>
                   <input 
                     ref="imageInput"
                     type="file" 
@@ -238,7 +238,7 @@
                 </div>
               </div>
               <div class="form-group">
-                <label>{{ $t('discover.tags') }} <span class="tag-count">({{ postForm.tags.length }}/10)</span></label>
+                <label>标签 <span class="tag-count">({{ postForm.tags.length }}/10)</span></label>
                 <div class="tags-container">
                   <div v-if="postForm.tags.length > 0" class="selected-tags">
                     <span
@@ -263,18 +263,18 @@
                     <input 
                       v-model="customTagsInput" 
                       type="text" 
-                      :placeholder="$t('discover.addTagPlaceholder')" 
+                      placeholder="添加标签" 
                       @keyup.enter="addCustomTags"
                       :disabled="postForm.tags.length >= 10"
                     />
                     <div class="tag-buttons">
-                      <button class="tag-btn" @click.prevent="addCustomTags" :disabled="postForm.tags.length >= 10">{{ $t('discover.addTag') }}</button>
+                      <button class="tag-btn" @click.prevent="addCustomTags" :disabled="postForm.tags.length >= 10">添加</button>
                     </div>
                   </div>
                 </div>
               </div>
               <button class="submit-post-btn" :disabled="submittingPost" @click="submitPost">
-                {{ submittingPost ? $t('common.loading') : $t('discover.publish') }}
+                {{ submittingPost ? '发布中...' : '发布' }}
               </button>
             </div>
           </div>
@@ -283,34 +283,34 @@
 
       <div v-else-if="currentPage === 'notification'" class="main-content notification-page">
         <div class="notification-container">
-          <h2>{{ $t('nav.notification') }}</h2>
+          <h2>通知</h2>
           <div class="notification-list">
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user1" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">User A</span> {{ $t('discover.collectedYourPost') }}</p>
-                <span class="notification-time">10{{ $t('discover.minutesAgo') }}</span>
+                <p><span class="notification-user">User A</span> 收藏了你的帖子</p>
+                <span class="notification-time">10分钟前</span>
               </div>
             </div>
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user2" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">User B</span> {{ $t('discover.commentedYourPost') }}</p>
-                <span class="notification-time">30{{ $t('discover.minutesAgo') }}</span>
+                <p><span class="notification-user">User B</span> 评论了你的帖子</p>
+                <span class="notification-time">30分钟前</span>
               </div>
             </div>
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user3" alt="User" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">User C</span> {{ $t('discover.followedYou') }}</p>
-                <span class="notification-time">1{{ $t('discover.hoursAgo') }}</span>
+                <p><span class="notification-user">User C</span> 关注了你</p>
+                <span class="notification-time">1小时前</span>
               </div>
             </div>
             <div class="notification-item">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=system" alt="System" class="notification-avatar" />
               <div class="notification-content">
-                <p><span class="notification-user">{{ $t('discover.system') }}</span> {{ $t('discover.postFeatured') }}</p>
-                <span class="notification-time">2{{ $t('discover.hoursAgo') }}</span>
+                <p><span class="notification-user">系统</span> 你的帖子被推荐</p>
+                <span class="notification-time">2小时前</span>
               </div>
             </div>
           </div>
@@ -341,7 +341,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, getCurrentInstance } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   createDiscoverPost,
   getDiscoverPostDetail,
@@ -358,17 +357,16 @@ import PostDetailModal from '../components/PostDetailModal.vue'
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
-const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
 const categories = computed(() => [
-  { id: 'all', name: t('discover.categoryAll') },
-  { id: '服饰妆造', name: t('discover.presetTags.costume') },
-  { id: '美妆造物', name: t('discover.presetTags.artistry') },
-  { id: '民族节气', name: t('discover.presetTags.folklore') },
-  { id: '戏曲演绎', name: t('discover.presetTags.opera') },
-  { id: '织物手工', name: t('discover.presetTags.textile') }
+  { id: 'all', name: '全部' },
+  { id: '服饰妆造', name: '服饰妆造' },
+  { id: '美妆造物', name: '美妆造物' },
+  { id: '民族节气', name: '民族节气' },
+  { id: '戏曲演绎', name: '戏曲演绎' },
+  { id: '织物手工', name: '织物手工' }
 ])
 
 const posts = ref([])
@@ -396,18 +394,18 @@ const postForm = ref({
 const pendingFilesMap = ref(new Map())
 const customTagsInput = ref('')
 const presetTags = computed(() => [
-  t('discover.presetTags.costume'),
-  t('discover.presetTags.artistry'),
-  t('discover.presetTags.folklore'),
-  t('discover.presetTags.opera'),
-  t('discover.presetTags.textile')
+  '服饰妆造',
+  '美妆造物',
+  '民族节气',
+  '戏曲演绎',
+  '织物手工'
 ])
 const classifierTagMap = computed(() => ({
-  '服饰妆造': t('discover.presetTags.costume'),
-  '美妆造物': t('discover.presetTags.artistry'),
-  '民族节气': t('discover.presetTags.folklore'),
-  '戏曲演绎': t('discover.presetTags.opera'),
-  '织物手工': t('discover.presetTags.textile')
+  '服饰妆造': '服饰妆造',
+  '美妆造物': '美妆造物',
+  '民族节气': '民族节气',
+  '戏曲演绎': '戏曲演绎',
+  '织物手工': '织物手工'
 }))
 const bestClassification = ref({
   tag: '',
@@ -553,10 +551,10 @@ const loadPosts = async () => {
     if (response.code === 200) {
       posts.value = Array.isArray(response.data) ? response.data : []
     } else {
-      notify.error(response.message || t('discover.loadPostsFailed'))
+      notify.error(response.message || '加载帖子失败')
     }
   } catch (error) {
-    notify.error(t('discover.loadPostsFailedRetry'))
+    notify.error('加载帖子失败，请重试')
   } finally {
     loadingPosts.value = false
   }
@@ -594,10 +592,10 @@ const openPostModal = async (post) => {
       showPostModal.value = true
       syncPostInList(response.data)
     } else {
-      notify.error(response.message || t('discover.loadDetailFailed'))
+      notify.error(response.message || '加载详情失败')
     }
   } catch (error) {
-    notify.error(t('discover.loadDetailFailedRetry'))
+    notify.error('加载详情失败，请重试')
   }
 }
 
@@ -640,7 +638,7 @@ const toggleCollect = async (post) => {
   try {
     const response = await toggleDiscoverPostCollect(post.id)
     if (response.code !== 200) {
-      notify.error(response.message || t('discover.operationFailed'))
+      notify.error(response.message || '操作失败')
       return
     }
     const { bookmarked, collects } = response.data
@@ -650,7 +648,7 @@ const toggleCollect = async (post) => {
       currentPost.value = { ...currentPost.value, bookmarked, collects }
     }
   } catch (error) {
-    notify.error(t('discover.collectFailed'))
+    notify.error('收藏失败')
   }
 }
 
@@ -658,7 +656,7 @@ const toggleTag = (tag) => {
   const current = postForm.value.tags
   const exists = current.includes(tag)
   if (!exists && current.length >= 10) {
-    notify.warning(t('discover.maxTags'))
+    notify.warning('最多添加10个标签')
     return
   }
   postForm.value.tags = exists ? current.filter(item => item !== tag) : [...current, tag]
@@ -681,7 +679,7 @@ const addCustomTags = () => {
     }
   })
   if (addedCount < tags.length) {
-    notify.warning(t('discover.maxTags'))
+    notify.warning('最多添加10个标签')
   }
   postForm.value.tags = merged
   customTagsInput.value = ''
@@ -698,7 +696,7 @@ const handleImageUpload = async (event) => {
 
   const remainingSlots = 9 - postForm.value.images.length
   if (remainingSlots <= 0) {
-    notify.warning(t('discover.maxImages'))
+    notify.warning('最多上传9张图片')
     if (input) {
       input.value = ''
     }
@@ -841,15 +839,15 @@ const closeImagePreview = () => {
 
 const submitPost = async () => {
   if (!postForm.value.title.trim()) {
-    notify.warning(t('discover.enterTitle'))
+    notify.warning('请输入标题')
     return
   }
   if (!postForm.value.content.trim()) {
-    notify.warning(t('discover.enterContent'))
+    notify.warning('请输入内容')
     return
   }
   if (!postForm.value.images || postForm.value.images.length === 0) {
-    notify.warning(t('discover.uploadImage'))
+    notify.warning('请上传图片')
     return
   }
   submittingPost.value = true
@@ -864,7 +862,7 @@ const submitPost = async () => {
       images: []
     })
     if (createResponse.code !== 200) {
-      notify.error(createResponse.message || t('discover.publishFailed'))
+      notify.error(createResponse.message || '发布失败')
       return
     }
     const postId = createResponse.data.id
@@ -896,15 +894,15 @@ const submitPost = async () => {
       images: ossUrls
     })
     if (updateResponse.code === 200) {
-      notify.success(t('discover.publishSuccess'))
+      notify.success('发布成功')
       resetPostForm()
       currentPage.value = 'discover'
       await loadPosts()
     } else {
-      notify.error(updateResponse.message || t('discover.publishFailed'))
+      notify.error(updateResponse.message || '发布失败')
     }
   } catch (error) {
-    notify.error(t('discover.publishFailedRetry'))
+    notify.error('发布失败，请重试')
   } finally {
     submittingPost.value = false
   }

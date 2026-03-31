@@ -457,22 +457,22 @@
           </div>
           <div class="menu-item" @click="navigateToEditProfile">
             <i class='bx bxs-user'></i>
-            <span>{{ $t('personal.editProfile') }}</span>
+            <span>编辑个人资料</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           <div class="menu-item" @click="showChangePassword">
             <i class='bx bxs-lock-alt'></i>
-            <span>{{ $t('personal.changePassword') }}</span>
+            <span>修改密码</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           <div class="menu-item" @click="navigateToSettings">
             <i class='bx bx-grid'></i>
-            <span>{{ $t('personal.general') }}</span>
+            <span>通用</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           <div class="menu-item" @click="openCustomerService">
             <i class='bx bxs-info-circle'></i>
-            <span>{{ $t('personal.contactService') }}</span>
+            <span>联系客服</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           
@@ -491,10 +491,10 @@
         
         <div class="logout-section">
           <button class="logout-btn" @click="showLogoutConfirm">
-            <i class='bx bx-log-out'></i> {{ $t('personal.logout') }}
+            <i class='bx bx-log-out'></i> 退出登录
           </button>
           <button class="delete-account-btn" @click="showDeleteConfirm">
-            <i class='bx bx-user-x'></i> {{ $t('personal.deleteAccount') }}
+            <i class='bx bx-user-x'></i> 注销账号
           </button>
         </div>
       </div>
@@ -592,21 +592,21 @@
     <!-- 退出登录确认弹窗-->
     <div class="modal" v-if="showLogoutModal">
       <div class="modal-content">
-        <h3>{{ $t('personal.logout') }}</h3>
-        <p>{{ $t('personal.logoutConfirm') }}</p>
+        <h3>退出登录</h3>
+        <p>确定要退出登录吗？</p>
         <div class="modal-buttons">
-          <button class="btn secondary" @click="showLogoutModal = false">{{ $t('common.cancel') }}</button>
-          <button class="btn primary" @click="handleLogout">{{ $t('common.confirm') }}</button>
+          <button class="btn secondary" @click="showLogoutModal = false">取消</button>
+          <button class="btn primary" @click="handleLogout">确定</button>
         </div>
       </div>
     </div>
     <div class="modal" v-if="showDeleteModal">
       <div class="modal-content">
-        <h3>{{ $t('personal.deleteAccount') }}</h3>
-        <p>{{ $t('personal.deleteConfirm') }}</p>
+        <h3>注销账号</h3>
+        <p>注销后你的账号与数据将被删除，确定继续吗？</p>
         <div class="modal-buttons">
-          <button class="btn secondary" @click="showDeleteModal = false">{{ $t('common.cancel') }}</button>
-          <button class="btn danger" @click="handleDeleteAccount">{{ $t('common.confirm') }}</button>
+          <button class="btn secondary" @click="showDeleteModal = false">取消</button>
+          <button class="btn danger" @click="handleDeleteAccount">确定</button>
         </div>
       </div>
     </div>
@@ -617,8 +617,8 @@
         <h3>注销商家身份</h3>
         <p>注销商家将删除您的所有商品并退回普通用户身份。是否继续？</p>
         <div class="modal-buttons">
-          <button class="btn secondary" @click="showUnregisterMerchantModal = false">{{ $t('common.cancel') }}</button>
-          <button class="btn danger" @click="handleUnregisterMerchant">{{ $t('common.confirm') }}</button>
+          <button class="btn secondary" @click="showUnregisterMerchantModal = false">取消</button>
+          <button class="btn danger" @click="handleUnregisterMerchant">确定</button>
         </div>
       </div>
     </div>
@@ -626,17 +626,17 @@
     <!-- 修改瀵嗙爜弹窗 -->
     <div class="modal" v-if="showPasswordModal">
       <div class="modal-content">
-        <h3>{{ $t('personal.changePassword') }}</h3>
+        <h3>修改密码</h3>
         <div class="form-group">
-          <label>{{ $t('personal.oldPassword') }}</label>
+          <label>原密码</label>
           <input 
             type="password" 
             v-model="passwordForm.oldPassword" 
-            :placeholder="$t('personal.oldPassword')"
+            placeholder="原密码"
           />
         </div>
         <div class="form-group">
-          <label>{{ $t('personal.newPassword') }}</label>
+          <label>新密码</label>
           <input 
             type="password" 
             v-model="passwordForm.newPassword" 
@@ -645,17 +645,17 @@
           <span v-if="passwordErrors.newPassword" class="error-text">{{ passwordErrors.newPassword }}</span>
         </div>
         <div class="form-group">
-          <label>{{ $t('personal.confirmNewPassword') }}</label>
+          <label>确认新密码</label>
           <input 
             type="password" 
             v-model="passwordForm.confirmPassword" 
-            :placeholder="$t('personal.confirmNewPassword')"
+            placeholder="确认新密码"
           />
           <span v-if="passwordErrors.confirmPassword" class="error-text">{{ passwordErrors.confirmPassword }}</span>
         </div>
         <div class="modal-buttons">
-          <button class="btn secondary" @click="closePasswordModal">{{ $t('common.cancel') }}</button>
-          <button class="btn primary" @click="submitPasswordChange">{{ $t('common.confirm') }}</button>
+          <button class="btn secondary" @click="closePasswordModal">取消</button>
+          <button class="btn primary" @click="submitPasswordChange">确定</button>
         </div>
       </div>
     </div>
@@ -690,7 +690,7 @@
           />
         </div>
         <div class="modal-buttons">
-          <button class="btn secondary" @click="showMerchantCertModal = false">{{ $t('common.cancel') }}</button>
+          <button class="btn secondary" @click="showMerchantCertModal = false">取消</button>
           <button class="btn primary" @click="submitMerchantCert">提交申请</button>
         </div>
       </div>
@@ -813,7 +813,6 @@
 <script setup>
 import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
 import CustomerServiceView from './CustomerServiceView.vue'
 import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
@@ -822,7 +821,6 @@ const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-const { t } = useI18n()
 const showLogoutModal = ref(false)
 const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
@@ -1421,7 +1419,7 @@ const submitPasswordChange = async () => {
   const { oldPassword, newPassword, confirmPassword } = passwordForm.value
 
   if (!oldPassword) {
-    notify.warning(t('personal.enterOldPassword'))
+    notify.warning('请输入旧密码')
     return
   }
 
@@ -1456,14 +1454,14 @@ const submitPasswordChange = async () => {
     const data = await response.json()
 
     if (data.code === 200) {
-      notify.success(t('personal.passwordChangeSuccess'))
+      notify.success('密码修改成功')
       closePasswordModal()
     } else {
-      notify.error(data.message || t('personal.passwordChangeFailed'))
+      notify.error(data.message || '密码修改失败')
     }
   } catch (error) {
     console.error('修改密码失败:', error)
-    notify.error(t('personal.networkError'))
+    notify.error('网络错误')
   }
 }
 
@@ -1503,13 +1501,13 @@ const handleDeleteAccount = async () => {
     const data = await response.json()
     if (data.code === 200) {
       clearLoginSession()
-      notify.success(t('personal.accountDeleted'))
+      notify.success('账号已删除')
       router.push('/login')
     } else {
-      notify.error(data.message || t('personal.deleteAccountFailed'))
+      notify.error(data.message || '删除账号失败')
     }
   } catch (error) {
-    notify.error(t('personal.networkError'))
+    notify.error('网络错误')
   }
 }
 

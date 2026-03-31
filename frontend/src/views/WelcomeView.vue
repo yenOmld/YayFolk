@@ -60,22 +60,22 @@
         <div class="container" :class="{ active: isActive }">
           <div class="form-box login">
             <form action="#" @submit.prevent="handleLogin">
-              <h1>{{ $t('login.title') }}</h1>
+              <h1>登录</h1>
               <div class="input-box">
-                <input type="text" :placeholder="$t('login.username')" v-model="loginForm.username" required>
+                <input type="text" placeholder="手机号/邮箱" v-model="loginForm.username" required>
                 <i class='bx bxs-user'></i>
               </div>
               <div class="input-box">
-                <input type="password" :placeholder="$t('login.password')" v-model="loginForm.password" required>
+                <input type="password" placeholder="密码" v-model="loginForm.password" required>
                 <i class='bx bxs-lock-alt'></i>
               </div>
               <div class="forgot-link">
-                <a href="#" @click.prevent="showResetPassword">{{ $t('login.forgotPassword') }}</a>
+                <a href="#" @click.prevent="showResetPassword">忘记密码？</a>
               </div>
               <button type="submit" class="btn" :disabled="isLoggingIn">
-                {{ isLoggingIn ? $t('login.loggingIn') : $t('login.loginBtn') }}
+                {{ isLoggingIn ? '登录中...' : '登录' }}
               </button>
-              <p>{{ $t('login.socialLogin') }}</p>
+              <p>或使用以下方式登录</p>
               <div class="social-icons">
                 <a href="#"><i class='bx bxl-google'></i></a>
                 <a href="#"><i class='bx bxl-facebook'></i></a>
@@ -87,11 +87,11 @@
 
           <div class="form-box register">
             <form action="#" @submit.prevent="handleRegister">
-              <h1>{{ $t('login.register') }}</h1>
+              <h1>注册</h1>
               <div class="input-box">
                 <input 
                   type="text" 
-                  :placeholder="$t('login.username')" 
+                  placeholder="手机号/邮箱" 
                   v-model="registerForm.username"
                   @input="validateUsername('register')"
                   required
@@ -101,7 +101,7 @@
               <div class="input-box">
                 <input 
                   type="text" 
-                  :placeholder="$t('login.verificationCode')" 
+                  placeholder="验证码" 
                   v-model="registerForm.verificationCode" 
                   required
                 >
@@ -111,13 +111,13 @@
                   @click="sendVerificationCode"
                   :disabled="!registerForm.username || isSendingCode || countdown > 0"
                 >
-                  {{ countdown > 0 ? `${countdown}s` : $t('login.getCode') }}
+                  {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
                 </button>
               </div>
               <div class="input-box">
                 <input 
                   type="password" 
-                  :placeholder="$t('login.password')" 
+                  placeholder="密码" 
                   v-model="registerForm.password" 
                   @input="validatePassword('register')"
                   required
@@ -127,7 +127,7 @@
               <div class="input-box">
                 <input 
                   type="password" 
-                  :placeholder="$t('login.confirmPassword')" 
+                  placeholder="确认密码" 
                   v-model="registerForm.confirmPassword" 
                   @input="validateConfirmPassword('register')"
                   required
@@ -138,9 +138,9 @@
                 {{ passwordHint }}
               </div>
               <button type="submit" class="btn" :disabled="!isRegisterFormValid || isRegistering">
-                {{ isRegistering ? $t('login.registering') : $t('login.registerBtn') }}
+                {{ isRegistering ? '注册中...' : '注册' }}
               </button>
-              <p>{{ $t('login.socialLogin') }}</p>
+              <p>或使用以下方式登录</p>
               <div class="social-icons">
                 <a href="#"><i class='bx bxl-google'></i></a>
                 <a href="#"><i class='bx bxl-facebook'></i></a>
@@ -153,11 +153,11 @@
           <!-- 密码重置弹窗 -->
           <div class="modal" v-if="showResetModal">
             <div class="modal-content">
-              <h2>{{ $t('login.resetPassword') }}</h2>
+              <h2>重置密码</h2>
               <div class="input-box">
                 <input 
                   type="text" 
-                  :placeholder="$t('login.username')" 
+                  placeholder="手机号/邮箱" 
                   v-model="resetForm.username"
                   @input="validateUsername('reset')"
                   required
@@ -167,7 +167,7 @@
               <div class="input-box">
                 <input 
                   type="text" 
-                  :placeholder="$t('login.verificationCode')" 
+                  placeholder="验证码" 
                   v-model="resetForm.verificationCode" 
                   required
                 >
@@ -177,13 +177,13 @@
                   @click="sendResetVerificationCode"
                   :disabled="!resetForm.username || isSendingCode || countdown > 0"
                 >
-                  {{ countdown > 0 ? `${countdown}s` : $t('login.getCode') }}
+                  {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
                 </button>
               </div>
               <div class="input-box">
                 <input 
                   type="password" 
-                  :placeholder="$t('login.newPassword')" 
+                  placeholder="新密码" 
                   v-model="resetForm.password" 
                   @input="validatePassword('reset')"
                   required
@@ -193,7 +193,7 @@
               <div class="input-box">
                 <input 
                   type="password" 
-                  :placeholder="$t('login.confirmPassword')" 
+                  placeholder="确认密码" 
                   v-model="resetForm.confirmPassword" 
                   @input="validateConfirmPassword('reset')"
                   required
@@ -204,23 +204,23 @@
                 {{ passwordHint }}
               </div>
               <div class="modal-buttons">
-                <button class="btn secondary" @click="showResetModal = false">{{ $t('common.cancel') }}</button>
-                <button class="btn primary" @click="handleResetPassword" :disabled="!isResetFormValid">{{ $t('login.resetPassword') }}</button>
+                <button class="btn secondary" @click="showResetModal = false">取消</button>
+                <button class="btn primary" @click="handleResetPassword" :disabled="!isResetFormValid">重置密码</button>
               </div>
             </div>
           </div>
 
           <div class="toggle-box">
             <div class="toggle-panel toggle-left">
-              <h1>{{ $t('login.welcomeBack') }}</h1>
-              <p>{{ $t('login.noAccount') }}</p>
-              <button class="btn register-btn" @click="showRegister">{{ $t('login.registerBtn') }}</button>
+              <h1>欢迎回来</h1>
+              <p>还没有账号？</p>
+              <button class="btn register-btn" @click="showRegister">注册</button>
             </div>
 
             <div class="toggle-panel toggle-right">
-              <h1>{{ $t('login.welcomeBack') }}</h1>
-              <p>{{ $t('login.hasAccount') }}</p>
-              <button class="btn login-btn" @click="showLogin">{{ $t('login.loginBtn') }}</button>
+              <h1>欢迎回来</h1>
+              <p>已有账号？</p>
+              <button class="btn login-btn" @click="showLogin">登录</button>
             </div>
           </div>
         </div>
@@ -241,14 +241,12 @@
 import { ref, reactive, onMounted, onBeforeUnmount, computed, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, sendCode, resetPassword } from '../api/app'
-import { useI18n } from 'vue-i18n'
 
 // 获取通知实例
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-const { t } = useI18n()
 const isSidebarHover = ref(false)
 const showLoginPanel = ref(false)
 const isActive = ref(false) // 用于切换登录/注册
@@ -469,7 +467,7 @@ const isResetFormValid = computed(() => {
 // 发送验证码
 const sendVerificationCode = async () => {
   if (!registerForm.username) {
-    notify.warning(t('login.enterPhoneOrEmail'))
+    notify.warning('请输入手机号或邮箱')
     return
   }
   
@@ -480,13 +478,13 @@ const sendVerificationCode = async () => {
     
     if (data.code === 200) {
       startCountdown()
-      notify.success(t('login.codeSent'))
+      notify.success('验证码已发送')
     } else {
-      notify.error(data.message || t('login.sendCodeFailed'))
+      notify.error(data.message || '发送验证码失败')
     }
   } catch (error) {
     console.error('发送验证码失败:', error)
-    notify.error(t('login.sendCodeFailedRetry'))
+    notify.error('发送验证码失败，请稍后重试')
   } finally {
     isSendingCode.value = false
   }
@@ -495,7 +493,7 @@ const sendVerificationCode = async () => {
 // 发送重置密码验证码
 const sendResetVerificationCode = async () => {
   if (!resetForm.username) {
-    notify.warning(t('login.enterPhoneOrEmail'))
+    notify.warning('请输入手机号或邮箱')
     return
   }
   
@@ -506,13 +504,13 @@ const sendResetVerificationCode = async () => {
     
     if (data.code === 200) {
       startCountdown()
-      notify.success(t('login.codeSent'))
+      notify.success('验证码已发送')
     } else {
-      notify.error(data.message || t('login.sendCodeFailed'))
+      notify.error(data.message || '发送验证码失败')
     }
   } catch (error) {
     console.error('发送验证码失败:', error)
-    notify.error(t('login.sendCodeFailedRetry'))
+    notify.error('发送验证码失败，请稍后重试')
   } finally {
     isSendingCode.value = false
   }
@@ -661,11 +659,11 @@ const handleLogin = async () => {
           router.push('/home/heritage')
         }
       } else {
-        notify.error(data.message || t('login.loginFailed'))
+        notify.error(data.message || '登录失败')
       }
   } catch (error) {
     console.error('登录失败:', error)
-    notify.error(t('login.loginFailedRetry'))
+    notify.error('登录失败，请稍后重试')
   } finally {
     isLoggingIn.value = false
   }
@@ -686,16 +684,16 @@ const handleRegister = async () => {
     const data = await register(registerForm)
     
     if (data.code === 200) {
-      notify.success(t('login.registerSuccess'))
+      notify.success('注册成功！')
       loginForm.username = registerForm.username
       loginForm.password = registerForm.password
       handleLogin()
     } else {
-      notify.error(data.message || t('login.registerFailed'))
+      notify.error(data.message || '注册失败')
     }
   } catch (error) {
     console.error('注册失败:', error)
-    notify.error(t('login.registerFailedRetry'))
+    notify.error('注册失败，请稍后重试')
   } finally {
     isRegistering.value = false
   }
@@ -715,17 +713,17 @@ const handleResetPassword = async () => {
     
     if (data.code === 200) {
       showResetModal.value = false
-      notify.success(t('login.resetSuccess'))
+      notify.success('密码重置成功！')
       resetForm.username = ''
       resetForm.verificationCode = ''
       resetForm.password = ''
       resetForm.confirmPassword = ''
     } else {
-      notify.error(data.message || t('login.resetFailed'))
+      notify.error(data.message || '密码重置失败')
     }
   } catch (error) {
     console.error('重置密码失败:', error)
-    notify.error(t('login.resetFailedRetry'))
+    notify.error('密码重置失败，请稍后重试')
   }
 }
 

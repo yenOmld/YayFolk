@@ -4,15 +4,15 @@
       <button class="back-btn" @click="goBack">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>{{ $t('myPosts.title') }}</h1>
+      <h1>我的帖子</h1>
     </div>
 
     <div class="posts-content">
       <div class="empty-state" v-if="posts.length === 0">
         <i class='bx bxs-edit-alt'></i>
-        <h3>{{ $t('myPosts.emptyTitle') }}</h3>
-        <p>{{ $t('myPosts.emptyHint') }}</p>
-        <button class="btn primary" @click="goToTranslate">{{ $t('myPosts.goTranslate') }}</button>
+        <h3>还没有发布任何帖子</h3>
+        <p>去发布你的第一篇帖子吧</p>
+        <button class="btn primary" @click="goToTranslate">去发布</button>
       </div>
 
       <div class="posts-list" v-else>
@@ -28,35 +28,22 @@
             <h4>{{ post.title }}</h4>
             <p class="post-text">{{ post.content }}</p>
             <div class="post-tags" v-if="post.hashtags && post.hashtags.length > 0">
-              <span class="tag" v-for="(tag, index) in post.hashtags.slice(0, 3)" :key="index">#{{ tag }}</span>
+              <span v-for="tag in post.hashtags.slice(0, 3)" :key="tag" class="tag">#{{ tag }}</span>
+              <span v-if="post.hashtags.length > 3" class="tag more">+{{ post.hashtags.length - 3 }}</span>
             </div>
-                        <p v-if="(post.auditStatus === 'rejected' || post.auditStatus === 'manual_review') && post.auditRemark" class="audit-remark">
-              驳回原因：{{ post.auditRemark }}
-            </p>
             <div class="post-meta">
-              <div class="post-stats">
-                <span class="stat-item">
-                  <i class='bx bx-show'></i>
-                  {{ post.viewCount || 0 }}
-                </span>
-                <span class="stat-item">
-                  <i class='bx bx-star'></i>
-                  {{ post.collects || 0 }}
-                </span>
-                <span class="stat-item">
-                  <i class='bx bx-comment'></i>
-                  {{ post.comments || 0 }}
-                </span>
-              </div>
+              <span><i class='bx bxs-heart'></i> {{ post.likes || 0 }}</span>
+              <span><i class='bx bxs-message-rounded'></i> {{ post.comments || 0 }}</span>
+              <span><i class='bx bxs-bookmark'></i> {{ post.collects || 0 }}</span>
               <span class="post-time">{{ post.time }}</span>
             </div>
           </div>
-          <div class="post-actions" @click.stop>
+          <div class="post-actions">
             <button class="action-btn view-btn" @click="viewPost(post)" title="查看">
-              <i class='bx bx-show'></i>
+              <i class='bx bxs-show'></i>
             </button>
-            <button class="action-btn edit-btn" @click="openEditModal(post)" title="编辑">
-              <i class='bx bx-edit'></i>
+            <button class="action-btn edit-btn" @click.stop="openEditModal(post)" title="编辑">
+              <i class='bx bxs-edit'></i>
             </button>
             <button class="action-btn delete-btn" @click="deletePost(post.id)" title="删除">
               <i class='bx bxs-trash'></i>
@@ -66,299 +53,219 @@
       </div>
     </div>
 
-    <PostDetailModal 
-      :visible="showDetailModal" 
-      :post="currentPost" 
-      @close="closeDetailModal"
-      @update="handlePostUpdate"
-    />
-
-    <div v-if="showEditModal" class="edit-modal">
-      <div class="modal-overlay" @click="closeEditModal"></div>
-      <div class="modal-content post-container">
-        <div class="edit-header">
-          <h2>{{ $t('myPosts.editPost') }}</h2>
+    <!-- 编辑帖子弹窗 -->
+    <div v-if="showEditModal" class="edit-modal" @click.self="closeEditModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>编辑帖子</h2>
           <button class="close-btn" @click="closeEditModal">
             <i class='bx bx-x'></i>
           </button>
         </div>
-        <div class="post-form-horizontal">
-          <div class="post-form-left">
-            <div class="form-group">
-              <label>{{ $t('discover.title') }}</label>
-              <input v-model="editForm.title" type="text" :placeholder="$t('myPosts.inputTitle')" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label>标题</label>
+            <input v-model="editForm.title" type="text" placeholder="请输入标题" />
+          </div>
+          <div class="form-group">
+            <label>内容</label>
+            <textarea v-model="editForm.content" placeholder="分享你的故事..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>分类</label>
+            <select v-model="editForm.category">
+              <option v-for="category in categories" :key="category.id" :value="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>添加图片</label>
+            <div class="image-upload-area" @click="$refs.editImageInput.click()">
+              <i class='bx bx-plus-circle'></i>
+              <span>添加图片</span>
+              <input 
+                ref="editImageInput"
+                type="file" 
+                multiple 
+                accept="image/*" 
+                @change="handleEditImageUpload"
+                style="display: none;"
+              />
             </div>
-            <div class="form-group">
-              <label>{{ $t('discover.content') }}</label>
-              <textarea v-model="editForm.content" :placeholder="$t('myPosts.shareStory')"></textarea>
-            </div>
-            <div class="form-group">
-              <label>{{ $t('discover.category') }}</label>
-              <select v-model="editForm.category">
-                <option
-                  v-for="category in categories"
-                  :key="category.id"
-                  :value="category.id"
-                >
-                  {{ category.name }}
-                </option>
-              </select>
+            <div v-if="editForm.images.length > 0" class="selected-images">
+              <div 
+                v-for="(image, index) in editForm.images" 
+                :key="index"
+                class="selected-image-item"
+                draggable="true"
+                @dragstart="onDragStart($event, index)"
+                @dragover="onDragOver"
+                @drop="onDrop($event, index)"
+                @dragend="onDragEnd"
+              >
+                <img :src="image" alt="Selected" />
+                <button class="remove-image-btn" @click="removeEditImage(index)">
+                  <i class='bx bx-x'></i>
+                </button>
+              </div>
             </div>
           </div>
-          
-          <div class="post-form-right">
-            <div class="form-group">
-              <label>{{ $t('discover.addImage') }}</label>
-              <div class="image-upload-area" @click="$refs.editImageInput.click()">
-                <i class='bx bx-plus-circle'></i>
-                <span>点击上传图片</span>
+          <div class="form-group">
+            <label>标签 <span class="tag-count">({{ editForm.tags.length }}/10)</span></label>
+            <div class="tags-container">
+              <div v-if="editForm.tags.length > 0" class="selected-tags">
+                <span
+                  v-for="tag in editForm.tags"
+                  :key="tag"
+                  class="selected-tag-item"
+                >
+                  #{{ tag }}
+                  <i class='bx bx-x' @click="removeEditTag(tag)"></i>
+                </span>
+              </div>
+              <div class="preset-tags">
+                <span
+                  v-for="tag in presetTags"
+                  :key="tag"
+                  class="tag-item"
+                  :class="{ active: editForm.tags.includes(tag), disabled: !editForm.tags.includes(tag) && editForm.tags.length >= 10 }"
+                  @click="toggleEditTag(tag)"
+                >#{{ tag }}</span>
+              </div>
+              <div class="tag-input-container">
                 <input 
-                  ref="editImageInput"
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  @change="handleImageUpload"
-                  style="display: none;"
+                  v-model="customTagInput" 
+                  type="text" 
+                  placeholder="添加标签" 
+                  @keyup.enter="addCustomTags"
+                  :disabled="editForm.tags.length >= 10"
                 />
-              </div>
-              <div v-if="editForm.images.length > 0" class="selected-images">
-                <div 
-                  v-for="(image, index) in editForm.images" 
-                  :key="index"
-                  class="image-preview-item"
-                  draggable="true"
-                  @dragstart="onDragStart($event, index)"
-                  @dragover.prevent="onDragOver($event)"
-                  @drop="onDrop($event, index)"
-                  @dragend="onDragEnd($event)"
-                  @click="previewImage(image)"
-                >
-                  <img :src="image" alt="Preview" class="preview-image" />
-                  <button class="remove-image-btn" @click.stop="removeImage(index)">
-                    <i class='bx bx-x'></i>
-                  </button>
-                  <div class="drag-handle">
-                    <i class='bx bx-move'></i>
-                  </div>
+                <div class="tag-buttons">
+                  <button class="tag-btn" @click.prevent="addCustomTags" :disabled="editForm.tags.length >= 10">添加</button>
                 </div>
               </div>
             </div>
-            <div class="form-group">
-              <label>{{ $t('discover.tags') }} <span class="tag-count">({{ editForm.tags.length }}/10)</span></label>
-              <div class="tags-container">
-                <!-- 已选标签 -->
-                <div v-if="editForm.tags.length > 0" class="selected-tags">
-                  <span
-                    v-for="tag in editForm.tags"
-                    :key="tag"
-                    class="selected-tag-item"
-                  >
-                    #{{ tag }}
-                    <i class='bx bx-x' @click="removeTag(tag)"></i>
-                  </span>
-                </div>
-                <!-- 预设标签 -->
-                <div class="preset-tags">
-                  <span
-                    v-for="tag in presetTags"
-                    :key="tag"
-                    class="tag-item"
-                    :class="{ active: editForm.tags.includes(tag), disabled: !editForm.tags.includes(tag) && editForm.tags.length >= 10 }"
-                    @click="toggleTag(tag)"
-                  >#{{ tag }}</span>
-                </div>
-                <!-- 自定义标签输入 -->
-                <div class="tag-input-container">
-                  <input 
-                    v-model="customTagInput" 
-                    type="text" 
-                    :placeholder="$t('discover.addTagPlaceholder')" 
-                    @keyup.enter="addCustomTags"
-                    :disabled="editForm.tags.length >= 10"
-                  />
-                  <div class="tag-buttons">
-                    <button class="tag-btn" @click.prevent="addCustomTags" :disabled="editForm.tags.length >= 10">{{ $t('discover.addTag') }}</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button class="submit-post-btn" :disabled="saving" @click="saveEdit">
-              {{ saving ? $t('editProfile.saving') : $t('common.save') }}
-            </button>
           </div>
+          <button class="submit-post-btn" :disabled="saving" @click="saveEdit">
+            {{ saving ? '保存中...' : '保存' }}
+          </button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- 图片预览模态框 -->
-  <div v-if="showImagePreview" class="image-preview-modal">
-    <div class="modal-overlay" @click="closeImagePreview"></div>
-    <div class="modal-content post-container">
-      <button class="close-btn" @click="closeImagePreview">
-        <i class='bx bx-x'></i>
-      </button>
-      <img :src="previewImageSrc" alt="Preview" class="preview-image-full" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed, getCurrentInstance } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { 
-  deleteMyDiscoverPost, 
-  getMyDiscoverPosts, 
-  getDiscoverPostDetail,
-  updateDiscoverPost,
-  uploadPostImage
-} from '../api/app'
-import PostDetailModal from '../components/PostDetailModal.vue'
+import { getMyDiscoverPosts, deleteMyDiscoverPost, updateDiscoverPost, uploadPostImage } from '../api/app'
 
-// 获取通知实例
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
 
-const { t } = useI18n()
 const router = useRouter()
 const posts = ref([])
-const showDetailModal = ref(false)
-const currentPost = ref(null)
+const loading = ref(false)
 const showEditModal = ref(false)
 const saving = ref(false)
-const customTagInput = ref('')
-const categories = computed(() => [
-  { id: '服饰妆造', name: t('discover.presetTags.costume') },
-  { id: '美术造物', name: t('discover.presetTags.artistry') },
-  { id: '民俗节气', name: t('discover.presetTags.folklore') },
-  { id: '戏曲演绎', name: t('discover.presetTags.opera') },
-  { id: '织物手工', name: t('discover.presetTags.textile') }
+const editingPostId = ref(null)
+
+const categories = ref([
+  { id: '服饰妆造', name: '服饰妆造' },
+  { id: '美术造物', name: '美术造物' },
+  { id: '民俗节气', name: '民俗节气' },
+  { id: '戏曲演绎', name: '戏曲演绎' },
+  { id: '织物手工', name: '织物手工' }
 ])
-const presetTags = computed(() => [
-  t('discover.presetTags.costume'),
-  t('discover.presetTags.artistry'),
-  t('discover.presetTags.folklore'),
-  t('discover.presetTags.opera'),
-  t('discover.presetTags.textile')
+
+const presetTags = ref([
+  '服饰妆造',
+  '美术造物',
+  '民俗节气',
+  '戏曲演绎',
+  '织物手工'
 ])
 
 const editForm = ref({
-  id: null,
   title: '',
   content: '',
   category: '服饰妆造',
   tags: [],
   images: []
 })
-const pendingFilesMap = ref(new Map())
-const originalImages = ref([])
+
+const customTagInput = ref('')
 const draggedIndex = ref(null)
-const showImagePreview = ref(false)
-const previewImageSrc = ref('')
 
 const goBack = () => {
   router.back()
 }
 
 const goToTranslate = () => {
-  router.push('/home/discover')
+  router.push('/discover')
 }
 
 const formatAuditStatus = (status) => {
-  const labels = {
-    pending: 'Pending review',
-    manual_review: 'Under manual review',
-    passed: 'Approved',
-    rejected: 'Needs changes'
+  const statusMap = {
+    'pending': '审核中',
+    'passed': '已通过',
+    'rejected': '已拒绝'
   }
-  return labels[status] || 'Pending review'
+  return statusMap[status] || '审核中'
 }
 
-const loadMyPosts = async () => {
+const loadPosts = async () => {
+  loading.value = true
   try {
     const response = await getMyDiscoverPosts()
     if (response.code === 200) {
-      posts.value = Array.isArray(response.data) ? response.data : []
+      posts.value = response.data || []
     } else {
-      notify.error(response.message || t('myPosts.loadFailed'))
+      notify.error(response.message || '加载帖子失败')
     }
   } catch (error) {
-    notify.error(t('myPosts.loadFailedRetry'))
+    notify.error('加载帖子失败，请重试')
+  } finally {
+    loading.value = false
   }
 }
 
 const viewPost = async (post) => {
   try {
-    const response = await getDiscoverPostDetail(post.id)
-    if (response.code === 200) {
-      currentPost.value = response.data
-      showDetailModal.value = true
-    } else {
-      notify.error(response.message || t('myPosts.loadDetailFailed'))
-    }
+    router.push({ path: '/discover', query: { postId: post.id } })
   } catch (error) {
-    notify.error(t('myPosts.loadDetailFailedRetry'))
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  currentPost.value = null
-}
-
-const handlePostUpdate = (updatedPost) => {
-  currentPost.value = updatedPost
-  const index = posts.value.findIndex(p => p.id === updatedPost.id)
-  if (index !== -1) {
-    posts.value[index] = { ...posts.value[index], ...updatedPost }
+    notify.error('加载详情失败，请重试')
   }
 }
 
 const openEditModal = async (post) => {
+  editingPostId.value = post.id
   try {
-    const response = await getDiscoverPostDetail(post.id)
-    if (response.code === 200) {
-      const detail = response.data
-      const images = detail.images || []
-      editForm.value = {
-        id: detail.id,
-        title: detail.title || '',
-        content: detail.content || '',
-        category: detail.category || '服饰妆造',
-        tags: detail.hashtags || [],
-        images: images
-      }
-      originalImages.value = [...images]
-      pendingFilesMap.value = new Map()
-      showEditModal.value = true
-    } else {
-      notify.error(response.message || t('myPosts.loadDetailFailed'))
+    editForm.value = {
+      title: post.title || '',
+      content: post.content || '',
+      category: post.category || '服饰妆造',
+      tags: post.hashtags || [],
+      images: post.images || []
     }
+    showEditModal.value = true
   } catch (error) {
-    notify.error(t('myPosts.loadDetailFailedRetry'))
+    notify.error('加载详情失败，请重试')
   }
 }
 
 const closeEditModal = () => {
   showEditModal.value = false
-  editForm.value.images.forEach(url => {
-    if (url && url.startsWith('blob:')) {
-      URL.revokeObjectURL(url)
-    }
-  })
+  editingPostId.value = null
   editForm.value = {
-    id: null,
     title: '',
     content: '',
     category: '服饰妆造',
     tags: [],
     images: []
   }
-  pendingFilesMap.value = new Map()
-  originalImages.value = []
-  customTagInput.value = ''
 }
 
 const onDragStart = (event, index) => {
@@ -377,14 +284,6 @@ const onDrop = (event, dropIndex) => {
     const [draggedImage] = images.splice(draggedIndex.value, 1)
     images.splice(dropIndex, 0, draggedImage)
     editForm.value.images = images
-    
-    // Update pendingFilesMap if needed
-    if (draggedImage.startsWith('blob:')) {
-      const files = [...pendingFilesMap.value.entries()]
-      const [key, value] = files.splice(draggedIndex.value, 1)[0]
-      files.splice(dropIndex, 0, [key, value])
-      pendingFilesMap.value = new Map(files)
-    }
   }
   draggedIndex.value = null
   event.target.style.opacity = '1'
@@ -395,48 +294,40 @@ const onDragEnd = (event) => {
   draggedIndex.value = null
 }
 
-const previewImage = (imageUrl) => {
-  previewImageSrc.value = imageUrl
-  showImagePreview.value = true
-}
-
-const closeImagePreview = () => {
-  showImagePreview.value = false
-  previewImageSrc.value = ''
-}
-
-const handleImageUpload = async (event) => {
-  const files = event.target.files ? Array.from(event.target.files) : []
+const handleEditImageUpload = async (event) => {
+  const input = event.target
+  const files = input?.files ? Array.from(input.files) : []
   if (files.length === 0) return
-  
+
   const remainingSlots = 9 - editForm.value.images.length
   if (remainingSlots <= 0) {
-    notify.warning(t('myPosts.maxImages'))
+    notify.warning('最多上传9张图片')
+    if (input) {
+      input.value = ''
+    }
     return
   }
-  
+
   const filesToUpload = files.slice(0, remainingSlots)
   filesToUpload.forEach(file => {
     const previewUrl = URL.createObjectURL(file)
     editForm.value.images.push(previewUrl)
-    pendingFilesMap.value.set(previewUrl, file)
   })
+
+  if (input) {
+    input.value = ''
+  }
 }
 
-const removeImage = (index) => {
-  const imageUrl = editForm.value.images[index]
-  if (imageUrl && imageUrl.startsWith('blob:')) {
-    URL.revokeObjectURL(imageUrl)
-    pendingFilesMap.value.delete(imageUrl)
-  }
+const removeEditImage = (index) => {
   editForm.value.images = editForm.value.images.filter((_, i) => i !== index)
 }
 
-const toggleTag = (tag) => {
+const toggleEditTag = (tag) => {
   const current = editForm.value.tags
   const exists = current.includes(tag)
   if (!exists && current.length >= 10) {
-    notify.warning(t('discover.maxTags'))
+    notify.warning('最多添加10个标签')
     return
   }
   editForm.value.tags = exists ? current.filter(item => item !== tag) : [...current, tag]
@@ -459,260 +350,220 @@ const addCustomTags = () => {
     }
   })
   if (addedCount < tags.length) {
-    notify.warning(t('discover.maxTags'))
+    notify.warning('最多添加10个标签')
   }
   editForm.value.tags = merged
   customTagInput.value = ''
 }
 
-const removeTag = (tag) => {
-  editForm.value.tags = editForm.value.tags.filter(t => t !== tag)
+const removeEditTag = (tag) => {
+  editForm.value.tags = editForm.value.tags.filter(item => item !== tag)
 }
 
 const saveEdit = async () => {
   if (!editForm.value.title.trim()) {
-    notify.warning(t('myPosts.enterTitle'))
+    notify.warning('请输入标题')
     return
   }
   if (!editForm.value.content.trim()) {
-    notify.warning(t('myPosts.enterContent'))
+    notify.warning('请输入内容')
     return
   }
   if (!editForm.value.images || editForm.value.images.length === 0) {
-    notify.warning(t('myPosts.uploadImage'))
+    notify.warning('请上传图片')
     return
   }
 
   saving.value = true
   try {
-    const postId = editForm.value.id
-    const finalImages = []
-
-    // 找出哪些是新图片（blob URL），并记录它们在最终数组中的位置
-    const newImageInfo = []
-    editForm.value.images.forEach((url, index) => {
-      if (url.startsWith('blob:')) {
-        newImageInfo.push({ index, url })
-      }
-    })
-
-    // 上传新图片，按照它们在最终数组中的位置分配序号（从1开始）
-    for (let i = 0; i < newImageInfo.length; i++) {
-      const { index, url } = newImageInfo[i]
-      const file = pendingFilesMap.value.get(url)
-      if (file) {
-        const formData = new FormData()
-        formData.append('file', file)
-        const response = await uploadPostImage(formData, postId, index + 1)
-        if (response.code === 200 && response.data && response.data.url) {
-          finalImages[index] = response.data.url
-        } else {
-          throw new Error(response.message || '上传失败')
-        }
-      }
-    }
-
-    // 填充旧图片
-    editForm.value.images.forEach((url, index) => {
-      if (!url.startsWith('blob:')) {
-        finalImages[index] = url
-      }
-    })
-
-    // 过滤掉undefined，得到最终的图片数组
-    const cleanFinalImages = finalImages.filter(url => url !== undefined)
-
+    const postId = editingPostId.value
+    const finalTags = [...editForm.value.tags]
+    
     const response = await updateDiscoverPost(postId, {
       title: editForm.value.title.trim(),
       content: editForm.value.content.trim(),
       category: editForm.value.category,
-      tags: editForm.value.tags,
-      images: cleanFinalImages
+      tags: finalTags,
+      images: editForm.value.images
     })
     if (response.code === 200) {
-      notify.success('Post updated and resubmitted for review')
+      notify.success('保存成功')
       closeEditModal()
-      await loadMyPosts()
+      await loadPosts()
     } else {
-      notify.error(response.message || t('myPosts.saveFailed'))
+      notify.error(response.message || '保存失败')
     }
   } catch (error) {
-    notify.error(t('myPosts.saveFailedRetry'))
+    notify.error('保存失败，请重试')
   } finally {
     saving.value = false
   }
 }
 
-const deletePost = async (id) => {
+const deletePost = (id) => {
   confirm({
-    title: t('myPosts.confirmDeleteTitle'),
-    message: t('myPosts.confirmDelete'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认删除',
+    message: '确定要删除这条帖子吗？删除后无法恢复。',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await deleteMyDiscoverPost(id)
         if (response.code === 200) {
-          posts.value = posts.value.filter(post => post.id !== id)
-          notify.success(t('myPosts.deleteSuccess'))
+          notify.success('删除成功')
+          await loadPosts()
         } else {
-          notify.error(response.message || t('myPosts.deleteFailed'))
+          notify.error(response.message || '删除失败')
         }
       } catch (error) {
-        notify.error(t('myPosts.deleteFailedRetry'))
+        notify.error('删除失败，请重试')
       }
     }
   })
 }
 
 onMounted(() => {
-  loadMyPosts()
+  loadPosts()
 })
 </script>
 
 <style scoped>
 .my-posts-page {
   min-height: 100vh;
-  width: 100%;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .my-posts-page {
-    width: 85%;
-    margin: 0 auto;
-  }
-}
-
-@media (min-width: 1024px) {
-  .my-posts-page {
-    width: 70%;
-    margin: 0 auto;
-  }
+  background: linear-gradient(135deg, #f9f5f0 0%, #f0e6d8 100%);
+  padding: 20px;
 }
 
 .settings-header {
-  background: white;
-  padding: 15px 20px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #eee;
-  border-radius: 0px 0px 12px 12px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(157, 41, 41, 0.1);
 }
 
 .back-btn {
-  background: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
-  font-size: 20px;
+  background: rgba(157, 41, 41, 0.1);
+  color: #9d2929;
   cursor: pointer;
-  color: #333;
-  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(157, 41, 41, 0.2);
+  transform: translateX(-2px);
 }
 
 .settings-header h1 {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
+  color: #2c1810;
   margin: 0;
 }
 
 .posts-content {
-  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .empty-state {
-  background: white;
-  border-radius: 12px;
-  padding: 40px 20px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(157, 41, 41, 0.1);
 }
 
 .empty-state i {
-  font-size: 60px;
-  color: #7494ec;
+  font-size: 64px;
+  color: #c9913f;
   margin-bottom: 20px;
-  opacity: 0.5;
 }
 
 .empty-state h3 {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-size: 20px;
+  color: #2c1810;
+  margin-bottom: 8px;
 }
 
 .empty-state p {
-  margin: 0 0 30px 0;
   color: #666;
-}
-
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  margin-bottom: 24px;
 }
 
 .btn.primary {
-  background: #7494ec;
+  background: linear-gradient(135deg, #9d2929, #c9913f);
   color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn.primary:hover {
-  background: #6381d9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(157, 41, 41, 0.3);
 }
 
 .posts-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
 .post-item {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
-  gap: 15px;
-  position: relative;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(157, 41, 41, 0.08);
 }
 
 .post-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .post-images {
   position: relative;
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
-  width: 100px;
-  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .post-cover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
 }
 
 .image-count {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background: rgba(0,0,0,0.6);
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
   font-size: 12px;
 }
 
@@ -722,343 +573,357 @@ onMounted(() => {
 }
 
 .post-status-row {
-  display: flex;
-  align-items: center;
   margin-bottom: 8px;
 }
 
 .audit-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .audit-chip.pending {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(201, 145, 63, 0.15);
+  color: #c9913f;
 }
 
 .audit-chip.passed {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.audit-chip.manual_review {
-  background: #ffedd5;
-  color: #c2410c;
+  background: rgba(82, 146, 82, 0.15);
+  color: #529252;
 }
 
 .audit-chip.rejected {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(157, 41, 41, 0.15);
+  color: #9d2929;
 }
 
 .post-content h4 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #2c1810;
+  margin: 0 0 8px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .post-text {
-  margin: 0 0 10px 0;
   color: #666;
   font-size: 14px;
   line-height: 1.5;
+  margin: 0 0 12px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .post-tags {
   display: flex;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.audit-remark {
-  margin: 0 0 10px 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #fff1f2;
-  color: #be123c;
-  font-size: 12px;
-  line-height: 1.5;
+  margin-bottom: 12px;
 }
 
 .tag {
-  background: #f0f2f5;
-  color: #7494ec;
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: rgba(157, 41, 41, 0.08);
+  color: #9d2929;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 12px;
+}
+
+.tag.more {
+  background: rgba(201, 145, 63, 0.1);
+  color: #c9913f;
 }
 
 .post-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
+  gap: 16px;
   color: #999;
+  font-size: 13px;
 }
 
-.post-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.stat-item {
+.post-meta span {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.stat-item i {
+.post-meta i {
   font-size: 14px;
+}
+
+.post-time {
+  margin-left: auto;
 }
 
 .post-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-left: 10px;
-  border-left: 1px solid #eee;
+  justify-content: center;
 }
 
 .action-btn {
-  background: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: none;
-  font-size: 18px;
   cursor: pointer;
-  color: #999;
-  padding: 5px;
-  transition: color 0.2s;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.action-btn:hover {
-  color: #7494ec;
-  background: #f5f5f5;
+.view-btn {
+  background: rgba(82, 146, 82, 0.1);
+  color: #529252;
+}
+
+.view-btn:hover {
+  background: rgba(82, 146, 82, 0.2);
+}
+
+.edit-btn {
+  background: rgba(31, 111, 235, 0.1);
+  color: #1f6feb;
+}
+
+.edit-btn:hover {
+  background: rgba(31, 111, 235, 0.2);
+}
+
+.delete-btn {
+  background: rgba(157, 41, 41, 0.1);
+  color: #9d2929;
 }
 
 .delete-btn:hover {
-  color: #ff4757;
-  background: #fff5f5;
+  background: rgba(157, 41, 41, 0.2);
 }
 
+/* 编辑弹窗样式 */
 .edit-modal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1000;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  box-sizing: border-box;
+  z-index: 1000;
+  padding: 20px;
 }
 
-.edit-modal .modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
+.modal-content {
+  background: white;
+  border-radius: 20px;
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-}
-
-.edit-modal .modal-content {
-  position: relative;
-  width: min(1200px, 100%);
-  max-width: 1200px;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 30px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.edit-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 20px 0;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.edit-header h2 {
-  margin: 0;
+.modal-header h2 {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: #2c1810;
+  margin: 0;
 }
 
 .close-btn {
-  background: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: none;
-  font-size: 24px;
+  background: rgba(0, 0, 0, 0.05);
+  color: #666;
   cursor: pointer;
-  color: #999;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  color: #333;
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.post-form-horizontal {
-  display: flex;
-  gap: 30px;
-  padding: 0;
-}
-
-.post-form-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.post-form-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.post-form-left .form-group textarea {
-  min-height: 200px;
-  flex: 1;
+.modal-body {
+  padding: 20px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
-  font-size: 14px;
+  display: block;
   font-weight: 500;
-  color: #666;
+  color: #2c1810;
+  margin-bottom: 8px;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  background: #fff;
-  color: #333;
-  transition: border-color 0.3s;
-  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: #ff2442;
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #9d2929;
+  box-shadow: 0 0 0 3px rgba(157, 41, 41, 0.1);
 }
 
 .form-group textarea {
-  resize: vertical;
   min-height: 120px;
+  resize: vertical;
 }
 
-.form-group select {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+.image-upload-area {
+  border: 2px dashed rgba(157, 41, 41, 0.2);
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.image-upload-area:hover {
+  border-color: #9d2929;
+  background: rgba(157, 41, 41, 0.02);
+}
+
+.image-upload-area i {
+  font-size: 48px;
+  color: #c9913f;
+  margin-bottom: 12px;
+}
+
+.image-upload-area span {
+  color: #666;
   font-size: 14px;
-  outline: none;
-  background: #fff;
+}
+
+.selected-images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.selected-image-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: move;
+}
+
+.selected-image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: rgba(157, 41, 41, 0.8);
 }
 
 .tags-container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.tag-count {
-  font-size: 12px;
-  color: #999;
-  font-weight: normal;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 12px;
 }
 
 .selected-tag-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  background: rgba(157, 41, 41, 0.1);
+  color: #9d2929;
   padding: 6px 12px;
-  background: #ff2442;
-  color: #fff;
   border-radius: 16px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .selected-tag-item i {
   cursor: pointer;
   font-size: 14px;
-  transition: opacity 0.3s;
-}
-
-.selected-tag-item i:hover {
-  opacity: 0.8;
 }
 
 .preset-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .tag-item {
+  display: inline-block;
   padding: 6px 12px;
-  background: #f5f5f5;
   border-radius: 16px;
-  font-size: 12px;
-  color: #666;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tag-item:hover {
-  background: #e8e8e8;
-  color: #333;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.05);
+  color: #666;
 }
 
 .tag-item.active {
-  background: #ff2442;
-  color: #fff;
+  background: rgba(157, 41, 41, 0.1);
+  color: #9d2929;
 }
 
 .tag-item.disabled {
@@ -1068,43 +933,26 @@ onMounted(() => {
 
 .tag-input-container {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tag-input-container input {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.tag-input-container input:focus {
-  border-color: #ff2442;
-}
-
-.tag-buttons {
-  display: flex;
-  gap: 10px;
+  flex: 1;
 }
 
 .tag-btn {
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  font-size: 12px;
-  color: #666;
+  padding: 12px 20px;
+  background: rgba(157, 41, 41, 0.1);
+  color: #9d2929;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.tag-btn:hover {
-  background: #e8e8e8;
-  border-color: #d0d0d0;
-  color: #333;
+.tag-btn:hover:not(:disabled) {
+  background: rgba(157, 41, 41, 0.2);
 }
 
 .tag-btn:disabled {
@@ -1112,386 +960,50 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.tag-input-container input:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.image-upload-area {
-  border: 2px dashed #e0e0e0;
-  border-radius: 8px;
-  padding: 40px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-
-.image-upload-area:hover {
-  border-color: #ff2442;
-  background: rgba(255, 36, 66, 0.05);
-}
-
-.image-upload-area i {
-  font-size: 32px;
-  color: #999;
-  margin-bottom: 10px;
-}
-
-.image-upload-area span {
-  font-size: 14px;
-  color: #666;
-}
-
-.image-upload-area input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.selected-images {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.image-preview-item {
-  position: relative;
-  width: 70px;
-  height: 70px;
-}
-
-.preview-image {
-  width: 70px;
-  height: 70px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 20px;
-  height: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.remove-image-btn:hover {
-  background: rgba(255, 36, 66, 0.9);
-  transform: scale(1.1);
-}
-
 .submit-post-btn {
-  padding: 12px;
-  background: #ff2442;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #9d2929, #c9913f);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
-.submit-post-btn:hover {
-  background: #ff3a56;
+.submit-post-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.3);
+  box-shadow: 0 8px 20px rgba(157, 41, 41, 0.3);
 }
 
 .submit-post-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
-.edit-modal {
-  --pc-accent: #9d2929;
-  --pc-ink: #2b2118;
-  --pc-soft: #7d6754;
-}
-
-.edit-modal .post-container {
-  overflow: hidden;
-  background:
-    radial-gradient(circle at top right, rgba(201, 145, 63, 0.08), transparent 18%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 244, 238, 0.94)) !important;
-}
-
-.edit-modal .post-container h2 {
-  margin-bottom: 24px !important;
-  font-size: 28px !important;
-}
-
-.edit-modal .post-form-horizontal {
-  gap: 24px !important;
-}
-
-.edit-modal .form-group {
-  gap: 10px !important;
-}
-
-.edit-modal .form-group label {
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.04em;
-  color: var(--pc-accent) !important;
-  text-transform: uppercase;
-}
-
-.edit-modal .form-group input,
-.edit-modal .form-group textarea,
-.edit-modal .form-group select,
-.edit-modal .tag-input-container input {
-  min-height: 52px;
-  padding: 14px 16px !important;
-}
-
-.edit-modal .form-group textarea {
-  min-height: 180px !important;
-}
-
-.edit-modal .selected-tags {
-  padding-bottom: 14px !important;
-  border-bottom: 1px solid rgba(217, 207, 193, 0.8) !important;
-}
-
-.edit-modal .selected-tag-item,
-.edit-modal .tag-item.active {
-  border: 1px solid rgba(157, 41, 41, 0.1);
-}
-
-.edit-modal .tag-item {
-  min-height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px !important;
-  border-radius: 999px !important;
-  font-weight: 600;
-}
-
-.edit-modal .tag-item:hover {
-  transform: translateY(-1px);
-}
-
-.edit-modal .image-upload-area {
-  min-height: 186px;
-  border-style: solid !important;
-  border-color: rgba(157, 41, 41, 0.14) !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 244, 238, 0.92)) !important;
-}
-
-.edit-modal .image-upload-area:hover {
-  box-shadow: 0 16px 30px rgba(157, 41, 41, 0.08) !important;
-}
-
-.edit-modal .image-upload-area i {
-  color: var(--pc-accent) !important;
-}
-
-.edit-modal .selected-images {
-  gap: 12px !important;
-}
-
-.edit-modal .image-preview-item,
-.edit-modal .preview-image {
-  width: 80px !important;
-  height: 80px !important;
-}
-
-.edit-modal .image-preview-item {
-  border-radius: 14px;
-  overflow: visible;
-}
-
-.edit-modal .preview-image {
-  border-radius: 14px !important;
-  border: 1px solid rgba(217, 207, 193, 0.8);
-  box-shadow: 0 10px 18px rgba(44, 44, 44, 0.08);
-}
-
-.edit-modal .remove-image-btn {
-  top: -8px !important;
-  right: -8px !important;
-  width: 24px !important;
-  height: 24px !important;
-  border-radius: 999px !important;
-}
-
-.edit-modal .drag-handle {
-  bottom: -8px !important;
-  padding: 4px 8px !important;
-  border-radius: 999px !important;
-}
-
-.edit-modal .submit-post-btn {
-  min-height: 54px;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.03em;
-  box-shadow: 0 16px 28px rgba(157, 41, 41, 0.18);
-}
-
-.edit-modal .submit-post-btn:hover {
-  box-shadow: 0 22px 34px rgba(157, 41, 41, 0.24);
-}
-
-@media (max-width: 900px) {
-  .post-form-horizontal {
-    flex-direction: column;
+@media (max-width: 640px) {
+  .my-posts-page {
+    padding: 12px;
   }
 
-  .post-form-right {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .posts-content {
-    padding: 10px;
-  }
-  
   .post-item {
-    padding: 15px;
     flex-direction: column;
   }
-  
+
   .post-images {
     width: 100%;
-    height: 150px;
+    height: 200px;
   }
-  
+
   .post-actions {
     flex-direction: row;
     justify-content: flex-end;
-    border-left: none;
-    border-top: 1px solid #eee;
-    padding-left: 0;
-    padding-top: 10px;
-    margin-top: 10px;
-  }
-  
-  .edit-modal {
-    padding: 12px;
-  }
-  
-  .edit-modal .modal-content {
-    max-height: 95vh;
-    padding: 20px;
-  }
-  
-  .edit-header {
-    padding: 0 0 16px 0;
-  }
-  
-  .post-form-horizontal {
-    gap: 20px;
   }
 
-  .edit-modal .post-container {
-    padding: 20px;
-    width: 100%;
+  .selected-images {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .edit-modal .post-container h2 {
-    font-size: 28px !important;
-  }
-}
-
-/* 图片预览模态框 */
-.image-preview-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  box-sizing: border-box;
-}
-
-.image-preview-modal .modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-}
-
-.image-preview-modal .modal-content {
-  position: relative;
-  max-width: 90%;
-  max-height: 90vh;
-  z-index: 1;
-}
-
-.image-preview-modal .close-btn {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: white;
-  cursor: pointer;
-  padding: 0;
-}
-
-.preview-image-full {
-  max-width: 100%;
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-/* 拖拽样式 */
-.image-preview-item {
-  cursor: move;
-  transition: all 0.3s;
-}
-
-.image-preview-item:hover {
-  transform: scale(1.05);
-}
-
-.drag-handle {
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.image-preview-item:hover .drag-handle {
-  opacity: 1;
 }
 </style>

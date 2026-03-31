@@ -4,14 +4,14 @@
       <button class="back-btn" @click="goBack" aria-label="返回">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>{{ $t('settings.title') }}</h1>
+      <h1>设置</h1>
     </div>
 
     <div class="settings-content">
       <section class="setting-section">
-        <h3>{{ $t('settings.language') }}</h3>
+        <h3>语言</h3>
         <div class="setting-item">
-          <span>{{ $t('settings.appLanguage') }}</span>
+          <span>应用语言</span>
           <select class="language-select" v-model="currentLanguage" @change="changeLanguage(currentLanguage)">
             <option v-for="lang in languages" :key="lang.code" :value="lang.code">
               {{ lang.name }}
@@ -21,16 +21,16 @@
       </section>
 
       <section class="setting-section">
-        <h3>{{ $t('settings.notification') }}</h3>
+        <h3>通知</h3>
         <div class="setting-item">
-          <span>{{ $t('settings.pushNotification') }}</span>
+          <span>推送通知</span>
           <label class="switch">
             <input type="checkbox" v-model="notificationSettings.push">
             <span class="slider round"></span>
           </label>
         </div>
         <div class="setting-item">
-          <span>{{ $t('settings.emailNotification') }}</span>
+          <span>邮件通知</span>
           <label class="switch">
             <input type="checkbox" v-model="notificationSettings.email">
             <span class="slider round"></span>
@@ -39,13 +39,13 @@
       </section>
 
       <section class="setting-section">
-        <h3>{{ $t('settings.other') }}</h3>
+        <h3>其他</h3>
         <div class="setting-item" @click="clearCache">
-          <span>{{ $t('settings.clearCache') }}</span>
+          <span>清除缓存</span>
           <i class='bx bxs-chevron-right'></i>
         </div>
         <div class="setting-item">
-          <span>{{ $t('settings.nightMode') }}</span>
+          <span>夜间模式</span>
           <label class="switch">
             <input type="checkbox" v-model="nightMode">
             <span class="slider round"></span>
@@ -54,21 +54,21 @@
       </section>
 
       <section class="setting-section">
-        <h3>{{ $t('settings.about') }}</h3>
+        <h3>关于</h3>
         <div class="setting-item">
-          <span>{{ $t('settings.version') }}</span>
+          <span>版本</span>
           <span class="version">1.0.0</span>
         </div>
         <div class="setting-item" @click="showUserAgreement">
-          <span>{{ $t('settings.userAgreement') }}</span>
+          <span>用户协议</span>
           <i class='bx bxs-chevron-right'></i>
         </div>
         <div class="setting-item" @click="showPrivacyPolicy">
-          <span>{{ $t('settings.privacyPolicy') }}</span>
+          <span>隐私政策</span>
           <i class='bx bxs-chevron-right'></i>
         </div>
         <div class="setting-item" @click="checkUpdate">
-          <span>{{ $t('settings.checkUpdate') }}</span>
+          <span>检查更新</span>
           <i class='bx bxs-chevron-right'></i>
         </div>
       </section>
@@ -79,14 +79,11 @@
 <script setup>
 import { getCurrentInstance, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { setLocale } from '../i18n'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
-const { t, locale } = useI18n()
 
 const languages = [
   { code: 'zh', name: '中文' },
@@ -95,7 +92,7 @@ const languages = [
   { code: 'ko', name: '한국어' }
 ]
 
-const currentLanguage = ref(locale.value)
+const currentLanguage = ref('zh')
 const notificationSettings = ref({
   push: true,
   email: true
@@ -125,7 +122,6 @@ const goBack = () => {
 }
 
 const changeLanguage = async (langCode) => {
-  setLocale(langCode)
   currentLanguage.value = langCode
 
   try {
@@ -141,7 +137,7 @@ const changeLanguage = async (langCode) => {
     const data = await response.json()
     if (data.code === 200) {
       syncStoredUser({ langCode })
-      notify.success(t('settings.languageChanged', languages.find(lang => lang.code === langCode)?.name || langCode))
+      notify.success('语言已更改为：' + languages.find(lang => lang.code === langCode)?.name || langCode)
     }
   } catch (error) {
     console.error('更新语言偏好失败:', error)
@@ -150,23 +146,23 @@ const changeLanguage = async (langCode) => {
 
 const clearCache = () => {
   localStorage.removeItem('cache')
-  notify.success(t('settings.cacheCleared'))
+  notify.success('缓存已清除')
 }
 
 const showUserAgreement = () => {
-  notify.info(t('settings.userAgreement') + t('common.comingSoon'))
+  notify.info('用户协议即将推出')
 }
 
 const showPrivacyPolicy = () => {
-  notify.info(t('settings.privacyPolicy') + t('common.comingSoon'))
+  notify.info('隐私政策即将推出')
 }
 
 const checkUpdate = () => {
-  notify.info(t('settings.latestVersion'))
+  notify.info('已是最新版本')
 }
 
 onMounted(() => {
-  currentLanguage.value = locale.value
+  currentLanguage.value = 'zh'
 
   const savedNotifications = localStorage.getItem('notifications')
   if (savedNotifications) {
@@ -200,75 +196,55 @@ onMounted(() => {
 }
 
 .settings-header {
-  background: white;
-  padding: 15px 20px;
   display: flex;
   align-items: center;
-  gap: 15px;
-  border-bottom: 1px solid #eee;
-  border-radius: 0 0 12px 12px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 20px 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
 }
 
 .back-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
+  margin-right: 15px;
   color: #333;
 }
 
 .settings-header h1 {
-  font-size: 18px;
-  font-weight: 600;
   margin: 0;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .settings-content {
-  padding: 20px;
+  padding: 0 20px;
 }
 
 .setting-section {
-  background: white;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
 }
 
 .setting-section h3 {
-  padding: 15px 20px;
-  margin: 0;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
-  color: #666;
-  background: #f9f9f9;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+  color: #333;
 }
 
 .setting-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.setting-item:hover {
-  background-color: #f5f5f5;
-}
-
-.setting-item:last-child {
-  border-bottom: none;
 }
 
 .setting-item span {
-  flex: 1;
+  font-size: 16px;
   color: #333;
-  font-size: 15px;
 }
 
 .setting-item .version {
@@ -276,25 +252,13 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.setting-item .bx-chevron-right {
-  color: #999;
-  font-size: 16px;
-}
-
 .language-select {
   padding: 8px 12px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  background: white;
+  border-radius: 6px;
   font-size: 14px;
-  color: #333;
+  background: white;
   cursor: pointer;
-  outline: none;
-  min-width: 120px;
-}
-
-.language-select:focus {
-  border-color: #7494ec;
 }
 
 .switch {
@@ -313,9 +277,13 @@ onMounted(() => {
 .slider {
   position: absolute;
   cursor: pointer;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #ccc;
-  transition: 0.4s;
+  transition: .4s;
+  border-radius: 24px;
 }
 
 .slider:before {
@@ -326,36 +294,19 @@ onMounted(() => {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: 0.4s;
+  transition: .4s;
+  border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #7494ec;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #7494ec;
+  background-color: #9d2929;
 }
 
 input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-.slider.round {
+.round {
   border-radius: 24px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-@media (max-width: 768px) {
-  .settings-content {
-    padding: 10px;
-  }
-
-  .setting-item {
-    padding: 12px 15px;
-  }
 }
 </style>

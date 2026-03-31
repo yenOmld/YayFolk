@@ -4,15 +4,15 @@
       <button class="back-btn" @click="goBack">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>{{ $t('myCollections.title') }}</h1>
+      <h1>我的收藏</h1>
     </div>
 
     <div class="collections-content">
       <div class="empty-state" v-if="collections.length === 0">
         <i class='bx bxs-star'></i>
-        <h3>{{ $t('myCollections.emptyTitle') }}</h3>
-        <p>{{ $t('myCollections.emptyHint') }}</p>
-        <button class="btn primary" @click="goToTranslate">{{ $t('myCollections.goTranslate') }}</button>
+        <h3>暂无收藏</h3>
+        <p>去收藏喜欢的帖子吧</p>
+        <button class="btn primary" @click="goToTranslate">去浏览</button>
       </div>
 
       <div class="collections-grid" v-else>
@@ -29,7 +29,7 @@
             <i class='bx bx-image'></i>
           </div>
           <div class="card-info">
-            <h4 class="card-title">{{ item.title || $t('myCollections.untitled') }}</h4>
+            <h4 class="card-title">{{ item.title || '未命名' }}</h4>
             <div class="card-meta">
               <span class="card-time">{{ item.collectedAt }}</span>
               <button class="uncollect-btn" @click.stop="uncollect(item.id)">
@@ -46,7 +46,6 @@
 <script setup>
 import { onMounted, ref, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { getMyDiscoverCollections, removeMyDiscoverCollection } from '../api/app'
 
 // 获取通知实例
@@ -55,7 +54,6 @@ const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
 
 const router = useRouter()
-const { t } = useI18n()
 const collections = ref([])
 
 const goBack = () => {
@@ -79,30 +77,30 @@ const loadCollections = async () => {
     if (response.code === 200) {
       collections.value = Array.isArray(response.data) ? response.data : []
     } else {
-      notify.error(response.message || t('myCollections.loadFailed'))
+      notify.error(response.message || '加载失败')
     }
   } catch (error) {
-    notify.error(t('myCollections.loadFailedRetry'))
+    notify.error('加载失败，请重试')
   }
 }
 
 const uncollect = async (id) => {
   confirm({
-    title: t('myCollections.confirmUncollectTitle'),
-    message: t('myCollections.confirmUncollect'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '取消收藏',
+    message: '确定要取消收藏吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await removeMyDiscoverCollection(id)
         if (response.code === 200) {
           collections.value = collections.value.filter(item => item.id !== id)
-          notify.success(t('myCollections.uncollectSuccess'))
+          notify.success('取消收藏成功')
         } else {
-          notify.error(response.message || t('myCollections.uncollectFailed'))
+          notify.error(response.message || '取消收藏失败')
         }
       } catch (error) {
-        notify.error(t('myCollections.uncollectFailedRetry'))
+        notify.error('取消收藏失败，请重试')
       }
     }
   })

@@ -241,4 +241,14 @@ public class MerchantController {
             return ResponseDto.error(400, e.getMessage());
         }
     }
+
+    @GetMapping("/stats")
+    public ResponseDto getMerchantStats(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMerchantStats(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
 }

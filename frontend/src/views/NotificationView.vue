@@ -5,9 +5,9 @@
         <div class="logo">YayFolk</div>
         <div class="nav-buttons">
           <div class="nav-button" @click="goBack">
-            <i class='bx bx-arrow-back'></i>
-            <span>{{ $t('common.back') }}</span>
-          </div>
+        <i class='bx bx-arrow-back'></i>
+        <span>返回</span>
+      </div>
         </div>
       </div>
     </div>
@@ -16,7 +16,7 @@
       <div class="chat-layout">
         <div class="conversation-list" :class="{ collapsed: isListCollapsed }">
           <div class="list-header">
-            <h3 v-if="!isListCollapsed">{{ $t('notification.title') }}</h3>
+            <h3 v-if="!isListCollapsed">通知</h3>
             <button class="toggle-btn" @click="toggleList">
               <i :class="isListCollapsed ? 'bx bx-chevron-right' : 'bx bx-chevron-left'"></i>
             </button>
@@ -53,11 +53,11 @@
               <div class="chat-title">
                 <template v-if="currentConversation.type === 'comment'">
                   <i class='bx bx-message-detail'></i>
-                  <span>{{ $t('notification.commentNotif') }}</span>
+                  <span>评论通知</span>
                 </template>
                 <template v-else-if="currentConversation.type === 'collection'">
                   <i class='bx bx-star'></i>
-                  <span>{{ $t('notification.collectionNotif') }}</span>
+                  <span>收藏通知</span>
                 </template>
                 <template v-else>
                   <span>{{ getConversationName(currentConversation) }}</span>
@@ -69,7 +69,7 @@
                 @click="handleClearNotifications"
               >
                 <i class='bx bx-trash'></i>
-                <span>{{ $t('notification.clearAll') }}</span>
+                <span>清除全部</span>
               </button>
             </div>
 
@@ -94,7 +94,7 @@
                 </div>
                 <div v-if="notifications.length === 0" class="empty-state">
                   <i class='bx bx-inbox'></i>
-                  <p>{{ $t('notification.emptyTitle') }}</p>
+                  <p>暂无通知</p>
                 </div>
               </template>
               <template v-else>
@@ -113,7 +113,7 @@
                 </div>
                 <div v-if="messages.length === 0" class="empty-state">
                   <i class='bx bx-message-rounded-dots'></i>
-                  <p>{{ $t('notification.noMessages') }}</p>
+                  <p>暂无消息</p>
                 </div>
               </template>
             </div>
@@ -122,16 +122,16 @@
               <input
                 v-model="newMessage"
                 type="text"
-                :placeholder="$t('notification.inputPlaceholder')"
+                placeholder="输入消息..."
                 @keyup.enter="sendMessage"
               />
-              <button @click="sendMessage" :disabled="sendingMessage">{{ $t('notification.send') }}</button>
+              <button @click="sendMessage" :disabled="sendingMessage">发送</button>
             </div>
           </template>
           <template v-else>
             <div class="empty-chat">
               <i class='bx bx-message-square-detail'></i>
-              <p>{{ $t('notification.selectConversation') }}</p>
+              <p>请选择一个会话</p>
             </div>
           </template>
         </div>
@@ -146,7 +146,7 @@
     >
       <div class="context-menu-item" @click="handleDeleteConversation">
         <i class='bx bx-trash'></i>
-        <span>{{ $t('notification.deleteConversation') }}</span>
+        <span>删除会话</span>
       </div>
     </div>
 
@@ -163,11 +163,11 @@
       >
         <i v-if="isMessageTranslating(selectedMessage)" class='bx bx-loader-alt bx-spin'></i>
         <i v-else class='bx bx-globe'></i>
-        <span>{{ isMessageTranslating(selectedMessage) ? $t('notification.translating') : (isMessageTranslationVisible(selectedMessage) ? $t('notification.viewOriginal') : $t('notification.translate')) }}</span>
+        <span>{{ isMessageTranslating(selectedMessage) ? '翻译中...' : (isMessageTranslationVisible(selectedMessage) ? '查看原文' : '翻译') }}</span>
       </div>
       <div class="context-menu-item" @click="handleDeleteMessage">
         <i class='bx bx-trash'></i>
-        <span>{{ $t('notification.delete') }}</span>
+        <span>删除</span>
       </div>
       <div 
         v-if="selectedMessage?.isSelf && canRecallMessage(selectedMessage)" 
@@ -175,7 +175,7 @@
         @click="handleRecallMessage"
       >
         <i class='bx bx-undo'></i>
-        <span>{{ $t('notification.recall') }}</span>
+        <span>撤回</span>
       </div>
     </div>
   </div>
@@ -184,7 +184,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, nextTick, watch, getCurrentInstance } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   getConversations,
   createConversation,
@@ -206,7 +205,6 @@ const confirm = appContext.config.globalProperties.$confirm
 
 const router = useRouter()
 const route = useRoute()
-const { t } = useI18n()
 
 const readStoredUser = () => {
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
@@ -266,13 +264,13 @@ const getConversationName = (conv) => {
     return ''
   }
   if (conv.type === 'comment') {
-    return t('notification.commentNotif')
+    return '评论通知'
   }
   if (conv.type === 'collection') {
-    return t('notification.collectionNotif')
+    return '收藏通知'
   }
   if (conv.type === 'service' && !isAdminUser) {
-    return t('notification.customerService')
+    return '客服'
   }
   return conv.name
 }
@@ -292,12 +290,12 @@ const getNotificationContent = (notif) => {
   const type = currentConversation.value?.type
   if (type === 'comment') {
     if (userContent) {
-      return `${t('notification.commentedYourPost')}: ${userContent}`
+      return `评论了你的帖子: ${userContent}`
     }
-    return t('notification.commentedYourPost')
+    return '评论了你的帖子'
   }
   if (type === 'collection') {
-    return t('notification.collectedYourPost')
+    return '收藏了你的帖子'
   }
   
   return content
@@ -483,10 +481,10 @@ const handleTranslateMessage = async () => {
       state.translatedText = response.data?.translatedText || ''
       state.showTranslation = true
     } else {
-      notify.error(response.message || t('notification.translateFailed'))
+      notify.error(response.message || '翻译失败')
     }
   } catch (error) {
-    notify.error(t('notification.translateFailedRetry'))
+    notify.error('翻译失败，请稍后重试')
   } finally {
     state.loading = false
     closeContextMenu()
@@ -497,10 +495,10 @@ const handleDeleteMessage = async () => {
   if (!selectedMessage.value) return
   
   confirm({
-    title: t('notification.confirmDeleteMessageTitle'),
-    message: t('notification.confirmDeleteMessage'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认删除消息',
+    message: '你确定要删除这条消息吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await deleteMessage(selectedMessage.value.id)
@@ -512,10 +510,10 @@ const handleDeleteMessage = async () => {
             currentConversation.value = conv
           }
         } else {
-          notify.error(response.message || t('notification.deleteFailed'))
+          notify.error(response.message || '删除失败')
         }
       } catch (error) {
-        notify.error(t('notification.deleteFailedRetry'))
+        notify.error('删除失败，请稍后重试')
       } finally {
         closeContextMenu()
       }
@@ -527,10 +525,10 @@ const handleRecallMessage = async () => {
   if (!selectedMessage.value) return
   
   confirm({
-    title: t('notification.confirmRecallMessageTitle'),
-    message: t('notification.confirmRecallMessage'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认撤回消息',
+    message: '你确定要撤回这条消息吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await recallMessage(selectedMessage.value.id)
@@ -543,10 +541,10 @@ const handleRecallMessage = async () => {
             currentConversation.value = conv
           }
         } else {
-          notify.error(response.message || t('notification.recallFailed'))
+          notify.error(response.message || '撤回失败')
         }
       } catch (error) {
-        notify.error(t('notification.recallFailedRetry'))
+        notify.error('撤回失败，请稍后重试')
       } finally {
         closeContextMenu()
       }
@@ -558,10 +556,10 @@ const handleDeleteConversation = async () => {
   if (!selectedConvForDelete.value) return
   
   confirm({
-    title: t('notification.confirmDeleteConversationTitle'),
-    message: t('notification.confirmDeleteConversation'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认删除会话',
+    message: '你确定要删除这个会话吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await deleteConversation(selectedConvForDelete.value.id)
@@ -572,10 +570,10 @@ const handleDeleteConversation = async () => {
             messages.value = []
           }
         } else {
-          notify.error(response.message || t('notification.deleteFailed'))
+          notify.error(response.message || '删除失败')
         }
       } catch (error) {
-        notify.error(t('notification.deleteFailedRetry'))
+        notify.error('删除失败，请稍后重试')
       } finally {
         closeContextMenu()
       }
@@ -587,13 +585,13 @@ const handleClearNotifications = async () => {
   if (!currentConversation.value) return
   
   const type = currentConversation.value.type
-  const typeName = type === 'comment' ? t('notification.comment') : t('notification.collection')
+  const typeName = type === 'comment' ? '评论' : '收藏'
   
   confirm({
-    title: t('notification.confirmClearNotificationsTitle', { type: typeName }),
-    message: t('notification.confirmClearNotifications', { type: typeName }),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: `确认清除${typeName}通知`,
+    message: `你确定要清除所有${typeName}通知吗？`,
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await clearNotifications(type)
@@ -604,10 +602,10 @@ const handleClearNotifications = async () => {
             conv.unreadCount = 0
           }
         } else {
-          notify.error(response.message || t('notification.clearFailed'))
+          notify.error(response.message || '清除失败')
         }
       } catch (error) {
-        notify.error(t('notification.clearFailedRetry'))
+        notify.error('清除失败，请稍后重试')
       }
     }
   })

@@ -55,7 +55,6 @@
 <script setup>
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   createCustomerServiceConversation,
   getConversations,
@@ -76,37 +75,19 @@ const emit = defineEmits(['close'])
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const route = useRoute()
-const { locale } = useI18n()
 
-const uiText = computed(() => {
-  if (String(locale.value || '').startsWith('zh')) {
-    return {
-      title: '在线客服',
-      loadingList: '正在加载会话...',
-      emptyList: '暂无客服会话',
-      emptyMessages: '暂无消息记录',
-      inputPlaceholder: '输入消息...',
-      send: '发送',
-      loadMessagesFailed: '加载消息失败',
-      createConversationFailed: '创建客服会话失败',
-      loadConversationsFailed: '加载会话失败',
-      sendFailed: '发送失败'
-    }
-  }
-
-  return {
-    title: '在线客服',
-    loadingList: '正在加载会话...',
-    emptyList: '暂无客服会话',
-    emptyMessages: '暂无消息记录',
-    inputPlaceholder: '输入消息...',
-    send: '发送',
-    loadMessagesFailed: '加载消息失败',
-    createConversationFailed: '创建客服会话失败',
-    loadConversationsFailed: '加载会话失败',
-    sendFailed: '发送失败'
-  }
-})
+const uiText = {
+  title: '在线客服',
+  loadingList: '正在加载会话...',
+  emptyList: '暂无客服会话',
+  emptyMessages: '暂无消息记录',
+  inputPlaceholder: '输入消息...',
+  send: '发送',
+  loadMessagesFailed: '加载消息失败',
+  createConversationFailed: '创建客服会话失败',
+  loadConversationsFailed: '加载会话失败',
+  sendFailed: '发送失败'
+}
 
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user'
 const loadingList = ref(false)

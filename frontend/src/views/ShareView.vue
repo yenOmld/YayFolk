@@ -51,13 +51,13 @@
           <div class="author-info" @click="showLoginPrompt">
             <img :src="post.author?.avatar || defaultAvatar" alt="Avatar" class="author-avatar" />
             <div class="author-details">
-              <h4>{{ post.author?.name || $t('share.unknownUser') }}</h4>
-              <p>{{ post.time }} · {{ post.author?.location || $t('share.unknown') }}</p>
+              <h4>{{ post.author?.name || '未知用户' }}</h4>
+              <p>{{ post.time }} · {{ post.author?.location || '未知' }}</p>
             </div>
           </div>
 
           <div class="post-content">
-            <h3>{{ post.title || $t('share.postTitle') }}</h3>
+            <h3>{{ post.title || '帖子标题' }}</h3>
             <p>{{ post.content }}</p>
             <div class="hashtags" v-if="post.hashtags && post.hashtags.length > 0">
               <span v-for="(tag, index) in post.hashtags" :key="index" class="hashtag">#{{ tag }}</span>
@@ -80,8 +80,8 @@
           </div>
 
           <div class="login-prompt">
-            <p>{{ $t('share.loginHint') }}</p>
-            <button class="login-btn" @click="goToLogin">{{ $t('share.loginNow') }}</button>
+            <p>登录后查看更多精彩内容</p>
+            <button class="login-btn" @click="goToLogin">立即登录</button>
           </div>
         </div>
       </div>
@@ -89,13 +89,13 @@
 
     <div class="loading-state" v-else-if="loading">
       <i class='bx bx-loader-alt bx-spin'></i>
-      <p>{{ $t('common.loading') }}</p>
+      <p>加载中...</p>
     </div>
 
     <div class="error-state" v-else>
       <i class='bx bx-error-circle'></i>
-      <p>{{ errorMessage || $t('share.postNotFound') }}</p>
-      <button class="back-btn" @click="goHome">{{ $t('share.backHome') }}</button>
+      <p>{{ errorMessage || '帖子不存在或已被删除' }}</p>
+      <button class="back-btn" @click="goHome">返回首页</button>
     </div>
 
     <div v-if="showImagePreview" class="image-preview-modal">
@@ -149,11 +149,11 @@
         <div class="login-icon">
           <i class='bx bx-lock-alt'></i>
         </div>
-        <h3>{{ $t('share.needLogin') }}</h3>
-        <p>{{ $t('share.loginHint') }}</p>
+        <h3>需要登录</h3>
+        <p>登录后查看更多精彩内容</p>
         <div class="login-actions">
-          <button class="cancel-btn" @click="closeLoginModal">{{ $t('common.cancel') }}</button>
-          <button class="confirm-btn" @click="goToLogin">{{ $t('common.confirm') }}</button>
+          <button class="cancel-btn" @click="closeLoginModal">取消</button>
+          <button class="confirm-btn" @click="goToLogin">确认</button>
         </div>
       </div>
     </div>

@@ -49,13 +49,13 @@
             <img :src="post?.author.avatar" alt="Avatar" class="modal-author-avatar clickable-user" @click="goToUserHomepage(post?.author?.id)" />
             <div class="modal-author-info clickable-user" @click="goToUserHomepage(post?.author?.id)">
               <h4>{{ post?.author.name }}</h4>
-              <p>{{ post?.time }} · {{ post?.author.location || $t('postDetail.unknown') }}</p>
+              <p>{{ post?.time }} · {{ post?.author.location || '未知' }}</p>
             </div>
             <button v-if="currentUser && post?.author?.id !== currentUser.id" class="contact-btn" :class="{ active: isFollowing }" :disabled="followSubmitting" @click="toggleFollow">{{ followSubmitting ? '处理中...' : (isFollowing ? '已关注' : '关注') }}</button>
           </div>
             <div class="modal-post-view">
               <div class="modal-post-content">
-                <h3>{{ post?.title || $t('postDetail.postTitle') }}</h3>
+                <h3>{{ post?.title || '帖子标题' }}</h3>
                 <p>{{ post?.content }}</p>
                 <p v-if="showPostTranslation && translatedPostText" class="translated-text">{{ translatedPostText }}</p>
                 <button
@@ -66,7 +66,7 @@
                   @click="togglePostTranslate"
                 >
                   <i v-if="translatingPost" class='bx bx-loader-alt bx-spin'></i>
-                  <span>{{ translatingPost ? $t('postDetail.translating') : (showPostTranslation ? $t('postDetail.viewOriginal') : $t('postDetail.translatePost')) }}</span>
+                  <span>{{ translatingPost ? '翻译中...' : (showPostTranslation ? '查看原文' : '翻译') }}</span>
                 </button>
                 <div class="hashtags" v-if="post?.hashtags">
                   <span v-for="(tag, index) in post.hashtags" :key="index" class="hashtag" @click="handleTagClick(tag)">#{{ tag }}</span>
@@ -74,7 +74,7 @@
               </div>
               
               <div class="modal-comments">
-                <h4>{{ $t('postDetail.commentsCount', { count: post?.comments || 0 }) }}</h4>
+                <h4>评论 ({{ post?.comments || 0 }})</h4>
                 <div 
                   class="comment-item" 
                   v-for="(comment, index) in post?.commentList || []" 
@@ -89,7 +89,7 @@
                       <span class="comment-time">{{ comment.time }}</span>
                     </div>
                     <p class="comment-text">
-                      <span v-if="comment.replyTo" class="reply-to">{{ $t('postDetail.replyTo', { author: comment.replyTo }) }}</span>
+                      <span v-if="comment.replyTo" class="reply-to">回复 {{ comment.replyTo }}</span>
                       {{ comment.content }}
                     </p>
                     <p v-if="isCommentTranslationVisible(comment)" class="comment-translation-text">{{ getCommentTranslatedText(comment) }}</p>
@@ -98,20 +98,20 @@
                         <i class='bx bx-heart' :class="{ liked: comment.liked }"></i>
                         <span>{{ comment.likes }}</span>
                       </span>
-                      <span class="comment-reply" @click="replyToComment(comment)">{{ $t('postDetail.reply') }}</span>
+                      <span class="comment-reply" @click="replyToComment(comment)">回复</span>
                       <span
                         v-if="canTranslateComment(comment)"
                         class="comment-translate"
                         @click="toggleCommentTranslate(comment)"
                       >
                         <i v-if="isCommentTranslating(comment)" class='bx bx-loader-alt bx-spin'></i>
-                        <span>{{ isCommentTranslating(comment) ? $t('postDetail.translating') : (isCommentTranslationVisible(comment) ? $t('postDetail.viewOriginal') : $t('postDetail.translate')) }}</span>
+                        <span>{{ isCommentTranslating(comment) ? '翻译中...' : (isCommentTranslationVisible(comment) ? '查看原文' : '翻译') }}</span>
                       </span>
                       <span 
                         v-if="canDeleteComment(comment)" 
                         class="comment-delete" 
                         @click="handleDeleteComment(comment, index)"
-                      >{{ $t('postDetail.delete') }}</span>
+                      >删除</span>
                     </div>
                   </div>
                 </div>
@@ -134,7 +134,7 @@
               </button>
               <button class="interaction-btn share-btn" @click="openShareModal">
                 <i class='bx bx-share-alt'></i>
-                <span>{{ $t('postDetail.forward') }}</span>
+                <span>转发</span>
               </button>
               <button class="interaction-btn report-btn" @click="reportPost">
                 <i class='bx bx-error-circle'></i>
@@ -143,10 +143,10 @@
             </div>
             <div class="comment-input">
               <div v-if="replyToCommentId" class="reply-info">
-                {{ $t('postDetail.reply') }} {{ replyToAuthor }} <i class='bx bx-x' @click="cancelReply"></i>
+                回复 {{ replyToAuthor }} <i class='bx bx-x' @click="cancelReply"></i>
               </div>
-              <input v-model="newComment" type="text" :placeholder="replyToCommentId ? $t('postDetail.replyComment') : $t('postDetail.saySomething')" @keyup.enter="submitComment" />
-              <button class="send-btn" :disabled="submittingComment" @click="submitComment">{{ $t('postDetail.send') }}</button>
+              <input v-model="newComment" type="text" :placeholder="replyToCommentId ? '回复评论' : '说点什么...'" @keyup.enter="submitComment" />
+                <button class="send-btn" :disabled="submittingComment" @click="submitComment">发送</button>
             </div>
           </div>
         </div>
@@ -202,7 +202,7 @@
       <div class="share-overlay" @click="closeShareModal"></div>
       <div class="share-content">
         <div class="share-header">
-          <h3>{{ $t('postDetail.shareTo') }}</h3>
+          <h3>分享到</h3>
           <button class="share-close" @click="closeShareModal">
             <i class='bx bx-x'></i>
           </button>
@@ -212,25 +212,25 @@
             <div class="share-icon wechat">
               <i class='bx bxl-wechat'></i>
             </div>
-            <span>{{ $t('postDetail.wechat') }}</span>
+            <span>微信</span>
           </div>
           <div class="share-option" @click="shareToQQ">
             <div class="share-icon qq">
               <i class='bx bxl-qq'></i>
             </div>
-            <span>{{ $t('postDetail.qq') }}</span>
+            <span>QQ</span>
           </div>
           <div class="share-option" @click="shareToWeibo">
             <div class="share-icon weibo">
               <i class='bx bxl-weibo'></i>
             </div>
-            <span>{{ $t('postDetail.weibo') }}</span>
+            <span>微博</span>
           </div>
           <div class="share-option" @click="copyLink">
             <div class="share-icon link">
               <i class='bx bx-link'></i>
             </div>
-            <span>{{ $t('postDetail.copyLink') }}</span>
+            <span>复制链接</span>
           </div>
         </div>
         <div class="share-link-preview">
@@ -244,7 +244,6 @@
 <script setup>
 import { ref, watch, nextTick, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   createDiscoverPostComment,
   deleteDiscoverComment,
@@ -262,8 +261,6 @@ import {
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
-
-const { t } = useI18n()
 
 const props = defineProps({
   visible: {
@@ -427,13 +424,13 @@ const toggleCollect = async () => {
   try {
     const response = await toggleDiscoverPostCollect(props.post.id)
     if (response.code !== 200) {
-      notify.error(response.message || t('postDetail.operationFailed'))
+      notify.error(response.message || '操作失败')
       return
     }
     const { bookmarked, collects } = response.data
     emit('update', { ...props.post, bookmarked, collects })
   } catch (error) {
-    notify.error(t('postDetail.collectFailed'))
+    notify.error('收藏失败')
   }
 }
 
@@ -523,10 +520,10 @@ const togglePostTranslate = async () => {
       translatedPostText.value = response.data?.translatedText || ''
       showPostTranslation.value = true
     } else {
-      notify.error(response.message || t('postDetail.translateFailed'))
+      notify.error(response.message || '翻译失败')
     }
   } catch (error) {
-    notify.error(t('postDetail.translateFailed'))
+    notify.error('翻译失败')
   } finally {
     translatingPost.value = false
   }
@@ -578,10 +575,10 @@ const toggleCommentTranslate = async (comment) => {
       state.translatedText = response.data?.translatedText || ''
       state.showTranslation = true
     } else {
-      notify.error(response.message || t('postDetail.translateFailed'))
+      notify.error(response.message || '翻译失败')
     }
   } catch (error) {
-    notify.error(t('postDetail.translateFailed'))
+    notify.error('翻译失败')
   } finally {
     state.loading = false
   }
@@ -626,10 +623,10 @@ const submitComment = async () => {
       replyToCommentId.value = null
       replyToAuthor.value = ''
     } else {
-      notify.error(response.message || t('postDetail.commentFailed'))
+      notify.error(response.message || '评论失败')
     }
   } catch (error) {
-    notify.error(t('postDetail.commentFailedRetry'))
+    notify.error('评论失败，请重试')
   } finally {
     submittingComment.value = false
   }
@@ -649,14 +646,14 @@ const toggleCommentLike = async (comment) => {
   try {
     const response = await toggleDiscoverCommentLike(comment.id)
     if (response.code !== 200) {
-      notify.error(response.message || t('postDetail.operationFailed'))
+      notify.error(response.message || '操作失败')
       return
     }
     const { liked, likes } = response.data
     comment.liked = liked
     comment.likes = likes
   } catch (error) {
-    notify.error(t('postDetail.likeFailed'))
+    notify.error('点赞失败')
   }
 }
 
@@ -667,10 +664,10 @@ const canDeleteComment = (comment) => {
 
 const handleDeleteComment = async (comment, index) => {
   confirm({
-    title: t('postDetail.confirmDeleteCommentTitle'),
-    message: t('postDetail.confirmDeleteComment'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
+    title: '确认删除评论',
+    message: '确定要删除这条评论吗？',
+    confirmText: '确认',
+    cancelText: '取消',
     onConfirm: async () => {
       try {
         const response = await deleteDiscoverComment(comment.id)
@@ -685,10 +682,10 @@ const handleDeleteComment = async (comment, index) => {
           }
           emit('update', updatedPost)
         } else {
-          notify.error(response.message || t('postDetail.deleteFailed'))
+          notify.error(response.message || '删除失败')
         }
       } catch (error) {
-        notify.error(t('postDetail.deleteFailedRetry'))
+        notify.error('删除失败，请重试')
       }
     }
   })
@@ -716,7 +713,7 @@ const toggleFollow = async () => {
   if (!props.post || !props.post.author) return
   const authorId = props.post.author.id
   if (currentUser && authorId === currentUser.id) {
-    notify.warning(t('postDetail.cannotChatWithSelf'))
+    notify.warning('不能与自己聊天')
     return
   }
   
@@ -726,12 +723,12 @@ const toggleFollow = async () => {
     const response = wasFollowing ? await unfollowUser(authorId) : await followUser(authorId)
     if (response.code === 200) {
       isFollowing.value = resolveFollowState(response.data, !wasFollowing)
-      notify.success(isFollowing.value ? t('postDetail.followSuccess') : t('postDetail.unfollowSuccess'))
+      notify.success(isFollowing.value ? '关注成功' : '取消关注成功')
     } else {
-      notify.error(response.message || t('postDetail.operationFailed'))
+      notify.error(response.message || '操作失败')
     }
   } catch (error) {
-    notify.error(t('postDetail.operationFailed'))
+    notify.error('操作失败')
   } finally {
     followSubmitting.value = false
   }
@@ -749,21 +746,21 @@ const closeShareModal = () => {
 }
 
 const shareToWechat = () => {
-  const title = props.post?.title || t('postDetail.sharePost')
+  const title = props.post?.title || '分享帖子'
   const desc = props.post?.content?.substring(0, 50) || ''
   const url = `https://cli.im/api/qrcode/code?text=${encodeURIComponent(shareUrl.value)}`
   window.open(url, '_blank', 'width=600,height=600')
 }
 
 const shareToQQ = () => {
-  const title = props.post?.title || t('postDetail.sharePost')
+  const title = props.post?.title || '分享帖子'
   const desc = props.post?.content?.substring(0, 100) || ''
   const url = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(shareUrl.value)}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}`
   window.open(url, '_blank', 'width=600,height=500')
 }
 
 const shareToWeibo = () => {
-  const title = props.post?.title || t('postDetail.sharePost')
+  const title = props.post?.title || '分享帖子'
   const url = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(shareUrl.value)}&title=${encodeURIComponent(title)}`
   window.open(url, '_blank', 'width=600,height=500')
 }
@@ -771,7 +768,7 @@ const shareToWeibo = () => {
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(shareUrl.value)
-    notify.success(t('postDetail.linkCopied'))
+    notify.success('链接已复制')
   } catch (err) {
     const textArea = document.createElement('textarea')
     textArea.value = shareUrl.value
@@ -779,7 +776,7 @@ const copyLink = async () => {
     textArea.select()
     document.execCommand('copy')
     document.body.removeChild(textArea)
-    notify.success(t('postDetail.linkCopied'))
+    notify.success('链接已复制')
   }
 }
 </script>

@@ -17,7 +17,7 @@
         @click="navigateTo('/home/heritage')"
       >
         <i class='bx bx-transfer'></i>
-        <span>{{ $t('nav.home') }}</span>
+        <span>首页</span>
       </div>
       <div 
         class="nav-item" 
@@ -25,7 +25,7 @@
         @click="navigateTo('/home/activity')"
       >
         <i class='bx bx-calendar-event'></i>
-        <span>{{ $t('nav.activity') }}</span>
+        <span>活动</span>
       </div>
       <div 
         class="nav-item" 
@@ -36,7 +36,7 @@
           <i class='bx bx-compass'></i>
           <span v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
         </div>
-        <span>{{ $t('nav.discover') }}</span>
+        <span>发现</span>
       </div>
       <div 
         class="nav-item" 
@@ -44,7 +44,7 @@
         @click="navigateTo('/home/tools')"
       >
         <i class='bx bx-wrench'></i>
-        <span>{{ $t('nav.tools') }}</span>
+        <span>工具</span>
       </div>
       <div 
         class="nav-item" 
@@ -52,7 +52,7 @@
         @click="navigateTo('/home/personal')"
       >
         <i class='bx bx-user'></i>
-        <span>{{ $t('nav.personal') }}</span>
+        <span>个人中心</span>
       </div>
     </div>
   </div>
