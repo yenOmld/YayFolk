@@ -83,7 +83,7 @@
           >
             <button type="button" class="favorite-main" @click="openFavorite(item.id)">
               <div class="favorite-meta">
-                <strong>{{ item.destination || '全国' }} - {{ item.days || 1 }} 天<span v-if="(item.days || 1) > 1">s</span></strong>
+                <strong>{{ item.destination || '全国' }} - {{ item.days || 1 }} 天<span v-if="(item.days || 1) > 1"></span></strong>
                 <span>{{ formatDate(item.updateTime || item.createTime) }}</span>
               </div>
               <h3>{{ item.query }}</h3>
@@ -115,7 +115,7 @@
         <div class="overview-head">
           <div>
             <p class="eyebrow">路线概览</p>
-            <h2>{{ normalizedRoute.destination }} - {{ normalizedRoute.days }} 天<span v-if="normalizedRoute.days > 1">s</span></h2>
+            <h2>{{ normalizedRoute.destination }} - {{ normalizedRoute.days }} 天<span v-if="normalizedRoute.days > 1"></span></h2>
           </div>
           <div class="overview-actions">
             <div class="overview-badges">

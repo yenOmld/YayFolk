@@ -205,7 +205,7 @@ export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favo
 export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
 export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
 
-// ========== 閸忣剙鍙″ú璇插З閻╃鍙ч幒銉ュ經 ==========
+// ========== 闂傚倸鍊搁崐鎼佸磹閻戣姤鍤勯柛顐ｆ磵閳ь剨绠撳畷鐓庮熆濠靛牊鍤€妞ゎ偅绻勯幑鍕惞鐠団剝肖濠电姷鏁搁崑娑樜涘▎鎾崇闁归棿鐒﹂崕妤佷繆閵堝懏鍣洪柣鎾冲暣閺屾洘寰勯崼婵嗩瀷閻炴熬绠撳娲箚瑜忕粻鐑樸亜椤愩埄妲洪柍褜鍓氱喊宥呯暆閹间礁钃熼柣鏃囨绾惧吋淇婇娑欍仢闁哥偠娉涢埞鎴炲箠闁稿﹥娲熼獮濠呯疀濞戞瑥浜楅梺缁樻煥閸氬鎮￠崘顔界厱婵犻潧妫楅鈺呮煛鐎ｃ劌鈧繈寮婚敐澶婄婵°倕鍟伴弳顐︽⒑閸濆嫭婀扮紒瀣灴閸┿垹顓奸崶銊ョ彴闂佸憡鐟ラˇ浼村箖濞嗘垹纾藉ù锝呮惈鏍℃繝鐢靛仜閿曨亜顕ｆ繝姘嵆闁绘棃顥撶粣鐐烘⒑閸撴彃浜濈紒璇插€归幈銊︽償閿濆洨锛?==========
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
@@ -213,7 +213,7 @@ export const getHomepageOfficialContents = () => request.get('/public/official/h
 export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
 export const getLatestUnbanApplication = (account) => request.get('/public/unban-applications/latest', { params: { account } })
 
-// ========== 閸忣剙鍙″ú璇插З閻╃鍙ч幒銉ュ經 ==========
+// ========== 闂傚倸鍊搁崐鎼佸磹閻戣姤鍤勯柛顐ｆ磵閳ь剨绠撳畷鐓庮熆濠靛牊鍤€妞ゎ偅绻勯幑鍕惞鐠団剝肖濠电姷鏁搁崑娑樜涘▎鎾崇闁归棿鐒﹂崕妤佷繆閵堝懏鍣洪柣鎾冲暣閺屾洘寰勯崼婵嗩瀷閻炴熬绠撳娲箚瑜忕粻鐑樸亜椤愩埄妲洪柍褜鍓氱喊宥呯暆閹间礁钃熼柣鏃囨绾惧吋淇婇娑欍仢闁哥偠娉涢埞鎴炲箠闁稿﹥娲熼獮濠呯疀濞戞瑥浜楅梺缁樻煥閸氬鎮￠崘顔界厱婵犻潧妫楅鈺呮煛鐎ｃ劌鈧繈寮婚敐澶婄婵°倕鍟伴弳顐︽⒑閸濆嫭婀扮紒瀣灴閸┿垹顓奸崶銊ョ彴闂佸憡鐟ラˇ浼村箖濞嗘垹纾藉ù锝呮惈鏍℃繝鐢靛仜閿曨亜顕ｆ繝姘嵆闁绘棃顥撶粣鐐烘⒑閸撴彃浜濈紒璇插€归幈銊︽償閿濆洨锛?==========
 export const applyMerchant = (data) => request.post('/merchant/apply', data)
 export const getMyApplication = () => request.get('/merchant/apply/status')
 
@@ -227,11 +227,12 @@ export const getMerchantBookingDetail = (id) => request.get(`/merchant/bookings/
 export const lookupMerchantBooking = (code) => request.get('/merchant/bookings/lookup', { params: { code } })
 export const lookupMerchantBookingByImage = (imageData) => request.post('/merchant/bookings/lookup-image', { imageData })
 export const checkinBooking = (id) => request.post(`/merchant/bookings/${id}/checkin`)
-export const rejectBooking = (id) => request.post(`/merchant/bookings/${id}/reject`)
+export const refundMerchantBooking = (id, data = {}) => request.post(`/merchant/bookings/${id}/refund`, data)
+export const rejectBooking = (id, data = {}) => request.post(`/merchant/bookings/${id}/reject`, data)
 
 
 
-// ========== 閸熷棗顔嶇粻锛勬倞 ==========
+// ========== 闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾妤犵偞顨呴…銊╁醇濠靛牏宕堕梺纭呭亹鐞涖儵宕归幆褉妲堟俊顖涚矋濡啫鐣烽鍛閻熸瑥瀚悵锕傛⒑鐠囨煡顎楃紒鐘茬Ч瀹曟洟宕￠悘缁樻そ婵℃悂鏁傞柨顖涚亙闁诲骸绠嶉崕閬嵥囨导瀛樺亗闁靛濡囩粻楣冩煙鐎甸晲绱虫い蹇撶墱閺佸倹銇勮箛鎾跺闁?==========
 export const getAdminMerchants = (status) => request.get('/admin/merchants', { params: { status } })
 export const auditMerchant = (id, approve, remark) => request.post(`/admin/merchants/${id}/audit`, { approve, remark })
 export const getAdminActivities = (auditStatus) => request.get('/admin/activities', { params: { auditStatus } })
@@ -253,7 +254,7 @@ export const updateAdminAccount = (id, data) => request.put(`/admin/admins/${id}
 export const updateAdminAccountPassword = (id, data) => request.put(`/admin/admins/${id}/password`, data)
 export const deleteAdminAccount = (id) => request.delete(`/admin/admins/${id}`)
 
-// ========== 瀹樻柟鍐呭绠＄悊 ==========
+// ========== 闂傚倸鍊峰ù鍥敋瑜嶉～婵嬫晝閸岋妇绋忔繝銏ｆ硾鐎涒晠骞婂畝鍕拻濞达絽鎲￠幆鍫ユ煟椤掆偓閵堢鐣锋导鏉戝唨鐟滃繘寮抽敂鑺ュ弿婵＄偠顕ф禍楣冩倵鐟欏嫭纾搁柛鏃€鍨块妴浣肝熷▎鐐╅梻浣告惈閹锋垹寰婄捄銊︻潟闁规儳鐡ㄦ刊鎾煕濠靛棗顏撮柍褜鍓氶幐鍓ф閹烘挻缍囬柕濠忓椤︽澘螖?==========
 export const getOfficialActivities = () => request.get('/admin/official/activities')
 export const createOfficialActivity = (data) => request.post('/admin/official/activities', data)
 export const updateOfficialActivity = (id, data) => request.put(`/admin/official/activities/${id}`, data)
@@ -269,9 +270,11 @@ export const updateOfficialWork = (id, data) => request.put(`/admin/official/wor
 export const deleteOfficialWork = (id) => request.delete(`/admin/official/works/${id}`)
 export const publishToHomepage = (type, ids) => request.post('/admin/official/publish', { type, ids })
 
-// ========== 鐠併垹宕?& 閹存劕姘?==========
+// ========== 闂傚倸鍊搁崐宄懊归崶褏鏆﹂柛顭戝亝閸欏繘鏌熼幆鏉啃撻柍閿嬫⒒閳ь剙绠嶉崕閬嵥囬鐐插瀭闁稿瞼鍋為悡鐔兼煟閺冨偆鐒炬い銉ヮ儔閺?& 闂傚倸鍊搁崐鎼佸磹閻戣姤鍤勯柛顐ｆ礀缁犵娀鏌熼崜褏甯涢柛瀣ㄥ€濋弻鏇熺箾閻愵剚鐝旂紓浣插亾濠㈣埖鍔栭悡娑㈡煕閵夈垺娅呴柛鎾归哺缁?==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
 export const getMyOrders = () => request.get('/orders')
+export const payOrder = (id, data = {}) => request.post(`/orders/${id}/pay`, data)
+export const reconcileAlipayTrade = (data) => request.post('/alipay/reconcile', data)
 export const cancelOrder = (id) => request.post(`/orders/${id}/cancel`)
 export const bookActivity = (activityId, data) => request.post(`/orders/activities/${activityId}/book`, data)
 export const cancelActivityBooking = (id) => request.post(`/orders/bookings/${id}/cancel`)

@@ -12,19 +12,19 @@
       </div>
     </div>
 
-    <div v-if="loading" class="state-card">加载支付信息中...</div>
+    <div v-if="loading" class="state-card">加载报名支付信息中...</div>
     <div v-else-if="!booking" class="state-card">该订单当前无法支付。</div>
 
     <div v-else class="payment-layout">
       <section class="main-column">
         <article class="panel-card hero-panel">
           <p class="eyebrow">活动结算</p>
-          <h1>{{ success ? '支付完成' : '确认活动支付' }}</h1>
+          <h1>{{ success ? '支付已完成' : '确认支付宝支付' }}</h1>
           <p v-if="success">
-            支付已完成。您可以查看订单详情或打开核销二维码。
+            支付已确认。您可以打开二维码或查看报名详情。
           </p>
           <p v-else>
-            本项目目前使用模拟支付流程，以便完整测试报名、支付和核销全流程。
+            订单将跳转至支付宝网页结账页面，并通过异步回调确认。
           </p>
         </article>
 
@@ -32,46 +32,43 @@
           <div class="order-head">
             <div>
               <h2>{{ booking.activityTitle || '活动报名' }}</h2>
-              <p>订单号: {{ booking.reserveNo || '-' }}</p>
+              <p>订单号 {{ booking.reserveNo || '-' }}</p>
             </div>
             <strong>{{ formatMoney(booking.payAmount ?? booking.totalAmount) }}</strong>
           </div>
 
           <div class="summary-grid">
             <div><span>参与人数</span><strong>{{ booking.participantCount || 1 }}</strong></div>
-            <div><span>参与者</span><strong>{{ booking.participantName || '-' }}</strong></div>
+            <div><span>联系人</span><strong>{{ booking.participantName || '-' }}</strong></div>
             <div><span>电话</span><strong>{{ booking.participantPhone || '-' }}</strong></div>
-            <div><span>活动时间</span><strong>{{ formatRange(booking.startTime, booking.endTime) }}</strong></div>
+            <div><span>日程</span><strong>{{ formatRange(booking.startTime, booking.endTime) }}</strong></div>
             <div class="full-span"><span>地点</span><strong>{{ fullLocation }}</strong></div>
           </div>
         </article>
 
         <article v-if="!success && booking.canPay" class="panel-card">
-          <h2>选择支付方式</h2>
+          <h2>支付方式</h2>
           <div class="method-grid">
-            <button
-              v-for="method in paymentMethods"
-              :key="method.value"
-              type="button"
-              :class="['method-card', { active: selectedMethod === method.value }]"
-              @click="selectedMethod = method.value"
-            >
-              <div class="method-icon" :class="method.theme"><i :class="method.icon"></i></div>
+            <button type="button" class="method-card active">
+              <div class="method-icon alipay"><i class="bx bxl-alipay"></i></div>
               <div class="method-copy">
-                <strong>{{ method.label }}</strong>
-                <p>{{ method.desc }}</p>
+                <strong>支付宝</strong>
+                <p>打开支付宝官方结账页面并等待异步确认。</p>
               </div>
             </button>
           </div>
           <div class="hint-box">
-            <strong>当前行为</strong>
-            <p>选择的支付方式会保存在订单中，支付会在应用内立即完成。</p>
+            <strong>支付流程</strong>
+            <p>
+              点击继续后，当前页面将跳转到支付宝。支付完成后，
+              您将被重定向回结果页面。
+            </p>
           </div>
         </article>
 
         <article v-else class="panel-card success-panel">
           <div class="success-icon"><i class="bx bx-check-circle"></i></div>
-          <h2>{{ success ? '支付成功，二维码已生成' : '该订单无需支付' }}</h2>
+          <h2>{{ success ? '支付成功，二维码已就绪' : '无需再次支付' }}</h2>
           <p>{{ successMessage }}</p>
         </article>
       </section>
@@ -80,7 +77,7 @@
         <article class="panel-card sticky-card">
           <h2>支付汇总</h2>
           <div class="amount-box">
-            <span>应付金额</span>
+            <span>金额</span>
             <strong>{{ formatMoney(booking.payAmount ?? booking.totalAmount) }}</strong>
           </div>
           <div class="summary-list">
@@ -91,9 +88,9 @@
           </div>
           <div class="action-list">
             <button v-if="!success && booking.canPay" class="primary-btn" :disabled="processing" @click="confirmPayment">
-              {{ processing ? '处理中...' : '确认支付' }}
+              {{ processing ? '跳转中...' : '继续前往支付宝' }}
             </button>
-            <button class="secondary-btn" @click="openDetail">查看订单详情</button>
+            <button class="secondary-btn" @click="openDetail">查看报名详情</button>
             <button v-if="success && booking.canOpenQr" class="ghost-btn" @click="openCheckin">
               打开核销二维码
             </button>
@@ -109,6 +106,7 @@ import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getActivityBookingDetail, payActivityBooking } from '../../api/app'
 import { resolveActivityBookingDisplayStatus } from '../../utils/activityBooking'
+import { isAlipayPagePayment, submitAlipayForm } from '../../utils/alipay'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -119,12 +117,7 @@ const loading = ref(false)
 const processing = ref(false)
 const success = ref(false)
 const booking = ref(null)
-const selectedMethod = ref('simulated')
-
-const paymentMethods = [
-  { value: 'simulated', label: '模拟支付', desc: '应用内立即完成支付，用于完整测试报名流程。', icon: 'bx bx-credit-card', theme: 'default' },
-  { value: 'alipay', label: '支付宝', desc: '选择此方式后，支付仍会在应用内完成。', icon: 'bx bxl-alipay', theme: 'alipay' }
-]
+const selectedMethod = ref('alipay')
 
 const resolvedBackTo = computed(() => (
   typeof route.query.backTo === 'string' && route.query.backTo ? route.query.backTo : '/personal/activities'
@@ -137,9 +130,9 @@ const fullLocation = computed(() => (
     .join(' / ') || '-'
 ))
 const paymentStatusText = computed(() => ({ paid: '已支付', unpaid: '未支付', refunded: '已退款' }[booking.value?.paymentStatus] || booking.value?.paymentStatus || '未支付'))
-const paymentLabel = computed(() => ({ pending: '待选择', simulated: '模拟支付', free: '免费', alipay: '支付宝' }[booking.value?.paymentType || selectedMethod.value] || '待选择'))
+const paymentLabel = computed(() => ({ pending: '待处理', free: '免费', alipay: '支付宝' }[booking.value?.paymentType || selectedMethod.value] || '待处理'))
 const successMessage = computed(() => booking.value?.paymentStatus === 'paid'
-  ? '订单已标记为支付成功。您可以打开二维码进行现场核销。'
+  ? '报名已确认已支付。您现在可以打开二维码进行核销。'
   : '该订单无需再次支付。')
 
 const showError = (message) => notify?.error?.(message)
@@ -150,16 +143,13 @@ const loadBooking = async () => {
   try {
     const response = await getActivityBookingDetail(route.params.id)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Failed to load booking payment information')
+      throw new Error(response.message || '加载报名支付信息失败')
     }
     booking.value = response.data
     success.value = booking.value.paymentStatus === 'paid'
-    if (booking.value.paymentType && booking.value.paymentType !== 'pending') {
-      selectedMethod.value = booking.value.paymentType
-    }
   } catch (error) {
     booking.value = null
-    showError(error.message || 'Failed to load booking payment information')
+    showError(error.message || '加载报名支付信息失败')
   } finally {
     loading.value = false
   }
@@ -174,11 +164,15 @@ const confirmPayment = async () => {
   try {
     const response = await payActivityBooking(booking.value.id, { paymentType: selectedMethod.value })
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Payment failed')
+      throw new Error(response.message || '支付失败')
+    }
+    if (isAlipayPagePayment(response.data)) {
+      submitAlipayForm(response.data.formHtml)
+      return
     }
     booking.value = response.data
     success.value = booking.value.paymentStatus === 'paid'
-    showSuccess(success.value ? 'Payment successful' : 'Payment status updated')
+    showSuccess(success.value ? '支付成功' : '支付状态已更新')
     if (success.value) {
       router.replace({
         name: 'activity-booking-pay-result',
@@ -187,7 +181,7 @@ const confirmPayment = async () => {
       })
     }
   } catch (error) {
-    showError(error.message || 'Payment failed')
+    showError(error.message || '支付失败')
   } finally {
     processing.value = false
   }
@@ -207,7 +201,7 @@ const goBack = () => {
   router.push(resolvedBackTo.value)
 }
 
-const formatMoney = (value) => `$${(Number(value || 0) / 100).toFixed(2)}`
+const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')
 const formatRange = (start, end) => {
   const startText = start ? formatTime(start) : 'TBD'
@@ -241,11 +235,9 @@ onMounted(loadBooking)
 .summary-grid span, .amount-box span { display: block; font-size: 13px; color: #64748b; margin-bottom: 8px; }
 .summary-grid strong, .amount-box strong { color: #0f172a; }
 .full-span { grid-column: 1 / -1; }
-.method-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 18px; }
-.method-card { display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 18px; border: 1px solid #dbe4f0; background: #fff; cursor: pointer; text-align: left; }
-.method-card.active { border-color: #38bdf8; box-shadow: 0 12px 30px rgba(56,189,248,0.12); }
+.method-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+.method-card { display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 18px; border: 1px solid #38bdf8; background: #fff; box-shadow: 0 12px 30px rgba(56,189,248,0.12); text-align: left; }
 .method-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; color: #fff; font-size: 26px; flex-shrink: 0; }
-.method-icon.default { background: linear-gradient(135deg, #334155, #475569); }
 .method-icon.alipay { background: linear-gradient(135deg, #1677ff, #3b82f6); }
 .method-copy strong { display: block; margin-bottom: 6px; color: #0f172a; }
 .method-copy p { margin: 0; }
@@ -263,5 +255,5 @@ onMounted(loadBooking)
 .success-panel { text-align: center; }
 .success-icon { width: 64px; height: 64px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 20px; background: #ecfeff; color: #0891b2; font-size: 34px; }
 @media (max-width: 960px) { .payment-layout { grid-template-columns: 1fr; } .sticky-card { position: static; } }
-@media (max-width: 720px) { .summary-grid, .method-grid { grid-template-columns: 1fr; } .order-head { flex-direction: column; } }
+@media (max-width: 720px) { .summary-grid { grid-template-columns: 1fr; } .order-head { flex-direction: column; } }
 </style>

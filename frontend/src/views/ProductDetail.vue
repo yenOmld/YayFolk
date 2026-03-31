@@ -1,18 +1,18 @@
 <template>
   <div class="product-detail">
     <div class="detail-header">
-      <button class="back-btn" @click="goBack">← 返回</button>
+      <button class="back-btn" @click="goBack">闁?閺夆晜鏌ㄥú?/button>
       <div>
-        <h1>{{ product?.name || '商品详情' }}</h1>
-        <p class="subtitle">{{ product?.heritageType || '非遗文创' }}</p>
+        <h1>{{ product?.name || '闁哥喎妫楅幖褏鎷犻敂钘夊壈' }}</h1>
+        <p class="subtitle">{{ product?.heritageType || '闂傚牏鍋ゆ禒鎰板棘閸パ冪仭' }}</p>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="!product" class="empty">商品不存在或已下架</div>
+    <div v-if="loading" class="loading">闁告梻濮惧ù鍥ㄧ▔?..</div>
+    <div v-else-if="!product" class="empty">闁哥喎妫楅幖褎绋夊鍛憼闁革负鍔嶉崹銊ヮ啅闊厾鐟撻柡?/div>
     <div v-else class="detail-content">
       <section class="gallery-panel">
-        <img :src="currentImage" alt="商品主图" class="main-image" />
+        <img :src="currentImage" alt="闁哥喎妫楅幖褎绋夌拠鍙夌" class="main-image" />
         <div class="thumb-list" v-if="gallery.length > 1">
           <button
             v-for="img in gallery"
@@ -20,44 +20,44 @@
             :class="['thumb', { active: currentImage === img }]"
             @click="currentImage = img"
           >
-            <img :src="img" alt="商品缩略图" />
+            <img :src="img" alt="闁哥喎妫楅幖褏绱撻埡鍐╂闁? />
           </button>
         </div>
       </section>
 
       <section class="info-panel">
         <div class="price-row">
-          <span class="price">¥{{ formatPrice(product.price) }}</span>
-          <span v-if="product.originalPrice" class="original-price">¥{{ formatPrice(product.originalPrice) }}</span>
+          <span class="price">濡ょ磵{ formatPrice(product.price) }}</span>
+          <span v-if="product.originalPrice" class="original-price">濡ょ磵{ formatPrice(product.originalPrice) }}</span>
         </div>
 
         <div class="meta-grid">
           <div class="meta-item">
-            <span class="label">库存</span>
+            <span class="label">閹煎瓨鎸搁悺?/span>
             <strong>{{ product.stock ?? 0 }}</strong>
           </div>
           <div class="meta-item">
-            <span class="label">销量</span>
+            <span class="label">闂佸簱鍋撻梺?/span>
             <strong>{{ product.sales ?? 0 }}</strong>
           </div>
           <div class="meta-item">
-            <span class="label">店铺</span>
-            <strong>{{ product.merchantName || '合作商家' }}</strong>
+            <span class="label">閹煎瓨顨婇幗?/span>
+            <strong>{{ product.merchantName || '闁告艾鐗呯紞鏃堝疮閸℃鍟€' }}</strong>
           </div>
           <div class="meta-item">
-            <span class="label">品类</span>
-            <strong>{{ product.heritageType || '非遗作品' }}</strong>
+            <span class="label">闁告繀鑳剁悮?/span>
+            <strong>{{ product.heritageType || '闂傚牏鍋ゆ禒鎰媴濠婂啯鎯? }}</strong>
           </div>
         </div>
 
         <div class="section-card">
-          <h3>商品简介</h3>
-          <p>{{ product.description || '暂无简介' }}</p>
+          <h3>闁哥喎妫楅幖褏绮婚埀顒佺?/h3>
+          <p>{{ product.description || '闁哄棗鍊瑰Λ銈囩不閳ь剚绂? }}</p>
         </div>
 
         <div class="section-card">
-          <h3>商家信息</h3>
-          <p>{{ product.merchantIntro || '该商家专注于非遗文化体验与作品创作。' }}</p>
+          <h3>闁哥喎妫楅宥嗙┍閳╁啩绱?/h3>
+          <p>{{ product.merchantIntro || '閻犲洢鍎遍弲銏⑩偓瑙勬构缁楁挸鈻旈妸銈囪壘闂傚牏鍋ゆ禒鎰板棘閸パ冾嚙濞达絾鎹囬悰娆愮▔鎼存繄绋婇柛婵呯閸ㄨ鲸鎷呭┃搴撳亾? }}</p>
         </div>
 
         <div class="purchase-card">
@@ -66,57 +66,57 @@
             <span>{{ quantity }}</span>
             <button @click="increaseQuantity" :disabled="quantity >= (product.stock || 0)">+</button>
           </div>
-          <button class="buy-btn" @click="showOrderModal = true" :disabled="!product.stock">立即下单</button>
+          <button class="buy-btn" @click="showOrderModal = true" :disabled="!product.stock">缂佹柨顑呭畵鍡樼▔鐎ｎ亜绀?/button>
         </div>
       </section>
     </div>
 
     <section v-if="product" class="description-panel">
-      <h3>商品详情</h3>
+      <h3>闁哥喎妫楅幖褏鎷犻敂钘夊壈</h3>
       <div v-if="product.detail" class="detail-text">{{ product.detail }}</div>
-      <p v-else>{{ product.description || '暂无详情说明' }}</p>
+      <p v-else>{{ product.description || '闁哄棗鍊瑰Λ銈囨嫚閿旇棄鍓伴悹鍥х摠濡? }}</p>
     </section>
 
     <div v-if="showOrderModal && product" class="modal-mask" @click.self="showOrderModal = false">
       <div class="modal">
-        <h3>填写收货信息</h3>
+        <h3>濠靛鍋勯崯鎾诲绩閹増褰涘ǎ鍥ｅ墲娴?/h3>
         <div class="form-grid">
           <div class="form-group">
-            <label>收货人 *</label>
-            <input v-model="orderForm.receiverName" placeholder="请输入收货人姓名" />
+            <label>闁衡偓閹増褰涘ù?*</label>
+            <input v-model="orderForm.receiverName" placeholder="閻犲洨鏌夌欢顓㈠礂閵夛附鏆悹鎰屽倹鐪藉┑顔芥尭閹? />
           </div>
           <div class="form-group">
-            <label>联系电话 *</label>
-            <input v-model="orderForm.receiverPhone" placeholder="请输入联系电话" />
+            <label>闁艰鲸姊婚柈鎾偨娴ｅ啰妯?*</label>
+            <input v-model="orderForm.receiverPhone" placeholder="閻犲洨鏌夌欢顓㈠礂閵夈劋绮撶紒顖濆吹閺佸摜鎷? />
           </div>
           <div class="form-group">
-            <label>省份</label>
-            <input v-model="orderForm.receiverProvince" placeholder="如：浙江省" />
+            <label>闁活亙妞掗崬?/label>
+            <input v-model="orderForm.receiverProvince" placeholder="濠碘€冲亰缁辨澘霉濞嗘劗娼ら柣? />
           </div>
           <div class="form-group">
-            <label>城市 *</label>
-            <input v-model="orderForm.receiverCity" placeholder="如：杭州市" />
+            <label>闁糕晛楠哥粩?*</label>
+            <input v-model="orderForm.receiverCity" placeholder="濠碘€冲亰缁变即寮堕鐐电嵁閻? />
           </div>
           <div class="form-group">
-            <label>区县</label>
-            <input v-model="orderForm.receiverDistrict" placeholder="如：西湖区" />
+            <label>闁告牕鎼獮?/label>
+            <input v-model="orderForm.receiverDistrict" placeholder="濠碘€冲亰缁辨壆鎲查幐搴ｎ啇闁? />
           </div>
           <div class="form-group">
-            <label>购买数量</label>
+            <label>閻犳劦鍘洪幏閬嶅极娴兼潙娅?/label>
             <input :value="quantity" disabled />
           </div>
           <div class="form-group full">
-            <label>详细地址 *</label>
-            <input v-model="orderForm.receiverAddress" placeholder="请输入详细地址" />
+            <label>閻犲浄濡囩划蹇涘捶閺夋寧绲?*</label>
+            <input v-model="orderForm.receiverAddress" placeholder="閻犲洨鏌夌欢顓㈠礂閵夘煈鍤婄紓浣告濠€鎾锤閳? />
           </div>
           <div class="form-group full">
-            <label>买家备注</label>
-            <textarea v-model="orderForm.remark" rows="3" placeholder="可填写送礼说明或配送备注"></textarea>
+            <label>濞戞梹婢橀宥嗗緞閸ャ劍鏆?/label>
+            <textarea v-model="orderForm.remark" rows="3" placeholder="闁告瑯鍨伴敐鐐哄礃濞嗘挴鍋撴担鎭掍粻閻犲洤鐡ㄥΣ鎴﹀箣閺嶎厼甯抽梺顐＄椤︻剙鈻?></textarea>
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn cancel" @click="showOrderModal = false">取消</button>
-          <button class="btn submit" @click="submitOrder">提交订单</button>
+          <button class="btn cancel" @click="showOrderModal = false">闁告瑦鐗楃粔?/button>
+          <button class="btn submit" @click="submitOrder">闁圭粯鍔掑锔炬媼閵忕姴绀?/button>
         </div>
       </div>
     </div>
@@ -126,7 +126,8 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { createOrder, getPublicProductDetail } from '../api/app'
+import { createOrder, getPublicProductDetail, payOrder } from '../api/app'
+import { isAlipayPagePayment, submitAlipayForm } from '../utils/alipay'
 
 const { appContext } = getCurrentInstance()
 const notify = (msg, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(msg)
@@ -165,7 +166,7 @@ const gallery = computed(() => {
         images.push(...parsed.filter(Boolean))
       }
     } catch (error) {
-      console.error('解析商品图片失败', error)
+      console.error('閻熸瑱绲鹃悗浠嬪疮閸℃鎯傞柛銉ュ⒔婢ф牗寰勬潏顐バ?, error)
     }
   }
 
@@ -196,7 +197,7 @@ const loadProduct = async () => {
     product.value = response.data || null
     currentImage.value = gallery.value[0] || ''
   } catch (error) {
-    notify(error.response?.data?.message || '获取商品详情失败', 'error')
+    notify(error.response?.data?.message || '闁兼儳鍢茶ぐ鍥疮閸℃鎯傞悹鍥烽檮閸庡繑寰勬潏顐バ?, 'error')
     product.value = null
   } finally {
     loading.value = false
@@ -209,7 +210,7 @@ const submitOrder = async () => {
   }
 
   if (!orderForm.value.receiverName || !orderForm.value.receiverPhone || !orderForm.value.receiverCity || !orderForm.value.receiverAddress) {
-    notify('请填写完整的收货信息', 'error')
+    notify('閻犲洤鍢查敐鐐哄礃濞嗗繒鏆氶柡浣割嚟濞堟垿寮ㄩ幆鐗堝經濞ｅ洠鍓濇导?, 'error')
     return
   }
 
@@ -220,11 +221,22 @@ const submitOrder = async () => {
       ...orderForm.value
     })
 
-    notify(`下单成功，订单号：${response.data.orderNo}`, 'success')
+    if (response?.data?.canPay) {
+      const paymentResponse = await payOrder(response.data.id, { paymentType: 'alipay' })
+      if (paymentResponse.code !== 200 || !paymentResponse.data) {
+        throw new Error(paymentResponse.message || 'Failed to create Alipay payment')
+      }
+      if (isAlipayPagePayment(paymentResponse.data)) {
+        submitAlipayForm(paymentResponse.data.formHtml)
+        return
+      }
+    }
+
+    notify(`Order created: ${response.data.orderNo}`, 'success')
     showOrderModal.value = false
     product.value.stock = Math.max((product.value.stock || 0) - quantity.value, 0)
   } catch (error) {
-    notify(error.response?.data?.message || '下单失败', 'error')
+    notify(error.response?.data?.message || '濞戞挸顑呭畷鐔稿緞鏉堫偉袝', 'error')
   }
 }
 

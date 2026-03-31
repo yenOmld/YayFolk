@@ -1,6 +1,7 @@
 package com.yayfolk.backend.controller;
 
 import com.yayfolk.backend.dto.ResponseDto;
+import com.yayfolk.backend.service.AlipayPaymentService;
 import com.yayfolk.backend.service.MerchantService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +19,12 @@ import java.util.Map;
 public class OrderController {
 
     private final MerchantService merchantService;
+    private final AlipayPaymentService alipayPaymentService;
 
-    public OrderController(MerchantService merchantService) {
+    public OrderController(MerchantService merchantService,
+                           AlipayPaymentService alipayPaymentService) {
         this.merchantService = merchantService;
+        this.alipayPaymentService = alipayPaymentService;
     }
 
     private String requireUsername(HttpServletRequest request) {
@@ -29,6 +33,14 @@ public class OrderController {
             throw new RuntimeException("Unauthorized, please login first");
         }
         return username.toString();
+    }
+
+    private boolean isAlipayRequest(Map<String, Object> data) {
+        if (data == null) {
+            return false;
+        }
+        Object paymentType = data.get("paymentType");
+        return paymentType != null && "alipay".equalsIgnoreCase(String.valueOf(paymentType).trim());
     }
 
     @PostMapping
@@ -77,6 +89,9 @@ public class OrderController {
                                 HttpServletRequest request) {
         try {
             String username = requireUsername(request);
+            if (isAlipayRequest(data)) {
+                return ResponseDto.success(alipayPaymentService.createOrderPayment(username, id));
+            }
             return ResponseDto.success(merchantService.payForOrder(username, id, data));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
@@ -98,6 +113,13 @@ public class OrderController {
     public ResponseDto cancelActivityBooking(@PathVariable Long id, HttpServletRequest request) {
         try {
             String username = requireUsername(request);
+            Map<String, Object> detail = merchantService.getMyActivityBookingDetail(username, id);
+            String paymentStatus = detail.get("paymentStatus") == null ? "" : String.valueOf(detail.get("paymentStatus"));
+            String paymentType = detail.get("paymentType") == null ? "" : String.valueOf(detail.get("paymentType"));
+            if ("paid".equalsIgnoreCase(paymentStatus) && "alipay".equalsIgnoreCase(paymentType)) {
+                alipayPaymentService.refundUserActivityBooking(username, id, "User cancelled booking");
+                return ResponseDto.success("Activity booking cancelled successfully");
+            }
             merchantService.cancelActivityBooking(username, id);
             return ResponseDto.success("Activity booking cancelled successfully");
         } catch (Exception e) {
@@ -132,6 +154,9 @@ public class OrderController {
                                           HttpServletRequest request) {
         try {
             String username = requireUsername(request);
+            if (isAlipayRequest(data)) {
+                return ResponseDto.success(alipayPaymentService.createBookingPayment(username, id));
+            }
             return ResponseDto.success(merchantService.payForActivityBooking(username, id, data));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());

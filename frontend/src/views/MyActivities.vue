@@ -5,7 +5,8 @@
         <p class="eyebrow">活动中心</p>
         <h1>我的活动报名</h1>
         <p>
-          集中管理您的所有活动报名。可在此继续支付、打开签到二维码、评价已完成的活动，或管理已取消的报名记录。
+          在这里管理您的所有活动报名。您可以继续支付、打开核销二维码、
+          在活动结束后留下评价，或管理已取消的报名记录。
         </p>
       </div>
       <button class="ghost-btn" :disabled="loading" @click="loadData">
@@ -15,7 +16,7 @@
 
     <section class="summary-grid">
       <div class="summary-card">
-        <span class="summary-label">全部</span>
+        <span class="summary-label">总计</span>
         <strong>{{ summary.total }}</strong>
       </div>
       <div class="summary-card">
@@ -35,12 +36,12 @@
     <section class="panel">
       <div class="panel-header">
         <h2>报名列表</h2>
-        <span>{{ bookings.length }} 条</span>
+        <span>{{ bookings.length }} 项</span>
       </div>
 
-      <div v-if="loading" class="empty-state">正在加载活动报名...</div>
+      <div v-if="loading" class="empty-state">加载活动报名中...</div>
       <div v-else-if="bookings.length === 0" class="empty-state">
-        暂无活动报名，去发现感兴趣的活动吧。
+        暂无活动报名。去发现您喜欢的活动吧。
       </div>
 
       <div v-else class="card-list">
@@ -64,19 +65,19 @@
             </div>
 
             <div class="meta-grid">
-              <p class="meta-line">报名编号：{{ booking.reserveNo || '-' }}</p>
-              <p class="meta-line">支付状态：{{ paymentText(booking.paymentStatus) }}</p>
-              <p class="meta-line">联系人：{{ booking.participantName || '-' }}</p>
-              <p class="meta-line">电话：{{ booking.participantPhone || '-' }}</p>
-              <p class="meta-line">时间：{{ formatRange(booking.startTime, booking.endTime) }}</p>
-              <p class="meta-line">地点：{{ formatLocation(booking) }}</p>
-              <p class="meta-line">金额：{{ formatMoney(booking.payAmount ?? booking.totalAmount) }}</p>
-              <p class="meta-line">创建时间：{{ formatTime(booking.createTime) }}</p>
-              <p v-if="booking.paymentTime" class="meta-line">支付时间：{{ formatTime(booking.paymentTime) }}</p>
-              <p v-if="booking.verificationTime" class="meta-line">核销时间：{{ formatTime(booking.verificationTime) }}</p>
+              <p class="meta-line">订单号: {{ booking.reserveNo || '-' }}</p>
+              <p class="meta-line">支付状态: {{ paymentText(booking.paymentStatus) }}</p>
+              <p class="meta-line">联系人: {{ booking.participantName || '-' }}</p>
+              <p class="meta-line">电话: {{ booking.participantPhone || '-' }}</p>
+              <p class="meta-line">日程: {{ formatRange(booking.startTime, booking.endTime) }}</p>
+              <p class="meta-line">地点: {{ formatLocation(booking) }}</p>
+              <p class="meta-line">金额: {{ formatMoney(booking.payAmount ?? booking.totalAmount) }}</p>
+              <p class="meta-line">创建时间: {{ formatTime(booking.createTime) }}</p>
+              <p v-if="booking.paymentTime" class="meta-line">支付时间: {{ formatTime(booking.paymentTime) }}</p>
+              <p v-if="booking.verificationTime" class="meta-line">核销时间: {{ formatTime(booking.verificationTime) }}</p>
             </div>
 
-            <p v-if="booking.remark" class="remark-line">备注：{{ booking.remark }}</p>
+            <p v-if="booking.remark" class="remark-line">备注: {{ booking.remark }}</p>
             <p class="status-note" :class="noteClass(booking)">
               {{ statusDescription(booking) }}
             </p>
@@ -90,7 +91,7 @@
               打开二维码
             </button>
             <button class="detail-btn" @click="openDetail(booking)">
-              订单详情
+              报名详情
             </button>
             <button v-if="canReview(booking)" class="review-btn" @click="openReview(booking)">
               评价
@@ -101,7 +102,7 @@
               :disabled="busyId === booking.id"
               @click="handleCancel(booking)"
             >
-              {{ busyId === booking.id ? '处理中...' : '取消报名' }}
+              {{ busyId === booking.id ? '取消中...' : '取消报名' }}
             </button>
             <button
               v-else-if="canDelete(booking)"
@@ -109,7 +110,7 @@
               :disabled="busyId === booking.id"
               @click="handleDelete(booking)"
             >
-              {{ busyId === booking.id ? '处理中...' : '删除记录' }}
+              {{ busyId === booking.id ? '删除中...' : '删除记录' }}
             </button>
           </div>
         </article>
@@ -133,6 +134,7 @@ import {
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
+const confirm = appContext.config.globalProperties.$confirm
 const route = useRoute()
 const router = useRouter()
 
@@ -179,10 +181,10 @@ const paymentText = (status) => ({
 
 const statusDescription = (booking) => {
   if (canPay(booking)) {
-    return '支付尚未完成，完成支付后可解锁签到二维码和完整报名信息。'
+    return '支付仍在等待中。完成支付后可解锁二维码和完整的报名流程。'
   }
   if (canReview(booking)) {
-    return '该报名可进行评价，活动结束后分享您的体验。'
+    return '该订单现在可以评价。活动结束后分享您的体验。'
   }
   return displayStatus(booking).description
 }
@@ -265,10 +267,10 @@ const handleCancel = async (booking) => {
         if (response.code !== 200) {
           throw new Error(response.message || '取消报名失败')
         }
-        showSuccess('报名已取消')
+        showSuccess(response.message || '报名已取消')
         await loadData()
       } catch (error) {
-        showError(error.message || '取消报名失败')
+        showError(error.message || error?.response?.data?.message || '取消报名失败')
       } finally {
         busyId.value = null
       }
@@ -281,7 +283,7 @@ const handleDelete = async (booking) => {
     return
   }
   confirm({
-    title: '删除报名记录',
+    title: '删除记录',
     message: `确定删除报名记录 ${booking.reserveNo || booking.id}？`,
     onConfirm: async () => {
       busyId.value = booking.id
@@ -290,10 +292,10 @@ const handleDelete = async (booking) => {
         if (response.code !== 200) {
           throw new Error(response.message || '删除报名记录失败')
         }
-        showSuccess('报名记录已删除')
+        showSuccess(response.message || '报名记录已删除')
         await loadData()
       } catch (error) {
-        showError(error.message || '删除报名记录失败')
+        showError(error.message || error?.response?.data?.message || '删除报名记录失败')
       } finally {
         busyId.value = null
       }
@@ -301,18 +303,18 @@ const handleDelete = async (booking) => {
   })
 }
 
-const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')
+const formatTime = (value) => (value ? new Date(value).toLocaleString('zh-CN') : '-')
 const formatRange = (start, end) => {
-  const startText = start ? formatTime(start) : 'TBD'
+  const startText = start ? formatTime(start) : '待定'
   const endText = end ? formatTime(end) : ''
   return endText ? `${startText} - ${endText}` : startText
 }
 const formatLocation = (booking) => (
   [booking.locationProvince, booking.locationCity, booking.locationDistrict, booking.locationDetail]
     .filter(Boolean)
-    .join(' / ') || 'TBD'
+    .join(' / ') || '待定'
 )
-const formatMoney = (value) => `$${(Number(value || 0) / 100).toFixed(2)}`
+const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 
 onMounted(loadData)
 </script>

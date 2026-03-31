@@ -458,27 +458,134 @@ public class MerchantService {
     }
 
     public Map<String, Object> rejectBooking(String username, Long bookingId) {
-        User user = getUser(username);
-        ActivityReserve booking = activityReserveRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking does not exist"));
-        if (!Objects.equals(booking.getMerchantId(), user.getId()) && !"admin".equals(user.getRole())) {
-            throw new RuntimeException("No permission to reject this booking");
-        }
+        ActivityReserve booking = confirmMerchantBookingRejected(username, bookingId, new Date(), "Merchant rejected booking");
+        return buildMerchantBookingDetailMap(booking);
+    }
+
+    public ActivityReserve prepareMerchantBookingForReject(String username, Long bookingId) {
+        ActivityReserve booking = requireMerchantBooking(username, bookingId);
         String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+        if ("rejected".equals(currentStatus)) {
+            return booking;
+        }
         if (!"registered".equals(currentStatus)) {
             throw new RuntimeException("Only active bookings can be rejected");
         }
+        return booking;
+    }
+
+    public ActivityReserve prepareMerchantBookingForRefund(String username, Long bookingId) {
+        ActivityReserve booking = requireMerchantBooking(username, bookingId);
+        String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+        if ("registered".equals(currentStatus) && Integer.valueOf(2).equals(booking.getPayStatus())) {
+            return booking;
+        }
+        if (!"registered".equals(currentStatus)) {
+            throw new RuntimeException("Only active bookings can be refunded");
+        }
+        if (!Integer.valueOf(1).equals(booking.getPayStatus())) {
+            throw new RuntimeException("Only paid bookings can be refunded");
+        }
+        if (intValue(booking.getPayAmount(), 0) <= 0) {
+            throw new RuntimeException("This booking does not require a refund");
+        }
+        return booking;
+    }
+
+    public ActivityReserve confirmMerchantBookingRejected(String username, Long bookingId, Date operateTime, String remark) {
+        User user = getUser(username);
+        ActivityReserve booking = requireMerchantBooking(username, bookingId);
+        String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+        if ("rejected".equals(currentStatus)) {
+            return booking;
+        }
+        if (!"registered".equals(currentStatus)) {
+            throw new RuntimeException("Only active bookings can be rejected");
+        }
+        if (Integer.valueOf(1).equals(booking.getPayStatus()) && intValue(booking.getPayAmount(), 0) > 0) {
+            throw new RuntimeException("Paid bookings must be refunded before rejection");
+        }
 
         String oldStatus = booking.getReserveStatus();
+        Date finalOperateTime = operateTime == null ? new Date() : operateTime;
         booking.setReserveStatus("rejected");
-        booking.setCancelTime(new Date());
-        if (Integer.valueOf(1).equals(booking.getPayStatus()) && intValue(booking.getPayAmount(), 0) > 0) {
-            booking.setPayStatus(2);
-        }
+        booking.setCancelTime(finalOperateTime);
         activityReserveRepository.save(booking);
-        createStatusLog(booking.getId(), oldStatus, booking.getReserveStatus(), user.getId(), "merchant", "Merchant rejected booking");
+        createStatusLog(
+                booking.getId(),
+                oldStatus,
+                booking.getReserveStatus(),
+                user.getId(),
+                "merchant",
+                StringUtils.hasText(remark) ? remark : "Merchant rejected booking"
+        );
         syncActivityCurrentParticipants(booking.getActivityId());
-        return buildMerchantBookingDetailMap(booking);
+        return booking;
+    }
+
+    public ActivityReserve confirmMerchantBookingRefunded(String username,
+                                                          Long bookingId,
+                                                          Date refundTime,
+                                                          String remark,
+                                                          boolean keepBookingActive) {
+        User user = getUser(username);
+        ActivityReserve booking = requireMerchantBooking(username, bookingId);
+        String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+
+        if (keepBookingActive) {
+            if ("registered".equals(currentStatus) && Integer.valueOf(2).equals(booking.getPayStatus())) {
+                return booking;
+            }
+            if (!"registered".equals(currentStatus)) {
+                throw new RuntimeException("Only active bookings can stay available after refund");
+            }
+            if (!Integer.valueOf(1).equals(booking.getPayStatus())) {
+                throw new RuntimeException("Only paid bookings can be refunded");
+            }
+
+            String oldStatus = booking.getReserveStatus();
+            booking.setReserveStatus("registered");
+            booking.setCancelTime(null);
+            booking.setPayStatus(2);
+            activityReserveRepository.save(booking);
+            createStatusLog(
+                    booking.getId(),
+                    oldStatus,
+                    booking.getReserveStatus(),
+                    user.getId(),
+                    "merchant",
+                    StringUtils.hasText(remark) ? remark : "Merchant refunded booking and kept it active"
+            );
+            syncActivityCurrentParticipants(booking.getActivityId());
+            return booking;
+        }
+
+        if ("rejected".equals(currentStatus) && Integer.valueOf(2).equals(booking.getPayStatus())) {
+            return booking;
+        }
+        if (!"registered".equals(currentStatus)) {
+            throw new RuntimeException("Only active bookings can be rejected after refund");
+        }
+        if (!Integer.valueOf(1).equals(booking.getPayStatus())) {
+            throw new RuntimeException("Only paid bookings can be refunded");
+        }
+
+        String oldStatus = booking.getReserveStatus();
+        Date finalRefundTime = refundTime == null ? new Date() : refundTime;
+        booking.setReserveStatus("rejected");
+        booking.setCancelTime(finalRefundTime);
+        booking.setPayStatus(2);
+        activityReserveRepository.save(booking);
+        createStatusLog(
+                booking.getId(),
+                oldStatus,
+                booking.getReserveStatus(),
+                user.getId(),
+                "merchant",
+                StringUtils.hasText(remark) ? remark : "Merchant rejected booking and refunded it"
+        );
+        syncActivityCurrentParticipants(booking.getActivityId());
+        return booking;
     }
 
     public List<Map<String, Object>> getMyProducts(String username) {
@@ -929,7 +1036,120 @@ public class MerchantService {
             order.setPaymentType(paymentType);
         }
         orderRepository.save(order);
+
+        if (order.getProductId() != null) {
+            productRepository.findById(order.getProductId()).ifPresent(product -> {
+                int quantity = intValue(order.getQuantity(), 1);
+                product.setSales(intValue(product.getSales(), 0) + quantity);
+                product.setSalesCount(intValue(product.getSalesCount(), 0) + quantity);
+                productRepository.save(product);
+            });
+        }
         return order;
+    }
+
+    public void confirmPaidByTradeNo(String outTradeNo, String paymentType, Date paymentTime) {
+        String tradeNo = defaultString(outTradeNo).trim();
+        if (!StringUtils.hasText(tradeNo)) {
+            throw new RuntimeException("Trade number cannot be empty");
+        }
+        if (tradeNo.startsWith("YF")) {
+            confirmOrderPaid(tradeNo, paymentType, paymentTime);
+            return;
+        }
+        confirmBookingPaid(tradeNo, paymentType, paymentTime);
+    }
+
+    public Order prepareUserOrderForRefund(String username, Long orderId) {
+        Order order = requireUserOrder(username, orderId);
+        if ("refunded".equalsIgnoreCase(defaultString(order.getStatus()))) {
+            return order;
+        }
+        if (!"paid".equalsIgnoreCase(defaultString(order.getStatus()))) {
+            throw new RuntimeException("Only paid orders can be refunded");
+        }
+        if (intValue(order.getPayAmount(), 0) <= 0) {
+            throw new RuntimeException("This order does not require a refund");
+        }
+        return order;
+    }
+
+    public Order confirmOrderRefunded(String username, Long orderId, Date refundTime) {
+        Order order = requireUserOrder(username, orderId);
+        if ("refunded".equalsIgnoreCase(defaultString(order.getStatus()))) {
+            return order;
+        }
+        if (!"paid".equalsIgnoreCase(defaultString(order.getStatus()))) {
+            throw new RuntimeException("Only paid orders can be refunded");
+        }
+        order.setStatus("refunded");
+        orderRepository.save(order);
+
+        if (order.getProductId() != null) {
+            productRepository.findById(order.getProductId()).ifPresent(product -> {
+                int quantity = intValue(order.getQuantity(), 1);
+                product.setStock(intValue(product.getStock(), 0) + quantity);
+                product.setSales(Math.max(intValue(product.getSales(), 0) - quantity, 0));
+                product.setSalesCount(Math.max(intValue(product.getSalesCount(), 0) - quantity, 0));
+                productRepository.save(product);
+            });
+        }
+        return order;
+    }
+
+    public ActivityReserve prepareUserBookingForRefund(String username, Long bookingId) {
+        ActivityReserve booking = requireUserBooking(username, bookingId);
+        if (Integer.valueOf(2).equals(booking.getPayStatus())) {
+            return booking;
+        }
+        if (!Integer.valueOf(1).equals(booking.getPayStatus())) {
+            throw new RuntimeException("Only paid bookings can be refunded");
+        }
+        String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+        if ("checked_in".equals(currentStatus)) {
+            throw new RuntimeException("Checked-in bookings cannot be refunded");
+        }
+        if ("rejected".equals(currentStatus)) {
+            throw new RuntimeException("Rejected bookings cannot be refunded");
+        }
+        if ("cancelled".equals(currentStatus)) {
+            throw new RuntimeException("This booking has already been cancelled");
+        }
+        if (intValue(booking.getPayAmount(), 0) <= 0) {
+            throw new RuntimeException("This booking does not require a refund");
+        }
+        return booking;
+    }
+
+    public ActivityReserve confirmBookingRefunded(String username, Long bookingId, Date refundTime, String remark) {
+        User user = getUser(username);
+        ActivityReserve booking = requireUserBooking(username, bookingId);
+        if (Integer.valueOf(2).equals(booking.getPayStatus()) && "cancelled".equals(toClientReserveStatus(booking.getReserveStatus()))) {
+            return booking;
+        }
+        if (Integer.valueOf(1).equals(booking.getPayStatus()) == false) {
+            throw new RuntimeException("Only paid bookings can be refunded");
+        }
+        String currentStatus = toClientReserveStatus(booking.getReserveStatus());
+        if ("checked_in".equals(currentStatus)) {
+            throw new RuntimeException("Checked-in bookings cannot be refunded");
+        }
+        if ("rejected".equals(currentStatus)) {
+            throw new RuntimeException("Rejected bookings cannot be refunded");
+        }
+        if ("cancelled".equals(currentStatus)) {
+            throw new RuntimeException("This booking has already been cancelled");
+        }
+
+        String oldStatus = booking.getReserveStatus();
+        Date operateTime = refundTime == null ? new Date() : refundTime;
+        booking.setReserveStatus("cancelled");
+        booking.setCancelTime(operateTime);
+        booking.setPayStatus(2);
+        activityReserveRepository.save(booking);
+        createStatusLog(booking.getId(), oldStatus, booking.getReserveStatus(), user.getId(), "user", StringUtils.hasText(remark) ? remark : "User refunded booking");
+        syncActivityCurrentParticipants(booking.getActivityId());
+        return booking;
     }
 
     public ActivityReserve confirmBookingPaid(String reserveNo, String paymentType, Date paymentTime) {
@@ -1050,6 +1270,9 @@ public class MerchantService {
         map.put("verificationTime", booking.getVerifyTime());
         map.put("canCheckin", "registered".equals(toClientReserveStatus(booking.getReserveStatus())) && Integer.valueOf(1).equals(booking.getPayStatus()));
         map.put("canReject", "registered".equals(toClientReserveStatus(booking.getReserveStatus())));
+        map.put("canRefund", "registered".equals(toClientReserveStatus(booking.getReserveStatus()))
+                && Integer.valueOf(1).equals(booking.getPayStatus())
+                && intValue(booking.getPayAmount(), 0) > 0);
         map.put("canPay", canPayActivityBooking(booking));
         map.put("canOpenQr", canUseBookingQr(booking));
         return map;

@@ -284,7 +284,7 @@ const timelineStatus = (status) => ({
 const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')
 const formatRange = (start, end) => {
-  const startText = start ? formatTime(start) : 'TBD'
+  const startText = start ? formatTime(start) : '待定'
   const endText = end ? formatTime(end) : ''
   return endText ? `${startText} - ${endText}` : startText
 }

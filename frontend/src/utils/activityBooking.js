@@ -1,13 +1,13 @@
 const DISPLAY_STATUS_MAP = {
   pending_start: {
     code: 'pending_start',
-    label: '待开始',
-    description: '您的报名已确认，请按时到达活动地点。'
+    label: '即将开始',
+    description: '报名已确认。请准时到达活动地点。'
   },
   pending_checkin: {
     code: 'pending_checkin',
     label: '待核销',
-    description: '活动进行中，请出示报名二维码给商家进行核销。'
+    description: '活动进行中。打开二维码让商家验证。'
   },
   checked_in: {
     code: 'checked_in',
@@ -27,12 +27,12 @@ const DISPLAY_STATUS_MAP = {
   rejected: {
     code: 'rejected',
     label: '已拒绝',
-    description: '商家已拒绝该报名。'
+    description: '商家拒绝了这个报名。'
   },
   missed: {
     code: 'missed',
-    label: '已错过',
-    description: '活动已结束但未完成核销。'
+    label: '未核销',
+    description: '活动已结束，该报名未被核销。'
   }
 }
 

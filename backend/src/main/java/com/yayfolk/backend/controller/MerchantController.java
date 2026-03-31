@@ -1,6 +1,7 @@
 package com.yayfolk.backend.controller;
 
 import com.yayfolk.backend.dto.ResponseDto;
+import com.yayfolk.backend.service.AlipayPaymentService;
 import com.yayfolk.backend.service.MerchantService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +21,12 @@ import java.util.Map;
 public class MerchantController {
 
     private final MerchantService merchantService;
+    private final AlipayPaymentService alipayPaymentService;
 
-    public MerchantController(MerchantService merchantService) {
+    public MerchantController(MerchantService merchantService,
+                              AlipayPaymentService alipayPaymentService) {
         this.merchantService = merchantService;
+        this.alipayPaymentService = alipayPaymentService;
     }
 
     private String requireUsername(HttpServletRequest request) {
@@ -159,11 +163,27 @@ public class MerchantController {
         }
     }
 
-    @PostMapping("/bookings/{id}/reject")
-    public ResponseDto rejectBooking(@PathVariable Long id, HttpServletRequest request) {
+    @PostMapping("/bookings/{id}/refund")
+    public ResponseDto refundBooking(@PathVariable Long id,
+                                     @RequestBody(required = false) Map<String, Object> data,
+                                     HttpServletRequest request) {
         try {
             String username = requireUsername(request);
-            return ResponseDto.success(merchantService.rejectBooking(username, id));
+            String reason = data == null || data.get("reason") == null ? null : String.valueOf(data.get("reason")).trim();
+            return ResponseDto.success(alipayPaymentService.refundMerchantActivityBooking(username, id, reason));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/bookings/{id}/reject")
+    public ResponseDto rejectBooking(@PathVariable Long id,
+                                     @RequestBody(required = false) Map<String, Object> data,
+                                     HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            String reason = data == null || data.get("reason") == null ? null : String.valueOf(data.get("reason")).trim();
+            return ResponseDto.success(alipayPaymentService.rejectMerchantActivityBooking(username, id, reason));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

@@ -43,11 +43,11 @@ public class OAuth2Config {
                 })
             )
             .csrf().disable()
-            // 添加 JWT 认证过滤器
+            // 娣诲姞 JWT 璁よ瘉杩囨护鍣?
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/translate/**", "/api/public/**").permitAll()
+                    .antMatchers("/", "/favicon.ico", "/api/oauth/**", "/api/login", "/api/register", "/api/send-code", "/api/reset-password", "/api/translate/**", "/api/public/**", "/api/alipay/notify", "/api/alipay/return").permitAll()
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2Login -> {

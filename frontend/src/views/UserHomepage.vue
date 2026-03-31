@@ -237,6 +237,7 @@ import PostDetailModal from '../components/PostDetailModal.vue'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
+const confirm = appContext.config.globalProperties.$confirm
 const route = useRoute()
 const router = useRouter()
 const defaultAvatar = '/default-avatar.svg'
