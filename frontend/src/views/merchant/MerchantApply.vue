@@ -22,7 +22,7 @@
           Open Activities
         </button>
         <button
-          v-if="hasApplication"
+          v-if="hasApplication && !isApproved"
           type="button"
           class="ghost-btn"
           :disabled="loading || submitting"
@@ -65,7 +65,18 @@
           <h2>{{ statusMeta.title }}</h2>
           <p>{{ statusMeta.description }}</p>
         </div>
-        <span :class="['status-pill', statusMeta.className]">{{ statusMeta.badge }}</span>
+        <div class="status-head-actions">
+          <button
+            v-if="isApproved"
+            type="button"
+            class="secondary-btn"
+            :disabled="loading || submitting"
+            @click="openFormModal"
+          >
+            Update Merchant Information
+          </button>
+          <span :class="['status-pill', statusMeta.className]">{{ statusMeta.badge }}</span>
+        </div>
       </div>
 
       <div v-if="hasApplication" class="detail-grid">
@@ -143,7 +154,7 @@
       </div>
     </section>
 
-    <section class="panel-card form-card">
+    <section v-if="showInlineForm" class="panel-card form-card">
       <div class="section-head">
         <div>
           <p class="section-eyebrow">Merchant Profile</p>
@@ -152,144 +163,65 @@
         </div>
       </div>
 
-      <div v-if="loading" class="empty-state loading-state">
-        <i class="bx bx-loader-alt bx-spin"></i>
-        <p>Loading merchant information...</p>
-      </div>
-
-      <form v-else class="apply-form" @submit.prevent="submitApplication">
-        <div class="form-grid">
-          <label class="form-field">
-            <span>Legal Name <em>*</em></span>
-            <input v-model.trim="form.realName" type="text" maxlength="50" required>
-          </label>
-
-          <label class="form-field">
-            <span>ID Card</span>
-            <input v-model.trim="form.idCard" type="text" maxlength="18">
-          </label>
-
-          <label class="form-field">
-            <span>Phone <em>*</em></span>
-            <input v-model.trim="form.phone" type="text" maxlength="20" required>
-          </label>
-
-          <label class="form-field">
-            <span>Heritage Type <em>*</em></span>
-            <select v-model="form.heritageType" required>
-              <option value="">Select one</option>
-              <option v-for="item in heritageTypes" :key="item" :value="item">{{ item }}</option>
-            </select>
-          </label>
-
-          <label class="form-field">
-            <span>Shop Name <em>*</em></span>
-            <input v-model.trim="form.shopName" type="text" maxlength="100" required>
-          </label>
-
-          <label class="form-field">
-            <span>Province</span>
-            <input v-model.trim="form.province" type="text" maxlength="32">
-          </label>
-
-          <label class="form-field">
-            <span>City</span>
-            <input v-model.trim="form.city" type="text" maxlength="32">
-          </label>
-
-          <label class="form-field full-span">
-            <span>Shop Address</span>
-            <input v-model.trim="form.shopAddress" type="text" maxlength="200">
-          </label>
-
-          <label class="form-field full-span">
-            <span>Heritage Description <em>*</em></span>
-            <textarea v-model.trim="form.heritageDescription" rows="5" maxlength="1000" required></textarea>
-          </label>
-
-          <label class="form-field full-span">
-            <span>Shop Introduction</span>
-            <textarea v-model.trim="form.intro" rows="4" maxlength="255"></textarea>
-          </label>
-
-          <div class="form-field full-span">
-            <span>Proof Images</span>
-            <div class="uploader-card">
-              <div class="uploader-actions">
-                <button
-                  type="button"
-                  class="secondary-btn"
-                  :disabled="uploadingProofs || submitting"
-                  @click="triggerProofInput"
-                >
-                  {{ uploadingProofs ? 'Uploading...' : 'Upload Images' }}
-                </button>
-                <button
-                  type="button"
-                  class="ghost-btn"
-                  :disabled="!form.proofImages.length || submitting"
-                  @click="clearProofImages"
-                >
-                  Clear All
-                </button>
-              </div>
-
-              <input
-                ref="proofInput"
-                class="hidden-input"
-                type="file"
-                accept="image/*"
-                multiple
-                @change="handleProofChange"
-              >
-
-              <div v-if="form.proofImages.length" class="proof-grid editable-proof-grid">
-                <div
-                  v-for="(image, index) in form.proofImages"
-                  :key="`${image}-${index}`"
-                  class="proof-thumb editable-thumb"
-                >
-                  <img :src="image" :alt="`Selected proof ${index + 1}`">
-                  <button
-                    type="button"
-                    class="remove-proof-btn"
-                    :disabled="submitting"
-                    @click="removeProofImage(index)"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-              <p v-else class="proof-empty">Upload business license, identity proof, or other qualification files.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-footer">
-          <p class="form-hint">{{ submitHint }}</p>
-          <div class="form-actions">
-            <button
-              v-if="hasApplication"
-              type="button"
-              class="ghost-btn"
-              :disabled="submitting"
-              @click="resetFormToStored"
-            >
-              Reset
-            </button>
-            <button type="submit" class="primary-btn" :disabled="submitting || uploadingProofs">
-              {{ submitButtonText }}
-            </button>
-          </div>
-        </div>
-      </form>
+      <MerchantProfileForm
+        :form="form"
+        :loading="loading"
+        :submitting="submitting"
+        :uploading-proofs="uploadingProofs"
+        :has-application="hasApplication"
+        :heritage-types="heritageTypes"
+        :submit-hint="submitHint"
+        :submit-button-text="submitButtonText"
+        @submit="submitApplication"
+        @reset="resetFormToStored"
+        @proof-change="handleProofChange"
+        @clear-proof-images="clearProofImages"
+        @remove-proof-image="removeProofImage"
+      />
     </section>
+
+    <div v-if="showFormModal" class="modal-overlay" @click.self="closeFormModal">
+      <section class="modal-card">
+        <div class="modal-head">
+          <div>
+            <p class="section-eyebrow">Merchant Profile</p>
+            <h2>{{ formTitle }}</h2>
+            <p>{{ formDescription }}</p>
+          </div>
+          <button
+            type="button"
+            class="modal-close-btn"
+            :disabled="submitting"
+            @click="closeFormModal"
+          >
+            <i class="bx bx-x"></i>
+          </button>
+        </div>
+
+        <MerchantProfileForm
+          :form="form"
+          :loading="loading"
+          :submitting="submitting"
+          :uploading-proofs="uploadingProofs"
+          :has-application="hasApplication"
+          :heritage-types="heritageTypes"
+          :submit-hint="submitHint"
+          :submit-button-text="submitButtonText"
+          @submit="submitApplication"
+          @reset="resetFormToStored"
+          @proof-change="handleProofChange"
+          @clear-proof-images="clearProofImages"
+          @remove-proof-image="removeProofImage"
+        />
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MerchantProfileForm from '@/components/merchant/MerchantProfileForm.vue'
 import MerchantStatsPanel from '@/components/merchant/MerchantStatsPanel.vue'
 import { applyMerchant, getMerchantActivities, getMerchantBookings, getMerchantStats, getMyApplication, uploadImage } from '@/api/app.js'
 
@@ -339,9 +271,25 @@ const submitting = ref(false)
 const uploadingProofs = ref(false)
 const merchantStatsLoading = ref(false)
 const merchantStats = ref({})
-const proofInput = ref(null)
+const showFormModal = ref(false)
 
-const canShowStats = computed(() => ['merchant', 'admin'].includes(currentUser.value?.role))
+const hasMerchantAccess = computed(() => {
+  const storedRole = currentUser.value?.role
+  if (storedRole === 'merchant' || storedRole === 'admin') {
+    return true
+  }
+
+  if (Number(storedInfo.value?.isMerchant || 0) === 1) {
+    return true
+  }
+
+  const status = normalizeStatus(storedInfo.value?.applicationStatus || storedInfo.value?.businessStatus || storedInfo.value?.shopStatus)
+  return status === 'approved'
+})
+
+const canShowStats = computed(() => hasMerchantAccess.value)
+const isApproved = computed(() => normalizeStatus(storedInfo.value?.applicationStatus || storedInfo.value?.businessStatus || storedInfo.value?.shopStatus) === 'approved')
+const showInlineForm = computed(() => !isApproved.value)
 const storedProofImages = computed(() => parseProofImages(storedInfo.value?.proofImages))
 const hasApplication = computed(() => Boolean(
   storedInfo.value?.applicationId ||
@@ -513,6 +461,37 @@ function formatTime(value) {
 function resetFormToStored() {
   applyForm(storedInfo.value)
 }
+
+function openFormModal() {
+  resetFormToStored()
+  showFormModal.value = true
+}
+
+function closeFormModal() {
+  if (submitting.value) {
+    return
+  }
+  showFormModal.value = false
+}
+
+function createRecentSalesTrend(days = 7) {
+  const today = new Date()
+  const salesTrend = []
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = new Date(today)
+    date.setDate(today.getDate() - offset)
+    const dateKey = date.toISOString().slice(0, 10)
+    salesTrend.push({
+      date: dateKey,
+      label: dateKey.slice(5),
+      bookingCount: 0,
+      participantCount: 0,
+      bookingRevenue: 0
+    })
+  }
+  return salesTrend
+}
+
 function createEmptyMerchantStats() {
   return {
     summary: {
@@ -535,7 +514,7 @@ function createEmptyMerchantStats() {
       { key: 'rejected', label: 'Rejected', color: '#c04851', count: 0 },
       { key: 'cancelled', label: 'Cancelled', color: '#6b7280', count: 0 }
     ],
-    salesTrend: [],
+    salesTrend: createRecentSalesTrend(),
     topActivities: [],
     recentReviews: []
   }
@@ -550,7 +529,7 @@ function normalizeStatsPayload(payload) {
       ...(stats.summary || {})
     },
     bookingStatus: Array.isArray(stats.bookingStatus) && stats.bookingStatus.length ? stats.bookingStatus : base.bookingStatus,
-    salesTrend: Array.isArray(stats.salesTrend) ? stats.salesTrend : base.salesTrend,
+    salesTrend: Array.isArray(stats.salesTrend) && stats.salesTrend.length ? stats.salesTrend : base.salesTrend,
     topActivities: Array.isArray(stats.topActivities) ? stats.topActivities : base.topActivities,
     recentReviews: Array.isArray(stats.recentReviews) ? stats.recentReviews : base.recentReviews
   }
@@ -591,13 +570,6 @@ function toDateKey(value) {
   return date.toISOString().slice(0, 10)
 }
 
-function toLabel(dateKey) {
-  if (!dateKey) {
-    return ''
-  }
-  return dateKey.slice(5)
-}
-
 function sortByCreateTimeDesc(items = []) {
   return [...items].sort((left, right) => {
     const leftTime = new Date(left?.createTime || 0).getTime() || 0
@@ -607,22 +579,13 @@ function sortByCreateTimeDesc(items = []) {
 }
 
 function buildFallbackSalesTrend(bookings = []) {
-  const grouped = new Map()
+  const recentBuckets = createRecentSalesTrend()
+  const grouped = new Map(recentBuckets.map(item => [item.date, { ...item }]))
 
   bookings.forEach((booking) => {
     const bookingDate = toDateKey(booking.paymentTime || booking.createTime)
-    if (!bookingDate) {
+    if (!bookingDate || !grouped.has(bookingDate)) {
       return
-    }
-
-    if (!grouped.has(bookingDate)) {
-      grouped.set(bookingDate, {
-        date: bookingDate,
-        label: toLabel(bookingDate),
-        bookingCount: 0,
-        participantCount: 0,
-        bookingRevenue: 0
-      })
     }
 
     const bucket = grouped.get(bookingDate)
@@ -633,28 +596,7 @@ function buildFallbackSalesTrend(bookings = []) {
     }
   })
 
-  const values = [...grouped.values()].sort((left, right) => left.date.localeCompare(right.date))
-  if (values.length >= 7) {
-    return values.slice(-7)
-  }
-
-  const today = new Date()
-  const bucketMap = new Map(values.map(item => [item.date, item]))
-  for (let offset = 6; offset >= 0; offset -= 1) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - offset)
-    const dateKey = date.toISOString().slice(0, 10)
-    if (!bucketMap.has(dateKey)) {
-      bucketMap.set(dateKey, {
-        date: dateKey,
-        label: toLabel(dateKey),
-        bookingCount: 0,
-        participantCount: 0,
-        bookingRevenue: 0
-      })
-    }
-  }
-  return [...bucketMap.values()].sort((left, right) => left.date.localeCompare(right.date)).slice(-7)
+  return [...grouped.values()].sort((left, right) => left.date.localeCompare(right.date))
 }
 
 function buildFallbackTopActivities(activities = [], bookings = []) {
@@ -797,10 +739,6 @@ function buildStatsFromCollections(activities = [], bookings = [], apiStats = {}
 }
 
 
-function triggerProofInput() {
-  proofInput.value?.click()
-}
-
 function clearProofImages() {
   form.proofImages = []
 }
@@ -863,7 +801,14 @@ async function loadApplication() {
     const data = response.data || {}
     storedInfo.value = data
     applyForm(data)
+    const resolvedStatus = normalizeStatus(data.applicationStatus || data.businessStatus || data.shopStatus)
+    const nextRole = currentUser.value?.role === 'admin'
+      ? 'admin'
+      : (Number(data.isMerchant || 0) === 1 || resolvedStatus === 'approved' ? 'merchant' : currentUser.value?.role)
+
     syncStoredUser({
+      role: nextRole,
+      isMerchant: Number(data.isMerchant || 0),
       shopName: stringValue(data.shopName) || currentUser.value.shopName,
       shopStatus: stringValue(data.shopStatus || data.applicationStatus || data.businessStatus)
     })
@@ -939,7 +884,10 @@ async function submitApplication() {
     }
 
     notify('success', isResubmission ? 'Merchant profile updated and resubmitted for review.' : 'Merchant application submitted successfully.')
+    showFormModal.value = false
     syncStoredUser({
+      role: currentUser.value?.role,
+      isMerchant: Number(currentUser.value?.isMerchant || 0),
       shopName: form.shopName,
       shopStatus: 'pending'
     })
@@ -1060,8 +1008,6 @@ onMounted(async () => {
 .hero-meta,
 .hero-actions,
 .status-meta,
-.form-actions,
-.uploader-actions,
 .proof-head,
 .status-head {
   display: flex;
@@ -1079,11 +1025,19 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
+.status-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .status-pill,
 .primary-btn,
 .secondary-btn,
 .ghost-btn,
-.remove-proof-btn {
+.modal-close-btn {
   border: none;
   border-radius: 14px;
   font-weight: 700;
@@ -1120,7 +1074,7 @@ onMounted(async () => {
 .primary-btn,
 .secondary-btn,
 .ghost-btn,
-.remove-proof-btn {
+.modal-close-btn {
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1292,73 +1246,6 @@ button:disabled {
   overflow: hidden;
 }
 
-.apply-form {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-field span {
-  color: #374151;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.form-field em {
-  color: #ef4444;
-  font-style: normal;
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid #d4d9e0;
-  background: #ffffff;
-  color: var(--merchant-ink);
-  font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-field textarea {
-  resize: vertical;
-  font-family: inherit;
-}
-
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
-  outline: none;
-  border-color: #c2410c;
-  box-shadow: 0 0 0 4px rgba(194, 65, 12, 0.12);
-}
-
-.uploader-card {
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px dashed #cbd5e1;
-  background: #fafaf9;
-}
-
-.hidden-input {
-  display: none;
-}
-
 .proof-empty,
 .empty-state {
   margin: 0;
@@ -1386,16 +1273,51 @@ button:disabled {
   color: #64748b;
 }
 
-.form-footer {
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.48);
 }
 
-.form-hint {
+.modal-card {
+  width: min(960px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border-radius: 28px;
+  border: 1px solid rgba(231, 221, 209, 0.9);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
+  padding: 28px 30px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.modal-close-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.modal-close-btn i {
+  font-size: 22px;
+}
+
+.modal-head p {
   margin: 0;
-  font-size: 13px;
   line-height: 1.7;
 }
 
@@ -1407,28 +1329,23 @@ button:hover:not(:disabled) {
 @media (max-width: 920px) {
   .hero-card,
   .section-head,
-  .form-footer,
+  .modal-head,
   .status-head {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .hero-actions,
-  .form-actions,
-  .uploader-actions {
+  .hero-actions {
     width: 100%;
     flex-wrap: wrap;
     justify-content: stretch;
   }
 
-  .hero-actions > *,
-  .form-actions > *,
-  .uploader-actions > * {
+  .hero-actions > * {
     flex: 1 1 180px;
   }
 
-  .detail-grid,
-  .form-grid {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1440,13 +1357,21 @@ button:hover:not(:disabled) {
     border-radius: 22px;
   }
 
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-card {
+    max-height: calc(100vh - 24px);
+    padding: 22px 18px;
+    border-radius: 22px;
+  }
+
   .proof-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .hero-actions > *,
-  .form-actions > *,
-  .uploader-actions > * {
+  .hero-actions > * {
     width: 100%;
   }
 }

@@ -358,15 +358,6 @@
               <p>查看订单与履约情况</p>
             </div>
           </div>
-          <div class="content-card" @click="navigateToSettings">
-            <div class="card-icon" style="background: #f9f0ff; color: #a18cd1;">
-              <i class='bx bxs-store-alt'></i>
-            </div>
-            <div class="card-info">
-              <h4>店铺设置</h4>
-              <p>维护账号与基础配置</p>
-            </div>
-          </div>
           <div class="content-card" @click="navigateToMyPosts">
             <div class="card-icon" style="background: #eef2ff; color: #4facfe;">
               <i class='bx bxs-edit-alt'></i>
@@ -463,11 +454,6 @@
           <div class="menu-item" @click="showChangePassword">
             <i class='bx bxs-lock-alt'></i>
             <span>修改密码</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          <div class="menu-item" @click="navigateToSettings">
-            <i class='bx bx-grid'></i>
-            <span>通用</span>
             <i class='bx bx-chevron-right'></i>
           </div>
           <div class="menu-item" @click="openCustomerService">
@@ -1352,12 +1338,6 @@ const openPrimaryPanel = () => {
     return
   }
   openHomepage()
-}
-
-// 导航到设置
-const navigateToSettings = () => {
-  closeSettingsDrawer()
-  router.push('/personal/settings')
 }
 
 // 显示修改密码

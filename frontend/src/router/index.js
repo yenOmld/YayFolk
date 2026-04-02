@@ -1,10 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import DiscoverView from '../views/DiscoverView.vue'
 import PersonalCenter from '../views/PersonalCenter.vue'
-import Settings from '../views/Settings.vue'
 import EditProfile from '../views/EditProfile.vue'
 import UserHomepage from '../views/UserHomepage.vue'
 import ConversationMode from '../views/ConversationMode.vue'
@@ -101,12 +100,6 @@ const routes = [
     name: 'conversation',
     component: ConversationMode,
     meta: { title: 'Conversation - YayFolk', requiresAuth: true }
-  },
-  {
-    path: '/personal/settings',
-    name: 'settings',
-    component: Settings,
-    meta: { title: 'Settings - YayFolk', requiresAuth: true }
   },
   {
     path: '/personal/edit-profile',

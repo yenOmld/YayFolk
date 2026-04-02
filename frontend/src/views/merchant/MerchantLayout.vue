@@ -133,7 +133,7 @@ const navBadgeCountMap = computed(() => ({
 
 const getNavBadgeCount = key => Number(navBadgeCountMap.value[key] || 0)
 const formatBadgeCount = count => (count > 99 ? '99+' : String(count))
-const goBack = () => router.push('/home/heritage')
+const goBack = () => router.push('/home/personal')
 
 function syncSeenStateWithRoute() {
   if (!route.path.startsWith('/merchant')) {

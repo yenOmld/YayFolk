@@ -2,82 +2,157 @@
   <div class="merchant-page">
     <div class="page-header">
       <div>
-        <h2>活动管理</h2>
-        <p>集中维护商家活动，创建和编辑都进入独立页面处理。</p>
+        <h2>Activity Management</h2>
+        <p>Review, edit, and organize your merchant activities with a paged workspace.</p>
       </div>
-      <button class="create-btn" @click="goCreate">+ 创建活动</button>
+      <button class="create-btn" @click="goCreate">+ Create Activity</button>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>加载中...</p>
+      <p>Loading activities...</p>
     </div>
 
     <div v-else-if="list.length === 0" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>还没有活动，先创建第一个活动。</p>
+      <p>No activities yet. Create your first activity to get started.</p>
     </div>
 
-    <div v-else class="activity-list">
-      <article v-for="item in list" :key="item.id" class="activity-card">
-        <img v-if="item.coverImage" :src="item.coverImage" class="card-cover" :alt="item.title" />
-        <div v-else class="cover-placeholder">活动</div>
+    <template v-else>
+      <div class="activity-list">
+        <article v-for="item in list" :key="item.id" class="activity-card">
+          <img v-if="item.coverImage" :src="item.coverImage" class="card-cover" :alt="item.title" />
+          <div v-else class="cover-placeholder">Activity</div>
 
-        <div class="card-info">
-          <div class="card-head">
-            <h3>{{ item.title }}</h3>
-            <div class="tag-row">
-              <span class="tag heritage">{{ item.heritageType || '未分类' }}</span>
-              <span class="tag" :class="item.status">{{ statusLabel(item.status) }}</span>
-              <span class="tag audit" :class="item.auditStatus">{{ auditLabel(item.auditStatus) }}</span>
+          <div class="card-info">
+            <div class="card-head">
+              <h3>{{ item.title }}</h3>
+              <div class="tag-row">
+                <span class="tag heritage">{{ item.heritageType || 'Uncategorized' }}</span>
+                <span class="tag" :class="item.status">{{ statusLabel(item.status) }}</span>
+                <span class="tag audit" :class="item.auditStatus">{{ auditLabel(item.auditStatus) }}</span>
+              </div>
             </div>
+
+            <div class="meta-grid">
+              <span>Time: {{ formatDateTime(item.startTime) }}</span>
+              <span>Location: {{ formatLocation(item) }}</span>
+              <span>Price: {{ formatPrice(item.price) }}</span>
+              <span>Bookings: {{ item.currentParticipants || 0 }}/{{ item.maxParticipants || 'Unlimited' }}</span>
+            </div>
+
+            <p v-if="item.subtitle" class="subtitle">{{ item.subtitle }}</p>
+            <p v-if="item.auditRemark" class="audit-remark">Audit Note: {{ item.auditRemark }}</p>
+            <p v-else-if="item.auditStatus === 'pending'" class="audit-tip">
+              Saving changes will send the activity back into audit review before it appears publicly.
+            </p>
           </div>
 
-          <div class="meta-grid">
-            <span>时间：{{ formatDateTime(item.startTime) }}</span>
-            <span>地点：{{ formatLocation(item) }}</span>
-            <span>价格：{{ formatPrice(item.price) }}</span>
-            <span>人数：{{ item.currentParticipants || 0 }}/{{ item.maxParticipants || '不限' }}</span>
+          <div class="card-actions">
+            <button class="act-btn edit" @click="goEdit(item.id)">Edit</button>
+            <button class="act-btn bookings" @click="viewBookings(item)">Bookings ({{ item.currentParticipants || 0 }})</button>
+            <button class="act-btn delete" @click="handleDelete(item.id)">Delete</button>
           </div>
+        </article>
+      </div>
 
-          <p v-if="item.subtitle" class="subtitle">{{ item.subtitle }}</p>
-          <p v-if="item.auditRemark" class="audit-remark">审核备注：{{ item.auditRemark }}</p>
-          <p v-else-if="item.auditStatus === 'pending'" class="audit-tip">保存后会重新进入审核，通过后才会展示在前台活动页。</p>
+      <div class="pagination-card">
+        <div class="pagination-summary">
+          <strong>{{ total }}</strong>
+          <span>{{ pageSummary }}</span>
         </div>
 
-        <div class="card-actions">
-          <button class="act-btn edit" @click="goEdit(item.id)">编辑</button>
-          <button class="act-btn bookings" @click="viewBookings(item)">预约({{ item.currentParticipants || 0 }})</button>
-          <button class="act-btn delete" @click="handleDelete(item.id)">删除</button>
+        <div class="pagination-controls">
+          <label class="page-size-field">
+            <span>Per Page</span>
+            <select v-model="pageSize" @change="handlePageSizeChange">
+              <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+            </select>
+          </label>
+
+          <div class="pager-buttons">
+            <button class="pager-btn" :disabled="currentPage <= 1 || loading" @click="changePage(currentPage - 1)">Previous</button>
+            <span class="page-indicator">Page {{ currentPage }} / {{ totalPages || 1 }}</span>
+            <button class="pager-btn" :disabled="currentPage >= totalPages || loading" @click="changePage(currentPage + 1)">Next</button>
+          </div>
         </div>
-      </article>
-    </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { getCurrentInstance, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { deleteMerchantActivity, getMerchantActivities } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
 const notify = (msg, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(msg)
+const route = useRoute()
 const router = useRouter()
+
+const DEFAULT_PAGE_SIZE = 3
+const pageSizeOptions = [3, 6, 9, 12]
 
 const list = ref([])
 const loading = ref(false)
+const total = ref(0)
+const totalPages = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(DEFAULT_PAGE_SIZE)
+
+const pageSummary = computed(() => {
+  if (!total.value) {
+    return 'No activity records available.'
+  }
+  const start = (currentPage.value - 1) * pageSize.value + 1
+  const end = Math.min(currentPage.value * pageSize.value, total.value)
+  return `Showing ${start}-${end} of ${total.value} activities.`
+})
+
+const syncStateFromRoute = () => {
+  const page = Number(route.query.page || 1)
+  const size = Number(route.query.size || DEFAULT_PAGE_SIZE)
+  currentPage.value = Number.isFinite(page) && page > 0 ? page : 1
+  pageSize.value = pageSizeOptions.includes(size) ? size : DEFAULT_PAGE_SIZE
+}
+
+const syncRoute = () => {
+  router.replace({
+    path: '/merchant/activities',
+    query: {
+      ...(currentPage.value > 1 ? { page: String(currentPage.value) } : {}),
+      ...(pageSize.value !== DEFAULT_PAGE_SIZE ? { size: String(pageSize.value) } : {})
+    }
+  })
+}
 
 const load = async () => {
   loading.value = true
   try {
-    const res = await getMerchantActivities()
+    const res = await getMerchantActivities({
+      page: currentPage.value - 1,
+      size: pageSize.value
+    })
     if (res.code !== 200) {
-      throw new Error(res.message || '加载活动失败')
+      throw new Error(res.message || 'Failed to load activities')
     }
-    list.value = Array.isArray(res.data) ? res.data : []
+
+    const payload = res.data || {}
+    list.value = Array.isArray(payload.items) ? payload.items : []
+    total.value = Number(payload.total || 0)
+    totalPages.value = Math.max(Number(payload.totalPages || 0), list.value.length ? 1 : 0)
+
+    if (totalPages.value > 0 && currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value
+      syncRoute()
+      await load()
+    }
   } catch (error) {
     list.value = []
-    notify(error.message || '加载活动失败', 'error')
+    total.value = 0
+    totalPages.value = 0
+    notify(error.message || 'Failed to load activities', 'error')
   } finally {
     loading.value = false
   }
@@ -88,7 +163,11 @@ const goCreate = () => {
 }
 
 const goEdit = (id) => {
-  router.push({ name: 'merchant-activity-edit', params: { id } })
+  router.push({
+    name: 'merchant-activity-edit',
+    params: { id },
+    query: route.query
+  })
 }
 
 const viewBookings = (item) => {
@@ -96,40 +175,73 @@ const viewBookings = (item) => {
 }
 
 const handleDelete = async (id) => {
-  if (!window.confirm('确认删除该活动吗？')) {
+  if (!window.confirm('Are you sure you want to delete this activity?')) {
     return
   }
 
   try {
     const res = await deleteMerchantActivity(id)
     if (res.code !== 200) {
-      throw new Error(res.message || '删除失败')
+      throw new Error(res.message || 'Failed to delete activity')
     }
-    list.value = list.value.filter(item => item.id !== id)
-    notify('活动已删除', 'success')
+
+    notify('Activity deleted successfully.', 'success')
+
+    if (list.value.length === 1 && currentPage.value > 1) {
+      currentPage.value -= 1
+      syncRoute()
+    }
+
+    await load()
   } catch (error) {
-    notify(error.message || '删除失败', 'error')
+    notify(error.message || 'Failed to delete activity', 'error')
   }
 }
 
-const formatDateTime = (value) => value ? new Date(value).toLocaleString('zh-CN') : '待定'
-const formatLocation = (item) => [item.locationProvince, item.locationCity, item.locationDetail].filter(Boolean).join(' / ') || '待定'
-const formatPrice = (price) => !price ? '免费' : `¥${(Number(price) / 100).toFixed(2)}`
+const changePage = async (page) => {
+  if (page < 1 || page > totalPages.value || page === currentPage.value) {
+    return
+  }
+  currentPage.value = page
+  syncRoute()
+  await load()
+}
+
+const handlePageSizeChange = async () => {
+  currentPage.value = 1
+  syncRoute()
+  await load()
+}
+
+const formatDateTime = (value) => value ? new Date(value).toLocaleString('zh-CN') : 'TBD'
+const formatLocation = (item) => [item.locationProvince, item.locationCity, item.locationDetail].filter(Boolean).join(' / ') || 'TBD'
+const formatPrice = (price) => !price ? 'Free' : `CNY ${(Number(price) / 100).toFixed(2)}`
 
 const statusLabel = (status) => ({
-  signup: '报名中',
-  full: '已满员',
-  ongoing: '进行中',
-  ended: '已结束'
-}[status] || '待开始')
+  signup: 'Open',
+  full: 'Full',
+  ongoing: 'Ongoing',
+  ended: 'Ended'
+}[status] || 'Draft')
 
 const auditLabel = (status) => ({
-  pending: '待审核',
-  approved: '已通过',
-  rejected: '已驳回'
-}[status] || '待提交')
+  pending: 'Pending Audit',
+  approved: 'Approved',
+  rejected: 'Rejected'
+}[status] || 'Pending Submit')
 
-onMounted(load)
+watch(
+  () => route.fullPath,
+  async () => {
+    syncStateFromRoute()
+    await load()
+  }
+)
+
+onMounted(async () => {
+  syncStateFromRoute()
+  await load()
+})
 </script>
 
 <style scoped>
@@ -339,6 +451,68 @@ onMounted(load)
   color: #dc2626;
 }
 
+.pagination-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #64748b;
+}
+
+.pagination-summary strong {
+  color: #111827;
+  font-size: 24px;
+}
+
+.pagination-controls,
+.pager-buttons,
+.page-size-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-size-field span,
+.page-indicator {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.page-size-field select,
+.pager-btn {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid #d4d9e0;
+  background: #fff;
+}
+
+.page-size-field select {
+  padding: 0 12px;
+}
+
+.pager-btn {
+  padding: 0 14px;
+  cursor: pointer;
+  color: #334155;
+}
+
+.pager-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 @media (max-width: 900px) {
   .activity-card {
     grid-template-columns: 1fr;
@@ -351,7 +525,8 @@ onMounted(load)
   }
 
   .card-head,
-  .page-header {
+  .page-header,
+  .pagination-card {
     flex-direction: column;
   }
 
@@ -366,6 +541,20 @@ onMounted(load)
   .card-actions {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .pagination-controls,
+  .pager-buttons,
+  .page-size-field {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .pager-btn,
+  .page-size-field select {
+    width: 100%;
   }
 }
 </style>

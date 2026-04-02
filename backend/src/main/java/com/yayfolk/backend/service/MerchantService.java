@@ -201,15 +201,13 @@ public class MerchantService {
 
     public List<Map<String, Object>> getMyActivities(String username) {
         User user = getUser(username);
-        List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        for (Activity activity : activities) {
-            Map<String, Object> item = activityToMap(activity);
-            Map<String, Object> bookingSummary = buildMerchantBookingSummary(activityReserveRepository.findByActivityIdOrderByCreateTimeDesc(activity.getId()));
-            item.putAll(bookingSummary);
-            result.add(item);
-        }
-        return result;
+        return buildMerchantActivityItems(activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId()));
+    }
+
+    public Map<String, Object> getMyActivitiesPage(String username, Integer page, Integer size) {
+        User user = getUser(username);
+        List<Map<String, Object>> items = buildMerchantActivityItems(activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId()));
+        return paginateItems(items, page, size);
     }
 
     public Map<String, Object> createActivity(String username, Map<String, Object> data) {
@@ -330,6 +328,38 @@ public class MerchantService {
         }
     }
 
+    private List<Map<String, Object>> buildMerchantActivityItems(List<Activity> activities) {
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        for (Activity activity : activities) {
+            Map<String, Object> item = activityToMap(activity);
+            Map<String, Object> bookingSummary = buildMerchantBookingSummary(activityReserveRepository.findByActivityIdOrderByCreateTimeDesc(activity.getId()));
+            item.putAll(bookingSummary);
+            result.add(item);
+        }
+        return result;
+    }
+
+    private Map<String, Object> paginateItems(List<Map<String, Object>> items, Integer page, Integer size) {
+        int safePage = page == null || page < 0 ? 0 : page;
+        int safeSize = size == null || size <= 0 ? items.size() : size;
+        if (safeSize <= 0) {
+            safeSize = 10;
+        }
+
+        int total = items.size();
+        int totalPages = total == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
+        int fromIndex = Math.min(safePage * safeSize, total);
+        int toIndex = Math.min(fromIndex + safeSize, total);
+
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put("items", new ArrayList<Map<String, Object>>(items.subList(fromIndex, toIndex)));
+        result.put("page", safePage);
+        result.put("size", safeSize);
+        result.put("total", total);
+        result.put("totalPages", totalPages);
+        return result;
+    }
+
     private Map<String, Object> activityToMap(Activity activity) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id", activity.getId());
@@ -375,7 +405,7 @@ public class MerchantService {
         return buildMerchantBookingItems(activityReserveRepository.findByActivityIdOrderByCreateTimeDesc(activityId));
     }
 
-    public Map<String, Object> getMerchantBookings(String username, Long activityId, String status, String keyword) {
+    public Map<String, Object> getMerchantBookings(String username, Long activityId, String status, String keyword, Integer page, Integer size) {
         User user = getUser(username);
         List<ActivityReserve> source = activityReserveRepository.findByMerchantIdOrderByUpdateTimeDesc(user.getId());
         List<ActivityReserve> scoped = new ArrayList<ActivityReserve>();
@@ -400,7 +430,9 @@ public class MerchantService {
             }
             filtered.add(item);
         }
-        result.put("items", buildMerchantBookingItems(filtered));
+
+        Map<String, Object> pageResult = paginateItems(buildMerchantBookingItems(filtered), page, size);
+        result.putAll(pageResult);
         return result;
     }
 

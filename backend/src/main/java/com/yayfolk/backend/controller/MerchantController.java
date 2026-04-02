@@ -58,9 +58,14 @@ public class MerchantController {
     }
 
     @GetMapping("/activities")
-    public ResponseDto getActivities(HttpServletRequest request) {
+    public ResponseDto getActivities(@RequestParam(required = false) Integer page,
+                                     @RequestParam(required = false) Integer size,
+                                     HttpServletRequest request) {
         try {
             String username = requireUsername(request);
+            if (page != null || size != null) {
+                return ResponseDto.success(merchantService.getMyActivitiesPage(username, page, size));
+            }
             return ResponseDto.success(merchantService.getMyActivities(username));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
@@ -114,10 +119,12 @@ public class MerchantController {
     public ResponseDto getMerchantBookings(@RequestParam(required = false) Long activityId,
                                            @RequestParam(required = false) String status,
                                            @RequestParam(required = false) String keyword,
+                                           @RequestParam(required = false) Integer page,
+                                           @RequestParam(required = false) Integer size,
                                            HttpServletRequest request) {
         try {
             String username = requireUsername(request);
-            return ResponseDto.success(merchantService.getMerchantBookings(username, activityId, status, keyword));
+            return ResponseDto.success(merchantService.getMerchantBookings(username, activityId, status, keyword, page, size));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

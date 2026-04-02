@@ -20,13 +20,13 @@
         </button>
       </div>
 
-      <section class="chart-card clickable" @click="emitNavigate({ type: 'bookings', status: 'all' })">
+      <section class="chart-card clickable" @click="emitNavigate(chartTarget)">
         <div class="chart-head">
           <div>
-            <h4>Last 7 Days Booking Trend</h4>
-            <p>Bars show booking revenue. The line shows booking volume.</p>
+            <h4>{{ chartMeta.title }}</h4>
+            <p>{{ chartMeta.description }}</p>
           </div>
-          <span class="chart-link">Open booking management</span>
+          <span class="chart-link">{{ chartMeta.linkLabel }}</span>
         </div>
         <div ref="chartRef" class="chart-area"></div>
       </section>
@@ -110,6 +110,7 @@ import * as echarts from 'echarts'
 
 const BRAND_RED = '#c04851'
 const BRAND_BLUE = '#1661ab'
+const BRAND_GOLD = '#c58b2a'
 
 const props = defineProps({
   stats: {
@@ -131,7 +132,10 @@ const emit = defineEmits(['navigate'])
 const chartRef = ref(null)
 let chartInstance = null
 let resizeObserver = null
+let parentResizeObserver = null
 let renderTimer = null
+let pendingFrame = 0
+let retryCount = 0
 
 const summary = computed(() => props.stats?.summary || {})
 const bookingStatus = computed(() => Array.isArray(props.stats?.bookingStatus) ? props.stats.bookingStatus : [])
@@ -141,6 +145,11 @@ const recentReviews = computed(() => Array.isArray(props.stats?.recentReviews) ?
 
 const formatCount = (value) => Number(value || 0).toLocaleString('en-US')
 const formatCurrency = (value) => `CNY ${(Number(value || 0) / 100).toFixed(2)}`
+const formatCurrencyAxis = (value) => {
+  const amount = Number(value || 0) / 100
+  const precision = Math.abs(amount) >= 100 ? 0 : Math.abs(amount) >= 10 ? 1 : 2
+  return `CNY ${amount.toFixed(precision)}`
+}
 const formatScore = (value) => (value === null || value === undefined || value === '' ? '--' : Number(value).toFixed(1))
 
 const summaryCards = computed(() => [
@@ -188,6 +197,63 @@ const summaryCards = computed(() => [
   }
 ])
 
+const hasTrendData = computed(() => salesTrend.value.some((item) => Number(item?.bookingRevenue || 0) > 0 || Number(item?.bookingCount || 0) > 0))
+const hasActivityChartData = computed(() => topActivities.value.length > 0)
+const chartMode = computed(() => {
+  if (hasTrendData.value) {
+    return 'trend'
+  }
+  if (hasActivityChartData.value) {
+    return 'activity'
+  }
+  return 'empty'
+})
+
+const chartMeta = computed(() => {
+  if (chartMode.value === 'trend') {
+    return {
+      title: 'Last 7 Days Booking Trend',
+      description: 'Bars show booking revenue. The line shows booking volume.',
+      linkLabel: 'Open booking management'
+    }
+  }
+  if (chartMode.value === 'activity') {
+    return {
+      title: 'Activity Performance Snapshot',
+      description: 'Compare your top activities by bookings, participants, and booking revenue.',
+      linkLabel: 'Open activity management'
+    }
+  }
+  return {
+    title: 'Merchant Analytics Overview',
+    description: 'Create activities or receive bookings to unlock visual trends here.',
+    linkLabel: 'Open merchant center'
+  }
+})
+
+const chartTarget = computed(() => {
+  if (chartMode.value === 'activity') {
+    return { type: 'activities' }
+  }
+  return { type: 'bookings', status: 'all' }
+})
+
+const activityChartData = computed(() => topActivities.value.slice(0, 5).map((item) => ({
+  label: shortenLabel(item.title || 'Untitled Activity'),
+  fullLabel: item.title || 'Untitled Activity',
+  bookingCount: Number(item.bookingCount || 0),
+  participantCount: Number(item.participantCount || 0),
+  revenue: Number(item.revenue || 0)
+})))
+
+function shortenLabel(value) {
+  const text = String(value || '').trim()
+  if (!text) {
+    return 'Untitled Activity'
+  }
+  return text.length > 14 ? `${text.slice(0, 14)}...` : text
+}
+
 const emitNavigate = (target) => {
   if (!target) {
     return
@@ -195,52 +261,52 @@ const emitNavigate = (target) => {
   emit('navigate', target)
 }
 
-const cleanupChart = () => {
-  if (renderTimer) {
-    clearTimeout(renderTimer)
-    renderTimer = null
-  }
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
-  }
+const disposeChart = () => {
   if (chartInstance) {
     chartInstance.dispose()
     chartInstance = null
   }
 }
 
+const cleanupChart = () => {
+  if (renderTimer) {
+    clearTimeout(renderTimer)
+    renderTimer = null
+  }
+  if (pendingFrame) {
+    cancelAnimationFrame(pendingFrame)
+    pendingFrame = 0
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+  if (parentResizeObserver) {
+    parentResizeObserver.disconnect()
+    parentResizeObserver = null
+  }
+  disposeChart()
+}
+
 const ensureChart = () => {
   if (!chartRef.value) {
     return null
   }
-  if (!chartInstance) {
-    chartInstance = echarts.init(chartRef.value)
+  if (chartInstance?.getDom?.() !== chartRef.value) {
+    disposeChart()
+  }
+  if (!chartInstance || chartInstance.isDisposed?.()) {
+    chartInstance = echarts.init(chartRef.value, null, { renderer: 'canvas' })
   }
   return chartInstance
 }
 
-const renderChart = async () => {
-  if (props.loading || !props.visible) {
-    return
-  }
-
-  await nextTick()
-  if (!chartRef.value) {
-    return
-  }
-
-  const instance = ensureChart()
-  if (!instance) {
-    return
-  }
-
+function buildTrendOption() {
   const xData = salesTrend.value.map((item) => item.label)
   const revenueData = salesTrend.value.map((item) => Number(item.bookingRevenue || 0))
   const bookingCountData = salesTrend.value.map((item) => Number(item.bookingCount || 0))
-  const hasData = revenueData.some((item) => item > 0) || bookingCountData.some((item) => item > 0)
 
-  instance.setOption({
+  return {
     backgroundColor: 'transparent',
     color: [BRAND_RED, BRAND_BLUE],
     tooltip: {
@@ -291,7 +357,7 @@ const renderChart = async () => {
         type: 'value',
         axisLabel: {
           color: '#6b7280',
-          formatter: (value) => `CNY ${(Number(value || 0) / 100).toFixed(0)}`
+          formatter: (value) => formatCurrencyAxis(value)
         },
         splitLine: {
           lineStyle: {
@@ -310,20 +376,6 @@ const renderChart = async () => {
         }
       }
     ],
-    graphic: hasData
-      ? []
-      : [
-          {
-            type: 'text',
-            left: 'center',
-            top: 'middle',
-            style: {
-              text: 'No trend data yet',
-              fill: '#94a3b8',
-              fontSize: 16
-            }
-          }
-        ],
     series: [
       {
         name: 'Revenue',
@@ -354,26 +406,232 @@ const renderChart = async () => {
         data: bookingCountData
       }
     ]
-  }, true)
+  }
+}
 
+function buildActivityOption() {
+  const xData = activityChartData.value.map((item) => item.label)
+  const bookingData = activityChartData.value.map((item) => item.bookingCount)
+  const participantData = activityChartData.value.map((item) => item.participantCount)
+  const revenueData = activityChartData.value.map((item) => item.revenue)
+
+  return {
+    backgroundColor: 'transparent',
+    color: [BRAND_RED, BRAND_GOLD, BRAND_BLUE],
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      },
+      formatter: (params) => {
+        const rows = [`${activityChartData.value[params?.[0]?.dataIndex || 0]?.fullLabel || params?.[0]?.axisValueLabel || ''}`]
+        params.forEach((item) => {
+          if (item.seriesName === 'Revenue') {
+            rows.push(`${item.marker}${item.seriesName}: ${formatCurrency(item.value)}`)
+            return
+          }
+          rows.push(`${item.marker}${item.seriesName}: ${formatCount(item.value)}`)
+        })
+        return rows.join('<br>')
+      }
+    },
+    grid: {
+      left: 18,
+      right: 18,
+      top: 46,
+      bottom: 28,
+      containLabel: true
+    },
+    legend: {
+      data: ['Bookings', 'Participants', 'Revenue'],
+      top: 0,
+      textStyle: {
+        color: '#4b5563'
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: xData,
+      axisLine: {
+        lineStyle: {
+          color: '#d1d5db'
+        }
+      },
+      axisLabel: {
+        color: '#6b7280',
+        interval: 0,
+        rotate: xData.length > 3 ? 18 : 0
+      }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        axisLabel: {
+          color: '#6b7280',
+          formatter: (value) => formatCount(value)
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(209, 213, 219, 0.6)'
+          }
+        }
+      },
+      {
+        type: 'value',
+        axisLabel: {
+          color: '#6b7280',
+          formatter: (value) => formatCurrencyAxis(value)
+        },
+        splitLine: {
+          show: false
+        }
+      }
+    ],
+    series: [
+      {
+        name: 'Bookings',
+        type: 'bar',
+        barMaxWidth: 18,
+        itemStyle: {
+          color: BRAND_RED,
+          borderRadius: [8, 8, 0, 0]
+        },
+        data: bookingData
+      },
+      {
+        name: 'Participants',
+        type: 'bar',
+        barMaxWidth: 18,
+        itemStyle: {
+          color: BRAND_GOLD,
+          borderRadius: [8, 8, 0, 0]
+        },
+        data: participantData
+      },
+      {
+        name: 'Revenue',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        symbolSize: 8,
+        itemStyle: {
+          color: BRAND_BLUE
+        },
+        lineStyle: {
+          width: 3,
+          color: BRAND_BLUE
+        },
+        areaStyle: {
+          color: 'rgba(22, 97, 171, 0.10)'
+        },
+        data: revenueData
+      }
+    ]
+  }
+}
+
+function buildEmptyOption() {
+  return {
+    backgroundColor: 'transparent',
+    graphic: [
+      {
+        type: 'group',
+        left: 'center',
+        top: 'middle',
+        children: [
+          {
+            type: 'text',
+            top: -10,
+            style: {
+              text: 'No chart data yet',
+              fill: '#64748b',
+              fontSize: 18,
+              fontWeight: 600,
+              textAlign: 'center'
+            }
+          },
+          {
+            type: 'text',
+            top: 22,
+            style: {
+              text: 'Publish activities or receive bookings to unlock analytics.',
+              fill: '#94a3b8',
+              fontSize: 14,
+              textAlign: 'center'
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+
+const renderChart = async () => {
+  if (props.loading || !props.visible) {
+    return
+  }
+
+  await nextTick()
+  if (!chartRef.value) {
+    return
+  }
+
+  const width = chartRef.value.clientWidth
+  const height = chartRef.value.clientHeight
+  if (!width || !height) {
+    if (retryCount < 8) {
+      retryCount += 1
+      scheduleRender(120)
+    }
+    return
+  }
+
+  retryCount = 0
+  const instance = ensureChart()
+  if (!instance) {
+    return
+  }
+
+  let option = buildEmptyOption()
+  if (chartMode.value === 'trend') {
+    option = buildTrendOption()
+  } else if (chartMode.value === 'activity') {
+    option = buildActivityOption()
+  }
+
+  instance.setOption(option, true)
   instance.resize()
 }
 
-const scheduleRender = () => {
+const scheduleRender = (delay = 16) => {
   if (renderTimer) {
     clearTimeout(renderTimer)
   }
+  if (pendingFrame) {
+    cancelAnimationFrame(pendingFrame)
+    pendingFrame = 0
+  }
   renderTimer = setTimeout(() => {
-    renderChart()
-  }, 16)
+    pendingFrame = requestAnimationFrame(() => {
+      pendingFrame = requestAnimationFrame(() => {
+        renderChart()
+      })
+    })
+  }, delay)
 }
 
 const handleResize = () => {
-  chartInstance?.resize()
+  scheduleRender(24)
 }
 
-onMounted(() => {
-  scheduleRender()
+const requestRender = async () => {
+  await nextTick()
+  scheduleRender(24)
+  scheduleRender(120)
+}
+
+onMounted(async () => {
+  await requestRender()
   window.addEventListener('resize', handleResize)
 
   if (window.ResizeObserver && chartRef.value) {
@@ -381,6 +639,14 @@ onMounted(() => {
       handleResize()
     })
     resizeObserver.observe(chartRef.value)
+
+    const parentElement = chartRef.value.parentElement
+    if (parentElement) {
+      parentResizeObserver = new window.ResizeObserver(() => {
+        handleResize()
+      })
+      parentResizeObserver.observe(parentElement)
+    }
   }
 })
 
@@ -388,30 +654,28 @@ watch(
   () => props.visible,
   async (visible) => {
     if (!visible) {
+      disposeChart()
       return
     }
-    await nextTick()
-    if (window.ResizeObserver && chartRef.value && !resizeObserver) {
-      resizeObserver = new window.ResizeObserver(() => {
-        handleResize()
-      })
-      resizeObserver.observe(chartRef.value)
-    }
-    scheduleRender()
+    await requestRender()
   }
 )
 
 watch(
   () => props.loading,
-  () => {
-    scheduleRender()
+  async (loading) => {
+    if (loading) {
+      disposeChart()
+      return
+    }
+    await requestRender()
   }
 )
 
 watch(
   () => props.stats,
   () => {
-    scheduleRender()
+    scheduleRender(24)
   },
   { deep: true }
 )
