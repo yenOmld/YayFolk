@@ -2,7 +2,7 @@ package com.yayfolk.backend.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yayfolk.backend.entity.ActivityBooking;
+import com.yayfolk.backend.entity.ActivityReserve;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.DiscoverPostCollection;
 import com.yayfolk.backend.entity.DiscoverPostHistory;
@@ -10,7 +10,7 @@ import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.UserFollow;
 import com.yayfolk.backend.entity.UserProfileVisit;
-import com.yayfolk.backend.repository.ActivityBookingRepository;
+import com.yayfolk.backend.repository.ActivityReserveRepository;
 import com.yayfolk.backend.repository.DiscoverPostCollectionRepository;
 import com.yayfolk.backend.repository.DiscoverPostHistoryRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
@@ -38,7 +38,7 @@ public class UserCenterService {
 
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final ActivityBookingRepository activityBookingRepository;
+    private final ActivityReserveRepository activityReserveRepository;
     private final DiscoverPostRepository discoverPostRepository;
     private final DiscoverPostCollectionRepository discoverPostCollectionRepository;
     private final DiscoverPostHistoryRepository historyRepository;
@@ -48,7 +48,7 @@ public class UserCenterService {
 
     public UserCenterService(UserRepository userRepository,
                              OrderRepository orderRepository,
-                             ActivityBookingRepository activityBookingRepository,
+                             ActivityReserveRepository activityReserveRepository,
                              DiscoverPostRepository discoverPostRepository,
                              DiscoverPostCollectionRepository discoverPostCollectionRepository,
                              DiscoverPostHistoryRepository historyRepository,
@@ -57,7 +57,7 @@ public class UserCenterService {
                              ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
-        this.activityBookingRepository = activityBookingRepository;
+        this.activityReserveRepository = activityReserveRepository;
         this.discoverPostRepository = discoverPostRepository;
         this.discoverPostCollectionRepository = discoverPostCollectionRepository;
         this.historyRepository = historyRepository;
@@ -71,13 +71,13 @@ public class UserCenterService {
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
 
         List<Order> orders = orderRepository.findByUserIdAndDeleteStatusOrderByCreateTimeDesc(user.getId(), 0);
-        List<ActivityBooking> bookings = activityBookingRepository.findByUserIdOrderByCreateTimeDesc(user.getId());
+        List<ActivityReserve> bookings = activityReserveRepository.findByUserIdOrderByCreateTimeDesc(user.getId());
         List<DiscoverPost> posts = discoverPostRepository.findByUserIdAndStatusOrderByCreateTimeDesc(user.getId(), 1);
         List<DiscoverPostHistory> histories = historyRepository.findByUserIdOrderByLastViewTimeDesc(user.getId());
 
         long productOrderCount = orders.size();
         long bookingCount = bookings.size();
-        long checkedInCount = bookings.stream().filter(item -> "checked_in".equals(item.getStatus())).count();
+        long checkedInCount = bookings.stream().filter(item -> "checked_in".equals(item.getReserveStatus())).count();
         long postCount = posts.size();
         long partnerPostCount = posts.stream().filter(item -> "partner".equals(item.getCategory())).count();
         long historyCount = histories.size();

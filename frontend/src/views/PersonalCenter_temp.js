@@ -1,5 +1,0 @@
-import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
-import { useRouter } from 'vue-router'
-import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
-import CustomerServiceView from './CustomerServiceView.vue'
-import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'

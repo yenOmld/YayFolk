@@ -1,4 +1,4 @@
-import request from '../utils/request'
+﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -273,7 +273,6 @@ export const publishToHomepage = (type, ids) => request.post('/admin/official/pu
 
 // ========== 闂傚倸鍊搁崐鎼佸磹閹间礁纾圭€瑰嫭鍣磋ぐ鎺戠倞鐟滃繘寮抽敃鍌涚厱妞ゎ厽鍨垫禍婵嬫煕濞嗗繒绠婚柡宀€鍠栭獮鍡涘级閸熷啯鎹囬弻宥夋煥鐎ｎ偀鎷婚梺閫炲苯澧紒鐘茬Ч瀹曟洟鏌嗗畵銉ユ喘椤㈡盯鎮欓幓鎺斺偓顓㈡⒑缁嬭法鐏遍柛瀣仱閹繝鎮㈤崗鑲╁幗闂佸搫鍟崑鍡涙倿閻愵兙浜滈柕澶堝労閸庢棃鏌?& 闂傚倸鍊搁崐鎼佸磹閹间礁纾归柟闂寸绾惧綊鏌ｉ幋锝呅撻柛銈呭閺屾盯顢曢敐鍡欘槬缂備胶濮锋繛鈧柡宀€鍠栧畷婊嗩槾閻㈩垱鐩弻娑氣偓锝冨妼閳ь剚绻堝濠氬即閻旇櫣顔曢梺缁樺姦閸撴岸鎮甸弮鍌滅＝濞达絾褰冩禍鐐節閵忥絽鐓愰柛鏃€鐗犻幃鈥斥槈閵忥紕鍘遍梺闈涱槶閸ㄥ搫鈻嶉崨瀛樼厱闁规儳缍婇崫铏圭磼?==========
 export const getMyOrderOverview = () => request.get('/orders/overview')
-export const getMyOrders = () => request.get('/orders')
 export const payOrder = (id, data = {}) => request.post(`/orders/${id}/pay`, data)
 export const reconcileAlipayTrade = (data) => request.post('/alipay/reconcile', data)
 export const cancelOrder = (id) => request.post(`/orders/${id}/cancel`)
@@ -284,7 +283,6 @@ export const getActivityBookingDetail = (id) => request.get(`/orders/bookings/${
 export const payActivityBooking = (id, data = {}) => request.post(`/orders/bookings/${id}/pay`, data)
 export const getActivityBookingQrCode = (id) => request.get(`/orders/bookings/${id}/qrcode`)
 export const submitActivityBookingReview = (id, data) => request.post(`/orders/bookings/${id}/review`, data)
-export const getMyAchievements = () => request.get('/user/achievements')
 export const getUserHomepage = (userId) => request.get(`/user/homepage/${userId}`)
 export const getHomepageSettings = () => request.get('/user/homepage-settings')
 export const updateHomepageSettings = (data) => request.put('/user/homepage-settings', data)

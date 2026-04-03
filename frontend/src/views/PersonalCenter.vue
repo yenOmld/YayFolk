@@ -184,7 +184,7 @@
             </div>
             <div class="content-card" @click="navigateToHistory">
               <div class="card-icon" style="background: #fff7e6; color: #fa8c16;">
-                <i class='bx bxs-history'></i>
+                <i class='bx bx-time'></i>
               </div>
               <div class="card-info">
                 <h4>浏览历史</h4>
@@ -386,24 +386,6 @@
               <p>查看活动报名与状态</p>
             </div>
           </div>
-          <div class="content-card" @click="navigateToOrders">
-            <div class="card-icon" style="background: #f9f0ff; color: #a18cd1;">
-              <i class='bx bxs-package'></i>
-            </div>
-            <div class="card-info">
-              <h4>商品订单</h4>
-              <p>管理商品订单记录</p>
-            </div>
-          </div>
-          <div class="content-card" @click="navigateToAchievements">
-            <div class="card-icon" style="background: #f6ffed; color: #52c41a;">
-              <i class='bx bxs-medal'></i>
-            </div>
-            <div class="card-info">
-              <h4>打卡成就</h4>
-              <p>查看线下体验成长</p>
-            </div>
-          </div>
           <div class="content-card" @click="navigateToMyCollections">
             <div class="card-icon" style="background: #fff0f6; color: #ff9a9e;">
               <i class='bx bxs-star'></i>
@@ -418,7 +400,7 @@
         <!-- 底部列表菜单 -->
         <div class="menu-list">
           <div class="menu-item" @click="navigateToHistory">
-            <i class='bx bxs-history'></i>
+            <i class='bx bx-time'></i>
             <span>浏览历史</span>
             <i class='bx bx-chevron-right'></i>
           </div>
@@ -1271,16 +1253,6 @@ const navigateToHistory = () => {
 const navigateToMyReservations = () => {
   closeSettingsDrawer()
   router.push('/personal/activities')
-}
-
-const navigateToOrders = () => {
-  closeSettingsDrawer()
-  router.push('/personal/activities')
-}
-
-const navigateToAchievements = () => {
-  closeSettingsDrawer()
-  router.push('/personal/achievements')
 }
 
 const navigateToMerchantApply = () => {

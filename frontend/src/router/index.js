@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import HomeView from '../views/HomeView.vue'
@@ -6,7 +6,6 @@ import DiscoverView from '../views/DiscoverView.vue'
 import PersonalCenter from '../views/PersonalCenter.vue'
 import EditProfile from '../views/EditProfile.vue'
 import UserHomepage from '../views/UserHomepage.vue'
-import ConversationMode from '../views/ConversationMode.vue'
 import NotificationView from '../views/NotificationView.vue'
 import ShareView from '../views/ShareView.vue'
 import IntangibleCulturalHeritage from '../views/IntangibleCulturalHeritage.vue'
@@ -96,12 +95,6 @@ const routes = [
     redirect: '/home/tools'
   },
   {
-    path: '/conversation',
-    name: 'conversation',
-    component: ConversationMode,
-    meta: { title: 'Conversation - YayFolk', requiresAuth: true }
-  },
-  {
     path: '/personal/edit-profile',
     name: 'edit-profile',
     component: EditProfile,
@@ -167,18 +160,6 @@ const routes = [
     meta: { title: 'Activity Payment Result - YayFolk', requiresAuth: true }
   },
   {
-    path: '/personal/orders',
-    name: 'my-orders',
-    component: () => import('../views/MyOrders.vue'),
-    meta: { title: 'My Orders - YayFolk', requiresAuth: true }
-  },
-  {
-    path: '/personal/achievements',
-    name: 'my-achievements',
-    component: () => import('../views/MyAchievements.vue'),
-    meta: { title: 'My Achievements - YayFolk', requiresAuth: true }
-  },
-  {
     path: '/personal/history',
     name: 'history',
     component: () => import('../views/History.vue'),
@@ -189,12 +170,6 @@ const routes = [
     name: 'notification',
     component: NotificationView,
     meta: { title: 'Notifications - YayFolk', requiresAuth: true }
-  },
-  {
-    path: '/activity-notifications',
-    name: 'activity-notifications',
-    component: NotificationView,
-    meta: { title: 'Activity Notifications - YayFolk', requiresAuth: true }
   },
   {
     path: '/activity/:id',

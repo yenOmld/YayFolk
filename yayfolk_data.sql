@@ -16,91 +16,76 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `activities`
---
-
-DROP TABLE IF EXISTS `activities`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `activities` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `merchant_id` bigint NOT NULL,
-  `category_id` int DEFAULT NULL,
-  `title` varchar(200) NOT NULL,
-  `subtitle` varchar(100) DEFAULT NULL,
-  `cover_image` varchar(255) DEFAULT NULL,
-  `images` json DEFAULT NULL,
-  `content` text,
-  `activity_type` varchar(20) DEFAULT NULL,
-  `heritage_type` varchar(50) DEFAULT NULL,
-  `start_time` datetime NOT NULL,
-  `end_time` datetime NOT NULL,
-  `signup_start_time` datetime DEFAULT NULL,
-  `signup_end_time` datetime DEFAULT NULL,
-  `max_participants` int DEFAULT NULL,
-  `current_participants` int DEFAULT '0',
-  `price` int DEFAULT '0',
-  `original_price` int DEFAULT NULL,
-  `location_province` varchar(50) DEFAULT NULL,
-  `location_city` varchar(50) DEFAULT NULL,
-  `location_district` varchar(50) DEFAULT NULL,
-  `location_detail` varchar(200) DEFAULT NULL,
-  `status` varchar(20) DEFAULT 'signup',
-  `audit_status` varchar(20) DEFAULT 'pending',
-  `audit_remark` varchar(500) DEFAULT NULL,
-  `is_recommend` tinyint(1) DEFAULT '0',
-  `view_count` int DEFAULT '0',
-  `signup_count` int DEFAULT '0',
-  `collect_count` int DEFAULT '0',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk_activities_merchant` (`merchant_id`),
-  CONSTRAINT `fk_activities_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `activities`
 --
 
 LOCK TABLES `activities` WRITE;
 /*!40000 ALTER TABLE `activities` DISABLE KEYS */;
-INSERT INTO `activities` VALUES (2,10011,NULL,'鐪熷疄鍒虹唬',NULL,'',NULL,'','offline','鍒虹唬','2026-03-27 22:33:00','2026-03-28 22:33:00',NULL,NULL,30,1,0,NULL,NULL,'婀栧寳',NULL,'姝︽眽','signup','approved','鐪熷疄',0,0,0,0,'2026-03-26 22:33:22','2026-03-26 23:48:13');
+INSERT INTO `activities` VALUES (4,10025,NULL,'京剧脸谱沉浸体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,1,0,NULL,'北京','北京',NULL,'北京市东城区京华非遗剧场','ongoing','approved','',0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',2),(5,10025,NULL,'景泰蓝掐丝点蓝工坊',NULL,NULL,NULL,NULL,NULL,NULL,'offline',NULL,'2026-03-28 09:52:00','2027-03-28 09:52:00',NULL,NULL,NULL,1,0,NULL,'北京','北京',NULL,'北京市东城区京华器物馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:39',2),(6,10025,NULL,'庙会面塑亲子课程',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市前门民俗体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:39',2),(7,10025,NULL,'中轴灯彩夜游手作课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市东城区灯彩工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:39',2),(8,10025,NULL,'清明风筝彩绘体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市朝阳公园风筝坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:39',2),(9,10025,NULL,'京绣节庆纹样体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市东城区京绣工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',2),(10,10025,NULL,'兔儿爷彩塑手作课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市东城区民艺体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',2),(11,10025,NULL,'京作剪纸窗花体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市东城区剪纸工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',2),(12,10025,NULL,'毛猴造景手作课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市前门京味工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',2),(13,10025,NULL,'冰糖葫芦熬糖体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'北京','北京',NULL,'北京市东城区年味市集','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',2),(14,10026,NULL,'苏绣针法体验课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','苏州',NULL,'苏州市姑苏区苏作匠心馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',3),(15,10026,NULL,'昆山腔身段体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','苏州',NULL,'苏州市昆曲小剧场','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',3),(16,10026,NULL,'苏扇绘制与装裱课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','苏州',NULL,'苏州市姑苏区制扇馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',3),(17,10026,NULL,'缂丝经纬体验课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','苏州',NULL,'苏州市织造体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',3),(18,10027,NULL,'云锦织机观摩与纹样设计',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','南京',NULL,'南京市秦淮区金陵雅集馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:37',4),(19,10027,NULL,'木版年画印制课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','南京',NULL,'苏州市桃花坞木版工作室','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',4),(20,10027,NULL,'秦淮灯彩夜游体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','南京',NULL,'南京市夫子庙灯彩展馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',4),(21,10027,NULL,'宋锦织造纹样体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','南京',NULL,'苏州市宋锦体验中心','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',4),(22,10027,NULL,'清明踏青习俗导览',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'江苏','南京',NULL,'南京市郊春日体验点','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',4),(23,10028,NULL,'宣纸抄纸体验营',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'安徽','黄山',NULL,'宣城市泾县宣纸工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',5),(24,10028,NULL,'歙砚雕刻体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'安徽','黄山',NULL,'黄山市歙县砚文化馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',5),(25,10028,NULL,'徽墨制墨闻香课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'安徽','黄山',NULL,'黄山市屯溪区墨艺工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',5),(26,10028,NULL,'端午香包佩饰手作',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'安徽','黄山',NULL,'黄山市民俗体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',5),(27,10029,NULL,'成都糖画庙会体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'四川','成都',NULL,'成都市锦江区蜀风市集','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',6),(28,10029,NULL,'川剧变脸夜场互动',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'四川','成都',NULL,'成都市锦江剧场','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',6),(29,10029,NULL,'蜀绣针法体验课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'四川','成都',NULL,'成都市非遗织绣中心','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',6),(30,10029,NULL,'竹编手作半日课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'四川','成都',NULL,'眉山市青神竹编基地','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',6),(31,10030,NULL,'唐风壁画临摹课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'陕西','西安',NULL,'西安市长安艺脉馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',7),(32,10030,NULL,'碑刻传拓体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'陕西','西安',NULL,'西安市碑林拓印中心','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',7),(33,10030,NULL,'长安宫灯彩绘夜游',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'陕西','西安',NULL,'西安市大唐风华街区','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',7),(34,10031,NULL,'苗绣纹样体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'贵州','黔东南',NULL,'凯里市苗绣生活馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',8),(35,10031,NULL,'银饰锻制体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'贵州','黔东南',NULL,'凯里市银饰非遗馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',8),(36,10032,NULL,'壮锦织机体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广西','南宁',NULL,'南宁市壮锦工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',9),(37,10032,NULL,'铜鼓民俗展演',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广西','南宁',NULL,'河池市铜鼓文化广场','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',9),(38,10033,NULL,'杨柳青年画木版印刷',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'天津','天津',NULL,'天津市年画体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',10),(39,10033,NULL,'泥人张彩塑体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'天津','天津',NULL,'天津市彩塑工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',10),(40,10033,NULL,'绒花头饰制作课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'天津','天津',NULL,'天津市绒花民艺馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',10),(41,10034,NULL,'潍坊风筝扎制体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'山东','潍坊',NULL,'潍坊世界风筝博物馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',11),(42,10034,NULL,'鲁派剪纸窗花工坊',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'山东','潍坊',NULL,'潍坊民艺中心','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',11),(43,10034,NULL,'花灯扎制夜游体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'山东','潍坊',NULL,'潍坊市花灯民艺馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',11),(44,10034,NULL,'鲁绣针法体验营',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'山东','潍坊',NULL,'济南市鲁绣生活馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',11),(45,10035,NULL,'唐三彩器形彩绘课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'河南','洛阳',NULL,'洛阳市唐艺体验馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',12),(46,10036,NULL,'青瓷拉坯烧制课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'浙江','丽水',NULL,'龙泉青瓷研究社','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',13),(47,10036,NULL,'制扇题字雅集',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'浙江','丽水',NULL,'杭州市西湖制扇馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',13),(48,10037,NULL,'广绣纹样针法体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广东','广州',NULL,'广州市岭南绣作馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',14),(49,10037,NULL,'潮州木雕刻花课',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广东','广州',NULL,'潮州市木雕工坊','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',14),(50,10037,NULL,'端砚开砚与制砚体验',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广东','广州',NULL,'肇庆市端砚文化馆','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:39',14),(51,10037,NULL,'龙舟民俗展演',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-28 09:52:40','2027-03-28 09:52:40',NULL,NULL,NULL,0,0,NULL,'广东','广州',NULL,'佛山市龙舟文化广场','ongoing','approved',NULL,0,0,0,0,'2026-03-28 09:52:40','2026-04-03 02:01:38',14),(70,10011,NULL,'青瓷制作体验','龙泉青瓷是中国陶瓷工艺的瑰宝，以其\"青如玉、薄如纸、声如磬\"的特点闻名于世。本次活动带领参与者走进青瓷的世界，从拉坯开始，体验从泥土到艺术品的神奇转变。','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/15a9bca9-d9c5-4857-848a-876bbc46e5cb.png','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/15a9bca9-d9c5-4857-848a-876bbc46e5cb.png\"]',NULL,NULL,'活动流程\n0:00-0:30 参观青瓷博物馆，了解龙泉青瓷历史与工艺 0:30-1:00 传承人演示拉坯、利坯、刻花等核心技艺 1:00-2:30 亲手体验拉坯，制作属于自己的青瓷半成品 2:30-3:00 学习青瓷釉色知识，了解上釉原理 \n3:00-3:30 茶歇品鉴，交流心得 \n3:30-4:00 合影留念，活动结束\n\n所需材料\n- 高岭土泥料\n- 拉坯机\n- 釉料（梅子青、粉青等）\n- 工具套装（修坯刀、刻花针等）\n\n注意事项\n- 建议穿着方便活动的衣物\n- 泥土弄脏衣物属正常现象\n- 成品需烧制完成后寄送（约2-3周）\n\n价格参考\n- 材料费：¥88-128/人\n- 含茶歇、工具使用、成品烧制及快递费','offline','陶瓷','2026-03-31 07:35:00','2026-03-31 08:35:00',NULL,NULL,20,1,2,NULL,'浙江','杭州',NULL,'绣绣','ended','approved',NULL,0,0,0,0,'2026-03-31 07:45:52','2026-04-03 02:01:37',1),(71,10011,NULL,'abc','asd','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/3608a08c-cf70-4697-a24c-abf6754e037e.png','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/3608a08c-cf70-4697-a24c-abf6754e037e.png\"]',NULL,NULL,'dgffgccyvgh','offline','年画','2026-03-31 10:07:00','2026-04-01 10:07:00',NULL,NULL,20,1,3,NULL,'xxx','xxx',NULL,'xxxxx','ended','approved',NULL,0,0,0,0,'2026-03-31 10:08:35','2026-04-03 02:01:37',1),(72,10011,NULL,'test','none','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/20114740-4205-4f53-a55e-02b154a6963e.png','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/20114740-4205-4f53-a55e-02b154a6963e.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/videos/bfc01393-7c87-4072-925b-10df08ded91f.mp4',NULL,'test','online','其他','2026-03-31 11:33:00','2026-04-01 11:33:00',NULL,NULL,20,0,1,NULL,'xxx','xxx',NULL,'xxxxxx','ended','approved',NULL,0,0,0,0,'2026-03-31 11:36:13','2026-04-03 02:01:37',1),(73,10011,NULL,'test2','nothing','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/078537f7-2877-4b53-ab17-092a77398a1c.png','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/078537f7-2877-4b53-ab17-092a77398a1c.png\"]',NULL,NULL,'亮亮','offline','雕刻','2026-03-31 13:46:00','2026-04-01 13:46:00',NULL,NULL,20,1,1,NULL,'xxx','xxx',NULL,'xxxxxx','ended','approved',NULL,0,0,0,0,'2026-03-31 13:48:24','2026-04-03 02:01:37',1),(74,10011,NULL,'111','11','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/4110ac3c-5843-400f-a0de-ef6af56168c3.jpg','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/4110ac3c-5843-400f-a0de-ef6af56168c3.jpg\"]',NULL,NULL,'111','offline','剪纸','2026-03-03 15:28:00','2026-04-01 15:29:00',NULL,NULL,11,1,1,NULL,'1','1',NULL,'1','ended','approved',NULL,0,0,0,0,'2026-03-31 15:29:36','2026-04-03 02:01:37',1),(75,10011,NULL,'987','987','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/9f79784d-170c-4fa9-8000-3828b2c1fa0a.jpg','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/9f79784d-170c-4fa9-8000-3828b2c1fa0a.jpg\"]',NULL,NULL,'快来参加我们的活动吧！！！','online','工艺','2026-04-03 21:30:00','2026-04-04 20:30:00',NULL,NULL,100,2,2,NULL,'湖南省','岳阳市',NULL,'xxxxxxx','ongoing','approved',NULL,0,0,0,0,'2026-04-03 20:36:07','2026-04-03 22:12:36',1),(76,10011,NULL,'123','456','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/c3183b6e-8249-4f1d-bd08-b303cfda47a2.jpg','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/activities/c3183b6e-8249-4f1d-bd08-b303cfda47a2.jpg\"]',NULL,NULL,'xiqu','offline','其他','2026-04-03 22:15:00','2026-04-04 22:10:00',NULL,NULL,30,2,1,NULL,'xxx','xxx',NULL,'xxxxxx','ongoing','approved',NULL,0,0,0,0,'2026-04-03 22:12:14','2026-04-03 22:16:03',1);
 /*!40000 ALTER TABLE `activities` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `activity_bookings`
---
-
-DROP TABLE IF EXISTS `activity_bookings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `activity_bookings` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `activity_id` bigint NOT NULL,
-  `user_id` bigint NOT NULL,
-  `signup_time` datetime DEFAULT NULL,
-  `status` varchar(20) DEFAULT 'registered',
-  `payment_status` varchar(20) DEFAULT 'unpaid',
-  `payment_time` datetime DEFAULT NULL,
-  `participant_name` varchar(50) DEFAULT NULL,
-  `participant_phone` varchar(20) DEFAULT NULL,
-  `participant_count` int DEFAULT '1',
-  `remark` varchar(200) DEFAULT NULL,
-  `qr_code` varchar(100) DEFAULT NULL,
-  `verification_time` datetime DEFAULT NULL,
-  `verified_by` bigint DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_activity_user` (`activity_id`,`user_id`),
-  KEY `fk_activity_bookings_user` (`user_id`),
-  CONSTRAINT `fk_activity_bookings_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_activity_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_activities_bi_fill_merchant_profile` BEFORE INSERT ON `activities` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_activities_bu_fill_merchant_profile` BEFORE UPDATE ON `activities` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `activity_bookings`
@@ -108,28 +93,28 @@ CREATE TABLE `activity_bookings` (
 
 LOCK TABLES `activity_bookings` WRITE;
 /*!40000 ALTER TABLE `activity_bookings` DISABLE KEYS */;
-INSERT INTO `activity_bookings` VALUES (3,2,10000,'2026-03-26 23:33:29','rejected','unpaid',NULL,'qin','123456',1,'',NULL,NULL,10011,'2026-03-26 23:33:29','2026-03-26 23:48:13'),(4,2,10011,'2026-03-26 23:47:33','registered','paid','2026-03-26 23:47:33','y0','1234',1,'',NULL,NULL,NULL,'2026-03-26 23:47:04','2026-03-26 23:47:33');
 /*!40000 ALTER TABLE `activity_bookings` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `attraction_images`
+-- Dumping data for table `activity_reserve_participants`
 --
 
-DROP TABLE IF EXISTS `attraction_images`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `attraction_images` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `attraction_id` int NOT NULL,
-  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_index` int DEFAULT '0',
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `attraction_id` (`attraction_id`),
-  CONSTRAINT `attraction_images_ibfk_1` FOREIGN KEY (`attraction_id`) REFERENCES `attractions` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `activity_reserve_participants` WRITE;
+/*!40000 ALTER TABLE `activity_reserve_participants` DISABLE KEYS */;
+INSERT INTO `activity_reserve_participants` VALUES (1,15,'y0','15171483964','2026-04-03 22:13:08','2026-04-03 22:13:08'),(2,15,'yy1','13986074011','2026-04-03 22:13:08','2026-04-03 22:13:08');
+/*!40000 ALTER TABLE `activity_reserve_participants` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `activity_reserves`
+--
+
+LOCK TABLES `activity_reserves` WRITE;
+/*!40000 ALTER TABLE `activity_reserves` DISABLE KEYS */;
+INSERT INTO `activity_reserves` VALUES (1,'AR1774914517238325',10000,10011,70,'青瓷制作体验','2026-04-01 07:35 - 2026-04-01 12:35','y0','15171483964',1,2,2,1,'checked_in',NULL,'simulated','2026-03-31 07:49:44',NULL,'2026-03-31 08:07:19','2026-03-31 07:48:37','2026-03-31 08:07:20'),(2,'AR1774923010365286',10000,10011,71,'abc','2026-03-31 10:07 - 2026-04-01 10:07','y0','15171483964',1,3,3,1,'checked_in',NULL,'simulated','2026-03-31 10:10:19',NULL,'2026-03-31 10:11:44','2026-03-31 10:10:10','2026-03-31 10:11:44'),(3,'AR1774925162618809',10000,10025,4,'京剧脸谱沉浸体验','2026-03-28 09:52 - 2027-03-28 09:52','y0','15171483964',1,0,0,1,'registered',NULL,'free','2026-03-31 10:46:03',NULL,NULL,'2026-03-31 10:46:03','2026-03-31 10:46:03'),(4,'AR1774928280567205',10000,10011,72,'test','2026-03-31 11:33 - 2026-04-01 11:33','y0','15171483964',1,1,1,0,'cancelled','不要举报我','alipay',NULL,'2026-03-31 13:49:20',NULL,'2026-03-31 11:38:01','2026-03-31 13:49:20'),(5,'AR1774936249951310',10000,10011,73,'test2','2026-03-31 13:46 - 2026-04-01 13:46','y0','15171483964',1,1,1,0,'cancelled',NULL,'alipay',NULL,'2026-03-31 14:32:01',NULL,'2026-03-31 13:50:50','2026-03-31 14:32:01'),(6,'AR1774936537789985',10000,10011,72,'test','2026-03-31 11:33 - 2026-04-01 11:33','y0','15171483964',1,1,1,0,'cancelled',NULL,'alipay',NULL,'2026-03-31 14:05:44',NULL,'2026-03-31 13:55:38','2026-03-31 14:05:44'),(7,'AR1774937166269977',10000,10011,72,'test','2026-03-31 11:33 - 2026-04-01 11:33','y0','15171483964',1,1,1,0,'cancelled',NULL,'alipay',NULL,'2026-03-31 14:09:31',NULL,'2026-03-31 14:06:06','2026-03-31 14:09:31'),(8,'AR1774937778918604',10000,10011,72,'test','2026-03-31 11:33 - 2026-04-01 11:33','y0','15171483964',1,1,1,0,'cancelled',NULL,'alipay',NULL,'2026-03-31 14:31:33',NULL,'2026-03-31 14:16:19','2026-03-31 14:31:33'),(9,'AR1774938744899922',10000,10011,73,'test2','2026-03-31 13:46 - 2026-04-01 13:46','y0','15171483964',1,1,1,2,'registered',NULL,'alipay','2026-03-31 14:33:04',NULL,NULL,'2026-03-31 14:32:25','2026-03-31 14:34:54'),(10,'AR1774938996348186',10000,10011,72,'test','2026-03-31 11:33 - 2026-04-01 11:33','y0','15171483964',1,1,1,2,'cancelled',NULL,'alipay','2026-03-31 14:36:50','2026-03-31 14:37:32',NULL,'2026-03-31 14:36:36','2026-03-31 14:37:32'),(11,'AR1774942077138209',10000,10025,5,'景泰蓝掐丝点蓝工坊','2026-03-28 09:52 - 2027-03-28 09:52','y0','15171483964',1,0,0,1,'registered',NULL,'free','2026-03-31 15:27:57',NULL,NULL,'2026-03-31 15:27:57','2026-03-31 15:27:57'),(12,'AR1774942222259743',10000,10011,74,'111','2026-03-03 15:28 - 2026-04-01 15:29','y0','15171483964',1,1,1,1,'checked_in',NULL,'alipay','2026-03-31 15:30:57',NULL,'2026-03-31 15:32:13','2026-03-31 15:30:22','2026-03-31 15:32:13'),(13,'AR1775220713123767',10000,10011,75,'987','2026-04-03 21:30 - 2026-04-04 20:30','y0','15171483964',2,4,4,0,'cancelled',NULL,'alipay',NULL,'2026-04-03 20:55:17',NULL,'2026-04-03 20:51:53','2026-04-03 20:55:17'),(14,'AR1775220962392814',10000,10011,75,'987','2026-04-03 21:30 - 2026-04-04 20:30','y0','15171483964',2,4,4,1,'checked_in',NULL,'alipay','2026-04-03 20:56:45',NULL,'2026-04-03 21:33:10','2026-04-03 20:56:02','2026-04-03 21:33:10'),(15,'AR1775225588100103',10000,10011,76,'123','2026-04-03 22:15 - 2026-04-04 22:10','y0','15171483964',2,2,2,1,'registered',NULL,'alipay','2026-04-03 22:13:26',NULL,NULL,'2026-04-03 22:13:08','2026-04-03 22:14:39');
+/*!40000 ALTER TABLE `activity_reserves` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `attraction_images`
@@ -142,31 +127,6 @@ INSERT INTO `attraction_images` VALUES (1,7,'https://travelate.oss-cn-wuhan-lr.a
 UNLOCK TABLES;
 
 --
--- Table structure for table `attractions`
---
-
-DROP TABLE IF EXISTS `attractions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `attractions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `intro` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '??????',
-  `story` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '??????',
-  `lng` decimal(10,6) NOT NULL,
-  `lat` decimal(10,6) NOT NULL,
-  `radius` int NOT NULL DEFAULT '150',
-  `cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `rating` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '???',
-  `duration` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '???2-3???',
-  `best_season` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '??????',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `attractions`
 --
 
@@ -176,29 +136,24 @@ LOCK TABLES `attractions` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `conversations`
+-- Dumping data for table `backup_merchant_applications_20260328`
 --
 
-DROP TABLE IF EXISTS `conversations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `conversations` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '浼氳瘽ID',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'chat' COMMENT '浼氳瘽绫诲瀷: chat-鑱婂ぉ, comment-璇勮閫氱煡, collection-鏀惰棌閫氱煡',
-  `user1_id` bigint DEFAULT NULL COMMENT '鐢ㄦ埛1ID锛堣亰澶╃被鍨嬶級',
-  `user2_id` bigint DEFAULT NULL COMMENT '鐢ㄦ埛2ID锛堣亰澶╃被鍨嬶級',
-  `last_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '鏈€鍚庝竴鏉℃秷鎭唴瀹?,
-  `last_message_time` datetime DEFAULT NULL COMMENT '鏈€鍚庢秷鎭椂闂?,
-  `unread_count_user1` int DEFAULT '0' COMMENT '鐢ㄦ埛1鏈鏁?,
-  `unread_count_user2` int DEFAULT '0' COMMENT '鐢ㄦ埛2鏈鏁?,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鍒涘缓鏃堕棿',
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '鏇存柊鏃堕棿',
-  PRIMARY KEY (`id`),
-  KEY `idx_conv_user1` (`user1_id`),
-  KEY `idx_conv_user2` (`user2_id`),
-  KEY `idx_conv_type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='浼氳瘽琛?;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `backup_merchant_applications_20260328` WRITE;
+/*!40000 ALTER TABLE `backup_merchant_applications_20260328` DISABLE KEYS */;
+INSERT INTO `backup_merchant_applications_20260328` VALUES (1,10011,'秦秀娟','1234567890','13986074011','刺绣','美秀绣',NULL,'隽绣','江苏省刺市绣县',NULL,NULL,NULL,'approved',10024,'2026-03-26 21:52:56','审批通过','2026-03-26 21:27:21','2026-03-26 21:52:56');
+/*!40000 ALTER TABLE `backup_merchant_applications_20260328` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `backup_users_merchant_fields_20260328`
+--
+
+LOCK TABLES `backup_users_merchant_fields_20260328` WRITE;
+/*!40000 ALTER TABLE `backup_users_merchant_fields_20260328` DISABLE KEYS */;
+INSERT INTO `backup_users_merchant_fields_20260328` VALUES (10000,'15171483964','15171483964',NULL,'user','none','','','','2026-03-10 02:52:02','2026-03-27 19:11:31'),(10007,'yenOmld',NULL,'2971549832@qq.com','user','none',NULL,NULL,NULL,'2026-03-10 12:11:21','2026-03-11 08:42:07'),(10011,'qinjiayi_1106@qq.com',NULL,'qinjiayi_1106@qq.com','merchant','approved','隽绣','','','2026-03-13 01:57:15','2026-03-27 19:11:31'),(10020,'2894717528@qq.com',NULL,'2894717528@qq.com','user','none',NULL,NULL,NULL,'2026-03-21 03:16:08','2026-03-21 09:48:17'),(10023,'qianrui2006@qq.com',NULL,'qianrui2006@qq.com','user','none',NULL,NULL,NULL,'2026-03-22 07:19:34','2026-03-22 07:19:36'),(10024,'admin',NULL,'admin@yayfolk.com','admin','none',NULL,NULL,'平台管理员账号','2026-03-26 18:00:00','2026-03-27 18:57:33'),(10025,'merchant_1','13800000001',NULL,'merchant','active','京华非遗工坊',NULL,'聚焦京味非遗体验与讲解','2026-03-28 09:52:05',NULL),(10026,'merchant_2','13800000002',NULL,'merchant','active','苏作匠心馆',NULL,'以江南手工艺体验为主','2026-03-28 09:52:05',NULL),(10027,'merchant_3','13800000003',NULL,'merchant','active','金陵雅集馆',NULL,'结合传统工艺和节庆活动','2026-03-28 09:52:05',NULL),(10028,'merchant_4','13800000004',NULL,'merchant','active','徽州四宝社',NULL,'文房四宝主题体验空间','2026-03-28 09:52:05',NULL),(10029,'merchant_5','13800000005',NULL,'merchant','active','蜀风非遗坊',NULL,'四川传统技艺和戏曲体验','2026-03-28 09:52:05',NULL),(10030,'merchant_6','13800000006',NULL,'merchant','active','长安艺脉馆',NULL,'唐风美术主题路线运营','2026-03-28 09:52:05',NULL),(10031,'merchant_7','13800000007',NULL,'merchant','active','苗岭锦绣社',NULL,'少数民族非遗深度体验','2026-03-28 09:52:05',NULL),(10032,'merchant_8','13800000008',NULL,'merchant','active','壮乡锦艺阁',NULL,'壮族织锦与铜鼓民俗体验','2026-03-28 09:52:05',NULL),(10033,'merchant_9','13800000009',NULL,'merchant','active','津门年艺馆',NULL,'天津春节美术类非遗体验','2026-03-28 09:52:05',NULL),(10034,'merchant_10','13800000010',NULL,'merchant','active','齐鲁巧艺坊',NULL,'鲁派手工艺和节令体验','2026-03-28 09:52:05',NULL),(10035,'merchant_11','13800000011',NULL,'merchant','active','中原唐艺馆',NULL,'唐风陶艺和古都体验','2026-03-28 09:52:05',NULL),(10036,'merchant_12','13800000012',NULL,'merchant','active','越地青瓷社',NULL,'宋韵器物与生活美学','2026-03-28 09:52:05',NULL),(10037,'merchant_13','13800000013',NULL,'merchant','active','岭南绣作馆',NULL,'岭南传统手工艺体验','2026-03-28 09:52:05',NULL);
+/*!40000 ALTER TABLE `backup_users_merchant_fields_20260328` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `conversations`
@@ -206,47 +161,9 @@ CREATE TABLE `conversations` (
 
 LOCK TABLES `conversations` WRITE;
 /*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
-INSERT INTO `conversations` VALUES (4,'chat',10000,10011,'浣犲ソ','2026-03-21 00:16:23',0,0,'2026-03-19 20:03:18','2026-03-21 01:57:42'),(5,'chat',10020,10011,'鍦ㄥ悧','2026-03-21 03:28:54',0,0,'2026-03-21 03:28:08','2026-03-21 03:40:55'),(6,'chat',10000,10020,NULL,NULL,0,0,'2026-03-27 09:48:42','2026-03-27 09:48:42');
+INSERT INTO `conversations` VALUES (4,'chat',10000,10011,'你好','2026-03-21 00:16:23',0,0,'2026-03-19 20:03:18','2026-03-21 01:57:42'),(5,'chat',10020,10011,'在吗','2026-03-21 03:28:54',0,0,'2026-03-21 03:28:08','2026-03-21 03:40:55'),(6,'chat',10000,10020,NULL,NULL,0,0,'2026-03-27 09:48:42','2026-03-27 09:48:42'),(7,'service',10024,10047,'你好，我是客服小简','2026-03-29 09:52:28',1,0,'2026-03-29 03:31:57','2026-03-29 09:52:28'),(8,'service',10000,10047,'对还差一点','2026-03-29 12:24:52',0,0,'2026-03-29 03:50:43','2026-03-29 12:26:32'),(9,'service',10011,10047,'我有问题','2026-04-03 00:09:56',0,0,'2026-03-29 09:53:47','2026-04-03 14:47:52'),(10,'chat',10047,10000,NULL,NULL,0,0,'2026-03-30 22:12:41','2026-03-30 22:12:41');
 /*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `intangible_cultural_heritage`
---
-
-DROP TABLE IF EXISTS `intangible_cultural_heritage`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `intangible_cultural_heritage` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '闈為仐椤圭洰鍚嶇О',
-  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '绫诲埆锛氫紶缁熺編鏈?浼犵粺鎶€鑹?浼犵粺鎴忓墽绛?,
-  `subcategory` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '瀛愮被鍒?,
-  `dynasty` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '鐩稿叧鏈濅唬',
-  `region` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '鍦板煙',
-  `level` enum('national','provincial','municipal') COLLATE utf8mb4_unicode_ci DEFAULT 'national' COMMENT '绾у埆锛歯ational-鍥藉绾э紝provincial-鐪佺骇锛宮unicipal-甯傜骇',
-  `introduction` text COLLATE utf8mb4_unicode_ci COMMENT '浠嬬粛',
-  `history` text COLLATE utf8mb4_unicode_ci COMMENT '鍘嗗彶鏁呬簨',
-  `inheritance_value` text COLLATE utf8mb4_unicode_ci COMMENT '浼犳壙浠峰€?,
-  `representative_inheritor` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '浠ｈ〃鎬т紶鎵夸汉',
-  `images` json DEFAULT NULL COMMENT '鍥剧墖鏁扮粍',
-  `video_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '瑙嗛 URL',
-  `related_poems` json DEFAULT NULL COMMENT '鐩稿叧璇楄瘝',
-  `related_solar_terms` json DEFAULT NULL COMMENT '鐩稿叧鑺傛皵',
-  `latitude` decimal(10,6) DEFAULT NULL COMMENT '绾害',
-  `longitude` decimal(11,6) DEFAULT NULL COMMENT '缁忓害',
-  `is_featured` tinyint(1) DEFAULT '0' COMMENT '鏄惁鎺ㄨ崘',
-  `view_count` int DEFAULT '0' COMMENT '娴忚鏁?,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_category` (`category`),
-  KEY `idx_dynasty` (`dynasty`),
-  KEY `idx_region` (`region`),
-  KEY `idx_level` (`level`),
-  KEY `idx_featured` (`is_featured`)
-) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='闈為仐椤圭洰搴?;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `intangible_cultural_heritage`
@@ -254,39 +171,9 @@ CREATE TABLE `intangible_cultural_heritage` (
 
 LOCK TABLES `intangible_cultural_heritage` WRITE;
 /*!40000 ALTER TABLE `intangible_cultural_heritage` DISABLE KEYS */;
-INSERT INTO `intangible_cultural_heritage` VALUES (1,'闈掔敯绫冲鎶€鑹?,'浼犵粺鎶€鑹?,'闈㈠','娓呬唬','娴欐睙鐪佷附姘村競闈掔敯鍘?,'municipal','浠ョ朝绫充负鍘熸枡锛屽閫犺姳楦熴€佷汉鐗╃瓑閫犲瀷锛岀敤浜庤妭搴嗙キ绁€锛屽伐鑹虹簿宸?,'娓呬唬璧锋簮浜庨潚鐢版皯闂达紝鏈€鍒濈敤浜庣キ绁€渚涘搧锛屽悗鍙戝睍涓烘皯闂村伐鑹哄搧','鍘跨骇闈為仐鐟板疂锛屾壙杞介潚鐢版皯闂存皯淇楁枃鍖栵紝鎵嬪伐鎶€鑹轰紶鎵夸环鍊肩獊鍑?,'闄堟湀鑻?,'[\"qingtianmisu1.jpg\", \"qingtianmisu2.jpg\"]','https://example.com/qingtianmisu.mp4','[\"绫冲鐜茬彂钘忕瓒ｏ紝宸ф墜鍖犲績缁樹赴骞碶"]','[\"鍏冨\", \"娓呮槑\"]',28.457500,120.393000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(2,'瀹夊悏绔圭紪鎶€鑹?,'浼犵粺鎶€鑹?,'绔圭紪','鏄庝唬','娴欐睙鐪佹箹宸炲競瀹夊悏鍘?,'municipal','浠ュ綋鍦版瘺绔逛负鍘熸枡锛岀紪缁囩敓娲诲櫒鍏蜂笌宸ヨ壓鍝侊紝绾圭悊娓呮櫚銆佸潥鍥鸿€愮敤','鏄庝唬浼犲叆瀹夊悏锛屼緷鎵樺綋鍦扮璧勬簮鍙戝睍锛屾皯闂村箍娉涗紶鎵?,'浣撶幇瀹夊悏绔规枃鍖栫壒鑹诧紝瀹炵敤涓庤壓鏈粨鍚堬紝鍘跨骇闈為仐閲嶈杞戒綋','鏉庢牴鎵?,'[\"anjizhubian1.jpg\"]','https://example.com/anjizhubian.mp4','[\"缈犵缂栨垚鍗冭埇鑹猴紝瀹夊悏绔归煹浼犲崈骞碶"]','[\"灏忔弧\", \"鑺掔\"]',30.688000,119.689000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(3,'姝欏幙绔归洉鎶€鑹?,'浼犵粺鎶€鑹?,'闆曞埢鎶€鑹?,'娓呬唬','瀹夊窘鐪侀粍灞卞競姝欏幙','municipal','浠ョ涓哄師鏂欙紝闆曞埢灞辨按銆佷汉鐗┿€佽姳楦燂紝宸ヨ壓缁嗚吇锛屽吋鍏疯璧忔€?,'娓呬唬鍏磋捣浜庢瓩鍘匡紝鍙楀窘娲鹃洉鍒诲奖鍝嶏紝浼犳壙鑷充粖','寰芥淳宸ヨ壓寤朵几锛屽幙绾ч潪閬楃弽鍝侊紝灞曠幇姘戦棿闆曞埢鍖犲績','鐜嬪缓鍥?,'[\"shexianzhudiao1.jpg\"]','https://example.com/shexianzhudiao.mp4','[\"绔瑰埢鐜茬彂钘忛泤闊碉紝涓€鍒€涓€鍒昏鍒濆績\"]','[\"瀵掗湶\", \"闇滈檷\"]',29.874700,118.441000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(4,'娴︽睙鍓焊鎶€鑹?,'浼犵粺缇庢湳','鍓焊','鏄庝唬','娴欐睙鐪侀噾鍗庡競娴︽睙鍘?,'municipal','浠ョ孩绾镐负鍘熸枡锛屽壀鍒昏姳楦熴€佷汉鐗┿€佹皯淇楀満鏅紝绾挎潯娴佺晠锛岄鏍艰川鏈?,'鏄庝唬璧锋簮浜庢郸姹熸皯闂达紝鑺傚簡鏈熼棿骞挎硾浣跨敤锛屼紶鎵胯嚦浠?,'鍘跨骇姘戦棿缇庢湳鐟板疂锛屾壙杞芥郸姹熸皯淇楁枃鍖栵紝缇や紬鍩虹娣卞帤','寮犳鑻?,'[\"pujiangjianzhi1.jpg\"]','https://example.com/pujiangjianzhi.mp4','[\"涓€绾镐竴鍓敓涓囪薄锛屾郸姹熷壀绾搁煹鎮犻暱\"]','[\"鏄ヨ妭\", \"鍏冨\"]',29.498000,119.886000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(5,'鏂扮粵鏈ㄧ増骞寸敾鎶€鑹?,'浼犵粺缇庢湳','骞寸敾','娓呬唬','灞辫タ鐪佽繍鍩庡競鏂扮粵鍘?,'municipal','浠ユ湪鐗堥洉鍒汇€佸鑹插嵃鍒凤紝棰樻潗浠ユ皯淇楀悏绁ヤ负涓伙紝椋庢牸鍙ゆ湸','娓呬唬浼犲叆鏂扮粵锛屾皯闂磋壓浜轰唬浠ｄ紶鎵匡紝鏄綋鍦拌妭搴嗛噸瑕佽楗?,'鍘跨骇姘戜織缇庢湳鐝嶅搧锛屼繚鐣欎紶缁熷勾鐢绘妧鑹猴紝鍏锋湁娴撻儊鍦版柟鐗硅壊','鏉庣鏄?,'[\"xinjiangnianhua1.jpg\"]','https://example.com/xinjiangnianhua.mp4','[\"鏈ㄧ増骞寸敾浼犳檵闊碉紝鍙ゆ湸鍚夌ゥ搴嗗お骞砛"]','[\"鏄ヨ妭\", \"绔嬫槬\"]',35.638000,111.264000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(6,'涓伴兘娉ュ鎶€鑹?,'浼犵粺缇庢湳','娉ュ','娓呬唬','閲嶅簡甯備赴閮藉幙','municipal','浠ュ綋鍦伴粍娉ュ湡涓哄師鏂欙紝濉戦€犳皯淇椾汉鐗┿€佺鍍忥紝閫犲瀷鐢熷姩锛屽瘬鎰忓悏绁?,'娓呬唬璧锋簮浜庝赴閮芥皯闂达紝涓庡綋鍦伴鍩庢枃鍖栫粨鍚堬紝浼犳壙鑷充粖','鎵胯浇涓伴兘鍦版柟鏂囧寲锛屽幙绾ч潪閬楃懓瀹濓紝鎵嬪伐鑹烘湳浠峰€肩獊鍑?,'鍒樹笘鍏?,'[\"fengdunisun1.jpg\"]','https://example.com/fengdunisun.mp4','[\"娉ュ浼犵钘忓彜闊碉紝涓伴兘鏂囧寲浠ｄ唬浼燶"]','[\"娓呮槑\", \"璋烽洦\"]',29.863500,107.735000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(7,'濠烘簮鏅掔涔犱織','姘戜織','姘戦棿涔犱織','鏄庝唬','姹熻タ鐪佷笂楗跺競濠烘簮鍘?,'municipal','绉嬪涓版敹鍚庯紝灏嗗啘浣滅墿鏅炬檼浜庢埧鍓嶅眿鍚庯紝褰㈡垚鐙壒鏅锛屽瘬鎰忎赴鏀跺悏绁?,'鏄庝唬璧锋簮浜庡┖婧愬窘宸炴潙钀斤紝渚濇墭灞卞湴鍦板舰褰㈡垚锛屼紶鎵胯嚦浠?,'鍘跨骇姘戜織鐟板疂锛屽睍鐜板窘宸炲啘鑰曟枃鍖栵紝鍏煎叿瑙傝祻鎬т笌鏂囧寲浠峰€?,'鍏ㄦ皯浼犳壙','[\"wuyuanShaiqiu1.jpg\"]','https://example.com/wuyuanShaiqiu.mp4','[\"鏅掔婊￠櫌鐨嗛噾榛勶紝寰藉窞鍙ら煹閱夊績鎴縗"]','[\"绔嬬\", \"澶勬殤\"]',29.294400,117.831000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(8,'鍟嗗崡鑺辩伅涔犱織','姘戜織','姘戦棿琛ㄦ紨','娓呬唬','闄曡タ鐪佸晢娲涘競鍟嗗崡鍘?,'municipal','鏄ヨ妭鏈熼棿锛屾潙姘戝埗浣滆姳鐏€佽垶鑺辩伅锛岀姹傚钩瀹変赴鏀讹紝鍦洪潰鐑椆','娓呬唬鍏磋捣浜庡晢鍗楁皯闂达紝铻嶅悎褰撳湴姘戦棿闊充箰涓庤垶韫堬紝浼犳壙鑷充粖','鍘跨骇姘戜織杞戒綋锛屽睍鐜伴檿鍗楁皯闂撮鎯咃紝澧炲己鏉戞皯鍑濊仛鍔?,'鍏ㄦ皯浼犳壙','[\"shangnanhuadeng1.jpg\"]','https://example.com/shangnanhuadeng.mp4','[\"鑺辩伅鐠€鐠ㄨ繋鏂版槬锛岄檿鍗楅鎯呴唹浜哄績\"]','[\"鏄ヨ妭\", \"鍏冨\"]',33.586000,110.824000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(9,'杩炲煄娓稿ぇ榫欎範淇?,'姘戜織','姘戦棿鐩涗細','鏄庝唬','绂忓缓鐪侀緳宀╁競杩炲煄鍘?,'municipal','鍏冨鑺傛湡闂达紝鏉戞皯鍒朵綔澶ч緳锛屽贰娓告潙钀斤紝绁堟眰椋庤皟闆ㄩ『銆佸浗娉版皯瀹?,'鏄庝唬璧锋簮浜庤繛鍩庯紝榫欒韩闀胯揪鏁板崄绫筹紝鍙備笌浜烘暟浼楀锛屼紶鎵胯嚦浠?,'鍘跨骇姘戜織鐟板疂锛屽睍鐜板瀹舵枃鍖栫壒鑹诧紝鍏锋湁娴撳帤鐨勬皯闂存皼鍥?,'鍏ㄦ皯浼犳壙','[\"lianchenglong1.jpg\"]','https://example.com/lianchenglong.mp4','[\"澶ч緳宸℃父杩庡厓瀹碉紝瀹㈠椋庢儏鑰€杩炲煄\"]','[\"鍏冨\", \"闆ㄦ按\"]',25.728000,116.737000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(10,'閫氭捣娲炵粡闊充箰','浼犵粺闊充箰','涓濈涔?,'娓呬唬','浜戝崡鐪佺帀婧競閫氭捣鍘?,'municipal','浠ヤ笣绔逛箰鍣ㄦ紨濂忥紝鏇茶皟鍏搁泤鎮犳壃锛屾簮浜庨亾鏁欓煶涔愶紝娴佷紶浜庢皯闂?,'娓呬唬浼犲叆閫氭捣锛岃瀺鍚堝綋鍦版皯闂撮煶涔愶紝鐢ㄤ簬绁銆佸簡鍏哥瓑娲诲姩','鍘跨骇浼犵粺闊充箰鐟板疂锛屼繚鐣欓亾鏁欓煶涔愮壒鑹诧紝鍏锋湁杈冮珮鐨勮壓鏈环鍊?,'寮犳鏄?,'[\"tonghaidongjing1.jpg\"]','https://example.com/tonghaidongjing.mp4','[\"娲炵粡涓濈浼犲彜闊碉紝閫氭捣娓呴煶娑﹀績鐢癨"]','[\"绉嬪垎\", \"闇滈檷\"]',24.058000,102.783000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(11,'瀹滈粍閲囪尪鎴?,'浼犵粺鎴忓墽','閲囪尪鎴?,'娓呬唬','姹熻タ鐪佹姎宸炲競瀹滈粍鍘?,'municipal','娴佽浜庡疁榛勬皯闂达紝浠ラ噰鑼堕鏉愪负涓伙紝鍞辫厰娣虫湸锛岃〃婕旂敓鍔?,'娓呬唬璧锋簮浜庡疁榛勫啘鏉戯紝铻嶅悎姘戦棿姝岃垶锛岃创杩戠敓娲伙紝浼犳壙鑷充粖','鍘跨骇浼犵粺鎴忓墽鐟板疂锛屽睍鐜板啘鏉戠敓娲婚璨岋紝缇や紬鍩虹娣卞帤','榛勭帀鑻?,'[\"yihuangcaicha1.jpg\"]','https://example.com/yihuangcaicha.mp4','[\"閲囪尪灏忚皟鍞辩敯鍥紝瀹滈粍鍙ら煹浼犲崈骞碶"]','[\"娓呮槑\", \"璋烽洦\"]',27.537000,116.211000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(12,'宀峰幙涓嵂鍒囩墖鎶€鑹?,'浼犵粺鍖昏嵂','鍒惰嵂鎶€鑹?,'娓呬唬','鐢樿們鐪佸畾瑗垮競宀峰幙','municipal','浠ュ卜鍘垮綋鍦颁腑鑽潗涓哄師鏂欙紝閲囩敤浼犵粺鎵嬫硶鍒囩墖锛屼繚璇佽嵂鏁堬紝宸ヨ壓绮炬箾','娓呬唬鍏磋捣浜庡卜鍘匡紝渚濇墭褰撳湴涓嵂鏉愯祫婧愶紝浼犳壙鑷充粖','鍘跨骇浼犵粺鍖昏嵂鐟板疂锛屼繚闅滀腑鑽潗鑽晥锛屽姪鍔涘湴鏂瑰尰鑽彂灞?,'璧垫枃涓?,'[\"minxianqiepian1.jpg\"]','https://example.com/minxianqiepian.mp4','[\"鑽墖鍒囧氨钘忓鏈紝宀峰幙鑽浼犲洓鏂筡"]','[\"娓呮槑\", \"璋烽洦\"]',34.408000,104.074000,0,0,'2026-03-26 10:03:49','2026-03-26 10:03:49'),(13,'鏄嗘洸','浼犵粺鎴忓墽','鏄嗘洸','鏄庝唬','姹熻嫃鐪佽嫃宸炲競','national','鏄嗘洸琚獕涓虹櫨鎴忎箣绁栵紝鍞辫厰濠夎浆浼橀泤锛岃〃婕旂簿鑷寸粏鑵伙紝鏄腑鍥芥渶鍙よ€佺殑鎴忔洸澹拌厰鍓х','鍏冩湯鏄庡垵鍙戞簮浜庢槅灞憋紝鏄庝唬涓湡缁忛瓘鑹緟鏀硅壇锛屾垚涓哄寤蜂笌鏂囦汉鎺ㄥ磭鐨勫墽绉嶏紝娓呬唬杈惧埌榧庣洓','鎵胯浇涓浗鍙ゅ吀缇庡涓庢垙鏇蹭綋绯伙紝鏄垙鏇茶壓鏈殑娲诲寲鐭?,'鐜嬭姵','[\"kunqu1.jpg\", \"kunqu2.jpg\"]','https://example.com/kunqu.mp4','[\"鏄嗘洸濠夎浆缁曟闊筹紝涓€鏇叉竻姝屽姩鍙や粖\"]','[\"绔嬫槬\", \"绉嬪垎\"]',31.298770,120.585316,1,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(14,'浜墽','浼犵粺鎴忓墽','浜墽','娓呬唬','鍖椾含甯?,'national','浜墽鏄腑鍥藉浗绮癸紝铻嶅悎鍞卞康鍋氭墦锛岃绉颁负涓滄柟姝屽墽','褰㈡垚浜庢竻浠ｄ咕闅嗗勾闂达紝鍥涘ぇ寰界彮杩涗含鍚庝笌姹夊墽铻嶅悎锛岄€愭褰㈡垚浜墽浣撶郴','浠ｈ〃涓浗鎴忔洸鏈€楂樿壓鏈垚灏憋紝鏂囧寲绗﹀彿椴滄槑','姊呰憜鐜?,'[\"jingju1.jpg\"]','https://example.com/jingju.mp4','[\"绮夊ⅷ鏄ョ婕斿叴浜★紝鐨粍涓€鏇查渿鍏柟\"]','[\"鏄ヨ妭\", \"瀵掗湶\"]',39.904200,116.407400,1,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(15,'绮ゅ墽','浼犵粺鎴忓墽','绮ゅ墽','鏄庝唬','骞夸笢鐪佸箍宸炲競','national','娴佽浜庡箔鍗楀強娴峰鍗庝汉鍖猴紝鍞辫厰娴佺晠锛岃〃婕旂敓鍔?,'鏄庝唬褰㈡垚浜庡箍涓滐紝铻嶅悎姘戦棿闊充箰涓庡崡鎴忥紝鏄捣澶栧崕浜烘枃鍖栫航甯?,'宀崡鏂囧寲浠ｈ〃锛岀淮绯绘捣澶栧崕浜轰埂鎯?,'绾㈢嚎濂?,'[\"yueju1.jpg\"]','https://example.com/yueju.mp4','[\"绮ら煹鎮犳壃浼犲洓娴凤紝绾㈣厰濠夎浆鍔ㄤ汉蹇僜"]','[\"娓呮槑\", \"鍐嚦\"]',23.129110,113.264385,1,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(16,'钘忔垙','浼犵粺鎴忓墽','钘忔垙','鍞愪唬','瑗胯棌鑷不鍖?,'national','钘忔棌浼犵粺鎴忓墽锛屾埓闈㈠叿琛ㄦ紨锛岃瀺鍚堟瓕鑸炰笌鍙欎簨','璧锋簮浜庡悙钑冩椂鏈燂紝鐢辫幉鑺辩敓澶у笀鎺ㄥ姩锛岀敤浜庡畻鏁欑キ绁€涓庢暀鍖?,'钘忔棌鏂囧寲鏍稿績杞戒綋锛屽畻鏁欎笌鑹烘湳铻嶅悎鍏歌寖','鐝吀鏃轰箙','[\"zangxi1.jpg\"]','https://example.com/zangxi.mp4','[\"闆煙楂樺師钘忔垙鎵紝鍗冨勾鍙ら煹棰傚畨搴穃"]','[\"闆】鑺俓", \"绔嬬\"]',29.640000,91.116600,1,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(17,'榛勬鎴?,'浼犵粺鎴忓墽','榛勬鎴?,'娓呬唬','瀹夊窘鐪佸畨搴嗗競','provincial','鍞辫厰娣虫湸娴佺晠锛屼互鎶掓儏瑙侀暱锛岀粡鍏稿墽鐩赴瀵?,'璧锋簮浜庢箹鍖楅粍姊咃紝鍙戝睍浜庡畨寰藉畨搴嗭紝娓呮湯娴佽鍏ㄥ浗','姘戦棿鑹烘湳鐟板疂锛岃创杩戠敓娲绘儏鎰熺湡鎸?,'闊╁啀鑺?,'[\"huangmei1.jpg\"]','https://example.com/huangmei.mp4','[\"鏍戜笂楦熷効鎴愬弻瀵癸紝缁挎按闈掑北甯︾瑧棰淺"]','[\"灏忔弧\", \"鑺掔\"]',30.515470,117.055010,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(18,'璞墽','浼犵粺鎴忓墽','璞墽','鏄庝唬','娌冲崡鐪侀儜宸炲競','provincial','鍖楁柟鏈€澶у墽绉嶏紝鍞辫厰閾块數澶ф皵锛岃〃鐜板姏寮?,'鏄庝唬褰㈡垚浜庢渤鍗楋紝鍚告敹姊嗗瓙鑵旂簿鍗庯紝娴佷紶鍖楁柟鍚勭渷','涓師鏂囧寲浠ｈ〃锛岀兢浼楀熀纭€娣卞帤','甯搁鐜?,'[\"yuju1.jpg\"]','https://example.com/yuju.mp4','[\"璞墽閾块數鍞变腑鍘燂紝鑻遍泟鏁呬簨浠ｄ唬浼燶"]','[\"鏄ュ垎\", \"闇滈檷\"]',34.746600,113.625300,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(19,'璇勫墽','浼犵粺鎴忓墽','璇勫墽','娓呬唬','娌冲寳鐪佸攼灞卞競','municipal','娴佽浜庡崕鍖椾笢鍖楋紝鍞辫厰閫氫織锛岃创杩戠櫨濮撶敓娲?,'娓呮湯褰㈡垚浜庡攼灞憋紝鐢辫幉鑺辫惤涓庣毊褰辨垙铻嶅悎鑰屾垚','姘戦棿鎴忔洸浠ｈ〃锛屽弽鏄犲競浜曠敓娲?,'灏忕櫧鐜夐湝','[\"pingju1.jpg\"]','https://example.com/pingju.mp4','[\"璇勮厰杞诲璇夊甯革紝甯備簳浜虹敓鍏ユ垙绔燶"]','[\"绔嬪啲\", \"灏忛洩\"]',39.630800,118.179900,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(20,'瓒婂墽','浼犵粺鎴忓墽','瓒婂墽','娓呬唬','娴欐睙鐪佺粛鍏村競','provincial','姹熷崡浠ｈ〃鍓х锛屼互鎵嶅瓙浣充汉棰樻潗涓轰富锛屾煍缇庢姃鎯?,'娓呮湯鍙戞簮浜庢禉姹熷祳宸烇紝娴佽浜庢睙娴欐勃','姹熷崡鏂囧寲璞″緛锛屾煍缇庡吀闆呰壓鏈吀鑼?,'鐜嬫枃濞?,'[\"yueopera1.jpg\"]','https://example.com/yueopera.mp4','[\"瓒婇煶濠夎浆姹熷崡闊碉紝鎵嶅瓙浣充汉鍏ユⅵ榄俓"]','[\"娓呮槑\", \"璋烽洦\"]',29.999100,120.586300,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(21,'绉﹁厰','浼犵粺鎴忓墽','绉﹁厰','鏄庝唬','闄曡タ鐪佽タ瀹夊競','provincial','瑗垮寳鏈€鍙よ€佸墽绉嶏紝鍞辫厰楂樹孩婵€瓒婏紝姘斿娍纾呯ご','璧锋簮浜庣Е鍦帮紝鏄庝唬鎴愮啛锛屼负姊嗗瓙鑵旈蓟绁?,'瑗垮寳鏂囧寲鐏甸瓊锛屽巻鍙叉偁涔呭奖鍝嶆繁杩?,'鏉庣埍鐞?,'[\"qinqiang1.jpg\"]','https://example.com/qinqiang.mp4','[\"涓€澹扮Е鑵旈渿涔濆窞锛屽崈骞磋豹姘旇疮绁炲窞\"]','[\"鍐嚦\", \"澶у瘨\"]',34.264300,108.949000,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(22,'宸濆墽','浼犵粺鎴忓墽','宸濆墽','娓呬唬','鍥涘窛鐪佹垚閮藉競','provincial','宸磋渶浠ｈ〃鍓х锛屽彉鑴稿悙鐏粷鎶€闂诲悕涓栫晫','娓呬唬铻嶅悎澶氱澹拌厰褰㈡垚浜庡洓宸濓紝椋庢牸骞介粯娉艰荆','宸磋渶鏂囧寲鍚嶇墖锛岀粷鎶€鑹烘湳鐙竴鏃犱簩','娌堥搧姊?,'[\"chuanju1.jpg\"]','https://example.com/chuanju.mp4','[\"宸濆墽鍙樿劯鏄剧濂囷紝宸磋渶椋庢儏鍏ユ垙杩穃"]','[\"澶ф殤\", \"绔嬬\"]',30.572300,104.066500,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(23,'娌墽','浼犵粺鎴忓墽','娌墽','娓呬唬','涓婃捣甯?,'municipal','涓婃捣鍦版柟鎴忔洸锛岃〃鐜伴兘甯傜敓娲讳笌姹熷崡椋庢儏','鐢变笂娴锋皯姝屼笌璇村敱鍙戝睍鑰屾潵锛屾竻鏈垚鍨?,'娴锋淳鏂囧寲浠ｈ〃锛岃褰曞煄甯傚彉杩?,'鑼呭杽鐜?,'[\"huju1.jpg\"]','https://example.com/huju.mp4','[\"娌杞诲悷鍞辨郸姹燂紝閮藉競椋庢儏闊靛懗闀縗"]','[\"闆ㄦ按\", \"鎯婅洶\"]',31.230400,121.473700,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(24,'姹夊墽','浼犵粺鎴忓墽','姹夊墽','鏄庝唬','婀栧寳鐪佹姹夊競','municipal','婀栧寳鍙よ€佸墽绉嶏紝涓轰含鍓у舰鎴愭彁渚涢噸瑕佸熀纭€','鏄庝唬褰㈡垚浜庢箹鍖楋紝娓呬唬娴佷紶鍏ㄥ浗锛屽奖鍝嶆繁杩?,'鎴忔洸鍙蹭笂閲嶈鍓х锛屾壙鍓嶅惎鍚?,'闄堜集鍗?,'[\"hanju1.jpg\"]','https://example.com/hanju.mp4','[\"姹夎皟鎮犳壃浼犳鍦帮紝姊ㄥ洯涓€鑴夌画浼犲\"]','[\"鑺掔\", \"澶忚嚦\"]',30.592800,114.305500,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(25,'婀樺墽','浼犵粺鎴忓墽','婀樺墽','鏄庝唬','婀栧崡鐪侀暱娌欏競','municipal','婀栧崡浠ｈ〃鍓х锛岃瀺鍚堝崡鍖楀敱鑵旂壒鑹?,'鏄庝唬褰㈡垚浜庨暱娌欙紝鍚告敹鏄嗘洸涓庨珮鑵旂簿鍗?,'婀栨箻鏂囧寲杞戒綋锛岃壓鏈鏍肩嫭鐗?,'宸﹀ぇ鐜?,'[\"xiangju1.jpg\"]','https://example.com/xiangju.mp4','[\"婀橀煶鍢逛寒鍞辨絿婀橈紝鍙ら煹鏂板０浠ｄ唬鎵琝"]','[\"澶勬殤\", \"鐧介湶\"]',28.193000,112.983000,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(26,'闂藉墽','浼犵粺鎴忓墽','闂藉墽','鏄庝唬','绂忓缓鐪佺宸炲競','municipal','绂忓缓浠ｈ〃鍓х锛屽敱鑵旂嫭鐗癸紝琛ㄦ紨缁嗚吇','鏄庝唬褰㈡垚浜庣宸烇紝铻嶅悎姘戦棿闊充箰涓庢垙鏇?,'闂介兘鏂囧寲璞″緛锛屾捣澶栦紶鎾箍娉?,'鏋楃憶','[\"minju1.jpg\"]','https://example.com/minju.mp4','[\"闂借厰濠夎浆鍞辨鍩庯紝娴蜂笣鏂囧寲涓€鑴夋壙\"]','[\"瀵掗湶\", \"闇滈檷\"]',26.074500,119.290300,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(27,'娌冲寳姊嗗瓙','浼犵粺鎴忓墽','娌冲寳姊嗗瓙','娓呬唬','娌冲寳鐪佺煶瀹跺簞甯?,'provincial','鍖楁柟閲嶈鍓х锛屽敱鑵旈珮浜㈡縺鏄傦紝琛ㄧ幇鍔涘己','娓呬唬褰㈡垚浜庢渤鍖楋紝鐢卞北闄曟瀛愭紨鍙樿€屾潵','鍗庡寳鏂囧寲浠ｈ〃锛屽巻鍙蹭环鍊肩獊鍑?,'寮犳儬浜?,'[\"hebeibangzi1.jpg\"]','https://example.com/hebei.mp4','[\"姊嗗瓙澹板０闇囩嚂璧碉紝璞儏澹織鍏ヤ簯闇刓"]','[\"灏忓瘨\", \"澶у瘨\"]',38.042800,114.510900,0,0,'2026-03-26 10:13:30','2026-03-26 10:13:30'),(28,'鍙ょ惔鑹烘湳','浼犵粺闊充箰','寮规嫧涔?,'鍛ㄤ唬','鍏ㄥ浗','national','涓浗鏈€鍙よ€佸脊鎷ㄤ箰鍣紝闊冲煙瀹藉箍闊宠壊娣辨矇锛屾枃浜洪煶涔愪唬琛?,'璧锋簮浜庝笂鍙わ紝鍛ㄤ唬鎴愮啛锛屽瓟瀛愭帹宕囦负绀间箰鏍稿績','鏂囦汉绮剧璞″緛锛屼腑鍥介煶涔愭渶楂樺鐣?,'榫氫竴','[\"guqin1.jpg\"]','https://example.com/guqin.mp4','[\"鐙潗骞界瘉閲岋紝寮圭惔澶嶉暱鍟竆"]','[\"娓呮槑\", \"绉嬪垎\"]',34.264300,108.949000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(29,'钂欏彜鏃忛暱璋冩皯姝?,'浼犵粺闊充箰','姘戞瓕','鍏冧唬','鍐呰挋鍙よ嚜娌诲尯','national','鑽夊師闊充箰鐟板疂锛屾棆寰嬫偁闀胯妭濂忚嚜鐢憋紝琚獕涓鸿崏鍘熷ぉ绫?,'璧锋簮浜庡寛濂存椂鏈燂紝鍏冧唬鎴愮啛锛屼即闅忔父鐗х敓娲讳紶鎵垮崈骞?,'娓哥墽鏂囧寲娲绘€侀仐浜э紝浜轰笌鑷劧鍜岃皭璞″緛','鎷夎嫃鑽?,'[\"changdiao1.jpg\"]','https://example.com/changdiao.mp4','[\"鑽夊師闀胯皟缁曡媿绌癸紝鐗ф瓕涓€鏇插瘎娣辨儏\"]','[\"绔嬪\", \"灏忔弧\"]',40.839000,111.757000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(30,'钂欏彜鏃忓懠楹︽瓕鍞辫壓鏈?,'浼犵粺闊充箰','澹颁箰','鍞愪唬','鍐呰挋鍙よ嚜娌诲尯','national','涓€浜哄悓鏃跺敱涓や釜澹伴儴锛屼笘鐣岀綍瑙佹瓕鍞辨妧鑹?,'璧锋簮浜庡彜浠ｇ嫨鐚庝笌绁锛屽攼浠ｆ垚鍨嬶紝鑽夊師鐙壒鑹烘湳','浜虹被澹颁箰濂囪抗锛屽澹伴儴闊充箰娲诲寲鐭?,'鑳℃澗鍗?,'[\"humai1.jpg\"]','https://example.com/humai.mp4','[\"鍛奸害鍙屽０闇囪崏鍘燂紝澶╃眮涔嬮煶涓囧彜浼燶"]','[\"澶忚嚦\", \"澶ф殤\"]',41.079900,112.080000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(31,'鏂扮枂缁村惥灏旀湪鍗″鑹烘湳','浼犵粺闊充箰','姝岃垶涔?,'鍞愪唬','鏂扮枂缁村惥灏旇嚜娌诲尯','national','闆嗘瓕銆佽垶銆佷箰涓轰竴浣撶殑澶у瀷鍙ゅ吀鑹烘湳锛屼笢鏂归煶涔愮懓瀹?,'璧锋簮浜庨緹鍏逛箰鑸烇紝鍞愪唬浼犲叆涓師锛岀淮鍚惧皵鏃忎紶鎵垮彂灞?,'涓濈桓涔嬭矾鏂囧寲缁撴櫠锛屼笢瑗挎柟闊充箰铻嶅悎鍏歌寖','涔颁拱鎻愰樋甯冩媺','[\"mukam1.jpg\"]','https://example.com/mukam.mp4','[\"鏈ㄥ崱濮嗗０浼犱笣璺紝鍗冨勾涔愯垶鑰€鏂扮枂\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',43.825600,87.616800,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(32,'鍗楅煶','浼犵粺闊充箰','涓濈涔?,'鏅嬩唬','绂忓缓鐪佹硥宸炲競','national','涓浗闊充箰娲诲寲鐭筹紝淇濈暀姹夊攼鍙や箰椋庤矊','鏅嬩唬涓師绉绘皯浼犲叆绂忓缓锛屽崈骞翠紶鎵夸笉鍙?,'鍙や唬闊充箰鐝嶈吹閬楀瓨锛岀爺绌跺彜涔愰噸瑕佷緷鎹?,'鑻忕粺璋?,'[\"nanyin1.jpg\"]','https://example.com/nanyin.mp4','[\"鍗楅煶涓€鏇茶秺鍗冨勾锛屽彜闊垫偁鎵粫闂藉崡\"]','[\"涓\", \"閲嶉槼\"]',24.879300,118.584000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(33,'瑗垮畨榧撲箰','浼犵粺闊充箰','鍚规墦涔?,'鍞愪唬','闄曡タ鐪佽タ瀹夊競','national','淇濈暀鍞愪唬瀹环闊充箰椋庤矊锛岃瑾変负鍙や唬浜ゅ搷涔?,'婧愪簬鍞愪唬鐕曚箰锛屽巻缁忓畫鍏冩槑娓呬紶鎵胯嚦浠?,'鍞愪唬闊充箰娲诲寲鐭筹紝闊充箰鍙茬弽璐佃祫鏂?,'浣曞繝淇?,'[\"xiangu1.jpg\"]','https://example.com/xiangu.mp4','[\"闀垮畨榧撲箰楦ｅ崈鍙わ紝澶у攼閬楅煹閱変汉蹇僜"]','[\"娓呮槑\", \"璋烽洦\"]',34.264300,108.949000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(34,'渚楁棌澶ф瓕','浼犵粺闊充箰','鍚堝敱','瀹嬩唬','璐靛窞鐪侀粩涓滃崡宸?,'national','鏃犱即濂忓澹伴儴鍚堝敱锛屽ぉ绫佷箣闊筹紝渚楁棌鏂囧寲鐟板疂','瀹嬩唬宸叉湁璁拌浇锛屽崈骞村彛浼犲績鎺堜紶鎵?,'姘戦棿鍚堝敱鑹烘湳濂囪抗锛屼汉涓庤嚜鐒跺拰璋愪箣澹?,'鍚村搧浠?,'[\"dongge1.jpg\"]','https://example.com/dongge.mp4','[\"渚楁瓕濠夎浆缁曢潚灞憋紝澶╃眮鍜屽０鍏ヤ簯绔痋"]','[\"璋烽洦\", \"绔嬪\"]',26.631000,107.927000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(35,'鑺卞効','浼犵粺闊充箰','姘戞瓕','鏄庝唬','鐢樿們闈掓捣瀹佸','national','瑗垮寳姘戞瓕涔嬮瓊锛岄珮浜㈠樄浜紝鎯呮劅鐪熸寶','鏄庝唬褰㈡垚浜庤タ鍖楅珮鍘燂紝娴佷紶浜庡姘戞棌鍦板尯','瑗垮寳姘戞棌鏂囧寲绾藉甫锛屽師鐢熸€侀煶涔愬吀鑼?,'椹噾灞?,'[\"huaer1.jpg\"]','https://example.com/huaer.mp4','[\"鑺卞効澹板０婕珮鍘燂紝鐪熸儏涓€鏇插姩灞卞窛\"]','[\"绔嬫槬\", \"鎯婅洶\"]',36.060400,103.832000,1,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(36,'娼窞闊充箰','浼犵粺闊充箰','涓濈涔?,'鍞愪唬','骞夸笢鐪佹疆宸炲競','provincial','宀崡鍙や箰锛屼繚鐣欎腑鍘熷彜涔愮壒鑹诧紝鍏搁泤鎮犳壃','鍞愪唬涓師闊充箰浼犲叆娼窞锛屽崈骞翠紶鎵?,'鍙や箰娲诲寲鐭筹紝宀崡闊充箰鐟板疂','鏉ㄧ鏄?,'[\"chaozhou1.jpg\"]','https://example.com/chaozhou.mp4','[\"娼箰鎮犳壃浼犲彜闊碉紝涓濈澹板０棰傚お骞砛"]','[\"涓\", \"鍐嚦\"]',23.657300,116.622000,0,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(37,'姹熷崡涓濈','浼犵粺闊充箰','涓濈涔?,'鏄庝唬','姹熻嫃鐪佷笂娴峰競','provincial','姹熷崡浠ｈ〃闊充箰锛岃交蹇祦鐣咃紝鍏搁泤绉€涓?,'鏄庝唬褰㈡垚浜庢睙鍗楁按涔★紝娴佽浜庢睙娴欐勃','姹熷崡鏂囧寲璞″緛锛屾竻鏂伴泤鑷撮煶涔愬吀鑼?,'鍛ㄦ儬','[\"jiangnan1.jpg\"]','https://example.com/jiangnan.mp4','[\"涓濈澹板０閱夋睙鍗楋紝灏忔ˉ娴佹按闊垫偁鐒禱"]','[\"鏄ュ垎\", \"娓呮槑\"]',31.230400,121.473700,0,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(38,'闄曞寳姘戞瓕','浼犵粺闊充箰','姘戞瓕','鏄庝唬','闄曡タ鐪佸欢瀹夊競','municipal','瑗垮寳姘戞瓕浠ｈ〃锛岄珮浜㈣媿鍑夛紝璁板綍榛勫湡楂樺師椋庢儏','婧愪簬闄曞寳鍔冲姩鐢熸椿锛屾槑浠ｆ垚鍨嬫祦浼?,'榛勫湡鏂囧寲鐏甸瓊锛屽師鐢熸€侀煶涔愮弽鍝?,'鐜嬪悜鑽?,'[\"shanbei1.jpg\"]','https://example.com/shanbei.mp4','[\"榛勫湡楂樺潯姝屽０鎵紝闄曞寳姘戞瓕闊靛懗闀縗"]','[\"绔嬪啲\", \"灏忛洩\"]',36.600700,109.492000,0,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(39,'鑻楁棌椋炴瓕','浼犵粺闊充箰','姘戞瓕','鍞愪唬','璐靛窞鐪侀粩涓滃崡宸?,'municipal','鑻楁棌浠ｈ〃鎬ф皯姝岋紝楂樹孩鍢逛寒锛屽洖鑽″北璋?,'璧锋簮浜庤嫍鏃忕キ绁€涓庡姵鍔紝鍗冨勾浼犳壙','鑻楁棌鏂囧寲鏍囧織锛屽師鐢熸€侀煶涔愮懓瀹?,'闃挎椇','[\"miaoge1.jpg\"]','https://example.com/miaoge.mp4','[\"椋炴瓕鍢逛寒瓒婂北宸濓紝鑻楀鍎垮コ灏芥棰淺"]','[\"鑺掔\", \"澶忚嚦\"]',26.727900,107.488000,0,0,'2026-03-26 10:14:32','2026-03-26 10:14:32'),(40,'涓浗浼犵粺鏈ㄧ粨鏋勫缓绛戣惀閫犳妧鑹?,'浼犵粺鎶€鑹?,'寤虹瓚鎶€鑹?,'瀹嬩唬','鍏ㄥ浗','national','涓嶇敤涓€棰楅拤瀛愶紝浠ユΛ鍗粨鏋勬惌寤哄缓绛戯紝鎶楅渿鑰愮敤','璧锋簮浜庝笂鍙わ紝瀹嬩唬銆婅惀閫犳硶寮忋€嬪畾鍨嬶紝浼犳壙鍗冨勾','鍙や唬寤虹瓚鏈€楂樻垚灏憋紝涓栫晫寤虹瓚鍙插杩?,'椹淮甯?,'[\"mujian1.jpg\"]','https://example.com/mujian.mp4','[\"姒嵂鐩告壙鏋勫箍鍘︼紝鍗冨勾鏈ㄨ壓鑰€涓崕\"]','[\"绔嬫槬\", \"绔嬪啲\"]',39.904200,116.407400,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(41,'鍗椾含浜戦敠缁囬€犳妧鑹?,'浼犵粺鎶€鑹?,'缁囬€犳妧鑹?,'鏄庝唬','姹熻嫃鐪佸崡浜競','national','涓浗椤剁骇涓濈桓鎶€鑹猴紝瀵搁敠瀵搁噾锛岀殗瀹跺尽鐢ㄨ础鍝?,'濮嬩簬涓滄檵锛屾槑浠ｈ揪鍒板穮宄帮紝涓撲负鐨囧缁囬€犻緳琚?,'涓濈桓鎶€鑹哄穮宄帮紝鍙や唬绾虹粐鏈€楂樻按骞?,'鍛ㄥ弻鍠?,'[\"yunjin1.jpg\"]','https://example.com/yunjin.mp4','[\"浜戦敠澶╄。缁囬敠缁ｏ紝閲戦櫟缁濇妧鑰€鍗冪\"]','[\"灏忔弧\", \"鑺掔\"]',32.060300,118.796000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(42,'涓浗铓曟涓濈粐鎶€鑹?,'浼犵粺鎶€鑹?,'绾虹粐鎶€鑹?,'涓婂彜','娴欐睙鐪佹澀宸炲競','national','鏍芥銆佸吇铓曘€佺极涓濄€佺粐閫犲叏濂楁妧鑹猴紝涓崕鏂囨槑鏍囧織','璧锋簮浜庝簲鍗冨勾鍓嶄笂鍙ゆ椂鏈燂紝涓濈桓涔嬭矾鏍稿績鎶€鑹?,'涓崕鏂囨槑璞″緛锛屾帹鍔ㄤ笘鐣屾枃鏄庝氦娴?,'閲戝铏?,'[\"cansang1.jpg\"]','https://example.com/cansang.mp4','[\"鏄ヨ殨鍒版涓濇柟灏斤紝閿︾唬涓崕涓囧彜浼燶"]','[\"娓呮槑\", \"璋烽洦\"]',30.274100,120.155000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(43,'榫欐硥闈掔摲浼犵粺鐑у埗鎶€鑹?,'浼犵粺鎶€鑹?,'鍒剁摲鎶€鑹?,'瀹嬩唬','娴欐睙鐪侀緳娉夊競','national','闈掔摲宸呭嘲鎶€鑹猴紝閲夎壊濡傜帀锛屽崈骞翠笉鑵?,'濮嬩簬涓夊浗锛屽畫浠ｈ揪鍒伴紟鐩涳紝涓哄畫浠ｄ簲澶у悕绐戜箣涓€','闄剁摲鑹烘湳鐟板疂锛屼笘鐣岄潚鐡锋渶楂樻按骞?,'寰愭湞鍏?,'[\"longquan1.jpg\"]','https://example.com/longquan.mp4','[\"闈掔摲濡傜帀鏄犲ぉ鍏夛紝榫欐硥绐戠伀涓囧勾闀縗"]','[\"闆ㄦ按\", \"鎯婅洶\"]',28.060100,119.112000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(44,'瀹ｇ焊浼犵粺鍒朵綔鎶€鑹?,'浼犵粺鎶€鑹?,'閫犵焊鎶€鑹?,'鍞愪唬','瀹夊窘鐪佹尘鍘?,'national','绾镐腑涔嬬帇锛屽崈骞翠笉鑵愶紝涔︾敾涓撶敤瀹ｇ焊','濮嬩簬鍞愪唬锛屽巻浠ｇ殗瀹跺尽鐢紝鏂囦汉涔︾敾蹇呭','閫犵焊鏈穮宄帮紝鏂囧寲浼犳壙閲嶈杞戒綋','閭㈡槬鑽?,'[\"xuanzhi1.jpg\"]','https://example.com/xuanzhi.mp4','[\"瀹ｇ焊娲佺櫧娑﹀鐜夛紝绗斿ⅷ涓归潚浼犲崈鍙"]','[\"瀵掗湶\", \"闇滈檷\"]',30.681000,118.406000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(45,'涓浗闆曠増鍗板埛鎶€鑹?,'浼犵粺鎶€鑹?,'鍗板埛鎶€鑹?,'鍞愪唬','姹熻嫃鐪佹壃宸炲競','national','浜虹被鏈€鏃╁嵃鍒锋妧鏈紝鎺ㄥ姩鏂囨槑浼犳挱','鍙戞槑浜庡攼浠ｏ紝姣旀椿瀛楀嵃鍒锋洿鏃╋紝浼犳壙鍗冨勾','鍥涘ぇ鍙戞槑閲嶈缁勬垚锛屼笘鐣屾枃鏄庤础鐚法澶?,'闄堜箟鏃?,'[\"diaoban1.jpg\"]','https://example.com/diaoban.mp4','[\"闆曠増鍗颁功浼犱竾鍗凤紝鏂囨槑鐏鐓у崈绉媆"]','[\"绉嬪垎\", \"闇滈檷\"]',32.394300,119.449000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(46,'涓浗娲诲瓧鍗板埛鏈?,'浼犵粺鎶€鑹?,'鍗板埛鎶€鑹?,'瀹嬩唬','娴欐睙鐪佹俯宸炲競','national','姣曟槆鍙戞槑锛屼笘鐣屾渶鏃╂椿瀛楀嵃鍒凤紝鎬ラ渶淇濇姢鎶€鑹?,'鍖楀畫姣曟槆鍙戞槑锛屾帹鍔ㄤ笘鐣屽嵃鍒烽潻鍛?,'鍥涘ぇ鍙戞槑鏍稿績锛屼汉绫绘枃鏄庨噷绋嬬','鏋楀垵瀵?,'[\"huozi1.jpg\"]','https://example.com/huozi.mp4','[\"娲诲瓧鐢熻緣浼犲洓娴凤紝鍗板埛鏂囨槑涓囧彜娴乗"]','[\"娓呮槑\", \"璋烽洦\"]',27.992900,120.671000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(47,'涓浗姘村瘑闅旇埍绂忚埞鍒堕€犳妧鑹?,'浼犵粺鎶€鑹?,'閫犺埞鎶€鑹?,'瀹嬩唬','绂忓缓鐪佹硥宸炲競','national','鍙や唬鍏堣繘閫犺埞鎶€鏈紝姘村瘑闅旇埍瀹夊叏鍧氬浐锛岄儜鍜屼笅瑗挎磱鐢ㄨ埞','瀹嬩唬鎴愮啛锛屾槑浠ｈ揪鍒板穮宄帮紝棰嗗厛涓栫晫閫犺埞鎶€鏈?,'鍙や唬閫犺埞鏈€楂樻垚灏憋紝娴蜂笂涓濈桓涔嬭矾鏍稿績鎶€鑹?,'闄堣姵璐?,'[\"fuchuan1.jpg\"]','https://example.com/fuchuan.mp4','[\"绂忚埞鎵竼閫氬洓娴凤紝姘村瘑闅旇埍涓囧彜瀹塡"]','[\"绔嬫槬\", \"闆ㄦ按\"]',24.879300,118.584000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(48,'涓浗鏈ㄦ嫳妗ヤ紶缁熻惀閫犳妧鑹?,'浼犵粺鎶€鑹?,'妗ユ鎶€鑹?,'瀹嬩唬','娴欐睙鐪佸簡鍏冨幙','national','涓嶇敤閽夊瓙锛屼互鏈ㄦ嫳缁撴瀯鎼缓妗ユ锛屽潥鍥鸿€愮敤','瀹嬩唬鍙戞槑锛岄椊娴欏北鍖轰紶鎵垮崈骞?,'鍙や唬妗ユ濂囪抗锛屾湪缁撴瀯妗ユ鍏歌寖','鍚村鍕?,'[\"muqiao1.jpg\"]','https://example.com/muqiao.mp4','[\"鏈ㄦ嫳椋炴璺ㄧⅶ姘达紝鍗冨勾鍙ゆˉ鏄犻潚灞盶"]','[\"灏忔弧\", \"澶忚嚦\"]',27.655900,119.060000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(49,'榛庢棌浼犵粺绾烘煋缁囩唬鎶€鑹?,'浼犵粺鎶€鑹?,'绾虹粐鎶€鑹?,'涓婂彜','娴峰崡鐪佷簲鎸囧北甯?,'national','榛庢棌鍙よ€佺汉缁囨妧鑹猴紝绾虹粐娲诲寲鐭?,'璧锋簮浜庝笂鍙わ紝瀹嬩唬榛勯亾濠嗗涔犳敼鑹帹骞?,'绾虹粐鍙茬弽璐甸仐浜э紝灏戞暟姘戞棌鎶€鑹虹懓瀹?,'瀹逛簹缇?,'[\"lizu1.jpg\"]','https://example.com/lizu.mp4','[\"榛庨敠鏂戞枔缁囬敠缁ｏ紝鍗冨勾鎶€鑹鸿€€鍗楃枂\"]','[\"澶ф殤\", \"澶勬殤\"]',18.792000,109.515000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(50,'鑻忕唬','浼犵粺鎶€鑹?,'鍒虹唬鎶€鑹?,'瀹嬩唬','姹熻嫃鐪佽嫃宸炲競','national','鍥涘ぇ鍚嶇唬涔嬮锛岀簿缁嗛泤鑷达紝鏍╂牘濡傜敓','瀹嬩唬鎴愮啛锛屾槑娓呴紟鐩涳紝鐨囧寰＄敤鍒虹唬','鍒虹唬鑹烘湳宸呭嘲锛屼笢鏂规墜宸ヨ壓鏈唬琛?,'濮氬缓钀?,'[\"suxiu1.jpg\"]','https://example.com/suxiu.mp4','[\"鑻忕唬鐜茬彂鎻忎竾璞★紝涓€閽堜竴绾跨唬涔惧潳\"]','[\"鏄ュ垎\", \"娓呮槑\"]',31.298770,120.585316,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(51,'婀樼唬','浼犵粺鎶€鑹?,'鍒虹唬鎶€鑹?,'姹変唬','婀栧崡鐪侀暱娌欏競','provincial','婀栧崡鍒虹唬锛屼互鐙檸棰樻潗闂诲悕锛屾皵鍔跨绀?,'姹変唬宸叉湁璁拌浇锛屾竻浠ｆ垚鐔熼紟鐩?,'婀栨箻鏂囧寲鐟板疂锛屽埡缁ｈ壓鏈弽鍝?,'鍒樼埍浜?,'[\"xiangxiu1.jpg\"]','https://example.com/xiangxiu.mp4','[\"婀樼唬闆勫Э鎻忚檸璞癸紝涓€閽堜竴绾胯绮剧\"]','[\"绔嬬\", \"澶勬殤\"]',28.193000,112.983000,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(52,'绮ょ唬','浼犵粺鎶€鑹?,'鍒虹唬鎶€鑹?,'鍞愪唬','骞夸笢鐪佸箍宸炲競','provincial','宀崡鍒虹唬锛岃壊褰╂祿鐑堬紝鏋勫浘楗辨弧','鍞愪唬鎴愬瀷锛屾槑娓呴紟鐩涳紝杩滈攢娴峰','宀崡鑹烘湳浠ｈ〃锛屾捣澶栨枃鍖栦氦娴佽浇浣?,'闄堝皯鑺?,'[\"yuexiu1.jpg\"]','https://example.com/yuexiu.mp4','[\"绮ょ唬鏂戞枔鏄犲箔鍗楋紝鍗冧笣涓囩紩缁樺崕绔燶"]','[\"澶忚嚦\", \"灏忔殤\"]',23.129110,113.264385,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(53,'铚€缁?,'浼犵粺鎶€鑹?,'鍒虹唬鎶€鑹?,'姹変唬','鍥涘窛鐪佹垚閮藉競','provincial','宸磋渶鍒虹唬锛岀粏鑵绘煍鍜岋紝棰樻潗涓板瘜','姹変唬宸叉湁璁拌浇锛屼笌铚€閿﹂綈鍚?,'宸磋渶鏂囧寲鐟板疂锛屽埡缁ｅ巻鍙叉椿鍖栫煶','閮濇窇钀?,'[\"shuxiu1.jpg\"]','https://example.com/shuxiu.mp4','[\"铚€缁ｈ交鏌旀弿閿﹁壊锛屽反灞辫渶姘村叆涓濆鸡\"]','[\"娓呮槑\", \"璋烽洦\"]',30.572300,104.066500,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(54,'鏅痉闀囧埗鐡锋妧鑹?,'浼犵粺鎶€鑹?,'鍒剁摲鎶€鑹?,'瀹嬩唬','姹熻タ鐪佹櫙寰烽晣甯?,'national','涓浗鐡烽兘鎶€鑹猴紝鐧藉鐜夋槑濡傞暅钖勫绾稿０濡傜，','瀹嬩唬瀹氬悕鏅痉闀囷紝鏄庢竻鐨囧鐡峰巶锛屽崈骞寸摲閮?,'闄剁摲鑹烘湳宸呭嘲锛屼笘鐣岄櫠鐡锋枃鍖栦腑蹇?,'绉﹂敗楹?,'[\"jingdezhen1.jpg\"]','https://example.com/jingdezhen.mp4','[\"鏅痉闀囦腑钘忛敠缁ｏ紝鐡蜂腑鐟板疂鑰€鍏ㄧ悆\"]','[\"绔嬫槬\", \"闆ㄦ按\"]',29.264500,117.202000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(55,'绱爞澹跺埗浣滄妧鑹?,'浼犵粺鎶€鑹?,'鍒堕櫠鎶€鑹?,'鏄庝唬','姹熻嫃鐪佸疁鍏村競','provincial','瀹滃叴绱爞锛屾场鑼剁鍣紝瀹炵敤涓庤壓鏈粨鍚?,'鏄庝唬鎴愮啛锛屾枃浜哄弬涓庤璁★紝鍚嶆壃澶╀笅','闄跺湡鑹烘湳鐟板疂锛岃尪鏂囧寲閲嶈杞戒綋','寰愭眽妫?,'[\"zisha1.jpg\"]','https://example.com/zisha.mp4','[\"绱爞娉ヤ腑钘忛泤闊碉紝涓€澹堕鑼楅唹鍗冪\"]','[\"娓呮槑\", \"璋烽洦\"]',31.350000,119.813000,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(56,'寰藉ⅷ鍒朵綔鎶€鑹?,'浼犵粺鎶€鑹?,'鏂囨埧鎶€鑹?,'鍞愪唬','瀹夊窘鐪侀粍灞卞競','national','鏂囨埧鍥涘疂涔嬩竴锛屽ⅷ鑹蹭箤榛戯紝鍗冨勾涓嶈お','鍞愪唬鍙戞槑锛屽畫浠ｉ紟鐩涳紝鏂囦汉蹇呭','鏂囨埧鑹烘湳鐟板疂锛屼功鐢讳紶鎵块噸瑕佽浇浣?,'鍛ㄧ編娲?,'[\"huimo1.jpg\"]','https://example.com/huimo.mp4','[\"寰藉ⅷ椋橀浼犱竾鍙わ紝涓归潚濡欑瑪缁樺北娌砛"]','[\"瀵掗湶\", \"闇滈檷\"]',29.716500,118.320000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(57,'绔牃鍒朵綔鎶€鑹?,'浼犵粺鎶€鑹?,'鏂囨埧鎶€鑹?,'鍞愪唬','骞夸笢鐪佽倗搴嗗競','national','鏂囨埧鍥涘疂涔嬮鐮氬彴锛岀煶璐ㄧ粏鑵伙紝鍙戝ⅷ鏋佷匠','鍞愪唬鎴愮啛锛屽巻浠ｇ殗瀹惰础鍝侊紝鏂囦汉鐝嶅搧','鏂囨埧鑹烘湳宸呭嘲锛岀煶鑹烘枃鍖栫懓瀹?,'榛庨摽','[\"duanyan1.jpg\"]','https://example.com/duanyan.mp4','[\"绔牃娓╂鼎钘忕伒姘旓紝绗斿ⅷ涔﹂涓囧彜浼燶"]','[\"绉嬪垎\", \"闇滈檷\"]',23.034000,112.469000,1,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(58,'瀹ｇ焊绗虹焊鍒朵綔鎶€鑹?,'浼犵粺鎶€鑹?,'閫犵焊鎶€鑹?,'鏄庝唬','瀹夊窘鐪佹尘鍘?,'municipal','瀹ｇ焊娣卞姞宸ユ妧鑹猴紝鍒朵綔绮剧編绗虹焊锛屾枃浜轰笓鐢?,'鏄庝唬鎴愮啛锛屼负涔︾敾鍒涗綔涓撶敤绾稿紶','瀹ｇ焊鎶€鑹哄欢浼革紝鏂囨埧鑹烘湳鐝嶅搧','鏇瑰厜鍗?,'[\"jianzhi1.jpg\"]','https://example.com/jianzhi.mp4','[\"绗虹焊鐜茬彂钘忛泤瓒ｏ紝涔﹂澧ㄩ煹浼存祦骞碶"]','[\"绔嬫槬\", \"闆ㄦ按\"]',30.681000,118.406000,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(59,'涓滈槼鏈ㄩ洉鎶€鑹?,'浼犵粺鎶€鑹?,'闆曞埢鎶€鑹?,'瀹嬩唬','娴欐睙鐪佷笢闃冲競','provincial','涓浗鏈ㄩ洉涔嬮锛岀簿缁嗙粷浼︼紝绔嬩綋闆曞埢鍏歌寖','瀹嬩唬鎴愮啛锛屾槑娓呴紟鐩涳紝鐨囧寤虹瓚涓撶敤鏈ㄩ洉','鏈ㄩ洉鑹烘湳宸呭嘲锛屼笢鏂归洉鍒昏壓鏈唬琛?,'闄嗗厜姝?,'[\"dongyang1.jpg\"]','https://example.com/dongyang.mp4','[\"涓滈槼鏈ㄩ洉闆曚竾璞★紝涓€鍒€涓€鍒昏鍖犲績\"]','[\"娓呮槑\", \"璋烽洦\"]',29.255100,120.228000,0,0,'2026-03-26 10:22:22','2026-03-26 10:22:22'),(60,'涓浗涔︽硶','浼犵粺缇庢湳','涔︽硶','涓婂彜','鍏ㄥ浗','national','姹夊瓧涔﹀啓鑹烘湳锛屾棤瑷€鐨勮瘲鏃犲舰鐨勮垶锛屼腑鍥芥枃鍖栨牳蹇冪鍙?,'璧锋簮浜庝笂鍙ゆ枃瀛楋紝鍟嗗懆鐢查鏂囧畾鍨嬶紝鍘嗕唬浼犳壙鍙戝睍','涓崕鏂囧寲鏍稿績锛屼笢鏂硅壓鏈渶楂樺鐣?,'娌堥箯','[\"shufa1.jpg\"]','https://example.com/shufa.mp4','[\"绗斾笅涔惧潳澶э紝澧ㄤ腑宀佹湀闀縗"]','[\"鏄ヨ妭\", \"绉嬪垎\"]',39.904200,116.407400,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(61,'涓浗绡嗗埢','浼犵粺缇庢湳','绡嗗埢','绉︿唬','鍏ㄥ浗','national','涔︽硶涓庨洉鍒荤粨鍚堬紝鏂瑰涔嬮棿鏄句咕鍧わ紝鍗扮珷鑹烘湳','璧锋簮浜庡晢鍛紝绉︿唬缁熶竴鍗扮珷锛屽巻浠ｆ枃浜烘帹宕?,'鏂囨埧鑹烘湳鐟板疂锛屼功鐢昏壓鏈噸瑕佺粍鎴?,'闊╁ぉ琛?,'[\"zhuanke1.jpg\"]','https://example.com/zhuanke.mp4','[\"鏂瑰涔嬮棿钘忓ぉ鍦帮紝涓€鍒€涓€鍗拌绮剧\"]','[\"绔嬫槬\", \"绔嬪啲\"]',39.904200,116.407400,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(62,'涓浗鍓焊','浼犵粺缇庢湳','鍓焊','姹変唬','鍏ㄥ浗','national','鍓垁涓庣孩绾稿垱閫犵殑鑹烘湳锛屽枩搴嗗悏绁ワ紝姘戦棿缇庢湳浠ｈ〃','姹変唬宸叉湁璁拌浇锛屾槑娓呮櫘鍙婂叏鍥斤紝姘戦棿鏈€骞挎硾鑹烘湳','姘戦棿缇庢湳鐟板疂锛岀兢浼楀熀纭€鏈€骞挎硾鐨勮壓鏈?,'楂樺嚖鑾?,'[\"jianzhi1.jpg\"]','https://example.com/jianzhi.mp4','[\"涓€绾镐竴鍓敓涓囪薄锛岀孩绾㈢伀鐏簡涓板勾\"]','[\"鏄ヨ妭\", \"鍏冨\"]',39.904200,116.407400,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(63,'鐑础鑹烘湳','浼犵粺缇庢湳','鍞愬崱缁樼敾','鍏冧唬','闈掓捣鐪侀粍鍗楀窞','national','钘忎紶浣涙暀缁樼敾闆曞鑹烘湳锛岃壊褰╃粴涓界簿缇庣粷浼?,'鍏冧唬鍏磋捣锛岀儹璐″湴鍖轰紶鎵垮崈骞?,'钘忎紶浣涙暀鑹烘湳鐟板疂锛岀粯鐢昏壓鏈弽鍝?,'鏇寸櫥杈惧悏','[\"regong1.jpg\"]','https://example.com/regong.mp4','[\"鐑础涓归潚缁樹經鍥斤紝鍗冨勾鍞愬崱鑰€闆煙\"]','[\"闆】鑺俓", \"绔嬬\"]',35.514000,102.007000,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(64,'鏉ㄦ煶闈掑勾鐢?,'浼犵粺缇庢湳','骞寸敾','鏄庝唬','澶╂触甯傝タ闈掑尯','national','鍖楁柟骞寸敾浠ｈ〃锛屽枩搴嗗悏绁ワ紝姘戦棿缇庢湳缁忓吀','鏄庝唬鍏磋捣锛屾竻浠ｉ紟鐩涳紝鍖楁柟鏈€钁楀悕骞寸敾','姘戦棿骞寸敾鐟板疂锛屾皯淇楁枃鍖栭噸瑕佽浇浣?,'闇嶅簡鏈?,'[\"yangliuqing1.jpg\"]','https://example.com/yangliuqing.mp4','[\"骞寸敾杩庢槬娣诲枩姘旓紝涓归潚濡欐墜缁樺悏绁"]','[\"鏄ヨ妭\", \"闄ゅ\"]',39.136100,117.081000,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(65,'妗冭姳鍧炲勾鐢?,'浼犵粺缇庢湳','骞寸敾','鏄庝唬','姹熻嫃鐪佽嫃宸炲競','provincial','鍗楁柟骞寸敾浠ｈ〃锛岄泤鑷寸涓斤紝姹熷崡骞寸敾缁忓吀','鏄庝唬鍏磋捣锛屾竻浠ｉ紟鐩涳紝姹熷崡鏈€钁楀悕骞寸敾','姹熷崡姘戜織鐟板疂锛屾皯闂寸編鏈弽鍝?,'鎴垮織杈?,'[\"taohuawu1.jpg\"]','https://example.com/taohuawu.mp4','[\"妗冭姳鍧為噷缁樻柊鏄ワ紝姹熷崡骞寸敾闊甸暱瀛榎"]','[\"鏄ヨ妭\", \"鍏冨\"]',31.298770,120.585316,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(66,'鍑ょ繑鏈ㄧ増骞寸敾','浼犵粺缇庢湳','骞寸敾','瀹嬩唬','闄曡タ鐪佸嚖缈斿幙','municipal','瑗垮寳骞寸敾浠ｈ〃锛屽彜鏈寸矖鐘凤紝瑗垮寳姘戜織缁忓吀','瀹嬩唬璧锋簮锛屾槑娓呮祦浼犺タ鍖楀悇鐪?,'瑗垮寳姘戜織鐟板疂锛屾皯闂寸編鏈椿鍖栫煶','閭扮珛骞?,'[\"fengxiang1.jpg\"]','https://example.com/fengxiang.mp4','[\"鏈ㄧ増骞寸敾浼犵Е椋庯紝鍙ゆ湸鍚夌ゥ搴嗗お骞砛"]','[\"鏄ヨ妭\", \"绔嬫槬\"]',34.521000,107.379000,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(67,'闈㈠鎶€鑹?,'浼犵粺缇庢湳','闈㈠','姹変唬','鍏ㄥ浗','provincial','闈㈢矇濉戦€犱汉鐗╁姩鐗╋紝鏍╂牘濡傜敓锛屾皯闂寸帺鍏疯壓鏈?,'姹変唬宸叉湁璁拌浇锛屾皯闂村箍娉涙祦浼?,'姘戦棿鐜╁叿鐟板疂锛屾墜宸ヨ壓鏈弽鍝?,'閮庡織涓?,'[\"miansu1.jpg\"]','https://example.com/miansu.mp4','[\"涓€鍥㈠僵闈㈠涓囪薄锛屽阀鎵嬪尃蹇冪粯绔ョ湡\"]','[\"鍏冨\", \"娓呮槑\"]',36.675000,117.006000,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(68,'娉ュ鎶€鑹?,'浼犵粺缇庢湳','娉ュ','瀹嬩唬','姹熻嫃鐪佹棤閿″競','national','鎯犲北娉ヤ汉锛屽枩搴嗗悏绁ワ紝姘戦棿娉ュ缁忓吀','瀹嬩唬璧锋簮锛屾槑娓呴紟鐩涳紝姹熷崡钁楀悕娉ュ','姘戦棿娉ュ鐟板疂锛屾皯淇楄壓鏈弽鍝?,'鍠绘箻娑?,'[\"nisu1.jpg\"]','https://example.com/nisu.mp4','[\"娉ュ鐜茬彂钘忕瓒ｏ紝鎯犲北绁為煹浼犲崈骞碶"]','[\"鏄ヨ妭\", \"绔崍\"]',31.560000,120.283000,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(69,'鐭抽洉鎶€鑹?,'浼犵粺缇庢湳','鐭抽洉','姹変唬','绂忓缓鐪佹儬瀹夊幙','provincial','鎯犲畨鐭抽洉锛岀簿缁嗙粷浼︼紝寤虹瓚涓庤壓鏈粨鍚?,'姹変唬宸叉湁璁拌浇锛屽攼瀹嬫垚鐔燂紝鏄庢竻榧庣洓','鐭抽洉鑹烘湳宸呭嘲锛屽缓绛戣楗拌壓鏈懓瀹?,'鏉庤蛋鐢?,'[\"shidiao1.jpg\"]','https://example.com/shidiao.mp4','[\"椤界煶閫氱伒闆曚竾璞★紝涓€鍒€涓€鍒昏鍖犲績\"]','[\"娓呮槑\", \"璋烽洦\"]',25.123500,118.651000,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(70,'鐜夐洉鎶€鑹?,'浼犵粺缇庢湳','鐜夐洉','涓婂彜','鏂扮枂鍜岀敯甯?,'national','鐜夌煶闆曞埢鑹烘湳锛屼笢鏂硅壓鏈懓瀹濓紝鍚涘瓙濡傜帀璞″緛','璧锋簮浜庝笂鍙わ紝鍟嗗懆鎴愮啛锛屽巻浠ｇ殗瀹剁弽瀹?,'鐜夌煶鏂囧寲鏍稿績锛屼笢鏂归洉鍒昏壓鏈穮宄?,'椹繘璐?,'[\"yudiao1.jpg\"]','https://example.com/yudiao.mp4','[\"缇庣帀闆曠悽鎴愰泤鍣紝涓滄柟绁為煹涓囧彜浼燶"]','[\"绔嬫槬\", \"绉嬪垎\"]',37.110600,79.926900,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(71,'绔圭紪鎶€鑹?,'浼犵粺缇庢湳','绔圭紪','姹変唬','娴欐睙鐪佷笢闃冲競','municipal','绔瑰瓙缂栫粐鍣ㄥ叿涓庤壓鏈搧锛屽疄鐢ㄤ笌鑹烘湳缁撳悎','姹変唬宸叉湁璁拌浇锛屾皯闂村箍娉涗紶鎵?,'姘戦棿鎵嬪伐鐟板疂锛岀敓鎬佽壓鏈吀鑼?,'鍗㈠厜鍗?,'[\"zhubian1.jpg\"]','https://example.com/zhubian.mp4','[\"缈犵缂栨垚鍗冭埇鑹猴紝鍖犲績鐙繍闊垫偁闀縗"]','[\"灏忔弧\", \"鑺掔\"]',29.255100,120.228000,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(72,'鑽夌紪鎶€鑹?,'浼犵粺缇庢湳','鑽夌紪','涓婂彜','灞变笢鐪佹綅鍧婂競','municipal','楹﹁崏鐜夌背鐨紪缁囪壓鏈搧锛屾皯闂存墜宸ョ粡鍏?,'璧锋簮浜庝笂鍙わ紝姘戦棿骞挎硾娴佷紶','姘戦棿鎵嬪伐鐟板疂锛岀敓鎬佺幆淇濊壓鏈?,'鐜嬬編鑻?,'[\"caobian1.jpg\"]','https://example.com/caobian.mp4','[\"闈掕崏缂栨潵鏂颁笘鐣岋紝宸ф墜缁囧嚭濂芥椂鍏塡"]','[\"绔嬬\", \"澶勬殤\"]',36.778300,119.107000,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(73,'婕嗚壓鎶€鑹?,'浼犵粺缇庢湳','婕嗗櫒','鍛ㄤ唬','绂忓缓鐪佺宸炲競','national','鑴辫儙婕嗗櫒锛岃交宸у潥鍥猴紝涓滄柟鑹烘湳鐝嶅搧','鍛ㄤ唬鍙戞槑锛屾眽浠ｆ垚鐔燂紝绂忓窞鑴辫儙婕嗗櫒闂诲悕涓栫晫','婕嗚壓宸呭嘲锛屼笢鏂瑰伐鑹虹懓瀹?,'娌堢粛瀹?,'[\"qiyi1.jpg\"]','https://example.com/qiyi.mp4','[\"婕嗗櫒娴佸厜鍑濆瞾鏈堬紝鍗冨勾婕嗚壓鑰€涓崕\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',26.074500,119.290300,1,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(74,'鐨奖闆曞埢鎶€鑹?,'浼犵粺缇庢湳','闆曞埢','姹変唬','娌冲寳鐪佸攼灞卞競','provincial','鐨奖鍒朵綔鏍稿績鎶€鑹猴紝闆曞埢绮剧編锛岄€忓厜鎬уソ','姹変唬璧锋簮锛屽攼瀹嬫垚鐔燂紝鏄庢竻榧庣洓','鐨奖鑹烘湳鍩虹锛屾皯闂撮洉鍒荤懓瀹?,'鍛ㄦ爲椋?,'[\"piyingdiao1.jpg\"]','https://example.com/piyingdiao.mp4','[\"涓€鍒€涓€鍒婚洉鍏夊奖锛屼竴绾镐竴鐨紨鍙や粖\"]','[\"涓\", \"閲嶉槼\"]',39.630800,118.179900,0,0,'2026-03-26 10:22:55','2026-03-26 10:22:55'),(75,'鏄ヨ妭','姘戜織','浼犵粺鑺傛棩','姹変唬','鍏ㄥ浗','national','涓崕姘戞棌鏈€闅嗛噸鑺傛棩锛岃緸鏃ц繋鏂帮紝闃栧鍥㈠渾','姹変唬瀹氬瀷锛屽欢缁袱鍗冨骞达紝鍏ㄧ悆鍗庝汉鍏卞悓鑺傛棩','姘戞棌鏂囧寲鏍稿績锛屽叏鐞冨崕浜虹簿绁炵航甯?,'鍏ㄦ皯浼犳壙','[\"chunjie1.jpg\"]','https://example.com/chunjie.mp4','[\"鐖嗙澹颁腑涓€宀侀櫎锛屾槬椋庨€佹殩鍏ュ睜鑻廫"]','[\"绔嬫槬\", \"闄ゅ\"]',39.904200,116.407400,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(76,'绔崍鑺?,'姘戜織','浼犵粺鑺傛棩','鎴樺浗','鍏ㄥ浗','national','绾康灞堝師锛岄緳鑸熺珵娓★紝鍚冪步瀛愶紝杈熼偑绁堢','璧锋簮浜庢垬鍥斤紝绾康灞堝師锛屾眽浠ｆ垚涓哄叏鍥借妭鏃?,'鐖卞浗绮剧璞″緛锛屾皯淇楁枃鍖栭噸瑕佽浇浣?,'鍏ㄦ皯浼犳壙','[\"duanwu1.jpg\"]','https://example.com/duanwu.mp4','[\"鑺傚垎绔崍鑷皝瑷€锛屼竾鍙や紶闂讳负灞堝師\"]','[\"鑺掔\", \"澶忚嚦\"]',39.904200,116.407400,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(77,'濡堢淇′織','姘戜織','姘戦棿淇′话','瀹嬩唬','绂忓缓鐪佽巻鐢板競','national','娴锋磱淇濇姢绁炰俊浠帮紝鍏ㄧ悆鍗庝汉鍗庝鲸绮剧绾藉甫','瀹嬩唬璧锋簮锛屽叏鐞?浜夸俊浼楋紝娴蜂笂涓濈桓涔嬭矾淇′话','娴锋磱鏂囧寲鏍稿績锛屾捣澶栧崕浜轰埂鎯呯航甯?,'鏋楅噾姒?,'[\"mazu1.jpg\"]','https://example.com/mazu.mp4','[\"濡堢鎱堣埅浣戝洓娴凤紝鍗冨勾鍦ｅ痉鑰€鍏柟\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',25.454600,119.003000,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(78,'缇屽勾','姘戜織','浼犵粺鑺傛棩','涓婂彜','鍥涘窛鐪侀樋鍧濆窞','national','缇屾棌鏂板勾锛屽簡绁濅赴鏀讹紝绁绁堢锛岀緦鏃忔渶閲嶈鑺傛棩','璧锋簮浜庝笂鍙ょ緦鍘嗘柊骞达紝浼犳壙鏁板崈骞?,'缇屾棌鏂囧寲鏍稿績锛屽皯鏁版皯鏃忚妭鏃ョ懓瀹?,'浣欏浗瀹?,'[\"qiangnian1.jpg\"]','https://example.com/qiangnian.mp4','[\"缇屽勾娆㈠簡涓版敹涔愶紝鍙ょ緦鏂囧寲涓囧彜浼燶"]','[\"绔嬪啲\", \"灏忛洩\"]',31.605000,102.517000,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(79,'浜屽崄鍥涜妭姘?,'姘戜織','鍘嗘硶鐭ヨ瘑','涓婂彜','鍏ㄥ浗','national','涓浗绗簲澶у彂鏄庯紝鎸囧鍐滀笟鐢熶骇锛屼汉涓庤嚜鐒跺拰璋愭櫤鎱?,'璧锋簮浜庝笂鍙わ紝鍟嗕唬瀹氬瀷锛岃タ姹夊啓鍏ュ巻娉?,'浜虹被澶╂枃鍘嗘硶濂囪抗锛屼汉涓庤嚜鐒跺拰璋愬吀鑼?,'鍏ㄦ皯浼犳壙','[\"jieqi1.jpg\"]','https://example.com/jieqi.mp4','[\"鏄ラ洦鎯婃槬娓呰胺澶╋紝澶忔弧鑺掑鏆戠浉杩瀄"]','[\"鍏ㄩ儴鑺傛皵\"]',39.904200,116.407400,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(80,'娓呮槑鑺?,'姘戜織','浼犵粺鑺傛棩','鍛ㄤ唬','鍏ㄥ浗','national','绁鎵锛岃笍闈掗儕娓革紝鎱庣粓杩借繙','鍛ㄤ唬璧锋簮锛岃瀺鍚堝瘨椋熻妭锛屾垚涓洪噸瑕佽妭鏃?,'瀛濋亾鏂囧寲鏍稿績锛屼汉涓庤嚜鐒跺拰璋愯妭鏃?,'鍏ㄦ皯浼犳壙','[\"qingming1.jpg\"]','https://example.com/qingming.mp4','[\"娓呮槑鏃惰妭闆ㄧ悍绾凤紝璺笂琛屼汉娆叉柇榄俓"]','[\"娓呮槑\"]',39.904200,116.407400,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(81,'涓鑺?,'姘戜織','浼犵粺鑺傛棩','鍞愪唬','鍏ㄥ浗','national','鏈堝渾浜哄渾锛岄槚瀹跺洟鍦嗭紝璧忔湀鍚冩湀楗?,'鍞愪唬瀹氬瀷锛屽畫浠ｉ紟鐩涳紝鍥㈠渾鏂囧寲璞″緛','鍥㈠渾鏂囧寲鏍稿績锛屾皯鏃忔儏鎰熼噸瑕佽浇浣?,'鍏ㄦ皯浼犳壙','[\"zhongqiu1.jpg\"]','https://example.com/zhongqiu.mp4','[\"浣嗘効浜洪暱涔咃紝鍗冮噷鍏卞┑濞焅"]','[\"涓\"]',39.904200,116.407400,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(82,'閲嶉槼鑺?,'姘戜織','浼犵粺鑺傛棩','姹変唬','鍏ㄥ浗','provincial','鏁€佺埍鑰侊紝鐧婚珮璧忕锛岀绂忛暱瀵?,'姹変唬璧锋簮锛屽巻浠ｄ紶鎵匡紝鏁€佹枃鍖栬薄寰?,'鏁€佹枃鍖栨牳蹇冿紝浼犵粺缇庡痉杞戒綋','鍏ㄦ皯浼犳壙','[\"chongyang1.jpg\"]','https://example.com/chongyang.mp4','[\"閬ョ煡鍏勫紵鐧婚珮澶勶紝閬嶆彃鑼辫惛灏戜竴浜篭"]','[\"閲嶉槼\"]',39.904200,116.407400,0,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(83,'鐏妸鑺?,'姘戜織','浼犵粺鑺傛棩','鍞愪唬','浜戝崡鐪佹闆勫窞','provincial','褰濇棌鐧芥棌绛夋皯鏃忚妭鏃ワ紝鐐圭伀绁堢锛屽簡绁濅赴鏀?,'鍞愪唬宸叉湁璁拌浇锛屽皯鏁版皯鏃忛噸瑕佽妭鏃?,'灏戞暟姘戞棌鏂囧寲鐟板疂锛岀伀鏂囧寲璞″緛','鍏ㄦ皯浼犳壙','[\"huoba1.jpg\"]','https://example.com/huoba.mp4','[\"鐏妸鐓т寒涓版敹璺紝娆㈡瓕绗戣搴嗗悏绁"]','[\"澶ф殤\", \"绔嬬\"]',25.012600,101.531000,0,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(84,'娉兼按鑺?,'姘戜織','浼犵粺鑺傛棩','瀹嬩唬','浜戝崡鐪佽タ鍙岀増绾冲窞','provincial','鍌ｆ棌鏂板勾锛屾臣姘寸绂忥紝娲楀幓鐑︽伡杩庢帴鏂板勾','瀹嬩唬宸叉湁璁拌浇锛屽偅鏃忔渶閲嶈鑺傛棩','鍌ｆ棌鏂囧寲鏍稿績锛屾按鏂囧寲璞″緛','鍏ㄦ皯浼犳壙','[\"poshui1.jpg\"]','https://example.com/poshui.mp4','[\"娉兼按娆㈡瓕杩庢柊骞达紝鍌ｄ埂椋庢儏閱変汉闂碶"]','[\"娓呮槑\", \"璋烽洦\"]',22.005600,100.801000,0,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(85,'閭ｈ揪鎱曞ぇ浼?,'姘戜織','姘戦棿鐩涗細','鍏冧唬','鍐呰挋鍙よ嚜娌诲尯','national','钂欏彜鏃忎紶缁熺洓浼氾紝璧涢┈鎽旇筏灏勭锛岃崏鍘熺媯娆㈣妭','璧锋簮浜庣キ绁€锛屽厓浠ｆ垚鐔燂紝鑽夊師閲嶈鐩涗細','娓哥墽鏂囧寲鐟板疂锛岃挋鍙ゆ棌绮剧璞″緛','鍏ㄦ皯浼犳壙','[\"nadamu1.jpg\"]','https://example.com/nadamu.mp4','[\"鑽夊師閭ｈ揪鎱曟鑵撅紝椹儗姘戞棌灞曢泟椋嶾"]','[\"绔嬪\", \"灏忔弧\"]',40.839000,111.757000,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(86,'搴欎細','姘戜織','姘戦棿娲诲姩','鍞愪唬','鍖椾含甯?,'municipal','瀵哄簷绁涓庡晢璐稿ū涔愮粨鍚堬紝姘戦棿鐑椆鐩涗細','鍞愪唬鍏磋捣锛屽畫浠ｉ紟鐩涳紝姘戦棿閲嶈娲诲姩','姘戜織鏂囧寲杞戒綋锛屽競浜曠敓娲荤缉褰?,'鍏ㄦ皯浼犳壙','[\"miaohui1.jpg\"]','https://example.com/miaohui.mp4','[\"搴欎細鐔欐敇杩庡瀹紝姘戜織椋庢儏閱変汉蹇僜"]','[\"鏄ヨ妭\", \"鍏冨\"]',39.904200,116.407400,0,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(87,'鑸為緳鑸炵嫯','姘戜織','姘戦棿琛ㄦ紨','姹変唬','鍏ㄥ浗','provincial','鍠滃簡鍚夌ゥ琛ㄦ紨锛岀绂忚緹閭紝鑺傛棩蹇呭','姹変唬璧锋簮锛屽巻浠ｄ紶鎵匡紝姘戦棿鏈€骞挎硾琛ㄦ紨','鍚夌ゥ鏂囧寲璞″緛锛屾皯闂磋〃婕旂懓瀹?,'鍏ㄦ皯浼犳壙','[\"wulong1.jpg\"]','https://example.com/wulong.mp4','[\"榫欑嫯娆㈣垶姝岀洓涓栵紝閿ｉ紦鍠уぉ搴嗗お骞砛"]','[\"鏄ヨ妭\", \"鍏冨\"]',39.904200,116.407400,0,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(88,'閫佺帇鑸?,'姘戜織','娴锋磱绁','鏄庝唬','绂忓缓鐪佸帵闂ㄥ競','national','娴锋磱绁浠紡锛岀绂忓钩瀹夛紝浜轰笌娴锋磱鍜岃皭','鏄庝唬璧锋簮锛岄椊鍗椾笌椹潵瑗夸簹鍏卞悓浼犳壙','娴锋磱鏂囧寲鐟板疂锛屾捣涓婁笣缁镐箣璺俊浠?,'鑻忔案鏈?,'[\"songwangchuan1.jpg\"]','https://example.com/songwangchuan.mp4','[\"鐜嬭埞鎵竼绁堝钩瀹夛紝娴蜂笣鏂囧寲涓€鑴変紶\"]','[\"绔嬫槬\", \"闆ㄦ按\"]',24.478000,118.089000,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(89,'楹﹁タ鐑敨','姘戜織','姝岃垶鑱氫細','鍞愪唬','鏂扮枂鍠€浠€鍦板尯','national','缁村惥灏旀棌姘戦棿姝岃垶鑱氫細锛屾枃鍖栧ū涔愮ぞ浜ょ粨鍚?,'鍞愪唬璧锋簮锛岀淮鍚惧皵鏃忛噸瑕佹皯淇楁椿鍔?,'缁村惥灏旀棌鏂囧寲鏍稿績锛屾€ラ渶淇濇姢鐝嶈吹閬椾骇','闃夸笉閮界儹渚濇湪','[\"maixirefu1.jpg\"]','https://example.com/maixirefu.mp4','[\"楹﹁タ鐑敨娆㈡瓕璧凤紝瑗垮煙椋庢儏閱変汉蹇僜"]','[\"鏄ュ垎\", \"绉嬪垎\"]',39.470000,75.980000,1,0,'2026-03-26 10:23:32','2026-03-26 10:23:32'),(90,'涓尰閽堢伕','浼犵粺鍖昏嵂','閽堢伕鐤楁硶','涓婂彜','鍏ㄥ浗','national','閽堝埡鑹剧伕璋冪悊韬綋锛屼腑鍖诲娌绘硶鏍稿績锛屼笘鐣岃鍙尰鏈?,'璧锋簮浜庝笂鍙わ紝銆婇粍甯濆唴缁忋€嬭杞斤紝浼犳壙浜斿崈骞?,'涓尰鐟板疂锛屼笘鐣屽尰瀛﹀杩?,'鐭冲鏁?,'[\"zhenjiu1.jpg\"]','https://example.com/zhenjiu.mp4','[\"涓€閽堜竴鐏歌皟姘旇锛屽崈骞翠腑鍖讳綉瀹夊悍\"]','[\"绔嬫槬\", \"绔嬪啲\"]',39.904200,116.407400,1,0,'2026-03-26 10:24:12','2026-03-26 10:24:12'),(91,'钘忓尰鑽荡娉?,'浼犵粺鍖昏嵂','鑽荡鐤楁硶','鍞愪唬','瑗胯棌鑷不鍖?,'national','钘忓尰鐗硅壊鐤楁硶锛屽ぉ鐒惰嵂鏉愭场娴达紝璋冪悊韬績','璧锋簮浜庡悙钑冩椂鏈燂紝銆婂洓閮ㄥ尰鍏搞€嬭杞?,'钘忓尰鐟板疂锛屽皯鏁版皯鏃忓尰鑽簿鍗?,'灏肩帥','[\"zangyu1.jpg\"]','https://example.com/zangyu.mp4','[\"鑽荡娓呮硥璋冭韩蹇冿紝钘忓尰濡欐湳浣戣媿鐢焅"]','[\"澶忚嚦\", \"澶ф殤\"]',29.640000,91.116600,1,0,'2026-03-26 10:24:12','2026-03-26 10:24:12'),(92,'涓嵂鐐埗鎶€鑹?,'浼犵粺鍖昏嵂','鍒惰嵂鎶€鑹?,'姹変唬','鍏ㄥ浗','national','涓嵂鏉愬姞宸ユ妧鑹猴紝鍑忔瘨澧炴晥锛屼腑鍖绘牳蹇冩妧鑹?,'姹変唬銆婄鍐滄湰鑽夌粡銆嬭杞斤紝浼犳壙鍗冨勾','涓尰鍒惰嵂鐟板疂锛屼腑鑽畨鍏ㄤ繚闅?,'閲戜笘鍏?,'[\"paozhi1.jpg\"]','https://example.com/paozhi.mp4','[\"鐐埗铏界箒蹇呬笉鏁㈢渷浜哄伐锛屽搧鍛宠櫧璐靛繀涓嶆暍鍑忕墿鍔沑"]','[\"娓呮槑\", \"璋烽洦\"]',39.904200,116.407400,1,0,'2026-03-26 10:24:12','2026-03-26 10:24:12'),(93,'涓尰姝ｉ鐤楁硶','浼犵粺鍖昏嵂','姝ｉ鎶€鑹?,'鍛ㄤ唬','鍖椾含甯?,'provincial','涓尰鎵嬫硶澶嶄綅楠ㄦ姌锛屼笉寮€鍒€鐤楁晥濂?,'鍛ㄤ唬宸叉湁璁拌浇锛屽巻浠ｄ紶鎵垮彂灞?,'涓尰楠ㄤ激鐟板疂锛岀豢鑹茬枟娉曞吀鑼?,'鍒樻煆榫?,'[\"zhenggu1.jpg\"]','https://example.com/zhenggu.mp4','[\"鎵嬫硶绁炲姝ｉ鐤撅紝涓尰濡欐墜鍥炴槬鏈痋"]','[\"鏄ュ垎\", \"绉嬪垎\"]',39.904200,116.407400,0,0,'2026-03-26 10:24:12','2026-03-26 10:24:12'),(94,'鑻楀尰鑽枟娉?,'浼犵粺鍖昏嵂','姘戞棌鍖昏嵂','涓婂彜','璐靛窞鐪侀粩涓滃崡宸?,'municipal','鑻楁棌浼犵粺鍖昏嵂锛岃崏鑽不鐤楋紝鍗冨勾缁忛獙','璧锋簮浜庝笂鍙わ紝鑻楁棌鍙ｄ紶蹇冩巿浼犳壙','灏戞暟姘戞棌鍖昏嵂鐟板疂锛屾皯闂村尰鑽弽鍝?,'闆峰北鑻楀尰','[\"miaoyi1.jpg\"]','https://example.com/miaoyi.mp4','[\"鑻楀浠欒崏绁涢〗鐤撅紝鍗冨勾鍖昏嵂浣戝畨搴穃"]','[\"灏忔弧\", \"鑺掔\"]',26.631000,107.927000,0,0,'2026-03-26 10:24:12','2026-03-26 10:24:12'),(95,'涓浗鐨奖鎴?,'鏇茶壓','鐨奖鎴?,'姹変唬','鍏ㄥ浗','national','鍏夊奖鑹烘湳锛岀伅鍏夌毊褰辫〃婕旀晠浜嬶紝鐢靛奖榧荤','姹変唬璧锋簮锛屽攼瀹嬫垚鐔燂紝鏄庢竻榧庣洓锛屼笘鐣屾渶鏃╁厜褰辫壓鏈?,'浜虹被鍏夊奖鑹烘湳榧荤锛屾皯闂存垙鍓х懓瀹?,'榄忛噾鍏?,'[\"piying1.jpg\"]','https://example.com/piying.mp4','[\"涓€鍙ｈ堪璇村崈鍙や簨锛屽弻鎵嬪鑸炵櫨涓囧叺\"]','[\"涓\", \"閲嶉槼\"]',39.904200,116.407400,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(96,'绂忓缓鏈ㄥ伓鎴?,'鏇茶壓','鏈ㄥ伓鎴?,'鍞愪唬','绂忓缓鐪佹硥宸炲競','national','鎻愮嚎鏈ㄥ伓锛屾搷鎺х伒娲伙紝琛ㄦ紨缁嗚吇锛屼汉绫讳紭绉€淇濇姢瀹炶返','鍞愪唬璧锋簮锛屽畫浠ｆ垚鐔燂紝涓栫晫鏈ㄥ伓鑹烘湳宸呭嘲','鏈ㄥ伓鑹烘湳宸呭嘲锛屼汉绫讳繚鎶ゅ疄璺靛吀鑼?,'榛勫缂?,'[\"muou1.jpg\"]','https://example.com/muou.mp4','[\"鏈ㄥ伓鐜茬彂婕斾竾璞★紝鎻愮嚎浼犵缁紶濂嘰"]','[\"鏄ヨ妭\", \"鍏冨\"]',24.879300,118.584000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(97,'鐩稿０','鏇茶壓','鐩稿０','娓呬唬','鍖椾含甯?,'provincial','璇村閫楀敱锛屽菇榛樿鍒猴紝姘戦棿鍠滃墽鑹烘湳','娓呬唬褰㈡垚浜庡寳浜紝姘戝浗鎴愮啛锛岀櫨濮撳枩鐖?,'姘戦棿鍠滃墽鐟板疂锛岃瑷€鑹烘湳鍏歌寖','椹笁绔?,'[\"xiangsheng1.jpg\"]','https://example.com/xiangsheng.mp4','[\"璇村閫楀敱鐨嗗闂紝瀣夌瑧鎬掗獋鐨嗘枃绔燶"]','[\"绔嬫槬\", \"绔嬪啲\"]',39.904200,116.407400,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(98,'璇勪功','鏇茶壓','璇勪功','瀹嬩唬','鍖椾含甯?,'municipal','璇翠功璁插彶锛屼竴浜轰竴妗屼竴鎵囷紝璁茶堪鍘嗗彶鏁呬簨','瀹嬩唬鐡﹁垗鍏磋捣锛屽巻浠ｄ紶鎵垮彂灞?,'姘戦棿璁插彶鑹烘湳锛屽巻鍙蹭紶鎾噸瑕佽浇浣?,'鍗曠敯鑺?,'[\"pingshu1.jpg\"]','https://example.com/pingshu.mp4','[\"涓€寮犲槾璇村敖澶╀笅浜嬶紝鍗婂鑸岃皥鍙よ浠婃儏\"]','[\"绉嬪垎\", \"闇滈檷\"]',39.904200,116.407400,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(99,'灞变笢蹇功','鏇茶壓','蹇功','娓呬唬','灞变笢鐪佹祹鍗楀競','municipal','灞变笢鏂硅█璇村敱锛岃妭濂忔槑蹇紝骞介粯椋庤叮','娓呬唬褰㈡垚浜庡北涓滐紝姘戦棿骞挎硾娴佷紶','姘戦棿璇村敱鐟板疂锛屽北涓滄枃鍖栦唬琛?,'楂樺厓閽?,'[\"shandongkuai1.jpg\"]','https://example.com/shandongkuai.mp4','[\"蹇功閾块數鍞卞北涓滐紝璞儏澹織璐暱绌篭"]','[\"绔嬫槬\", \"闆ㄦ按\"]',36.675000,117.006000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(100,'浜煹澶ч紦','鏇茶壓','澶ч紦','娓呬唬','鍖椾含甯?,'provincial','鍖椾含璇村敱鑹烘湳锛屽敱鑵斾紭闆咃紝闊靛懗鍗佽冻','娓呬唬褰㈡垚浜庡寳浜紝姘戝浗榧庣洓','鍖楁柟璇村敱鐟板疂锛岃瑷€闊充箰鑹烘湳','楠嗙帀绗?,'[\"jingyungu1.jpg\"]','https://example.com/jingyungu.mp4','[\"榧撻煹鎮犳壃鍞变含鍗庯紝浜厰浜煹鑷鎯匼"]','[\"涓\", \"閲嶉槼\"]',39.904200,116.407400,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(101,'浜屼汉杞?,'鏇茶壓','璇村敱','娓呬唬','杈藉畞鐪佹矆闃冲競','provincial','涓滃寳璇村敱鑹烘湳锛岃鍞辩粨鍚堬紝椋庤叮骞介粯','娓呬唬褰㈡垚浜庝笢鍖楋紝姘戦棿骞挎硾娴佷紶','涓滃寳鏂囧寲浠ｈ〃锛屾皯闂磋鍞辩懓瀹?,'璧垫湰灞?,'[\"errenzhuan1.jpg\"]','https://example.com/errenzhuan.mp4','[\"浜屼汉杞噷钘忔涔愶紝榛戝湡椋庢儏闊靛懗闀縗"]','[\"绔嬪啲\", \"灏忛洩\"]',41.804500,123.432000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(102,'璧摬鏃忎紛鐜涘牚','鏇茶壓','璇村敱','涓婂彜','榛戦緳姹熺渷鍚屾睙甯?,'national','璧摬鏃忚鍞辫壓鏈紝璁茶堪鑻遍泟鏁呬簨锛屾€ラ渶淇濇姢閬椾骇','璧锋簮浜庝笂鍙ゆ笖鐚庢枃鏄庯紝鍙ｄ紶蹇冩巿浼犳壙','娓旂寧鏂囧寲娲诲寲鐭筹紝灏戞暟姘戞棌璇村敱鐟板疂','鍚存鍑?,'[\"yimakan1.jpg\"]','https://example.com/yimakan.mp4','[\"浼婄帥鍫鍞变紶鍗冨彜锛岃但鍝叉枃鏄庝竾鍙ゅ瓨\"]','[\"鍐嚦\", \"澶у瘨\"]',47.696000,132.461000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(103,'鏍艰惃(鏂?灏?,'姘戦棿鏂囧','鍙茶瘲','涓婂彜','瑗胯棌闈掓捣鍥涘窛','national','涓栫晫鏈€闀垮彶璇楋紝钘忔棌钂欏彜鏃忚嫳闆勫彶璇楋紝娲绘€佸彶璇?,'璧锋簮浜庝笂鍙わ紝鍗冨勾鍙ｄ紶蹇冩巿锛岃嚦浠婁粛鍦ㄤ紶鍞?,'涓栫晫鍙茶瘲鐟板疂锛屾椿鎬佷紶鎵垮杩?,'鎵嶈鏃哄爢','[\"gesaer1.jpg\"]','https://example.com/gesaer.mp4','[\"鑻遍泟鍙茶瘲浼犲崈鍙わ紝闆煙鏂囨槑涓囧彜瀛榎"]','[\"绔嬫槬\", \"绔嬪啲\"]',32.060300,91.116600,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(104,'鐜涚撼鏂?,'姘戦棿鏂囧','鍙茶瘲','涓婂彜','鏂扮枂鍏嬪瓬鍕掕嫃宸?,'national','鏌皵鍏嬪瓬鏃忚嫳闆勫彶璇楋紝涓夊ぇ鍙茶瘲涔嬩竴','璧锋簮浜庝笂鍙わ紝鍗冨勾鍙ｄ紶蹇冩巿浼犳壙','灏戞暟姘戞棌鍙茶瘲鐟板疂锛屼笘鐣屾枃鍖栭仐浜?,'灞呯礌鐢风帥鐜涗緷','[\"manasi1.jpg\"]','https://example.com/manasi.mp4','[\"鐜涚撼鏂彶璇楄€€瑗垮煙锛屾煰灏斿厠瀛滀竾鍙や紶\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',39.470000,75.980000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(105,'渚楁棌鍙欎簨姝?,'姘戦棿鏂囧','鍙欎簨姝?,'瀹嬩唬','璐靛窞鐪侀粩涓滃崡宸?,'municipal','渚楁棌鍙欎簨闀挎瓕锛岃杩板巻鍙蹭笌鐖辨儏鏁呬簨','瀹嬩唬宸叉湁璁拌浇锛屼緱鏃忓彛浼犲績鎺堜紶鎵?,'渚楁棌鏂囧鐟板疂锛屾皯闂村彊浜嬬弽鍝?,'鍚寸帀绔?,'[\"dongxushi1.jpg\"]','https://example.com/dongxushi.mp4','[\"渚楁瓕鍙欎簨浼犲崈鍙わ紝姘戞棌椋庢儏涓囧彜瀛榎"]','[\"璋烽洦\", \"绔嬪\"]',26.631000,107.927000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(106,'鑻楁棌鍙ゆ瓕','姘戦棿鏂囧','鍙ゆ瓕','涓婂彜','璐靛窞鐪侀粩涓滃崡宸?,'provincial','鑻楁棌鍒涗笘鍙茶瘲锛岃杩板紑澶╄緹鍦颁笌姘戞棌璧锋簮','璧锋簮浜庝笂鍙わ紝鑻楁棌鍙ｄ紶蹇冩巿浼犳壙','鑻楁棌鏂囧鐟板疂锛屽垱涓栧彶璇楃弽鍝?,'鍞愭槬鑺?,'[\"miaoguge1.jpg\"]','https://example.com/miaoguge.mp4','[\"鍙ゆ瓕浼犲敱寮€澶╁湴锛岃嫍瀹舵枃鏄庝竾鍙ゅ瓨\"]','[\"鑺掔\", \"澶忚嚦\"]',26.727900,107.488000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(107,'澹棌绁炶瘽','姘戦棿鏂囧','绁炶瘽','涓婂彜','骞胯タ澹棌鑷不鍖?,'provincial','澹棌鍒涗笘绁炶瘽锛岃杩板ぉ鍦颁竾鐗╄捣婧?,'璧锋簮浜庝笂鍙わ紝澹棌鍙ｄ紶蹇冩巿浼犳壙','澹棌鏂囧鐟板疂锛屽皯鏁版皯鏃忕璇濈弽鍝?,'鍐滃啝鍝?,'[\"zhuangshen1.jpg\"]','https://example.com/zhuangshen.mp4','[\"绁炶瘽浼犲浼犲崈鍙わ紝澹埂鏂囨槑涓囧彜瀛榎"]','[\"鏄ュ垎\", \"绉嬪垎\"]',22.816700,108.325000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(108,'澶瀬鎷?,'浼犵粺浣撹偛','姝︽湳','鏄庝唬','娌冲崡鐪佺劍浣滃競','national','闃撮槼骞宠　锛屽垰鏌斿苟娴庯紝鍏荤敓涓庢鏈粨鍚?,'鏄庝唬寮犱笁涓板垱绔嬶紝闄堢帇寤峰畬鍠勶紝浼犳壙鍥涚櫨骞?,'涓崕姝︽湳鐟板疂锛屼笘鐣屽吇鐢熻繍鍔ㄥ吀鑼?,'闄堝皬鏃?,'[\"taiji1.jpg\"]','https://example.com/taiji.mp4','[\"澶瀬闃撮槼鍚竾璞★紝涓€鎷涗竴寮忓吇韬績\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',35.216000,113.223000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(109,'涓浗鐝犵畻','浼犵粺浣撹偛','璁＄畻鎶€鑹?,'姹変唬','鍏ㄥ浗','national','涓栫晫绗簲澶у彂鏄庯紝鎵嬫寚杩愮畻锛屽績绠楃鍣?,'姹変唬鍙戞槑锛屽畫浠ｆ垚鐔燂紝浣跨敤涓ゅ崈骞?,'浜虹被璁＄畻宸ュ叿濂囪抗锛屾暟瀛︽暀鑲茬懓瀹?,'鐜嬪崼杈?,'[\"zhusuan1.jpg\"]','https://example.com/zhusuan.mp4','[\"鐝犵畻鐜茬彂閫氭暟鐞嗭紝鎸囧皷杩愮畻瀹氫咕鍧"]','[\"绔嬫槬\", \"绔嬪啲\"]',39.904200,116.407400,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(110,'灏戞灄鍔熷か','浼犵粺浣撹偛','姝︽湳','鍖楅瓘','娌冲崡鐪佺櫥灏佸競','national','涓崕姝︽湳宸呭嘲锛岀姝﹀悎涓€锛屽ぉ涓嬪姛澶嚭灏戞灄','鍖楅瓘灏戞灄瀵哄垱绔嬶紝鍞愪唬榧庣洓锛屽悕鎵笘鐣?,'涓崕姝︽湳璞″緛锛岀姝︽枃鍖栫懓瀹?,'閲婃案淇?,'[\"shaolin1.jpg\"]','https://example.com/shaolin.mp4','[\"灏戞灄鍔熷か鍚嶅ぉ涓嬶紝绂呮鍚堜竴鑰€涓崕\"]','[\"鏄ュ垎\", \"绉嬪垎\"]',34.500000,113.033000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(111,'姝﹀綋鍔熷か','浼犵粺浣撹偛','姝︽湳','鏄庝唬','婀栧寳鐪佸崄鍫板競','provincial','鍐呭鎷充唬琛紝浠ユ煍鍏嬪垰锛岄亾瀹舵鏈?,'鏄庝唬寮犱笁涓板垱绔嬶紝閬撳姝︽湳鏍稿績','閬撳姝︽湳鐟板疂锛屽唴瀹舵嫵鍏歌寖','閽熶簯榫?,'[\"wudang1.jpg\"]','https://example.com/wudang.mp4','[\"姝﹀綋澶瀬鍚湡姘旓紝閬撳鍔熷か涓囧彜浼燶"]','[\"绔嬫槬\", \"绔嬪啲\"]',32.560000,111.037000,0,0,'2026-03-26 10:30:06','2026-03-26 10:30:06'),(112,'涓浗浼犵粺鍒惰尪鎶€鑹哄強鍏剁浉鍏充範淇?,'浼犵粺浣撹偛','鑼舵枃鍖?,'鍞愪唬','鍏ㄥ浗','national','缁胯尪绾㈣尪涔岄緳鑼剁瓑鍒朵綔鎶€鑹猴紝鑼舵枃鍖栨牳蹇?,'鍞愪唬鍏磋捣锛屽畫浠ｉ紟鐩涳紝鏄庢竻鏅強鍏ㄧ悆','鑼舵枃鍖栫懓瀹濓紝涓栫晫鍏变韩闈為仐','闄堝畻鎳?,'[\"chazhizao1.jpg\"]','https://example.com/chazhizao.mp4','[\"鏄ュ叡灞变腑閲囷紝棣欏疁绔归噷鐓嶾"]','[\"娓呮槑\", \"璋烽洦\"]',30.274100,120.155000,1,0,'2026-03-26 10:30:06','2026-03-26 10:30:06');
+INSERT INTO `intangible_cultural_heritage` VALUES (113,'京剧','传统戏曲',NULL,'清代','北京','national','适合沉浸式感受京味戏曲表演与脸谱文化。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(114,'景泰蓝制作技艺','传统手工艺',NULL,'清代','北京','national','适合体验掐丝点蓝的宫廷器物制作。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(115,'北京面塑','传统手工艺',NULL,'清代','北京','national','适合亲手制作节庆面塑与民俗造型。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(116,'宫灯制作技艺','传统手工艺',NULL,'明代','北京','national','适合节庆夜游场景与灯彩手作体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(117,'风筝制作技艺','传统手工艺',NULL,'清代','北京','national','适合春日户外体验和传统彩绘工艺。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(118,'苏绣','传统手工艺',NULL,'宋代','江苏','national','适合感受宋韵针法与江南审美。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(119,'南戏昆山腔','传统戏曲',NULL,'宋代','江苏','national','适合体验宋韵戏曲声腔与舞台身段。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(120,'南京云锦','传统手工艺',NULL,'宋代','江苏','national','适合了解古代织造工艺与纹样设计。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(121,'桃花坞木版年画','传统美术',NULL,'明代','江苏','national','适合春节主题路线和木版印制体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(122,'秦淮灯彩','传统美术',NULL,'宋代','江苏','national','适合节庆夜游和灯彩制作路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(123,'宣纸制作技艺','传统手工艺',NULL,'唐代','安徽','national','适合深度体验文房四宝的材料工艺。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(124,'歙砚制作技艺','传统手工艺',NULL,'宋代','安徽','national','适合体验砚石选材与雕刻工艺。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(125,'徽墨制作技艺','传统手工艺',NULL,'宋代','安徽','national','适合串联笔墨纸砚主题路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(126,'糖画','传统手工艺',NULL,'清代','四川','national','适合亲子与节庆街区体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(127,'川剧变脸','传统戏曲',NULL,'清代','四川','national','适合夜间剧场和互动表演路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(128,'蜀绣','传统手工艺',NULL,'宋代','四川','national','适合体验细腻针法与色彩层次。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(129,'青神竹编','传统手工艺',NULL,'唐代','四川','national','适合安排手作课程与山水线路结合。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(130,'唐墓壁画临摹技艺','传统美术',NULL,'唐代','陕西','national','适合沉浸体验盛唐壁画线描与设色。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(131,'碑刻传拓技艺','传统美术',NULL,'唐代','陕西','national','适合文博型游客体验传拓与碑刻艺术。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(132,'长安宫灯彩绘','传统美术',NULL,'唐代','陕西','national','适合节庆主题路线和唐风灯彩体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(133,'苗绣','传统手工艺',NULL,'清代','贵州','national','适合少数民族主题深度路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(134,'苗族银饰锻制技艺','传统手工艺',NULL,'清代','贵州','national','适合与节庆服饰文化一起体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(135,'壮锦织造技艺','传统手工艺',NULL,'清代','广西','national','适合壮乡主题路线和织机体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(136,'铜鼓习俗','传统民俗',NULL,'清代','广西','national','适合民俗节庆和少数民族主题串联。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(137,'杨柳青年画','传统美术',NULL,'清代','天津','national','适合春节主题路线和民艺版画体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(138,'泥人张彩塑','传统美术',NULL,'清代','天津','national','适合春节场景和彩塑手作。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(139,'潍坊风筝','传统手工艺',NULL,'宋代','山东','national','适合清明踏青路线和风筝扎制体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(140,'山东剪纸','传统手工艺',NULL,'清代','山东','national','适合节庆装饰与手工体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(141,'唐三彩','传统手工艺',NULL,'唐代','河南','national','适合古都审美与陶艺体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(142,'龙泉青瓷烧制技艺','传统手工艺',NULL,'宋代','浙江','national','适合器物审美和青瓷烧制体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(143,'王星记制扇技艺','传统手工艺',NULL,'明代','浙江','national','适合文人器物主题路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(144,'广绣','传统手工艺',NULL,'清代','广东','national','适合岭南题材刺绣与商都漫游。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(145,'潮州木雕','传统手工艺',NULL,'明代','广东','national','适合工艺细作和古城漫游结合。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(146,'端砚制作技艺','传统手工艺',NULL,'宋代','广东','national','适合文房四宝主题深度体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(147,'宋锦织造技艺','传统手工艺',NULL,'宋代','江苏','national','适合宋代织造美学路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(148,'京绣','传统手工艺',NULL,'清代','北京','national','适合春节场景下体验京派刺绣纹样。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(149,'兔儿爷彩塑','传统手工艺',NULL,'清代','北京','national','适合老北京节庆民艺路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(150,'京作剪纸','传统手工艺','剪纸艺术','唐代起源，明清鼎盛','北京市','municipal','京作剪纸，又称京派剪纸，是剪纸艺术中极具地域辨识度的流派，扎根北京这片兼具皇家气度与市井烟火的土地，历经千年沉淀，融合宫廷雅致与民间质朴，形成了独有的艺术风骨。它是流淌在老北京胡同里、镌刻在百姓生活中的文化基因。','京作剪纸起源于唐代，盛于明清时期，距今已有千年历史。明朝永乐年间，宫廷剪纸艺术家已达数百人，为宫廷庆典、祭祀活动提供剪纸装饰。清代，《红楼梦》中描述的贾府春节剪窗花场景，展现了剪纸艺术在当时贵族家庭的普及程度。近现代以来，京作剪纸历经沉浮，在战乱与变革中艰难传承，同时也在时代浪潮中不断创新，适应新的生活场景。','京作剪纸是北京市非物质文化遗产，承载的是一门手艺，是老北京人的生活智慧、审美情趣与家国情怀。它具有重要的历史、艺术和文化价值，为研究北京地区民俗文化、社会生活提供了重要依据。京作剪纸的保护和传承，对于弘扬中华优秀传统文化、增强文化自信具有重要意义。','张晓林（第三代传承人）、张立君（第四代传承人）','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/d6dcaa92-3f80-4949-971a-9bdf61480965.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/e2935883-28bd-4542-9612-db8e4eecc2df.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-28 09:48:21','2026-03-30 14:26:15'),(151,'毛猴制作技艺','传统手工艺',NULL,'清代','北京','national','适合串联京味民俗和手工体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(152,'冰糖葫芦制作技艺','传统手工艺',NULL,'清代','北京','national','适合春节市集与街区体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(153,'苏扇制作技艺','传统手工艺',NULL,'宋代','江苏','national','适合文人器物与手工体验路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(154,'缂丝织造技艺','传统手工艺',NULL,'宋代','江苏','national','适合高阶织造工艺体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(155,'绒花制作技艺','传统手工艺',NULL,'清代','天津','national','适合春节头饰和节庆花艺体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(156,'潍坊花灯制作技艺','传统手工艺',NULL,'清代','山东','national','适合春节夜游和彩灯制作体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(157,'鲁绣','传统手工艺',NULL,'清代','山东','national','适合齐鲁针法与节庆纹样体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(158,'龙舟习俗','传统民俗',NULL,'宋代','广东','national','适合端午主题民俗路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(159,'寒食清明踏青习俗','传统民俗',NULL,'宋代','江苏','national','适合清明踏青和春日出游路线。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(160,'香包佩饰习俗','传统民俗',NULL,'清代','安徽','national','适合端午主题的民俗体验。',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-28 09:48:21','2026-03-28 09:48:21'),(176,'汝瓷','传统技艺','青瓷烧制技艺','始于唐代中期，盛于北宋中晚期','河南省汝州市、宝丰县','national','汝瓷是中国宋代\"五大名窑\"之首，因位于宋代汝州而得名。汝瓷以天青色釉为主，釉色温润如玉，素雅含蓄，体现了宋代清淡优雅的审美追求。汝瓷烧制技艺技术性强，采用一钵一器支钉托烧的叠烧技法，具有配料绝、变色绝、裂纹绝、应光绝四大特色。','汝瓷烧制技艺始于唐代中叶，北宋中晚期达到鼎盛时期，为北宋宫廷专造。汝官窑存续时间只有20年左右，成品率极低，传世作品不足百件。宋、金对峙时期，汝官窑停烧，烧制技艺传至民间。元、明、清至当代，汝瓷烧制技艺在民间传承、延续、发展。新中国成立后，20世纪80年代天青釉汝瓷复烧成功。2011年5月23日，汝瓷烧制技艺经国务院批准列入第三批国家级非物质文化遗产名录。','汝瓷烧制技艺具有重要的历史、艺术和科学价值。历史上汝窑所烧精品均为皇家御用品，蕴涵唐宋的文化艺术精神，结晶着唐宋的科技水平与能力。汝瓷独特的釉色对后世瓷器烧造产生了深远影响，至今一直被视作瓷釉的楷模而被仿烧。汝瓷烧制技艺的传承延续着口传心授的方式，为传统工艺的传承提供了重要借鉴价值。','朱文立、李廷怀、孟玉松、王君子等国家级传承人','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/1c0acaa8-3c59-4211-83b3-cd952f15749e.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/f951bbb6-62af-4257-b606-5a28588496c4.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-30 11:46:15','2026-03-30 14:43:28'),(177,'傩舞','传统舞蹈','祭祀舞蹈','原始社会','江西、安徽、贵州、云南、广东、广西、四川等省份','national','傩舞又称鬼戏，是中国汉族最古老的一种驱鬼敬神、驱瘟避疫的娱神祭祀舞蹈，起源于汉族先民的自然崇拜、图腾崇拜和巫术意识，在原始社会氏族部落形成初期便诞生。','傩舞起源于原始社会，周代时纳入国家礼制。先秦文献记载，傩礼是希望调理四时阴阳，以求寒暑相宜，风调雨顺，五谷丰登，人畜平安，国富民生。唐宋以后，儒学地位的提高压制了傩文化的传播，于是傩文化重心开始转移到西南边远等蛮荒之地。时至今日，傩舞已经由娱神的祭祀活动，衍变为娱神与娱人相结合的民俗活动。2006年5月20日，傩舞经国务院批准列入第一批国家级非物质文化遗产名录。','傩舞是中国舞蹈\"活化石\"，是历史、民俗、民间宗教和原始戏剧的综合体，蕴藏着丰富的文化基因，具有重要的研究价值。傩文化代代相传沿袭至今，是中华民族文化特点鲜明的民俗活动，在经济文化、道德教化、以及社交娱乐等方面发挥着正能量。','罗会武','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/68f3792d-5a6f-421b-b81c-8344932dbd3d.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/7c088c62-c4b8-4a7e-a6dd-364829246a66.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-30 14:04:59','2026-03-30 14:34:50'),(178,'敦煌壁画','传统美术','彩绘壁画','北魏至元代','甘肃省敦煌市','national','敦煌壁画是敦煌莫高窟艺术的重要组成部分，是中国古代壁画艺术的巅峰之作。壁画内容丰富，包括佛像画、经变画、故事画、山水画等，展现了1000多年间中国绘画艺术的发展历程和辉煌成就。','敦煌壁画始于北魏时期，历经西魏、北周、隋、唐、五代、宋、西夏、元等朝代，延续1000多年。唐代是敦煌壁画的鼎盛时期，壁画艺术达到了前所未有的高度。1900年莫高窟藏经洞被发现后，敦煌壁画闻名世界。','敦煌壁画是丝绸之路上东西方文化交融的结晶，具有极高的历史、艺术和科学价值。壁画中保存了大量珍贵的历史资料，为研究中国古代社会、宗教、艺术、文化提供了重要依据。敦煌壁画的保护和研究，对于传承中华优秀传统文化、促进文化交流具有重要意义。','樊锦诗','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/0db1c398-1b61-476f-8dc2-008dd9568142.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/0cba8dd7-f1b1-495e-b7af-bfe93a86ba5e.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-30 14:20:57',NULL),(179,'皮影戏','传统戏剧','操纵影偶表演','起源于汉代，形成于唐末五代，盛于清代','全国各省份（河北唐山、陕西华县、甘肃环县、山西孝义、浙江海宁、湖北江汉平原、广东陆丰、辽宁凌源等）','national','皮影戏又称\"影子戏\"或\"灯影戏\"，是中华民族最古老的民间艺术形式之一。皮影戏是一种用兽皮或纸板剪制形象并借灯光照射所剪形象而表演故事的戏曲形式，是集绘画、雕刻、音乐、演唱为一体的综合性民间艺术，被誉为\"电影的鼻祖\"\"最早的卡通动画\"。','皮影戏从有文字记载已经有2000多年的历史。汉代已有\"弄影\"的记载，唐代开始发展，宋代已经成熟并盛行，经过宋、金、元、明四个历史时期的发展，在清代呈现出繁荣局面。元代时期传至西亚和欧洲。2006年5月20日，经国务院批准列入第一批国家级非物质文化遗产名录。2011年，中国皮影戏入选人类非物质文化遗产代表作名录。','皮影戏是我国重要的民间传统艺术，具有重要的历史、艺术和文化价值。皮影戏的传承延续着口传心授的方式，为文化传承的方式方法提供了重要借鉴价值。皮影戏的唱腔、音乐、表演、造型有着本地域特有的风格，受到国内外同行和观众的赞誉，具有很高的欣赏与研究价值。皮影戏是中华民族艺术殿堂里的一颗璀璨明珠，更是让当代人触摸历史脉搏、留住文化记忆的重要载体。','许子林（凌源皮影戏）、张国治（唐山皮影戏）、汪天喜（华县皮影戏）等50位国家级传承人','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/5961f3b3-247b-4d8b-b52f-b00390c3bec2.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/96435144-b515-4104-bdc4-2486d33449bf.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-30 14:30:53',NULL),(180,'京剧','传统戏剧','中国国剧','形成于清代（1790年徽班进京）','北京（全国各省份均有分布）','national','京剧被称为\"国剧\"、誉为\"国粹\"，是中国戏曲的集大成者，蕴含着中华历史文化的深厚底蕴。京剧是在徽汉合流的基础上，融合了徽调二黄与汉调西皮，经过200多年的发展形成的综合性舞台艺术，是中国第一大剧种。','京剧起源于清代，1790年（乾隆五十五年）为给乾隆皇帝祝寿，扬州盐商组织\"三庆\"徽班进京，徽班进京演出拉开帷幕。此后，其他徽班也相继入京，形成了著名的\"三庆\"\"四喜\"\"春台\"\"和春\"四大徽班。道光年间，汉调艺人进京加入徽班演出，形成了\"徽汉合流\"的局面，京剧由此诞生。2010年11月16日，京剧被联合国教科文组织列入\"人类非物质文化遗产代表作名录\"。','京剧作为中国文化的瑰宝，对于构建中华民族的精神家园有着不可替代的作用。京剧的传承延续着科班体系、家族血脉、师徒门户的活态传承网络，为文化传承提供了重要借鉴价值。京剧的唱腔、表演、脸谱、服饰等具有独特的艺术价值，受到国内外观众的喜爱，具有很高的欣赏与研究价值。京剧是中华民族艺术殿堂里的一颗璀璨明珠，更是让当代人触摸历史脉搏、留住文化记忆的重要载体。','梅葆玖（梅派）、谭元寿（谭派）、张火丁（程派）、李胜素（梅派）、孟广禄（裘派）、王珮瑜（余派）等国家级传承人','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/images/055cd81b-6e9a-46ae-b28c-9b66872cf899.png\"]','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/heritage/videos/77e08d94-c024-4d15-9a0d-2b7b5e927cdd.mp4',NULL,NULL,NULL,NULL,1,0,'2026-03-30 14:38:38',NULL);
 /*!40000 ALTER TABLE `intangible_cultural_heritage` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `merchant_applications`
---
-
-DROP TABLE IF EXISTS `merchant_applications`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `merchant_applications` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `user_id` bigint NOT NULL,
-  `real_name` varchar(50) NOT NULL,
-  `id_card` varchar(18) NOT NULL,
-  `phone` varchar(20) NOT NULL,
-  `heritage_type` varchar(50) DEFAULT NULL,
-  `heritage_description` text,
-  `proof_images` json DEFAULT NULL,
-  `shop_name` varchar(100) DEFAULT NULL,
-  `shop_address` varchar(200) DEFAULT NULL,
-  `application_status` varchar(20) DEFAULT 'pending',
-  `audit_admin_id` bigint DEFAULT NULL,
-  `audit_time` datetime DEFAULT NULL,
-  `audit_remark` varchar(500) DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_application` (`user_id`),
-  CONSTRAINT `fk_merchant_app_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `merchant_applications`
@@ -294,35 +181,129 @@ CREATE TABLE `merchant_applications` (
 
 LOCK TABLES `merchant_applications` WRITE;
 /*!40000 ALTER TABLE `merchant_applications` DISABLE KEYS */;
-INSERT INTO `merchant_applications` VALUES (1,10011,'绉︾濞?,'1234567890','13986074011','鍒虹唬','缇庣缁?,NULL,'闅界唬','姹熻嫃鐪佸埡甯傜唬鍘?,'approved',10024,'2026-03-26 21:52:56','瀹℃壒閫氳繃','2026-03-26 21:27:21','2026-03-26 21:52:56');
+INSERT INTO `merchant_applications` VALUES (1,10011,'秦秀娟','1234567890','13986074011','刺绣','美秀绣',NULL,'隽绣','江苏省刺市绣县',NULL,NULL,NULL,'approved',10024,'2026-03-28 23:47:40','测试','2026-03-26 21:27:21','2026-03-28 23:47:40',1);
 /*!40000 ALTER TABLE `merchant_applications` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_merchant_applications_bi_sync_profile` BEFORE INSERT ON `merchant_applications` FOR EACH ROW BEGIN
+    CALL sp_upsert_merchant_profile_from_application(
+        NEW.id,
+        NEW.user_id,
+        NEW.real_name,
+        NEW.phone,
+        NEW.heritage_type,
+        NEW.heritage_description,
+        NEW.proof_images,
+        NEW.shop_name,
+        NEW.shop_address,
+        NEW.province,
+        NEW.city,
+        NEW.intro,
+        NEW.application_status
+    );
+
+    SET NEW.merchant_profile_id = (
+        SELECT mp.id
+        FROM merchant_profiles mp
+        WHERE mp.user_id = NEW.user_id
+        LIMIT 1
+    );
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_merchant_applications_ai_fix_latest_application` AFTER INSERT ON `merchant_applications` FOR EACH ROW BEGIN
+    UPDATE merchant_profiles mp
+    SET mp.latest_application_id = NEW.id,
+        mp.business_status = CASE
+            WHEN NEW.application_status IN ('active', 'approved', 'rejected', 'disabled', 'closed', 'pending') THEN NEW.application_status
+            ELSE mp.business_status
+        END,
+        mp.update_time = CURRENT_TIMESTAMP
+    WHERE mp.user_id = NEW.user_id;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_merchant_applications_bu_sync_profile` BEFORE UPDATE ON `merchant_applications` FOR EACH ROW BEGIN
+    CALL sp_upsert_merchant_profile_from_application(
+        OLD.id,
+        NEW.user_id,
+        NEW.real_name,
+        NEW.phone,
+        NEW.heritage_type,
+        NEW.heritage_description,
+        NEW.proof_images,
+        NEW.shop_name,
+        NEW.shop_address,
+        NEW.province,
+        NEW.city,
+        NEW.intro,
+        NEW.application_status
+    );
+
+    SET NEW.merchant_profile_id = (
+        SELECT mp.id
+        FROM merchant_profiles mp
+        WHERE mp.user_id = NEW.user_id
+        LIMIT 1
+    );
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Dumping data for table `merchant_profiles`
+--
+
+LOCK TABLES `merchant_profiles` WRITE;
+/*!40000 ALTER TABLE `merchant_profiles` DISABLE KEYS */;
+INSERT INTO `merchant_profiles` VALUES (1,10011,'隽绣','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/homepage/5a0d6698-05fc-4c22-b96d-8efcdc8b7f09.png',NULL,'秦秀娟','13986074011','qinjiayi_1106@qq.com',NULL,NULL,NULL,'江苏省刺市绣县','刺绣','美秀绣',NULL,'approved',1,'2026-03-13 01:57:15','2026-04-03 22:26:02'),(2,10025,'京华非遗工坊',NULL,'聚焦京味非遗体验与讲解',NULL,'13800000001',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(3,10026,'苏作匠心馆',NULL,'以江南手工艺体验为主',NULL,'13800000002',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(4,10027,'金陵雅集馆',NULL,'结合传统工艺和节庆活动',NULL,'13800000003',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(5,10028,'徽州四宝社',NULL,'文房四宝主题体验空间',NULL,'13800000004',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(6,10029,'蜀风非遗坊',NULL,'四川传统技艺和戏曲体验',NULL,'13800000005',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(7,10030,'长安艺脉馆',NULL,'唐风美术主题路线运营',NULL,'13800000006',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(8,10031,'苗岭锦绣社',NULL,'少数民族非遗深度体验',NULL,'13800000007',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(9,10032,'壮乡锦艺阁',NULL,'壮族织锦与铜鼓民俗体验',NULL,'13800000008',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(10,10033,'津门年艺馆',NULL,'天津春节美术类非遗体验',NULL,'13800000009',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(11,10034,'齐鲁巧艺坊',NULL,'鲁派手工艺和节令体验',NULL,'13800000010',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(12,10035,'中原唐艺馆',NULL,'唐风陶艺和古都体验',NULL,'13800000011',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(13,10036,'越地青瓷社',NULL,'宋韵器物与生活美学',NULL,'13800000012',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27'),(14,10037,'岭南绣作馆',NULL,'岭南传统手工艺体验',NULL,'13800000013',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27');
+/*!40000 ALTER TABLE `merchant_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `messages`
+-- Dumping data for table `merchant_reviews`
 --
 
-DROP TABLE IF EXISTS `messages`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `messages` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '娑堟伅ID',
-  `conversation_id` bigint NOT NULL COMMENT '浼氳瘽ID',
-  `sender_id` bigint NOT NULL COMMENT '鍙戦€佽€匢D',
-  `receiver_id` bigint NOT NULL COMMENT '鎺ユ敹鑰匢D',
-  `content` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '娑堟伅鍐呭',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'text' COMMENT '娑堟伅绫诲瀷: text-鏂囨湰',
-  `source_lang` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '娑堟伅婧愯瑷€浠ｇ爜: en, zh, ja绛?,
-  `is_read` tinyint(1) DEFAULT '0' COMMENT '鏄惁宸茶: 0-鏈, 1-宸茶',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鍙戦€佹椂闂?,
-  `deleted_by_receiver` bit(1) DEFAULT NULL,
-  `deleted_by_sender` bit(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_msg_conv` (`conversation_id`),
-  KEY `idx_msg_sender` (`sender_id`),
-  KEY `idx_msg_receiver` (`receiver_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='娑堟伅琛?;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `merchant_reviews` WRITE;
+/*!40000 ALTER TABLE `merchant_reviews` DISABLE KEYS */;
+INSERT INTO `merchant_reviews` VALUES (1,10011,10000,NULL,1,'activity',4.0,'nice','2026-03-31 08:42:35','2026-03-31 08:42:35');
+/*!40000 ALTER TABLE `merchant_reviews` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `messages`
@@ -330,36 +311,9 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (12,4,10000,10011,'hello,what is your name?','text','en',1,'2026-03-20 15:33:31',_binary '\0',_binary '\0'),(13,4,10011,10000,'浣犲ソ鎴戝彨Jane','text','auto',1,'2026-03-20 15:42:04',_binary '\0',_binary '\0'),(14,4,10011,10000,'浣犲憿锛屼綘鍙粈涔?,'text','auto',1,'2026-03-20 15:43:35',_binary '\0',_binary '\0'),(15,4,10011,10000,'浣犲ソ','text','zh',1,'2026-03-21 00:16:23',_binary '\0',_binary '\0'),(16,5,10020,10011,'浣犲ソ','text','zh',1,'2026-03-21 03:28:20',_binary '\0',_binary ''),(18,5,10020,10011,'鍦ㄥ悧','text','zh',1,'2026-03-21 03:28:54',_binary '\0',_binary '\0');
+INSERT INTO `messages` VALUES (12,4,10000,10011,'hello,what is your name?','text','en',1,'2026-03-20 15:33:31',_binary '\0',_binary '\0'),(13,4,10011,10000,'你好我叫Jane','text','auto',1,'2026-03-20 15:42:04',_binary '\0',_binary '\0'),(14,4,10011,10000,'你呢，你叫什么','text','auto',1,'2026-03-20 15:43:35',_binary '\0',_binary '\0'),(15,4,10011,10000,'你好','text','zh',1,'2026-03-21 00:16:23',_binary '\0',_binary '\0'),(16,5,10020,10011,'你好','text','zh',1,'2026-03-21 03:28:20',_binary '\0',_binary ''),(18,5,10020,10011,'在吗','text','zh',1,'2026-03-21 03:28:54',_binary '\0',_binary '\0'),(19,7,10024,10047,'你好','text','zh',1,'2026-03-29 03:32:19',_binary '\0',_binary '\0'),(20,8,10000,10047,'客服','text','zh',1,'2026-03-29 03:50:53',_binary '\0',_binary '\0'),(21,8,10047,10000,'我是客服小简','text','zh',1,'2026-03-29 09:52:06',_binary '\0',_binary '\0'),(22,7,10047,10024,'你好，我是客服小简','text','zh',0,'2026-03-29 09:52:28',_binary '\0',_binary '\0'),(23,8,10000,10047,'我没有什么问题','text','zh',1,'2026-03-29 12:12:05',_binary '\0',_binary '\0'),(24,8,10000,10047,'就是想要测试一下','text','zh',1,'2026-03-29 12:12:19',_binary '\0',_binary '\0'),(25,8,10047,10000,'好的','text','zh',1,'2026-03-29 12:12:37',_binary '\0',_binary '\0'),(26,8,10047,10000,'测试得怎么样了','text','zh',1,'2026-03-29 12:16:20',_binary '\0',_binary '\0'),(27,8,10047,10000,'还差一点','text','zh',1,'2026-03-29 12:24:07',_binary '\0',_binary '\0'),(28,8,10000,10047,'对还差一点','text','zh',1,'2026-03-29 12:24:52',_binary '\0',_binary '\0'),(29,9,10011,10047,'我有问题','text','zh',1,'2026-04-03 00:09:55',_binary '\0',_binary '\0');
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `notifications`
---
-
-DROP TABLE IF EXISTS `notifications`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `notifications` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '閫氱煡ID',
-  `user_id` bigint NOT NULL COMMENT '鎺ユ敹閫氱煡鐨勭敤鎴稩D',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '閫氱煡绫诲瀷: comment-璇勮, collection-鏀惰棌',
-  `from_user_id` bigint DEFAULT NULL COMMENT '瑙﹀彂閫氱煡鐨勭敤鎴稩D',
-  `post_id` bigint DEFAULT NULL COMMENT '鐩稿叧甯栧瓙ID',
-  `comment_id` bigint DEFAULT NULL COMMENT '鐩稿叧璇勮ID',
-  `content` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '閫氱煡鍐呭',
-  `is_read` tinyint(1) DEFAULT '0' COMMENT '鏄惁宸茶: 0-鏈, 1-宸茶',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鍒涘缓鏃堕棿',
-  PRIMARY KEY (`id`),
-  KEY `idx_notif_user` (`user_id`),
-  KEY `idx_notif_type` (`type`),
-  KEY `idx_notif_time` (`create_time`),
-  KEY `fk_notif_from_user` (`from_user_id`),
-  KEY `fk_notif_post` (`post_id`),
-  KEY `fk_notif_comment` (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='閫氱煡琛?;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `notifications`
@@ -367,35 +321,9 @@ CREATE TABLE `notifications` (
 
 LOCK TABLES `notifications` WRITE;
 /*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
-INSERT INTO `notifications` VALUES (5,10011,'collection',10000,1,NULL,'y0 鏀惰棌浜嗕綘鐨勫笘瀛?,1,'2026-03-19 20:14:40'),(6,10000,'collection',10011,2,NULL,'+1 鏀惰棌浜嗕綘鐨勫笘瀛?,1,'2026-03-20 09:26:59'),(8,10011,'collection',10000,4,NULL,'y0 鏀惰棌浜嗕綘鐨勫笘瀛?,1,'2026-03-20 19:00:02'),(9,10011,'collection',10020,6,NULL,'123 鏀惰棌浜嗕綘鐨勫笘瀛?,1,'2026-03-21 03:26:13'),(16,10000,'comment',10011,2,42,'+1 鍥炲浜嗕綘鐨勮瘎璁? 33',1,'2026-03-24 18:14:06');
+INSERT INTO `notifications` VALUES (17,10000,'comment',10011,9,1,'+1 commented on your post: 你好',1,'2026-03-30 17:11:20');
 /*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `official_contents`
---
-
-DROP TABLE IF EXISTS `official_contents`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `official_contents` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
-  `content` text NOT NULL,
-  `category` varchar(50) DEFAULT 'introduction',
-  `cover_image` varchar(255) DEFAULT NULL,
-  `images` json DEFAULT NULL,
-  `tags` json DEFAULT NULL,
-  `is_public` tinyint(1) DEFAULT '1',
-  `view_count` int DEFAULT '0',
-  `admin_id` bigint NOT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk_official_admin` (`admin_id`),
-  CONSTRAINT `fk_official_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `official_contents`
@@ -403,49 +331,9 @@ CREATE TABLE `official_contents` (
 
 LOCK TABLES `official_contents` WRITE;
 /*!40000 ALTER TABLE `official_contents` DISABLE KEYS */;
+INSERT INTO `official_contents` VALUES (1,'homepage_publish_work','[7,4]','homepage_work_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 00:33:03',NULL),(2,'homepage_publish_activity','[4,5,8]','homepage_activity_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 02:07:14',NULL),(3,'homepage_publish_heritage','[113,114,117,118,119,122]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 02:07:40',NULL),(4,'homepage_publish_work','[7,4,6,2,5,3]','homepage_work_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 02:08:37',NULL),(5,'homepage_publish_heritage','[176,113,114,117,118,119]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 11:46:15',NULL),(6,'homepage_publish_heritage','[176,117,118,119]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:00:19',NULL),(7,'homepage_publish_heritage','[176,117,118,119,177]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:06:22',NULL),(8,'homepage_publish_heritage','[176,117,118,119,177,178]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:21:11',NULL),(9,'homepage_publish_heritage','[176,178,177,150]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:26:56',NULL),(10,'homepage_publish_heritage','[150,176,178,177,179]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:31:04',NULL),(11,'homepage_publish_heritage','[150,176,177,178,179,180]','homepage_heritage_selection',NULL,NULL,NULL,1,0,10047,'2026-03-30 14:45:17',NULL);
 /*!40000 ALTER TABLE `official_contents` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `orders`
---
-
-DROP TABLE IF EXISTS `orders`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `orders` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `order_no` varchar(50) NOT NULL,
-  `user_id` bigint NOT NULL,
-  `merchant_id` bigint NOT NULL,
-  `product_id` bigint DEFAULT NULL,
-  `product_name` varchar(200) DEFAULT NULL,
-  `quantity` int DEFAULT '1',
-  `total_amount` int NOT NULL,
-  `pay_amount` int NOT NULL,
-  `status` varchar(20) DEFAULT 'pending_payment',
-  `payment_type` varchar(20) DEFAULT NULL,
-  `payment_time` datetime DEFAULT NULL,
-  `receiver_name` varchar(50) DEFAULT NULL,
-  `receiver_phone` varchar(20) DEFAULT NULL,
-  `receiver_province` varchar(50) DEFAULT NULL,
-  `receiver_city` varchar(50) DEFAULT NULL,
-  `receiver_district` varchar(50) DEFAULT NULL,
-  `receiver_address` varchar(200) DEFAULT NULL,
-  `remark` varchar(500) DEFAULT NULL,
-  `logistics_company` varchar(50) DEFAULT NULL,
-  `logistics_no` varchar(50) DEFAULT NULL,
-  `delete_status` tinyint(1) DEFAULT '0',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `order_no` (`order_no`),
-  KEY `fk_orders_user` (`user_id`),
-  KEY `fk_orders_merchant` (`merchant_id`),
-  CONSTRAINT `fk_orders_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `orders`
@@ -455,26 +343,68 @@ LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `phrases`
---
-
-DROP TABLE IF EXISTS `phrases`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phrases` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '鐭ID',
-  `user_id` bigint NOT NULL COMMENT '鐢ㄦ埛ID',
-  `text` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '鐭鏂囨湰',
-  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT '鏀惰棌' COMMENT '鐭鍒嗙被',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鍒涘缓鏃堕棿',
-  `original_text` longtext COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`id`),
-  KEY `idx_phrase_user` (`user_id`),
-  KEY `idx_phrase_category` (`category`)
-) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='鏃呰甯哥敤璇〃';
-/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_orders_bi_fill_merchant_profile` BEFORE INSERT ON `orders` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_orders_bu_fill_merchant_profile` BEFORE UPDATE ON `orders` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `phrases`
@@ -482,25 +412,59 @@ CREATE TABLE `phrases` (
 
 LOCK TABLES `phrases` WRITE;
 /*!40000 ALTER TABLE `phrases` DISABLE KEYS */;
-INSERT INTO `phrases` VALUES (4,10011,'闈炲父鎰熻阿銆?,'鏀惰棌','2026-03-20 17:10:09',NULL),(6,10000,'闈炲父鎰熻阿','鏀惰棌','2026-03-20 17:14:16',NULL),(7,10000,'鍡紝寰堥珮鍏磋璇嗕綘','鏀惰棌','2026-03-20 19:33:51','hi,nice to meet you'),(57,10020,'浣犲ソ锛岃闂檮杩戞湁娲楁墜闂村悧锛?,'鏃ュ父','2026-03-21 03:16:08','銇撱倱銇仭銇€佽繎銇忋伀銉堛偆銉伅銇傘倞銇俱仚銇嬶紵'),(58,10020,'杩欎釜澶氬皯閽憋紵','璨枫亜鐗?,'2026-03-21 03:16:08','銇撱倢銇亜銇忋倝銇с仚銇嬶紵'),(59,10020,'璇风粰鎴戜竴鏉挅鍟?,'椋查','2026-03-21 03:16:08','銈炽兗銉掋兗銈掍竴鏉亸銇犮仌銇?),(60,10020,'璇烽棶鎬庝箞鍘绘満鍦猴紵','浜ら€?,'2026-03-21 03:16:08','绌烘腐銇搞伅銇┿亞銈勩仯銇﹁銇嶃伨銇欍亱锛?),(61,10020,'鎴戦渶瑕佸府鍔?,'绶婃€?,'2026-03-21 03:16:08','鍔┿亼銇屽繀瑕併仹銇?),(62,10020,'璋㈣阿浣犵殑甯姪','绀煎剙','2026-03-21 03:16:08','鍔┿亼銇︺亸銈屻仸銇傘倞銇屻仺銇?),(63,10020,'鎴戜笉浼氳褰撳湴璇█','銈炽儫銉ャ儖銈便兗銈枫儳銉?,'2026-03-21 03:16:08','鐝惧湴銇█钁夈亴瑭便仜銇俱仜銈?),(64,10020,'璇疯鎱竴鐐?,'銈炽儫銉ャ儖銈便兗銈枫儳銉?,'2026-03-21 03:16:08','銈傘仯銇ㄣ倖銇ｃ亸銈婅┍銇椼仸銇忋仩銇曘亜'),(82,10023,'浣犲ソ锛岃闂檮杩戞湁娲楁墜闂村悧锛?,'鏃ュ父','2026-03-22 07:19:34','浣犲ソ锛岃闂檮杩戞湁娲楁墜闂村悧锛?),(83,10023,'杩欎釜澶氬皯閽憋紵','璐墿','2026-03-22 07:19:34','杩欎釜澶氬皯閽憋紵'),(84,10023,'璇风粰鎴戜竴鏉挅鍟?,'椁愰ギ','2026-03-22 07:19:34','璇风粰鎴戜竴鏉挅鍟?),(85,10023,'璇烽棶鎬庝箞鍘绘満鍦猴紵','浜ら€?,'2026-03-22 07:19:34','璇烽棶鎬庝箞鍘绘満鍦猴紵'),(86,10023,'鎴戦渶瑕佸府鍔?,'绱ф€?,'2026-03-22 07:19:34','鎴戦渶瑕佸府鍔?),(87,10023,'璋㈣阿浣犵殑甯姪','绀艰矊','2026-03-22 07:19:34','璋㈣阿浣犵殑甯姪'),(88,10023,'鎴戜笉浼氳褰撳湴璇█','娌熼€?,'2026-03-22 07:19:34','鎴戜笉浼氳褰撳湴璇█'),(89,10023,'璇疯鎱竴鐐?,'娌熼€?,'2026-03-22 07:19:34','璇疯鎱竴鐐?);
+INSERT INTO `phrases` VALUES (4,10011,'非常感谢。','收藏','2026-03-20 17:10:09',NULL),(6,10000,'非常感谢','收藏','2026-03-20 17:14:16',NULL),(7,10000,'嗨，很高兴认识你','收藏','2026-03-20 19:33:51','hi,nice to meet you'),(57,10020,'你好，请问附近有洗手间吗？','日常','2026-03-21 03:16:08','こんにちは、近くにトイレはありますか？'),(58,10020,'这个多少钱？','買い物','2026-03-21 03:16:08','これはいくらですか？'),(59,10020,'请给我一杯咖啡','飲食','2026-03-21 03:16:08','コーヒーを一杯ください'),(60,10020,'请问怎么去机场？','交通','2026-03-21 03:16:08','空港へはどうやって行きますか？'),(61,10020,'我需要帮助','緊急','2026-03-21 03:16:08','助けが必要です'),(62,10020,'谢谢你的帮助','礼儀','2026-03-21 03:16:08','助けてくれてありがとう'),(63,10020,'我不会说当地语言','コミュニケーション','2026-03-21 03:16:08','現地の言葉が話せません'),(64,10020,'请说慢一点','コミュニケーション','2026-03-21 03:16:08','もっとゆっくり話してください'),(82,10023,'你好，请问附近有洗手间吗？','日常','2026-03-22 07:19:34','你好，请问附近有洗手间吗？'),(83,10023,'这个多少钱？','购物','2026-03-22 07:19:34','这个多少钱？'),(84,10023,'请给我一杯咖啡','餐饮','2026-03-22 07:19:34','请给我一杯咖啡'),(85,10023,'请问怎么去机场？','交通','2026-03-22 07:19:34','请问怎么去机场？'),(86,10023,'我需要帮助','紧急','2026-03-22 07:19:34','我需要帮助'),(87,10023,'谢谢你的帮助','礼貌','2026-03-22 07:19:34','谢谢你的帮助'),(88,10023,'我不会说当地语言','沟通','2026-03-22 07:19:34','我不会说当地语言'),(89,10023,'请说慢一点','沟通','2026-03-22 07:19:34','请说慢一点');
 /*!40000 ALTER TABLE `phrases` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `roles`
+-- Dumping data for table `post_reports`
 --
 
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `roles` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(50) NOT NULL,
-  `role_description` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `post_reports` WRITE;
+/*!40000 ALTER TABLE `post_reports` DISABLE KEYS */;
+INSERT INTO `post_reports` VALUES (1,9,10047,'无关','processed',10047,'2026-03-29 14:49:31','2026-03-29 14:23:59'),(2,8,10011,'空','processed',10047,'2026-03-29 14:43:51','2026-03-29 14:43:00');
+/*!40000 ALTER TABLE `post_reports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `rag_activities`
+--
+
+LOCK TABLES `rag_activities` WRITE;
+/*!40000 ALTER TABLE `rag_activities` DISABLE KEYS */;
+INSERT INTO `rag_activities` VALUES (1,1,1,'京剧脸谱沉浸体验','春节','北京市东城区京华非遗剧场','可体验身段讲解、脸谱绘制和折子戏片段。'),(2,2,1,'景泰蓝掐丝点蓝工坊','全年','北京市东城区京华器物馆','安排掐丝、点蓝和烧制工艺演示。'),(3,3,1,'庙会面塑亲子课程','春节','北京市前门民俗体验馆','适合春节场景的轻量动手体验。'),(4,4,1,'中轴灯彩夜游手作课','中秋','北京市东城区灯彩工坊','适合夜间路线与节庆拍照。'),(5,5,1,'清明风筝彩绘体验','清明','北京市朝阳公园风筝坊','适合踏青与风筝放飞结合。'),(6,6,2,'苏绣针法体验课','全年','苏州市姑苏区苏作匠心馆','安排丝线认知、针法演示和小样制作。'),(7,7,2,'昆山腔身段体验','全年','苏州市昆曲小剧场','体验戏曲声腔、身段和折扇动作。'),(8,8,3,'云锦织机观摩与纹样设计','全年','南京市秦淮区金陵雅集馆','适合器物和工艺爱好者。'),(9,9,3,'木版年画印制课','春节','苏州市桃花坞木版工作室','适合春节主题非遗路线。'),(10,10,3,'秦淮灯彩夜游体验','中秋','南京市夫子庙灯彩展馆','适合夜游、拍照和灯彩 DIY。'),(11,11,4,'宣纸抄纸体验营','全年','宣城市泾县宣纸工坊','安排原料识别、抄纸和晾晒体验。'),(12,12,4,'歙砚雕刻体验','全年','黄山市歙县砚文化馆','适合文房四宝路线串联。'),(13,13,4,'徽墨制墨闻香课','全年','黄山市屯溪区墨艺工坊','体验炼烟、和胶与描金流程。'),(14,14,5,'成都糖画庙会体验','春节','成都市锦江区蜀风市集','适合春节与街区步行路线。'),(15,15,5,'川剧变脸夜场互动','全年','成都市锦江剧场','安排表演、后台服饰讲解和拍照。'),(16,16,5,'蜀绣针法体验课','全年','成都市非遗织绣中心','适合静态体验与审美型游客。'),(17,17,5,'竹编手作半日课','全年','眉山市青神竹编基地','适合自然材料主题路线。'),(18,18,6,'唐风壁画临摹课','全年','西安市长安艺脉馆','适合唐代美术主题线路。'),(19,19,6,'碑刻传拓体验','全年','西安市碑林拓印中心','适合文博型用户半日游。'),(20,20,6,'长安宫灯彩绘夜游','中秋','西安市大唐风华街区','适合中秋与盛唐灯彩主题。'),(21,21,7,'苗绣纹样体验','全年','凯里市苗绣生活馆','适合少数民族主题路线。'),(22,22,7,'银饰锻制体验','全年','凯里市银饰非遗馆','适合服饰文化深度体验。'),(23,23,8,'壮锦织机体验','全年','南宁市壮锦工坊','适合少数民族织造体验。'),(24,24,8,'铜鼓民俗展演','端午','河池市铜鼓文化广场','适合民俗节庆线路。'),(25,25,9,'杨柳青年画木版印刷','春节','天津市年画体验馆','适合春节主题和亲子体验。'),(26,26,9,'泥人张彩塑体验','春节','天津市彩塑工坊','适合节庆民艺半日路线。'),(27,27,10,'潍坊风筝扎制体验','清明','潍坊世界风筝博物馆','适合清明踏青路线。'),(28,28,10,'鲁派剪纸窗花工坊','春节','潍坊民艺中心','适合春节主题路线。'),(29,29,11,'唐三彩器形彩绘课','全年','洛阳市唐艺体验馆','适合陶艺和大唐审美体验。'),(30,30,12,'青瓷拉坯烧制课','中秋','龙泉青瓷研究社','适合宋韵器物路线。'),(31,31,12,'制扇题字雅集','全年','杭州市西湖制扇馆','适合文房四宝和文人器物路线。'),(32,32,13,'广绣纹样针法体验','全年','广州市岭南绣作馆','适合都市中的传统工艺体验。'),(33,33,13,'潮州木雕刻花课','全年','潮州市木雕工坊','适合古城与工艺结合路线。'),(34,34,13,'端砚开砚与制砚体验','全年','肇庆市端砚文化馆','适合文房四宝主题线路。'),(35,35,3,'宋锦织造纹样体验','中秋','苏州市宋锦体验中心','适合宋代器物与节庆结合路线。'),(36,36,1,'京绣节庆纹样体验','春节','北京市东城区京绣工坊','适合春节图样和针法体验。'),(37,37,1,'兔儿爷彩塑手作课','春节','北京市东城区民艺体验馆','适合老北京节庆路线。'),(38,38,1,'京作剪纸窗花体验','春节','北京市东城区剪纸工坊','适合节庆窗花制作。'),(39,39,1,'毛猴造景手作课','春节','北京市前门京味工坊','适合街区和民俗结合的体验。'),(40,40,1,'冰糖葫芦熬糖体验','春节','北京市东城区年味市集','适合春节市集型路线。'),(41,41,2,'苏扇绘制与装裱课','全年','苏州市姑苏区制扇馆','适合文房四宝延展路线。'),(42,42,2,'缂丝经纬体验课','中秋','苏州市织造体验馆','适合高阶手工艺路线。'),(43,43,9,'绒花头饰制作课','春节','天津市绒花民艺馆','适合春节喜庆路线。'),(44,44,10,'花灯扎制夜游体验','春节','潍坊市花灯民艺馆','适合春节夜游。'),(45,45,10,'鲁绣针法体验营','春节','济南市鲁绣生活馆','适合春节纹样体验。'),(46,46,13,'龙舟民俗展演','端午','佛山市龙舟文化广场','适合端午主题路线。'),(47,47,3,'清明踏青习俗导览','清明','南京市郊春日体验点','适合清明主题轻路线。'),(48,48,4,'端午香包佩饰手作','端午','黄山市民俗体验馆','适合端午民俗主题体验。');
+/*!40000 ALTER TABLE `rag_activities` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `rag_heritage_items`
+--
+
+LOCK TABLES `rag_heritage_items` WRITE;
+/*!40000 ALTER TABLE `rag_heritage_items` DISABLE KEYS */;
+INSERT INTO `rag_heritage_items` VALUES (1,1,'京剧','清代','北京','北京','传统戏曲','春节,京味','爆竹声中一岁除','适合沉浸式感受京味戏曲表演与脸谱文化。',88),(2,1,'景泰蓝制作技艺','清代','北京','北京','传统手工艺','宫廷美学,器物','笔墨纸砚','适合体验掐丝点蓝的宫廷器物制作。',85),(3,1,'北京面塑','清代','北京','北京','传统手工艺','春节,庙会','爆竹声中一岁除','适合亲手制作节庆面塑与民俗造型。',90),(4,1,'宫灯制作技艺','明代','北京','北京','传统手工艺','春节,中秋,灯会','但愿人长久','适合节庆夜游场景与灯彩手作体验。',86),(5,1,'风筝制作技艺','清代','北京','北京','传统手工艺','清明,春游','清明时节雨纷纷','适合春日户外体验和传统彩绘工艺。',82),(6,2,'苏绣','宋代','江苏','苏州','传统手工艺','江南,文房四宝','笔墨纸砚','适合感受宋韵针法与江南审美。',95),(7,2,'南戏昆山腔','宋代','江苏','苏州','传统戏曲','江南戏曲','','适合体验宋韵戏曲声腔与舞台身段。',78),(8,3,'南京云锦','宋代','江苏','南京','传统手工艺','文房四宝,宫廷织造','笔墨纸砚','适合了解古代织造工艺与纹样设计。',96),(9,3,'桃花坞木版年画','明代','江苏','苏州','传统美术','春节,年画','爆竹声中一岁除','适合春节主题路线和木版印制体验。',91),(10,3,'秦淮灯彩','宋代','江苏','南京','传统美术','春节,中秋,灯会','但愿人长久','适合节庆夜游和灯彩制作路线。',89),(11,4,'宣纸制作技艺','唐代','安徽','宣城','传统手工艺','文房四宝','笔墨纸砚','适合深度体验文房四宝的材料工艺。',98),(12,4,'歙砚制作技艺','宋代','安徽','黄山','传统手工艺','文房四宝','笔墨纸砚','适合体验砚石选材与雕刻工艺。',97),(13,4,'徽墨制作技艺','宋代','安徽','黄山','传统手工艺','文房四宝','笔墨纸砚','适合串联笔墨纸砚主题路线。',94),(14,5,'糖画','清代','四川','成都','传统手工艺','春节,庙会','爆竹声中一岁除','适合亲子与节庆街区体验。',83),(15,5,'川剧变脸','清代','四川','成都','传统戏曲','巴蜀戏曲','','适合夜间剧场和互动表演路线。',88),(16,5,'蜀绣','宋代','四川','成都','传统手工艺','少数民族,蜀地工艺','','适合体验细腻针法与色彩层次。',87),(17,5,'青神竹编','唐代','四川','眉山','传统手工艺','自然材料,匠作','','适合安排手作课程与山水线路结合。',84),(18,6,'唐墓壁画临摹技艺','唐代','陕西','西安','传统美术','盛唐美术','','适合沉浸体验盛唐壁画线描与设色。',92),(19,6,'碑刻传拓技艺','唐代','陕西','西安','传统美术','金石,文脉','笔墨纸砚','适合文博型游客体验传拓与碑刻艺术。',90),(20,6,'长安宫灯彩绘','唐代','陕西','西安','传统美术','春节,中秋,盛唐美术','但愿人长久','适合节庆主题路线和唐风灯彩体验。',89),(21,7,'苗绣','清代','贵州','黔东南','传统手工艺','少数民族,节庆','','适合少数民族主题深度路线。',95),(22,7,'苗族银饰锻制技艺','清代','贵州','黔东南','传统手工艺','少数民族,节庆','','适合与节庆服饰文化一起体验。',93),(23,8,'壮锦织造技艺','清代','广西','南宁','传统手工艺','少数民族,节庆','','适合壮乡主题路线和织机体验。',94),(24,8,'铜鼓习俗','清代','广西','河池','传统民俗','少数民族,端午,清明','节分端午自谁言','适合民俗节庆和少数民族主题串联。',88),(25,9,'杨柳青年画','清代','天津','天津','传统美术','春节,年画','爆竹声中一岁除','适合春节主题路线和民艺版画体验。',96),(26,9,'泥人张彩塑','清代','天津','天津','传统美术','春节,庙会','','适合春节场景和彩塑手作。',92),(27,10,'潍坊风筝','宋代','山东','潍坊','传统手工艺','清明,春游','清明时节雨纷纷','适合清明踏青路线和风筝扎制体验。',89),(28,10,'山东剪纸','清代','山东','潍坊','传统手工艺','春节,窗花','爆竹声中一岁除','适合节庆装饰与手工体验。',90),(29,11,'唐三彩','唐代','河南','洛阳','传统手工艺','大唐器物','','适合古都审美与陶艺体验。',94),(30,12,'龙泉青瓷烧制技艺','宋代','浙江','丽水','传统手工艺','宋韵器物,中秋','但愿人长久','适合器物审美和青瓷烧制体验。',97),(31,12,'王星记制扇技艺','明代','浙江','杭州','传统手工艺','文房四宝,江南雅事','笔墨纸砚','适合文人器物主题路线。',91),(32,13,'广绣','清代','广东','广州','传统手工艺','岭南工艺','','适合岭南题材刺绣与商都漫游。',90),(33,13,'潮州木雕','明代','广东','潮州','传统手工艺','庙宇装饰,岭南工艺','','适合工艺细作和古城漫游结合。',92),(34,13,'端砚制作技艺','宋代','广东','肇庆','传统手工艺','文房四宝','笔墨纸砚','适合文房四宝主题深度体验。',96),(35,3,'宋锦织造技艺','宋代','江苏','苏州','传统手工艺','宋韵织造,中秋','但愿人长久','适合宋代织造美学路线。',93),(36,1,'京绣','清代','北京','北京','传统手工艺','春节,京味','爆竹声中一岁除','适合春节场景下体验京派刺绣纹样。',88),(37,1,'兔儿爷彩塑','清代','北京','北京','传统手工艺','春节,庙会','爆竹声中一岁除','适合老北京节庆民艺路线。',87),(38,1,'京作剪纸','清代','北京','北京','传统手工艺','春节,窗花','爆竹声中一岁除','适合春节窗花和彩纸手作体验。',86),(39,1,'毛猴制作技艺','清代','北京','北京','传统手工艺','春节,庙会','','适合串联京味民俗和手工体验。',84),(40,1,'冰糖葫芦制作技艺','清代','北京','北京','传统手工艺','春节,市集','','适合春节市集与街区体验。',83),(41,2,'苏扇制作技艺','宋代','江苏','苏州','传统手工艺','文房四宝,江南雅事','笔墨纸砚','适合文人器物与手工体验路线。',90),(42,2,'缂丝织造技艺','宋代','江苏','苏州','传统手工艺','中秋,宋韵织造','但愿人长久','适合高阶织造工艺体验。',92),(43,9,'绒花制作技艺','清代','天津','天津','传统手工艺','春节,喜庆','爆竹声中一岁除','适合春节头饰和节庆花艺体验。',91),(44,10,'潍坊花灯制作技艺','清代','山东','潍坊','传统手工艺','春节,灯会','爆竹声中一岁除','适合春节夜游和彩灯制作体验。',89),(45,10,'鲁绣','清代','山东','济南','传统手工艺','春节,吉祥纹样','','适合齐鲁针法与节庆纹样体验。',88),(46,13,'龙舟习俗','宋代','广东','佛山','传统民俗','端午,岭南民俗','节分端午自谁言','适合端午主题民俗路线。',93),(47,3,'寒食清明踏青习俗','宋代','江苏','南京','传统民俗','清明,踏青','清明时节雨纷纷','适合清明踏青和春日出游路线。',90),(48,4,'香包佩饰习俗','清代','安徽','黄山','传统民俗','端午,民俗','节分端午自谁言','适合端午主题的民俗体验。',87);
+/*!40000 ALTER TABLE `rag_heritage_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `rag_merchants`
+--
+
+LOCK TABLES `rag_merchants` WRITE;
+/*!40000 ALTER TABLE `rag_merchants` DISABLE KEYS */;
+INSERT INTO `rag_merchants` VALUES (1,'京华非遗工坊','北京','北京','北京市东城区非遗体验街 1 号','聚焦京味非遗体验与讲解'),(2,'苏作匠心馆','江苏','苏州','苏州市姑苏区平江路 18 号','以江南手工艺体验为主'),(3,'金陵雅集馆','江苏','南京','南京市秦淮区夫子庙 66 号','结合传统工艺和节庆活动'),(4,'徽州四宝社','安徽','黄山','黄山市歙县古城巷 9 号','文房四宝主题体验空间'),(5,'蜀风非遗坊','四川','成都','成都市锦江区非遗里 25 号','四川传统技艺和戏曲体验'),(6,'长安艺脉馆','陕西','西安','西安市碑林区长安艺坊 8 号','唐风美术主题路线运营'),(7,'苗岭锦绣社','贵州','黔东南','黔东南州凯里市苗绣街 12 号','少数民族非遗深度体验'),(8,'壮乡锦艺阁','广西','南宁','南宁市青秀区壮锦路 16 号','壮族织锦与铜鼓民俗体验'),(9,'津门年艺馆','天津','天津','天津市西青区年画大道 20 号','天津春节美术类非遗体验'),(10,'齐鲁巧艺坊','山东','潍坊','潍坊市奎文区民艺街 88 号','鲁派手工艺和节令体验'),(11,'中原唐艺馆','河南','洛阳','洛阳市老城区唐艺巷 6 号','唐风陶艺和古都体验'),(12,'越地青瓷社','浙江','丽水','丽水市龙泉市青瓷路 3 号','宋韵器物与生活美学'),(13,'岭南绣作馆','广东','广州','广州市荔湾区绣坊街 5 号','岭南传统手工艺体验');
+/*!40000 ALTER TABLE `rag_merchants` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `reserve_status_logs`
+--
+
+LOCK TABLES `reserve_status_logs` WRITE;
+/*!40000 ALTER TABLE `reserve_status_logs` DISABLE KEYS */;
+INSERT INTO `reserve_status_logs` VALUES (1,1,NULL,'registered',10000,'user','User created booking','2026-03-31 07:48:37'),(2,1,'registered','checked_in',10011,'merchant','Merchant checked in booking','2026-03-31 08:07:19'),(3,2,NULL,'registered',10000,'user','User created booking','2026-03-31 10:10:10'),(4,2,'registered','checked_in',10011,'merchant','Merchant checked in booking','2026-03-31 10:11:44'),(5,3,NULL,'registered',10000,'user','User created booking','2026-03-31 10:46:03'),(6,4,NULL,'registered',10000,'user','User created booking','2026-03-31 11:38:01'),(7,4,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 13:49:20'),(8,5,NULL,'registered',10000,'user','User created booking','2026-03-31 13:50:50'),(9,6,NULL,'registered',10000,'user','User created booking','2026-03-31 13:55:38'),(10,6,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 14:05:44'),(11,7,NULL,'registered',10000,'user','User created booking','2026-03-31 14:06:06'),(12,7,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 14:09:31'),(13,8,NULL,'registered',10000,'user','User created booking','2026-03-31 14:16:19'),(14,8,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 14:31:33'),(15,5,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 14:32:01'),(16,9,NULL,'registered',10000,'user','User created booking','2026-03-31 14:32:25'),(17,9,'registered','registered',10011,'merchant','Merchant refunded booking and kept it active','2026-03-31 14:34:54'),(18,10,NULL,'registered',10000,'user','User created booking','2026-03-31 14:36:36'),(19,10,'registered','cancelled',10000,'user','User cancelled booking','2026-03-31 14:37:32'),(20,11,NULL,'registered',10000,'user','User created booking','2026-03-31 15:27:57'),(21,12,NULL,'registered',10000,'user','User created booking','2026-03-31 15:30:22'),(22,12,'registered','checked_in',10011,'merchant','Merchant checked in booking','2026-03-31 15:32:13'),(23,13,NULL,'registered',10000,'user','User created booking','2026-04-03 20:51:53'),(24,13,'registered','cancelled',10000,'user','User cancelled booking','2026-04-03 20:55:17'),(25,14,NULL,'registered',10000,'user','User created booking','2026-04-03 20:56:02'),(26,14,'registered','checked_in',10011,'merchant','Merchant checked in booking','2026-04-03 21:33:10'),(27,15,NULL,'registered',10000,'user','User created booking','2026-04-03 22:13:08');
+/*!40000 ALTER TABLE `reserve_status_logs` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `roles`
@@ -508,28 +472,19 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'user','鏅€氱敤鎴?),(2,'merchant','鍟嗗'),(3,'admin','绠＄悊鍛?);
+INSERT INTO `roles` VALUES (1,'user','普通用户'),(2,'merchant','商家'),(3,'admin','管理员');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `travel_post_collections`
+-- Dumping data for table `route_plans`
 --
 
-DROP TABLE IF EXISTS `travel_post_collections`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `travel_post_collections` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '鏀惰棌ID',
-  `post_id` bigint NOT NULL COMMENT '甯栧瓙ID',
-  `user_id` bigint NOT NULL COMMENT '鐢ㄦ埛ID',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鏀惰棌鏃堕棿',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_collection_user_post` (`user_id`,`post_id`),
-  KEY `idx_collection_post` (`post_id`),
-  KEY `idx_collection_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='甯栧瓙鏀惰棌璁板綍';
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `route_plans` WRITE;
+/*!40000 ALTER TABLE `route_plans` DISABLE KEYS */;
+INSERT INTO `route_plans` VALUES (6,10011,'推荐适合家庭参与的周末非遗活动，简单易上手。',7,2,'已为你生成一条2天的非遗体验路线，重点围绕手作体验、文化漫游展开。优先安排了更贴合你需求的活动体验。','[{\"day\": 1, \"theme\": \"体验路线第 1 天\", \"activities\": [{\"name\": \"潮州木雕刻花课\", \"tags\": [\"手作体验\", \"ongoing\"], \"time\": \"10:00\", \"type\": \"activity\", \"details\": [{\"label\": \"省份\", \"value\": \"广东\"}, {\"label\": \"城市\", \"value\": \"广州\"}, {\"label\": \"费用\", \"value\": \"免费\"}, {\"label\": \"时间\", \"value\": \"2026-03-28 09:52\"}], \"business\": {\"name\": \"岭南绣作馆\", \"phone\": \"13800000013\", \"address\": \"潮州市木雕工坊\"}, \"typeHint\": \"这是路线推荐体验活动。\", \"typeLabel\": \"活动\", \"description\": \"暂无详细介绍\"}, {\"name\": \"竹编手作半日课\", \"tags\": [\"手作体验\", \"ongoing\"], \"time\": \"14:00\", \"type\": \"activity\", \"details\": [{\"label\": \"省份\", \"value\": \"四川\"}, {\"label\": \"城市\", \"value\": \"成都\"}, {\"label\": \"费用\", \"value\": \"免费\"}, {\"label\": \"时间\", \"value\": \"2026-03-28 09:52\"}], \"business\": {\"name\": \"蜀风非遗坊\", \"phone\": \"13800000005\", \"address\": \"眉山市青神竹编基地\"}, \"typeHint\": \"这是路线推荐体验活动。\", \"typeLabel\": \"活动\", \"description\": \"暂无详细介绍\"}]}, {\"day\": 2, \"theme\": \"体验路线第 2 天\", \"activities\": [{\"name\": \"京作剪纸窗花体验\", \"tags\": [\"手作体验\", \"ongoing\"], \"time\": \"10:00\", \"type\": \"activity\", \"details\": [{\"label\": \"省份\", \"value\": \"北京\"}, {\"label\": \"城市\", \"value\": \"北京\"}, {\"label\": \"费用\", \"value\": \"免费\"}, {\"label\": \"时间\", \"value\": \"2026-03-28 09:52\"}], \"business\": {\"name\": \"京华非遗工坊\", \"phone\": \"13800000001\", \"address\": \"北京市东城区剪纸工坊\"}, \"typeHint\": \"这是路线推荐体验活动。\", \"typeLabel\": \"活动\", \"description\": \"暂无详细介绍\"}, {\"name\": \"鲁派剪纸窗花工坊\", \"tags\": [\"手作体验\", \"ongoing\"], \"time\": \"14:00\", \"type\": \"activity\", \"details\": [{\"label\": \"省份\", \"value\": \"山东\"}, {\"label\": \"城市\", \"value\": \"潍坊\"}, {\"label\": \"费用\", \"value\": \"免费\"}, {\"label\": \"时间\", \"value\": \"2026-03-28 09:52\"}], \"business\": {\"name\": \"齐鲁巧艺坊\", \"phone\": \"13800000010\", \"address\": \"潍坊民艺中心\"}, \"typeHint\": \"这是路线推荐体验活动。\", \"typeLabel\": \"活动\", \"description\": \"暂无详细介绍\"}]}]',NULL,'[{\"title\": \"潮州木雕\", \"region\": \"广东\", \"summary\": \"适合工艺细作和古城漫游结合。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}, {\"title\": \"京作剪纸\", \"region\": \"北京市\", \"summary\": \"京作剪纸，又称京派剪纸，是剪纸艺术中极具地域辨识度的流派，扎根北京这片兼具皇家气度与市井烟火的土地，历经千年沉淀，融合宫廷雅致与民间质朴，形成了独有的艺术风骨。它是流淌在老北京胡同里、镌刻在百姓生活中的文化基因。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}, {\"title\": \"青神竹编\", \"region\": \"四川\", \"summary\": \"适合安排手作课程与山水线路结合。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}]','{\"days\": 2, \"query\": \"推荐适合家庭参与的周末非遗活动，简单易上手。\", \"activities\": [{\"id\": 49, \"date\": \"2026-03-28 09:52\", \"title\": \"潮州木雕刻花课\", \"location\": \"广东 · 广州 · 潮州市木雕工坊\", \"description\": \"暂无详细介绍\"}, {\"id\": 11, \"date\": \"2026-03-28 09:52\", \"title\": \"京作剪纸窗花体验\", \"location\": \"北京 · 北京市东城区剪纸工坊\", \"description\": \"暂无详细介绍\"}, {\"id\": 30, \"date\": \"2026-03-28 09:52\", \"title\": \"竹编手作半日课\", \"location\": \"四川 · 成都 · 眉山市青神竹编基地\", \"description\": \"暂无详细介绍\"}, {\"id\": 42, \"date\": \"2026-03-28 09:52\", \"title\": \"鲁派剪纸窗花工坊\", \"location\": \"山东 · 潍坊 · 潍坊民艺中心\", \"description\": \"暂无详细介绍\"}], \"destination\": \"全国\", \"preferences\": [\"手作体验\", \"文化漫游\"], \"officialHighlights\": [{\"title\": \"潮州木雕\", \"region\": \"广东\", \"summary\": \"适合工艺细作和古城漫游结合。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}, {\"title\": \"京作剪纸\", \"region\": \"北京市\", \"summary\": \"京作剪纸，又称京派剪纸，是剪纸艺术中极具地域辨识度的流派，扎根北京这片兼具皇家气度与市井烟火的土地，历经千年沉淀，融合宫廷雅致与民间质朴，形成了独有的艺术风骨。它是流淌在老北京胡同里、镌刻在百姓生活中的文化基因。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}, {\"title\": \"青神竹编\", \"region\": \"四川\", \"summary\": \"适合安排手作课程与山水线路结合。\", \"category\": \"传统手工艺\", \"relatedType\": \"Related introduction\"}], \"recommendedBusinesses\": []}','2026-04-03 18:17:14','2026-04-03 18:17:14');
+/*!40000 ALTER TABLE `route_plans` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `travel_post_collections`
@@ -537,28 +492,9 @@ CREATE TABLE `travel_post_collections` (
 
 LOCK TABLES `travel_post_collections` WRITE;
 /*!40000 ALTER TABLE `travel_post_collections` DISABLE KEYS */;
-INSERT INTO `travel_post_collections` VALUES (11,1,10000,'2026-03-19 20:14:40'),(12,4,10011,'2026-03-20 09:25:24'),(13,2,10011,'2026-03-20 09:26:59'),(15,4,10000,'2026-03-20 19:00:02'),(17,6,10020,'2026-03-21 03:26:13');
+INSERT INTO `travel_post_collections` VALUES (1,9,10000,'2026-03-31 03:49:52');
 /*!40000 ALTER TABLE `travel_post_collections` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `travel_post_comment_likes`
---
-
-DROP TABLE IF EXISTS `travel_post_comment_likes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `travel_post_comment_likes` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '鐐硅禐ID',
-  `comment_id` bigint NOT NULL COMMENT '璇勮ID',
-  `user_id` bigint NOT NULL COMMENT '鐐硅禐鐢ㄦ埛ID',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鐐硅禐鏃堕棿',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_comment_like_user` (`comment_id`,`user_id`),
-  KEY `idx_comment_like_comment` (`comment_id`),
-  KEY `idx_comment_like_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='璇勮鐐硅禐璁板綍';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `travel_post_comment_likes`
@@ -566,34 +502,8 @@ CREATE TABLE `travel_post_comment_likes` (
 
 LOCK TABLES `travel_post_comment_likes` WRITE;
 /*!40000 ALTER TABLE `travel_post_comment_likes` DISABLE KEYS */;
-INSERT INTO `travel_post_comment_likes` VALUES (1,2,10000,'2026-03-19 17:38:05');
 /*!40000 ALTER TABLE `travel_post_comment_likes` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `travel_post_comments`
---
-
-DROP TABLE IF EXISTS `travel_post_comments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `travel_post_comments` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '璇勮ID',
-  `post_id` bigint NOT NULL COMMENT '甯栧瓙ID',
-  `user_id` bigint NOT NULL COMMENT '璇勮鐢ㄦ埛ID',
-  `parent_id` bigint DEFAULT NULL COMMENT '鐖惰瘎璁篒D锛岀敤浜庡洖澶嶅姛鑳?,
-  `reply_to_user_id` bigint DEFAULT NULL COMMENT '鍥炲鐩爣鐢ㄦ埛ID',
-  `content` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '璇勮鍐呭',
-  `like_count` int DEFAULT '0' COMMENT '璇勮鐐硅禐鏁?,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '璇勮鏃堕棿',
-  `source_lang` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_comment_post` (`post_id`),
-  KEY `idx_comment_user` (`user_id`),
-  KEY `idx_comment_parent` (`parent_id`),
-  KEY `fk_comment_reply_to_user` (`reply_to_user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='甯栧瓙璇勮';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `travel_post_comments`
@@ -601,29 +511,9 @@ CREATE TABLE `travel_post_comments` (
 
 LOCK TABLES `travel_post_comments` WRITE;
 /*!40000 ALTER TABLE `travel_post_comments` DISABLE KEYS */;
-INSERT INTO `travel_post_comments` VALUES (1,1,10011,NULL,NULL,'hi锛宔very one,this is my first post',0,'2026-03-19 13:51:50','zh'),(2,1,10000,NULL,NULL,'娆㈣繋鏉ュ埌travelate!!!',1,'2026-03-19 14:05:28','zh'),(3,3,10000,NULL,NULL,'澶忓閲岀殑鏅氶',0,'2026-03-19 17:23:41','zh'),(4,1,10000,2,10000,'鍥炲鍔熻兘涔熻繖涔堣交鑰屾槗涓捐鎴戝疄鐜颁簡',0,'2026-03-19 17:36:14','zh'),(6,1,10000,4,10000,'鍒犻櫎璇勮銆佺偣璧炶瘎璁轰篃鏄交鑰屾槗涓?,0,'2026-03-19 17:45:13','zh'),(18,2,10000,NULL,NULL,'11',0,'2026-03-19 19:08:42','zh'),(19,2,10000,NULL,NULL,'76',0,'2026-03-19 19:21:16','zh'),(25,6,10011,NULL,NULL,'浣犲ソ',0,'2026-03-21 03:06:35','zh'),(26,6,10011,25,10011,'浣犱篃濂?,0,'2026-03-21 03:06:43','zh'),(27,7,10020,NULL,NULL,'12345',0,'2026-03-21 03:25:29','auto'),(42,2,10011,19,10000,'33',0,'2026-03-24 18:14:06','auto'),(46,1,10011,1,10011,'鉁?,0,'2026-03-24 18:23:14','auto'),(55,6,10011,25,10011,'鉁?,0,'2026-03-24 18:44:08','auto');
+INSERT INTO `travel_post_comments` VALUES (1,9,10011,NULL,NULL,'你好',0,'2026-03-30 17:11:20','zh'),(2,12,10011,NULL,NULL,'真的好美啊',0,'2026-03-30 18:19:55','zh');
 /*!40000 ALTER TABLE `travel_post_comments` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `travel_post_history`
---
-
-DROP TABLE IF EXISTS `travel_post_history`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `travel_post_history` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '鍘嗗彶璁板綍ID',
-  `post_id` bigint NOT NULL COMMENT '甯栧瓙ID',
-  `user_id` bigint NOT NULL COMMENT '娴忚鐢ㄦ埛ID',
-  `view_count` int DEFAULT '1' COMMENT '娴忚娆℃暟',
-  `last_view_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鏈€鍚庢祻瑙堟椂闂?,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_history_user_post` (`user_id`,`post_id`),
-  KEY `idx_history_user_time` (`user_id`,`last_view_time`),
-  KEY `fk_history_post` (`post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='甯栧瓙娴忚鍘嗗彶';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `travel_post_history`
@@ -631,41 +521,9 @@ CREATE TABLE `travel_post_history` (
 
 LOCK TABLES `travel_post_history` WRITE;
 /*!40000 ALTER TABLE `travel_post_history` DISABLE KEYS */;
-INSERT INTO `travel_post_history` VALUES (1,1,10011,44,'2026-03-24 18:42:08'),(3,1,10000,24,'2026-03-19 20:14:28'),(4,2,10000,51,'2026-03-24 18:43:18'),(5,3,10000,15,'2026-03-20 17:44:16'),(6,2,10011,34,'2026-03-24 18:37:19'),(7,3,10011,8,'2026-03-25 09:39:46'),(8,4,10011,14,'2026-03-25 09:40:02'),(9,4,10000,2,'2026-03-20 17:49:40'),(10,5,10000,7,'2026-03-20 18:59:49'),(11,5,10011,12,'2026-03-27 19:11:33'),(12,6,10011,27,'2026-03-27 14:14:26'),(14,6,10020,6,'2026-03-21 03:29:11'),(15,5,10020,1,'2026-03-21 03:19:04'),(16,7,10020,3,'2026-03-21 03:26:11'),(25,7,10011,2,'2026-03-25 09:39:28'),(26,6,10000,3,'2026-03-27 14:14:13'),(27,7,10000,2,'2026-03-27 09:48:45'),(28,6,10024,5,'2026-03-27 18:52:55'),(29,5,10024,1,'2026-03-27 18:52:36');
+INSERT INTO `travel_post_history` VALUES (1,6,10011,4,'2026-04-03 14:16:15'),(2,7,10011,4,'2026-04-03 01:18:38'),(3,6,10000,1,'2026-03-29 13:35:47'),(4,2,10000,1,'2026-03-29 13:46:37'),(5,2,10047,2,'2026-03-30 14:48:35'),(6,9,10047,12,'2026-03-30 22:12:37'),(7,8,10047,1,'2026-03-29 14:11:31'),(8,7,10000,2,'2026-03-31 15:49:40'),(9,8,10000,2,'2026-03-29 14:42:27'),(10,8,10011,1,'2026-03-29 14:42:52'),(11,11,10047,2,'2026-03-29 15:46:24'),(12,6,10047,2,'2026-03-30 22:11:51'),(13,5,10047,2,'2026-03-30 15:00:00'),(14,4,10047,1,'2026-03-30 15:04:30'),(15,5,10011,3,'2026-03-30 17:10:40'),(16,2,10011,4,'2026-03-30 17:10:36'),(17,12,10011,6,'2026-04-03 00:10:51'),(18,9,10011,7,'2026-03-31 15:24:16'),(19,3,10011,2,'2026-04-03 17:14:58'),(20,7,10047,2,'2026-03-30 22:11:43'),(21,9,10000,2,'2026-03-31 04:10:09'),(22,4,10000,2,'2026-04-03 01:35:47'),(23,12,10000,1,'2026-03-31 15:26:28'),(24,4,10011,4,'2026-04-03 13:14:15');
 /*!40000 ALTER TABLE `travel_post_history` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `travel_posts`
---
-
-DROP TABLE IF EXISTS `travel_posts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `travel_posts` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '甯栧瓙ID',
-  `user_id` bigint NOT NULL COMMENT '鍙戝竷鐢ㄦ埛ID',
-  `title` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '甯栧瓙鏍囬',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '甯栧瓙鍐呭',
-  `category` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT 'travel' COMMENT '甯栧瓙鍒嗙被',
-  `audit_status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'passed',
-  `images` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '鍥剧墖URL鎴朆ase64鏁扮粍(JSON)',
-  `tags` text COLLATE utf8mb4_unicode_ci COMMENT '鏍囩鏁扮粍(JSON)',
-  `status` tinyint(1) DEFAULT '1' COMMENT '甯栧瓙鐘舵€侊細1-姝ｅ父锛?-鍒犻櫎',
-  `view_count` int DEFAULT '0' COMMENT '娴忚娆℃暟',
-  `comment_count` int DEFAULT '0' COMMENT '璇勮鏁?,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '鍙戝竷鏃堕棿',
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '鏇存柊鏃堕棿',
-  `collection_count` int DEFAULT NULL,
-  `collect_count` int DEFAULT NULL,
-  `source_lang` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_post_user` (`user_id`),
-  KEY `idx_post_category` (`category`),
-  KEY `idx_post_status` (`status`),
-  KEY `idx_post_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='鍙戠幇椤靛笘瀛?;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `travel_posts`
@@ -673,27 +531,9 @@ CREATE TABLE `travel_posts` (
 
 LOCK TABLES `travel_posts` WRITE;
 /*!40000 ALTER TABLE `travel_posts` DISABLE KEYS */;
-INSERT INTO `travel_posts` VALUES (1,10011,'娓告垙缇庢櫙娌绘剤浜哄績','婕傛诞鍦ㄥ瘋闈欐棤鍨犵殑澶ф捣涓?,'travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/1/3264b64d-d59b-4620-8689-2e35dbd01152.png\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/1/c159c89f-a9fd-4651-9abd-0ec45e032aa4.png\"]','[\"椋庢櫙\",\"娓告垙\",\"vibe\"]',1,73,5,'2026-03-19 13:51:19','2026-03-24 18:42:08',NULL,1,'zh'),(2,10000,'榛勯工妤间笉鍙槸涓庣伀杞﹀悓妗嗭綔涓庢苯杞﹀悓妗嗕篃鍑虹墖','榛勯工妤间笌浜箍绾跨伀杞﹀悓妗嗘槸涓€缃戠孩鏈轰綅锛堥€忚繃閾佷笣缃戞媿鎽勶級锛屽鍦颁汉鏉ラ粍楣ゆゼ娓哥帺鎵撳崱锛岄€氬父浼氬湪姝ゆ満浣嶆媿鎽勪竴涓ゅ紶榛勯工妤间笌鐏溅鍚屾鐓с€備絾寰堝皯浜虹煡閬擄紝鍦ㄦ鏈轰綅鐨勯┈璺瀵归潰浜鸿閬撲笂锛屼篃鏈変竴涓媿鎽勯粍楣ゆゼ鐨勭粷浣虫満浣嶏細鍙互鎷嶅埌榛勯工妤间笌杩囧線闀挎睙澶фˉ鐨勬苯杞﹀悓妗嗙収銆俓n鏈轰綅鐐癸細\n涓庣綉绾㈤搧涓濈綉鎵撳崱鐐归┈璺浉闅旓紝鍗冲ぇ妗ュ崡渚т汉琛岄亾涓婏紱\n鍒拌揪璺嚎锛歕n鈶犲徃闂ㄥ彛澶╂ˉ妯┛閾佽矾銆佸叕璺紝涓婂崡渚т汉琛岄亾锛屽線妗ュご鍫℃柟鍚戞琛屼簲鍏櫨绫冲嵆鍒帮紱\n鈶′腑鍗庤矾鐮佸ご娌挎睙閫嗚锛岀┛杩囧ぇ妗ュ悗绔嬪嵆宸︽嫄锛屾部鍙伴樁鎷剧骇鑰屼笂锛屽埌杈惧叕璺ˉ闈㈠嵆鏄€?,'travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/2/85d1f028-6071-4825-92a0-4e92322710df.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/2/c1c45dd4-d65b-44d5-b1ae-d49d20792514.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/2/e7160a3b-94da-47dd-82f5-eae2ca242c76.jpg\"]','[\"鏃呰\",\"椋庢櫙\",\"鏀荤暐\"]',1,86,3,'2026-03-19 14:36:54','2026-03-24 18:43:18',NULL,1,'zh'),(3,10000,'鏈夎杩欏嚑鏅氱殑涓滄箹缇庡埌锛?,'涓嬪崍6鐐瑰锛屽湪涓滄箹杈圭殑鎱㈣窇~','travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/3/3eaa5725-3a4d-42bd-a57d-daf6e2deb1ca.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/3/863ace20-e1a5-4eb6-8417-563837e8757e.jpg\"]','[\"姝︽眽\",\"涓滄箹\",\"澶ц嚜鐒禱",\"椋庢櫙\",\"鏅氶湠\"]',1,23,1,'2026-03-19 16:05:31','2026-03-25 09:39:46',NULL,1,'zh'),(4,10011,'姝︽眽琚弗閲嶄綆浼扮殑灞卞妯辫姳锛佸ソ鏈夌鎰?,'瀹濋€氬妯辫姳 瀹濋€氬瀵归潰姊︽椂浠ｇ殑绮夎壊妯辫姳寮€鐨勭湡濂斤紝鏈夊崄鍑犻锛屾ゼ涓婂彲浠ユ媿瀹濋€氬鍏ㄦ櫙','tips','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/4/c8307dfe-800f-4c4a-8cb5-50ff389a4ff0.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/4/67e5ea6c-165b-4ec4-a143-3c865bb2fce4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/4/418b65c4-2945-4986-9bb9-b26cf9e6efc1.jpg\"]','[\"椋庢櫙\",\"瀹濋€氬\",\"妯辫姳\",\"鏄ュぉ\"]',1,17,0,'2026-03-20 09:20:15','2026-03-25 09:40:02',NULL,2,'zh'),(5,10000,'A one-day tour of the Forbidden City','Today I started my Beijing trip and my first stop was the Forbidden City. Take a look at the photos I took.','travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/5/eb8873f9-2140-4958-985a-7de9ca7565c8.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/5/7d8f8992-da48-4b95-956a-e8db25bc0aa5.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/5/392f3f84-ef3c-4e70-8256-6b62f75a2fd3.jpg\"]','[\"Travel\",\"ForbiddenCity\",\"Beijing\"]',1,23,0,'2026-03-20 17:53:41','2026-03-27 19:11:33',NULL,0,'auto'),(6,10011,'111','interesting\nfunny','travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/6/67129ed2-ae7d-48c1-bbef-2c48ded959ed.jpg\"]','[\"椋庢櫙\"]',1,44,3,'2026-03-21 00:17:37','2026-03-27 18:52:55',NULL,2,'en'),(7,10020,'鍒彧鎷嶉噾鍏夌┛娲炰簡锛屾潵鎷嶄經棣欓榿浜伅鍚э紒','浠婂ぉ缁欏ぇ瀹跺垎浜殑鏄經棣欓榿浜伅銆俓n涓€骞翠竴搴﹂噾鍏夌┛娲炲張寮€濮嬶紝涓嶈繃浜轰緷鏃у寰楃粰鍔涳紝瀹炲湪鎸や笉杩涘幓鐨勮瘽寤鸿杩樻槸浠庤タ闂ㄨ繘锛屾潵鐣呰鍫傞檮杩戞媿棰愬拰鍥寒鐏€傚挨鍏惰繖涓満浣嶏紝浣涢闃佸拰璞抽妗ラ兘浜捣鏉ュ悗锛岀瓑鍒拌摑璋冩椂鍒伙紝浼氶潪甯告湁鎰忓锛屾帹鑽愬ぇ瀹堕兘鏉ユ墦鍗°€備經棣欓榿鍛ㄤ簲鍛ㄥ叚浜伅銆?,'travel','passed','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/7/5ea1bc27-60d3-452a-b5ba-dd0e2c5235e9.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/posts/7/fa523867-578a-4892-9cb4-59e020ca2a70.jpg\"]','[\"鍖椾含鏃呮父\",\"鍙ゅ缓绛戞憚褰盶",\"棰愬拰鍥璡",\"鎽勫奖\"]',1,8,1,'2026-03-21 03:23:40','2026-03-27 09:48:45',NULL,0,'zh');
+INSERT INTO `travel_posts` VALUES (1,10011,'qwe','asd','服饰妆造','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/1/1.jpg\"]','[\"服饰妆造\"]','public',0,0,0,'2026-03-28 18:46:03','2026-03-28 18:47:01',0,0,'en'),(2,10011,'福建游神——中式信仰美学','曾以为神明住在云端\n直到走入福建的旧街巷\n迎上这场盛大的流动——\n原来最深的信仰\n就落在人间烟火里\n-\n当鼓点从青石板路深处传来\n神将巍峨的身姿转过巷角\n华服璀璨，眉目庄严\n却又带着一丝“人间气”——\n会接过孩童手中的糖果\n会为长者的祈福微微颔首\n那一刻突然懂得：\n所谓信仰\n不是高高在上的仰望\n而是人与神之间\n这份无声却厚重的连接\n-\n福州游神主要集中在长乐区，从正月初一开始到二月中，几乎每天都有，我追的这场是规模zui大的厚福游神：\n📍福州市长乐区潭头镇厚福乡\n📆正月初十、正月二十六\n⏰08:00-次日凌晨','民俗节气','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/2/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/2/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/2/3.jpg\"]','[\"民俗节气\",\"非遗追年地图\",\"旅行中的非遗体验\",\"游神\",\"福建游神\",\"民俗\",\"新年\",\"春节\"]','public',1,7,0,'2026-03-28 19:49:45','2026-03-30 17:10:36',0,0,'zh'),(3,10011,'老祖宗肩上的“时尚单品” 火了上千年','一抹云霞落肩头，流转千年仍惊艳！\n云肩是中华民族服饰文化中历史悠久且独特的服饰瑰宝，既是古人“天人合一”的智慧凝结，更是东方美学的精神传承！\n云肩之美，在其极致工艺！\n✅ 形制考究：四合如意、柳叶式、八方云纹…每一片云肩的剪裁都暗含深意。四合如意象征“四方祥和”，柳叶式放射状纹样寓意“生命长青”，而八片垂云则对应传统节庆的平安祈愿 。\n✅ 纹样密码：石榴葡萄喻多子，蝙蝠葫芦兆福禄…云肩的刺绣每一针都承载着古人对生活的美好期许。\n✅ 工艺巅峰：立体剪裁贴合女子肩颈曲线，云肩针法竟有滚针、盘金等诸多针法，绣娘以线为笔，将四季花鸟、祥云瑞兽化作肩头画卷。\n传承与创新：让云肩走进日常\n如今，云肩不再只是博物馆的展品：中式婚纱、马面裙+云肩、毕业季学士服+云肩、巴黎奥运会体操服装等，现代日常服饰不断融入云肩这一传统元素，诠释出更多新中式可能。（图1-10源于大英博物馆；图11-17源于郑州博物馆）\n\n老祖宗肩上的“时尚单品” 火了上千年\n\n中国传统工艺振兴服务平台\n2025-04-21\n3292\n\n🪡八位掌灯人｜穿越千年女性非遗技艺图鉴\n\n元气小葫要早睡💤\n2025-12-17\n1198\n\n《探索100种东方美学》——㉙云肩\n\n言小柒MiaoMiao\n2025-07-15\n1840\n\n\n原味栗子（接稿版）\n2025-12-30\n1581\n\n时尚中国，非遗的fashion之路㈧\n\nShine耀\n2024-12-23\n7.9万\n\n一眼心动！藏在肩上的东方绝美“天空”✨\n\n云山有趣的非遗\n2025-12-06\n2.5万\n大家都在搜\n\n非遗文化服装\n\n中国十大非遗\n\n非遗服饰有哪些\n\n非遗拟人化绘画\n\nTHE SEA LIFE×傣锦：将热带生态景象织在身上\n\n非遗Plus\n2025-07-31\n547\n\n「锦序东方」服装效果图分享\n\n钰榕设计（约稿中）\n01-28\n199\n\n聆听传统美学｜非遗醒狮\n\n你说天空很美丽\n01-14\n233\n\n这不是国外大牌高定！\n\n毛豆\n2025-12-12\n3.6万\n\n一刀一剪一世界——带你领略非遗的魅力(02)\n\nAIGC杨太医\n2025-08-01\n703\n\n服设系列—非遗\n\n张小花花老师\n2025-03-24\n1057\n\n非遗服饰服装分层设计图\n\n漓月\n2025-12-12\n14\n\n🔥中国国际时装周｜非遗服饰文化惊艳秀场\n\n遗韵云游\n2025-12-09\n144\n\n把非遗绒花穿身上，那该有多美？\n\n宁心如\n02-13\n11.4万\n大家都在搜\n\n中国传统非遗服装\n\n非遗人物绘画素材\n\n非遗服饰图片\n\n非遗文化主题衣服\n\n广艺/毕业设计/把非遗穿身上\n\n一只小馒头\n2025-04-11\n2106\n发现\n直播\n发布\n通知\n我\n×\n拖拽到此处\n图片将完成下载\n由Fitkun图片批量下载提供\n\n中国传统工艺振兴服务平台\n关注\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n1/17\n老祖宗肩上的“时尚单品” 火了上千年\n一抹云霞落肩头，流转千年仍惊艳！\n云肩是中华民族服饰文化中历史悠久且独特的服饰瑰宝，既是古人“天人合一”的智慧凝结，更是东方美学的精神传承！\n云肩之美，在其极致工艺！\n✅ 形制考究：四合如意、柳叶式、八方云纹…每一片云肩的剪裁都暗含深意。四合如意象征“四方祥和”，柳叶式放射状纹样寓意“生命长青”，而八片垂云则对应传统节庆的平安祈愿 。\n✅ 纹样密码：石榴葡萄喻多子，蝙蝠葫芦兆福禄…云肩的刺绣每一针都承载着古人对生活的美好期许。\n✅ 工艺巅峰：立体剪裁贴合女子肩颈曲线，云肩针法竟有滚针、盘金等诸多针法，绣娘以线为笔，将四季花鸟、祥云瑞兽化作肩头画卷。\n传承与创新：让云肩走进日常\n如今，云肩不再只是博物馆的展品：中式婚纱、马面裙+云肩、毕业季学士服+云肩、巴黎奥运会体操服装等，现代日常服饰不断融入云肩这一传统元素，诠释出更多新中式可能。\n\n你喜欢什么样的云肩造型呢？评论区留言~','服饰妆造','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/5.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/3/6.jpg\"]','[\"服饰妆造\",\"非遗\",\"东方美学\",\"云肩\",\"大英博物馆\",\"郑州博物馆\",\"传统服饰\"]','public',1,2,0,'2026-03-28 19:53:18','2026-04-03 17:14:59',0,0,'zh'),(4,10011,'唐三彩','釉色承千年，匠心照古今——洛阳唐三彩的非遗传承与时代新生\n在中华文明的璀璨星河中，洛阳唐三彩是一颗独特的星辰。它诞生于盛唐的沃土，以绚烂釉色、恢弘气势，成为那个时代的文化图腾；它历经千年岁月洗礼，在传承与创新的交织中，依然焕发着蓬勃生机，成为连接古今的文化桥梁。\n缘起盛唐：时代风骨孕育的艺术瑰宝\n唐三彩的诞生，是历史的必然。盛唐时期，洛阳作为十三朝古都，既是政治经济中心，也是丝绸之路的东方枢纽。东西方文化在此碰撞交融，为艺术创作注入了多元灵感\n工匠们以细腻的高岭土为胎，以金属氧化物为着色剂，经“制胎—施釉—烧制”三道核心工序，在窑火中完成一场“色彩的魔术”。不同于传统陶瓷的单一釉色，唐三彩的釉料在高温下自由流淌，红如丹砂、绿似翡翠、黄若蜜蜡，交融处形成的“流釉”效果，如云雾缭绕、如霞光漫卷，尽显盛唐的豪迈与浪漫。\n从皇室贵族的陪葬重器，到文人雅士的赏玩之物，唐三彩的题材无一不展现着盛唐的社会风貌与精神气度。它不仅是陶瓷艺术的巅峰，更是大唐盛世的“立体史书”。\n守正创新：非遗传承人的“破局”之路\n时光流转，盛唐落幕，但唐三彩的窑火并未熄灭。然而，在现代工业的冲击下，这门古老技艺曾一度面临“无人传承、无人问津”的困境。直到一批非遗传承人的出现，用“守正”筑牢根基，用“创新”开拓未来。\n“守正”是对古法工艺的敬畏。传承人李松茂坚守“手工制胎、手工施釉、柴窑烧制”的传统，每一件作品都要经过数十道工序，从陶土筛选到釉料调配，从入窑温度到烧制时间，都严格遵循古法。“柴窑的火性是电窑替代不了的，只有这样，才能烧出唐三彩独有的温润质感。”李松茂的话，道出了匠人的坚守。\n“创新”是与时代的对话。年轻传承人将唐三彩的经典元素与现代审美结合，推出了一系列文创产品：将三彩马做成小巧玲珑的车载摆件，把釉色纹样印在笔记本上甚至开发出“唐三彩DIY体验套装”，让消费者亲手感受施釉的乐趣。\n文化出海：千年釉色讲述中国故事\n如今，洛阳唐三彩已不再是中国的“文化瑰宝”，更成为世界了解中国的“文化名片”。在海外展出时，唐三彩马的矫健、乐伎俑的灵动，让外国观众惊艳于中国古代艺术的魅力；非遗传承人带着技艺走出国门，让世界看见中国匠心。\n从盛唐的窑火到如今的国际舞台，从博物馆的陈列品到日常的文创产品，洛阳唐三彩的传承之路是中国非遗文化发展的缩影。它用绚烂的釉色，诉说着中华文明的博大精深；用不变的匠心，诠释着文化传承的力量。','美术造物','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/4/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/4/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/4/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/4/4.jpg\"]','[\"美术造物\"]','public',1,10,0,'2026-03-28 19:58:05','2026-04-03 13:14:15',0,0,'zh'),(5,10011,'傩戏|中国硬核非遗','傩戏起源于商周时期的驱傩仪式，最初是古人通过歌舞祭祀驱鬼逐疫、祈福纳吉的宗教活动。汉代后逐渐融入娱人成分，宋代受民间歌舞影响发展为傩戏，元代至明清时期与地方戏曲融合，形成多样化流派。其历史可追溯至先秦的巫歌傩舞，被誉为“中国戏剧活化石”。\n	\n表演形式\n面具文化：演员佩戴木质或丝质面具（称“脸子”），造型夸张狰狞，直观区分角色性格，如贵州德江傩戏的面具多达上百种。\n宗教仪式融合：演出分“开坛”“开洞”“闭坛”三阶段，与祭祀活动一体，如湖北恩施傩戏需杀鸡请神、烧纸祭祖。\n傩技绝活：包含喷火、上刀梯、过火海等惊险技艺，体现原始巫术色彩。\n	\n音乐与剧目\n音乐以打击乐为主（锣、鼓、钹），辅以山歌、佛道乐曲，唱腔粗犷，多采用一唱众和形式。\n	\n剧目分三类：\n正戏：如《仙姑送子》《发五猖》，宗教色彩浓厚；\n傩堂小戏：如《采香》《陈州放粮》，娱乐性强；\n外台戏：吸收民间故事的《孟姜女》《三国演义》等。\n	\n傩戏主要分布于西南及长江流域，因地域文化差异形成多种流派：\n1.恩施傩戏（湖北）：分“傩愿戏”与“坛傩”，前者融入花鼓戏技巧，后者保留明代祭祖仪式，面具制作工艺独特。\n2.池州傩戏（安徽）：以宗族为单位演出，每年春秋两祭，保留《刘文龙》等古剧目，被誉为“无傩不成村”。\n3.侗族傩戏“咚咚推”（湖南）：舞蹈以“三角形”步伐模拟耕牛动作，剧目融合侗族生活与三国故事。\n4.德江傩堂戏（贵州）：被称为“中国戏剧活化石”，完整保留汉代傩仪传统，表演包含复杂法事。\n5.武安傩戏（河北）：具宋代宫廷傩遗风，角色“掌竹”为宋金杂剧引戏人遗存。','戏曲演绎','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/5.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/6.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/7.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/5/8.jpg\"]','[\"非遗\",\"傩戏\",\"非物质文化遗产\",\"非遗传承\",\"传统文化\",\"恩施傩戏\",\"池州傩戏\",\"戏曲演绎\",\"美术造物\"]','public',1,5,0,'2026-03-28 20:01:41','2026-03-30 17:10:40',0,0,'zh'),(6,10011,'以针为笔，以丝为墨，绣出江南的呼吸','苏绣，源于江苏苏州一带，以其独特的艺术魅力和精湛技艺位居“四大名绣”之首，素有“精、细、雅、洁”之称，并于2006年入选国家级非物质文化遗产。\n艺术特色：\n苏绣的灵魂在于“平、齐、细、密、匀、顺、和、光”八字。其最显著的特点是 “精微雅致” 。绣工们常将一根头发丝般粗细的丝线劈成更细的1/16甚至1/32来进行创作，使作品达到“不见针线痕迹，只觉画面生动”的境界。\n代表技艺：\n双面绣是苏绣皇冠上的明珠。绣娘们在同一块底料上，一次施针，正反两面却呈现出构图完整、针法相同而画面可能不同的完美图案，令人拍案叫绝。代表作《猫》更是将这一技艺发挥到极致，丝线天然的光泽将小猫蓬松的毛发、灵动的眼神表现得栩栩如生。\n文化内涵：\n苏绣深受吴地文化的熏陶，作品题材多取自江南文人画，充满诗情画意。它不仅是技艺的展现，更是江南水乡温婉、灵动、典雅气质的集中体现，是流动在指尖上的姑苏风情。','织物手工','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/6/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/6/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/6/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/6/4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/6/5.jpg\"]','[\"织物手工\",\"非遗文化\",\"苏绣\",\"刺绣\"]','public',1,9,0,'2026-03-28 20:04:27','2026-04-03 14:16:15',0,0,'zh'),(7,10011,'认识一个非物质文化遗产——苗绣','⭐️起源\n贵州苗绣，一部用针线书写的民族史诗。苗绣起源可回溯到上古时期，与古代濮人的雕题文身有着千丝万缕的联系。彼时，随着濮人后裔南蛮掌握蚕桑技术，雕题文身逐渐演变为“描” ，待骨针、铜针出现，挑花和织花工艺应运而生。战国时期，苗绣正式在苗族服饰上崭露头角。\n元明清时期，因各支系苗民以不同动物为图腾，苗绣纹样风格各异，氏族间的交流又促使苗绣不断融合发展。\n2006年5月20日，贵州苗绣被列为国家级非物质文化遗产，遗产编号为Ⅶ-22。近年来，不断创新，融入现代设计与时尚产业，在国际舞台大放异彩，实现传承与发展的新跨越 。\n⭐️价值\n苗族没有传统意义上的文字，苗绣充当了“史书”角色。绣品中大量的神话传说、英雄故事、迁徙历程等图案，记录着苗族起源、发展轨迹，承载民族记忆与文化基因，像蝴蝶妈妈传说绣样，展现苗族独特创世观。\n此外，苗绣针法极为丰富，有平绣、辫绣、缠绣等几十种，每种针法呈现不同肌理质感 。色彩搭配大胆热烈，多运用红、黄、蓝等对比强烈的原色，形成鲜明视觉冲击，几何纹、动植物纹等图案造型夸张抽象，充满想象力与艺术感染力，具有极高的艺术价值。','织物手工','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/5.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/6.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/7/1.jpg\"]','[\"织物手工\",\"苗绣\"]','public',1,8,0,'2026-03-28 22:33:59','2026-04-03 01:18:38',0,0,'zh'),(8,10000,'abc','血色玛丽','服饰妆造','rejected','空','[]','[]','public',1,4,0,'2026-03-29 14:07:51','2026-03-29 14:49:24',0,0,'zh'),(9,10000,'abc','血色玛丽','服饰妆造','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/9/1.png\"]','[]','public',1,21,1,'2026-03-29 14:08:24','2026-03-31 15:24:16',0,1,'zh'),(10,10047,'加我wx','wx:874832797','服饰妆造','rejected','Rule blocked: Contains prohibited contact, advertising, or banned keywords','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/10/1.jpg\"]','[]','public',1,0,0,'2026-03-29 14:57:27','2026-03-29 14:57:31',0,0,'en'),(11,10047,'毒品','新样式','服饰妆造','rejected','AI blocked: Text rejected: 不合规 ; 存在暴恐违禁不合规 | []','[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/11/1.webp\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/11/2.webp\"]','[]','public',1,2,0,'2026-03-29 15:02:26','2026-03-29 15:46:39',0,0,'zh'),(12,10011,'非遗珍宝｜点翠：千年不褪色的蓝','点翠，一项被誉为“首饰工艺绝唱”的国家级非物质文化遗产，以翠羽为墨，金银为骨，在方寸之间勾勒出千年不褪的华彩。它曾是帝王凤冠上的璀璨星辰，如今虽渐隐于时光，却仍是东方美学中一抹无法复制的幽蓝梦境。\n✨ 精工细作，巧夺天工\n点翠工艺的极致，在于“以羽为画”的匠心。工匠需先将金、银片捶揲成底托，再用金丝焊出图案轮廓，形成“嵌羽之槽”。随后，取翠鸟颈间最莹润的羽绒，以特制胶液轻贴于金属胎底。羽丝细软如尘，却需排列得密不透风，方能在光下流转出湖面波光般的幻彩。最后缀以珍珠、翡翠、珊瑚等宝玉石，方成一件雍容典雅的珍品。正如古籍所载：“虽无宝石炫亮，却自有一种艳丽拙朴之美。”\n👑 千年传承，宫廷绝色\n点翠工艺始于汉代，盛于乾隆。昔日的帝王衮服、皇后凤冠，皆以翠羽为饰，历经岁月仍鲜艳如初。一只翠鸟仅能取零星羽绒，修复一顶明代凤冠竟需十万翠羽，其珍贵可见一斑。这项工艺不仅象征着古代匠人的智慧，更承载着东方饰品对细节的执着——以工艺的精细、含蓄之美，诠释“富丽堂皇”的真正内涵。\n🌿 非遗新生，以今承古\n如今，翠鸟已成保护动物，传统点翠逐渐被孔雀羽、染绸等代用品取代。但这项工艺的生命力并未消逝——现代匠人以创新手法延续着点翠的魂韵，让这份“幽蓝幻彩”在当代首饰中重焕生机。非遗的点翠，不再是羽与金的简单结合，而是对千年美学的敬畏与传承。\n点翠的蓝，是时光浸染的诗意，更是工匠指尖流淌的星河。愿这份“永不褪色”的浪漫，能被更多人看见、铭记。','服饰妆造','passed',NULL,'[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/1.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/2.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/3.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/4.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/5.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/6.jpg\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/12/7.jpg\"]','[\"点翠\",\"非遗传承\",\"东方美学\",\"传统工艺美学\"]','public',1,7,1,'2026-03-30 15:51:34','2026-04-03 00:10:51',0,0,'zh');
 /*!40000 ALTER TABLE `travel_posts` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `user_follows`
---
-
-DROP TABLE IF EXISTS `user_follows`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_follows` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `follower_id` bigint NOT NULL,
-  `following_id` bigint NOT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_follow_pair` (`follower_id`,`following_id`),
-  KEY `idx_user_follows_following_id` (`following_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `user_follows`
@@ -701,30 +541,9 @@ CREATE TABLE `user_follows` (
 
 LOCK TABLES `user_follows` WRITE;
 /*!40000 ALTER TABLE `user_follows` DISABLE KEYS */;
+INSERT INTO `user_follows` VALUES (6,10047,10000,'2026-03-30 22:12:38'),(8,10011,10000,'2026-03-31 15:24:18');
 /*!40000 ALTER TABLE `user_follows` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `user_profile_visits`
---
-
-DROP TABLE IF EXISTS `user_profile_visits`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_profile_visits` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `viewer_id` bigint NOT NULL COMMENT 'profile viewer',
-  `profile_user_id` bigint NOT NULL COMMENT 'visited profile owner',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'first visit time',
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'latest visit time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_profile_visit_pair` (`viewer_id`,`profile_user_id`),
-  KEY `idx_user_profile_visits_profile_user_id` (`profile_user_id`),
-  KEY `idx_user_profile_visits_update_time` (`update_time`),
-  CONSTRAINT `fk_user_profile_visits_profile_user` FOREIGN KEY (`profile_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_user_profile_visits_viewer` FOREIGN KEY (`viewer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='user profile visit footprints';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `user_profile_visits`
@@ -732,51 +551,19 @@ CREATE TABLE `user_profile_visits` (
 
 LOCK TABLES `user_profile_visits` WRITE;
 /*!40000 ALTER TABLE `user_profile_visits` DISABLE KEYS */;
-INSERT INTO `user_profile_visits` VALUES (1,10011,10000,'2026-03-27 13:51:26','2026-03-27 13:51:26'),(2,10011,10020,'2026-03-27 13:51:42','2026-03-27 13:51:42');
+INSERT INTO `user_profile_visits` VALUES (1,10011,10000,'2026-03-27 13:51:26','2026-03-31 03:50:41'),(2,10011,10020,'2026-03-27 13:51:42','2026-03-27 13:51:42'),(3,10047,10000,'2026-03-30 22:12:05','2026-03-30 22:12:40'),(4,10047,10011,'2026-03-31 03:01:24','2026-03-31 03:01:24'),(5,10000,10011,'2026-03-31 07:48:14','2026-03-31 07:48:14'),(6,10011,10025,'2026-04-03 01:03:31','2026-04-03 01:03:31');
 /*!40000 ALTER TABLE `user_profile_visits` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `users`
+-- Dumping data for table `user_unban_applications`
 --
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'China' COMMENT '鍥藉/鍦板尯',
-  `location` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `language` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'zh',
-  `shop_status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'none',
-  `shop_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_cover` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_intro` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `lang_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `region_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `nickname` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bio` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `follower_count` int DEFAULT '0',
-  `following_count` int DEFAULT '0',
-  `avatar` text COLLATE utf8mb4_unicode_ci,
-  `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user',
-  `status` tinyint(1) DEFAULT '1',
-  `last_login_time` datetime DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `github_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `is_super_admin` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username` (`username`),
-  UNIQUE KEY `uk_phone` (`phone`),
-  UNIQUE KEY `uk_email` (`email`),
-  UNIQUE KEY `UK_g9s8emobrgjmob2ty2va0l354` (`github_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10025 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `user_unban_applications` WRITE;
+/*!40000 ALTER TABLE `user_unban_applications` DISABLE KEYS */;
+INSERT INTO `user_unban_applications` VALUES (1,10007,'测试成功','approved',10047,'','2026-03-29 18:19:42','2026-03-29 18:20:23','2026-03-29 18:20:25');
+/*!40000 ALTER TABLE `user_unban_applications` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `users`
@@ -784,9 +571,95 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (10000,'15171483964','$2a$10$HVUF5YBQdeLGoYyPOcMYx.fUZSjCl8mlE4afIgaSUq83ajH9PZOpa','15171483964',NULL,'China','','zh','none','','','','ja','CN','y0','',0,0,'https://api.dicebear.com/7.x/avataaars/svg?seed=15171483964','user',1,'2026-03-27 18:33:26','2026-03-10 02:52:02','2026-03-27 19:11:31',NULL,0),(10007,'yenOmld','$2a$10$cmYPMGS7d/wYCq.wnGbaTOBCM80X8T5Tpg62WnFz1ef6O0FL9KI4S',NULL,'2971549832@qq.com','China',NULL,'zh','none',NULL,NULL,NULL,NULL,NULL,'鐢ㄦ埛6724',NULL,0,0,'https://avatars.githubusercontent.com/u/189572187?v=4','user',1,'2026-03-10 12:27:06','2026-03-10 12:11:21','2026-03-11 08:42:07','189572187',0),(10011,'qinjiayi_1106@qq.com','$2a$10$Bw/vbiFWTIl0ermD7JF7e.CdWtBTTWUnRl34hWP/s2LFYB09df3W2',NULL,'qinjiayi_1106@qq.com','China','','zh','approved','闅界唬','','','zh','CN','+1','',0,0,'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/avatars/10011.png','merchant',1,'2026-03-27 18:58:05','2026-03-13 01:57:15','2026-03-27 19:11:31',NULL,0),(10020,'2894717528@qq.com','$2a$10$kb5zRuvBKTbthpHrGI8zyeCwvAbDbQWK8.iKLiQp89HUfmxGlihrW',NULL,'2894717528@qq.com','Japan',NULL,'zh','none',NULL,NULL,NULL,'zh','JP','123',NULL,0,0,'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/avatars/b5e816fc-6097-4482-ad9d-81f5017317b6.jpg','user',1,'2026-03-21 03:16:11','2026-03-21 03:16:08','2026-03-21 09:48:17',NULL,0),(10023,'qianrui2006@qq.com','$2a$10$920GHF7Gc5Prpfh2K0PRaeNJpF/sR9DuAbK/d0l3XvG7LDzhUccvS',NULL,'qianrui2006@qq.com','China',NULL,'zh','none',NULL,NULL,NULL,'zh','CN','鐢ㄦ埛8346',NULL,0,0,'https://api.dicebear.com/7.x/avataaars/svg?seed=qianrui2006@qq.com','user',1,'2026-03-22 07:19:36','2026-03-22 07:19:34','2026-03-22 07:19:36',NULL,0),(10024,'admin','$2a$10$jPeVG0d./Wwx.UdVdJUM9egagcmwX.SmQa358BQGIaU.kucmhAzYS',NULL,'admin@yayfolk.com','China','YayFolk Admin Center','zh','none',NULL,NULL,'骞冲彴绠＄悊鍛樿处鍙?,'zh','CN','绯荤粺绠＄悊鍛?,NULL,0,0,'','admin',1,'2026-03-27 18:57:33','2026-03-26 18:00:00','2026-03-27 18:57:33',NULL,1);
+INSERT INTO `users` VALUES (10000,'15171483964','$2a$10$HVUF5YBQdeLGoYyPOcMYx.fUZSjCl8mlE4afIgaSUq83ajH9PZOpa','15171483964',NULL,'China','','zh','none','','',NULL,'','private','ja','CN','y0','',NULL,2,0,'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/avatars/10000.jpg','user',1,'2026-04-03 22:26:40','2026-03-10 02:52:02','2026-04-03 22:26:40',NULL,0,0,NULL,NULL,NULL),(10007,'yenOmld','$2a$10$cmYPMGS7d/wYCq.wnGbaTOBCM80X8T5Tpg62WnFz1ef6O0FL9KI4S',NULL,'2971549832@qq.com','China',NULL,'zh','none',NULL,NULL,NULL,NULL,'public',NULL,NULL,'用户6724',NULL,NULL,0,0,'https://avatars.githubusercontent.com/u/189572187?v=4','user',1,'2026-03-10 12:27:06','2026-03-10 12:11:21','2026-03-29 18:20:25','189572187',0,0,NULL,NULL,NULL),(10011,'qinjiayi_1106@qq.com','$2a$10$Bw/vbiFWTIl0ermD7JF7e.CdWtBTTWUnRl34hWP/s2LFYB09df3W2','13986074011','qinjiayi_1106@qq.com','China','','zh','approved','隽绣','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/homepage/5a0d6698-05fc-4c22-b96d-8efcdc8b7f09.png','https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/homepage/5a0d6698-05fc-4c22-b96d-8efcdc8b7f09.png','','public','zh','CN','+1','',NULL,0,1,'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/avatars/10011.png','merchant',1,'2026-04-03 22:26:03','2026-03-13 01:57:15','2026-04-03 22:26:03',NULL,0,1,NULL,NULL,NULL),(10020,'2894717528@qq.com','$2a$10$kb5zRuvBKTbthpHrGI8zyeCwvAbDbQWK8.iKLiQp89HUfmxGlihrW',NULL,'2894717528@qq.com','Japan',NULL,'zh','none',NULL,NULL,NULL,NULL,'public','zh','JP','123',NULL,NULL,0,0,'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/avatars/b5e816fc-6097-4482-ad9d-81f5017317b6.jpg','user',1,'2026-03-21 03:16:11','2026-03-21 03:16:08','2026-03-21 09:48:17',NULL,0,0,NULL,NULL,NULL),(10023,'qianrui2006@qq.com','$2a$10$920GHF7Gc5Prpfh2K0PRaeNJpF/sR9DuAbK/d0l3XvG7LDzhUccvS',NULL,'qianrui2006@qq.com','China',NULL,'zh','none',NULL,NULL,NULL,NULL,'public','zh','CN','用户8346',NULL,NULL,0,0,'https://api.dicebear.com/7.x/avataaars/svg?seed=qianrui2006@qq.com','user',1,'2026-03-22 07:19:36','2026-03-22 07:19:34','2026-03-22 07:19:36',NULL,0,0,NULL,NULL,NULL),(10024,'admin','$2a$10$jPeVG0d./Wwx.UdVdJUM9egagcmwX.SmQa358BQGIaU.kucmhAzYS',NULL,'admin@yayfolk.com','China','YayFolk Admin Center','zh','none',NULL,NULL,NULL,'平台管理员账号','public','zh','CN','系统管理员',NULL,NULL,0,0,'','admin',1,'2026-03-30 15:07:31','2026-03-26 18:00:00','2026-03-30 15:07:31',NULL,1,0,NULL,NULL,NULL),(10025,'merchant_1','encrypted_password','13800000001',NULL,'China',NULL,'zh','active','京华非遗工坊',NULL,NULL,'聚焦京味非遗体验与讲解','public',NULL,NULL,'京华非遗工坊',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10026,'merchant_2','encrypted_password','13800000002',NULL,'China',NULL,'zh','active','苏作匠心馆',NULL,NULL,'以江南手工艺体验为主','public',NULL,NULL,'苏作匠心馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10027,'merchant_3','encrypted_password','13800000003',NULL,'China',NULL,'zh','active','金陵雅集馆',NULL,NULL,'结合传统工艺和节庆活动','public',NULL,NULL,'金陵雅集馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10028,'merchant_4','encrypted_password','13800000004',NULL,'China',NULL,'zh','active','徽州四宝社',NULL,NULL,'文房四宝主题体验空间','public',NULL,NULL,'徽州四宝社',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10029,'merchant_5','encrypted_password','13800000005',NULL,'China',NULL,'zh','active','蜀风非遗坊',NULL,NULL,'四川传统技艺和戏曲体验','public',NULL,NULL,'蜀风非遗坊',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10030,'merchant_6','encrypted_password','13800000006',NULL,'China',NULL,'zh','active','长安艺脉馆',NULL,NULL,'唐风美术主题路线运营','public',NULL,NULL,'长安艺脉馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10031,'merchant_7','encrypted_password','13800000007',NULL,'China',NULL,'zh','active','苗岭锦绣社',NULL,NULL,'少数民族非遗深度体验','public',NULL,NULL,'苗岭锦绣社',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10032,'merchant_8','encrypted_password','13800000008',NULL,'China',NULL,'zh','active','壮乡锦艺阁',NULL,NULL,'壮族织锦与铜鼓民俗体验','public',NULL,NULL,'壮乡锦艺阁',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10033,'merchant_9','encrypted_password','13800000009',NULL,'China',NULL,'zh','active','津门年艺馆',NULL,NULL,'天津春节美术类非遗体验','public',NULL,NULL,'津门年艺馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10034,'merchant_10','encrypted_password','13800000010',NULL,'China',NULL,'zh','active','齐鲁巧艺坊',NULL,NULL,'鲁派手工艺和节令体验','public',NULL,NULL,'齐鲁巧艺坊',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10035,'merchant_11','encrypted_password','13800000011',NULL,'China',NULL,'zh','active','中原唐艺馆',NULL,NULL,'唐风陶艺和古都体验','public',NULL,NULL,'中原唐艺馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10036,'merchant_12','encrypted_password','13800000012',NULL,'China',NULL,'zh','active','越地青瓷社',NULL,NULL,'宋韵器物与生活美学','public',NULL,NULL,'越地青瓷社',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10037,'merchant_13','encrypted_password','13800000013',NULL,'China',NULL,'zh','active','岭南绣作馆',NULL,NULL,'岭南传统手工艺体验','public',NULL,NULL,'岭南绣作馆',NULL,NULL,0,0,NULL,'merchant',1,NULL,'2026-03-28 09:52:05','2026-03-28 11:15:27',NULL,0,1,NULL,NULL,NULL),(10044,'api_apply_user_20260328','','13900001001','api_apply_user_20260328@example.com','China',NULL,'zh','none',NULL,NULL,NULL,NULL,'public',NULL,NULL,'Apply API Test',NULL,NULL,0,0,NULL,'user',1,NULL,'2026-03-28 12:06:18',NULL,NULL,0,0,NULL,NULL,NULL),(10045,'api_buyer_user_20260328','','13900001002','api_buyer_user_20260328@example.com','China',NULL,'zh','none',NULL,NULL,NULL,NULL,'public',NULL,NULL,'Buyer API Test',NULL,NULL,0,0,NULL,'user',1,NULL,'2026-03-28 12:06:18',NULL,NULL,0,0,NULL,NULL,NULL),(10047,'Jane','$2a$10$J2K9yzmTUGrd2EBCIFC0vOfBt6486EQcziII1l1DAh7UVCAVP0n4i',NULL,'Jane@yayfolk.com','China',NULL,NULL,'none',NULL,NULL,NULL,NULL,'public',NULL,NULL,'Jane',NULL,NULL,0,1,'https://api.dicebear.com/7.x/avataaars/svg?seed=Jane','admin',1,'2026-04-03 22:12:21','2026-03-28 21:33:22','2026-04-03 22:12:21',NULL,0,0,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_bi_set_is_merchant` BEFORE INSERT ON `users` FOR EACH ROW BEGIN
+    SET NEW.is_merchant = CASE
+        WHEN COALESCE(NEW.role, 'user') = 'merchant' THEN 1
+        WHEN COALESCE(NEW.shop_status, 'none') IN ('approved', 'active') THEN 1
+        ELSE COALESCE(NEW.is_merchant, 0)
+    END;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_ai_sync_merchant_profile` AFTER INSERT ON `users` FOR EACH ROW BEGIN
+    IF NEW.role = 'merchant' OR COALESCE(NEW.shop_status, 'none') <> 'none' THEN
+        CALL sp_upsert_merchant_profile_from_user(NEW.id);
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_bu_set_is_merchant` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN
+    SET NEW.is_merchant = CASE
+        WHEN COALESCE(NEW.role, 'user') = 'merchant' THEN 1
+        WHEN COALESCE(NEW.shop_status, 'none') IN ('approved', 'active') THEN 1
+        WHEN EXISTS (
+            SELECT 1
+            FROM merchant_profiles mp
+            WHERE mp.user_id = OLD.id
+              AND mp.business_status IN ('approved', 'active')
+        ) THEN 1
+        ELSE 0
+    END;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_au_sync_merchant_profile` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
+    IF NEW.role = 'merchant' OR COALESCE(NEW.shop_status, 'none') <> 'none' THEN
+        CALL sp_upsert_merchant_profile_from_user(NEW.id);
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -797,4 +670,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-27 19:41:58
+-- Dump completed on 2026-04-03 22:51:36
