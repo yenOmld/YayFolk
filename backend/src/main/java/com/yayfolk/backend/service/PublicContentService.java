@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,9 +60,10 @@ public class PublicContentService {
     }
 
     public List<Map<String, Object>> getPublicActivities(String keyword, String city) {
-        List<Activity> activities = activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended");
+        List<Activity> activities = activityRepository.findByAuditStatusOrderByCreateTimeDesc("approved");
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
         for (Activity a : activities) {
+            syncActivityStatus(a);
             if (keyword != null && !keyword.isEmpty()) {
                 boolean match = (a.getTitle() != null && a.getTitle().contains(keyword))
                         || (a.getHeritageType() != null && a.getHeritageType().contains(keyword));
@@ -81,6 +84,10 @@ public class PublicContentService {
             });
             result.add(m);
         }
+        result.sort(Comparator.comparing(item -> {
+            Object value = item.get("startTime");
+            return value instanceof Date ? (Date) value : new Date(Long.MAX_VALUE);
+        }));
         return result;
     }
 
@@ -90,6 +97,7 @@ public class PublicContentService {
         if (!"approved".equals(activity.getAuditStatus())) {
             throw new RuntimeException("Activity has not been approved yet");
         }
+        syncActivityStatus(activity);
         Map<String, Object> result = activityToMap(activity);
         userRepository.findById(activity.getMerchantId()).ifPresent(u -> {
             result.put("merchantName", u.getShopName() != null ? u.getShopName() : u.getNickname());
@@ -119,6 +127,10 @@ public class PublicContentService {
             });
             result.add(m);
         }
+        result.sort(Comparator.comparing(item -> {
+            Object value = item.get("startTime");
+            return value instanceof Date ? (Date) value : new Date(Long.MAX_VALUE);
+        }));
         return result;
     }
 
@@ -157,6 +169,10 @@ public class PublicContentService {
             m.put("createTime", c.getCreateTime());
             result.add(m);
         }
+        result.sort(Comparator.comparing(item -> {
+            Object value = item.get("startTime");
+            return value instanceof Date ? (Date) value : new Date(Long.MAX_VALUE);
+        }));
         return result;
     }
 
@@ -381,6 +397,7 @@ public class PublicContentService {
 
     private Map<String, Object> activityToMap(Activity a) {
         Map<String, Object> m = new HashMap<String, Object>();
+        String resolvedStatus = resolveActivityStatus(a);
         m.put("id", a.getId());
         m.put("merchantId", a.getMerchantId());
         m.put("categoryId", a.getCategoryId());
@@ -401,11 +418,41 @@ public class PublicContentService {
         m.put("locationCity", a.getLocationCity());
         m.put("locationDistrict", a.getLocationDistrict());
         m.put("locationDetail", a.getLocationDetail());
-        m.put("status", a.getStatus());
+        m.put("status", resolvedStatus);
         m.put("auditStatus", a.getAuditStatus());
         m.put("auditRemark", a.getAuditRemark());
         m.put("content", a.getContent());
         return m;
+    }
+
+    private void syncActivityStatus(Activity activity) {
+        String resolvedStatus = resolveActivityStatus(activity);
+        String currentStatus = activity.getStatus();
+        if (currentStatus == null || !resolvedStatus.equalsIgnoreCase(currentStatus)) {
+            activity.setStatus(resolvedStatus);
+            activityRepository.save(activity);
+        }
+    }
+
+    private String resolveActivityStatus(Activity activity) {
+        Date now = new Date();
+        Date endTime = activity.getEndTime();
+        if (endTime != null && !endTime.after(now)) {
+            return "ended";
+        }
+
+        Integer maxParticipants = activity.getMaxParticipants();
+        Integer currentParticipants = activity.getCurrentParticipants();
+        if (maxParticipants != null && maxParticipants > 0 && currentParticipants != null && currentParticipants >= maxParticipants) {
+            return "full";
+        }
+
+        Date startTime = activity.getStartTime();
+        if (startTime != null && !startTime.after(now)) {
+            return "ongoing";
+        }
+
+        return "signup";
     }
 
     private Map<String, Object> productToMap(Product p) {

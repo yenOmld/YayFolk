@@ -1699,7 +1699,7 @@ onBeforeUnmount(() => {
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
-  padding: 24px 20px 40px;
+  padding: 24px 20px 100px;
   box-sizing: border-box;
 }
 
@@ -2739,7 +2739,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 768px) {
   .personal-center {
-    padding: 18px 14px 32px;
+    padding: 18px 14px calc(116px + env(safe-area-inset-bottom, 0px));
   }
 
   .page-header,

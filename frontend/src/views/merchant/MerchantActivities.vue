@@ -88,6 +88,7 @@ import { deleteMerchantActivity, getMerchantActivities } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
 const notify = (msg, type = 'info') => appContext.config.globalProperties.$notify?.[type]?.(msg)
+const confirm = appContext.config.globalProperties.$confirm
 const route = useRoute()
 const router = useRouter()
 
@@ -175,27 +176,29 @@ const viewBookings = (item) => {
 }
 
 const handleDelete = async (id) => {
-  if (!window.confirm('Are you sure you want to delete this activity?')) {
-    return
-  }
+  confirm({
+    title: 'Delete Activity',
+    message: 'Are you sure you want to delete this activity?',
+    onConfirm: async () => {
+      try {
+        const res = await deleteMerchantActivity(id)
+        if (res.code !== 200) {
+          throw new Error(res.message || 'Failed to delete activity')
+        }
 
-  try {
-    const res = await deleteMerchantActivity(id)
-    if (res.code !== 200) {
-      throw new Error(res.message || 'Failed to delete activity')
+        notify('Activity deleted successfully.', 'success')
+
+        if (list.value.length === 1 && currentPage.value > 1) {
+          currentPage.value -= 1
+          syncRoute()
+        }
+
+        await load()
+      } catch (error) {
+        notify(error.message || 'Failed to delete activity', 'error')
+      }
     }
-
-    notify('Activity deleted successfully.', 'success')
-
-    if (list.value.length === 1 && currentPage.value > 1) {
-      currentPage.value -= 1
-      syncRoute()
-    }
-
-    await load()
-  } catch (error) {
-    notify(error.message || 'Failed to delete activity', 'error')
-  }
+  })
 }
 
 const changePage = async (page) => {

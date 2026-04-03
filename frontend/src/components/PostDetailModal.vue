@@ -807,7 +807,8 @@ const copyLink = async () => {
   position: relative;
   display: flex;
   width: 90vw;
-  height: 90vh;
+  height: 85vh;
+  top: -45px;
   max-width: 1200px;
   background: white;
   border-radius: 12px;
@@ -821,6 +822,7 @@ const copyLink = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 12px 0px 0px 12px;
 }
 
 .image-slider {

@@ -222,6 +222,8 @@ public class MerchantService {
             activity.setMerchantProfileId(profile.getId());
         }
         fillActivity(activity, data);
+        validateActivitySchedule(activity);
+        syncActivityStatus(activity);
         activity.setAuditStatus("pending");
         activity.setAuditRemark(null);
         activityRepository.save(activity);
@@ -236,6 +238,8 @@ public class MerchantService {
             throw new RuntimeException("No permission to operate on this activity");
         }
         fillActivity(activity, data);
+        validateActivitySchedule(activity);
+        syncActivityStatus(activity);
         activity.setAuditStatus("pending");
         activity.setAuditRemark(null);
         activityRepository.save(activity);
@@ -387,12 +391,58 @@ public class MerchantService {
         map.put("locationCity", activity.getLocationCity());
         map.put("locationDistrict", activity.getLocationDistrict());
         map.put("locationDetail", activity.getLocationDetail());
-        map.put("status", activity.getStatus());
+        map.put("status", resolveActivityStatus(activity));
         map.put("auditStatus", activity.getAuditStatus());
         map.put("auditRemark", activity.getAuditRemark());
         map.put("createTime", activity.getCreateTime());
         map.put("updateTime", activity.getUpdateTime());
         return map;
+    }
+
+    private void validateActivitySchedule(Activity activity) {
+        Date startTime = activity.getStartTime();
+        Date endTime = activity.getEndTime();
+        Date now = currentValidationTime();
+
+        if (startTime == null || endTime == null) {
+            throw new RuntimeException("Start time and end time are required");
+        }
+        if (startTime.before(now)) {
+            throw new RuntimeException("Start time cannot be earlier than the current time");
+        }
+        if (!endTime.after(startTime)) {
+            throw new RuntimeException("End time must be later than start time");
+        }
+    }
+
+    private String resolveActivityStatus(Activity activity) {
+        Date now = currentValidationTime();
+        Date endTime = activity.getEndTime();
+        if (endTime != null && !endTime.after(now)) {
+            return "ended";
+        }
+
+        Integer maxParticipants = activity.getMaxParticipants();
+        Integer currentParticipants = activity.getCurrentParticipants();
+        if (maxParticipants != null && maxParticipants > 0 && currentParticipants != null && currentParticipants >= maxParticipants) {
+            return "full";
+        }
+
+        Date startTime = activity.getStartTime();
+        if (startTime != null && !startTime.after(now)) {
+            return "ongoing";
+        }
+
+        return "signup";
+    }
+
+    private Date currentValidationTime() {
+        Date now = new Date();
+        return new Date((now.getTime() / 60000L) * 60000L);
+    }
+
+    private void syncActivityStatus(Activity activity) {
+        activity.setStatus(resolveActivityStatus(activity));
     }
 
     public List<Map<String, Object>> getActivityBookings(String username, Long activityId) {

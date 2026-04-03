@@ -250,8 +250,9 @@ onMounted(() => {
 .modal-content {
   position: relative;
   width: min(840px, calc(100vw - 48px));
-  height: min(760px, calc(100dvh - 56px));
-  min-height: 500px;
+  height: min(600px, calc(100dvh - 56px));
+  min-height: 400px;
+  top: -50px;
   background: white;
   border-radius: 12px;
   z-index: 1001;

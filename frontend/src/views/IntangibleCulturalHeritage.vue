@@ -149,7 +149,7 @@
           <h2 class="section-title">非遗作品展示</h2>
         </div>
         <div class="gallery-grid">
-          <div v-for="(item, index) in galleryWorks" :key="item.id || index" class="gallery-item animate-item" :style="{ animationDelay: `${(index + 1) * 0.1}s` }" @click="goToWork(item.id)">
+          <div v-for="(item, index) in galleryWorks" :key="item.id || index" class="gallery-item animate-item" :style="{ animationDelay: `${(index + 1) * 0.1}s` }" @click="goToWork(item)">
             <img :src="item.coverImage || fallbackCover" :alt="item.title || `作品${index + 1}`" />
             <div class="gallery-overlay">
               <h4>{{ item.title }}</h4>
@@ -192,12 +192,16 @@
         </div>
       </div>
     </div>
+
+    <PostDetailModal :visible="showPostDetail" :post="detailPost" @close="closePostDetail" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getDiscoverPostDetail } from '@/api/app.js'
+import PostDetailModal from '@/components/PostDetailModal.vue'
 import { getHomepageOfficialContents } from '@/api/app.js'
 
 const router = useRouter()
@@ -210,6 +214,28 @@ const galleryWorks = ref([])
 const homepageStats = ref({ activities: 0, heritages: 0, works: 0 })
 const showKnowledgeModal = ref(false)
 const selectedKnowledge = ref({})
+const showPostDetail = ref(false)
+const detailPost = ref(null)
+
+const openPost = async (post) => {
+  const id = Number(post?.id || post?.postId || 0)
+  if (!id) return
+  try {
+    const res = await getDiscoverPostDetail(id)
+    if (res.code !== 200 || !res.data) {
+      return
+    }
+    detailPost.value = res.data
+    showPostDetail.value = true
+  } catch {
+    console.error('加载帖子详情失败')
+  }
+}
+
+const closePostDetail = () => {
+  showPostDetail.value = false
+  detailPost.value = null
+}
 
 const aboutImage = computed(() => knowledgeData.value[0]?.image || '/videos/202601-鍏诲績娈?鍐-.png')
 const heritageBaseInfo = computed(() => {
@@ -322,8 +348,8 @@ const goToActivity = (id) => {
   if (id) router.push(`/activity/${id}`)
 }
 
-const goToWork = (id) => {
-  if (id) router.push(`/home/discover?postId=${id}`)
+const goToWork = (item) => {
+  openPost(item)
 }
 
 const scrollToSection = (sectionId) => {
@@ -1058,11 +1084,19 @@ onUnmounted(() => {
   border-radius: 20px;
   max-width: 700px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   position: relative;
+  top: -50px;
   animation: slideUp 0.4s ease;
   box-shadow: 0 25px 80px rgba(79, 9, 21, 0.4);
+}
+.modal-content::-webkit-scrollbar {
+  display: none;
+}
+.modal-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @keyframes slideUp {

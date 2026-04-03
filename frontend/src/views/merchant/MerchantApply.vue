@@ -180,41 +180,43 @@
       />
     </section>
 
-    <div v-if="showFormModal" class="modal-overlay" @click.self="closeFormModal">
-      <section class="modal-card">
-        <div class="modal-head">
-          <div>
-            <p class="section-eyebrow">Merchant Profile</p>
-            <h2>{{ formTitle }}</h2>
-            <p>{{ formDescription }}</p>
+    <Teleport to="body">
+      <div v-if="showFormModal" class="modal-overlay" @click.self="closeFormModal">
+        <section class="modal-card">
+          <div class="modal-head">
+            <div>
+              <p class="section-eyebrow">Merchant Profile</p>
+              <h2>{{ formTitle }}</h2>
+              <p>{{ formDescription }}</p>
+            </div>
+            <button
+              type="button"
+              class="modal-close-btn"
+              :disabled="submitting"
+              @click="closeFormModal"
+            >
+              <i class="bx bx-x"></i>
+            </button>
           </div>
-          <button
-            type="button"
-            class="modal-close-btn"
-            :disabled="submitting"
-            @click="closeFormModal"
-          >
-            <i class="bx bx-x"></i>
-          </button>
-        </div>
 
-        <MerchantProfileForm
-          :form="form"
-          :loading="loading"
-          :submitting="submitting"
-          :uploading-proofs="uploadingProofs"
-          :has-application="hasApplication"
-          :heritage-types="heritageTypes"
-          :submit-hint="submitHint"
-          :submit-button-text="submitButtonText"
-          @submit="submitApplication"
-          @reset="resetFormToStored"
-          @proof-change="handleProofChange"
-          @clear-proof-images="clearProofImages"
-          @remove-proof-image="removeProofImage"
-        />
-      </section>
-    </div>
+          <MerchantProfileForm
+            :form="form"
+            :loading="loading"
+            :submitting="submitting"
+            :uploading-proofs="uploadingProofs"
+            :has-application="hasApplication"
+            :heritage-types="heritageTypes"
+            :submit-hint="submitHint"
+            :submit-button-text="submitButtonText"
+            @submit="submitApplication"
+            @reset="resetFormToStored"
+            @proof-change="handleProofChange"
+            @clear-proof-images="clearProofImages"
+            @remove-proof-image="removeProofImage"
+          />
+        </section>
+      </div>
+    </Teleport>
   </div>
 </template>
 

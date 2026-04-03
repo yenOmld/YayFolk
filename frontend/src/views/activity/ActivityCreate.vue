@@ -11,7 +11,7 @@
       <div class="editor-header">
         <div>
           <h1>{{ isEdit ? '编辑活动' : '创建活动' }}</h1>
-          <p>活动信息会同步到前台活动列表，保存后会重新进入审核流程。</p>
+          <p>保存的活动内容将同步到公共活动列表并重新提交审核。</p>
         </div>
         <div v-if="isEdit && activityMeta" class="audit-chip" :class="activityMeta.auditStatus">
           {{ auditLabel(activityMeta.auditStatus) }}
@@ -25,11 +25,11 @@
 
       <template v-else>
         <section class="form-section">
-          <h2>基础信息</h2>
+          <h2>基本信息</h2>
           <div class="form-grid">
             <label class="field full">
               <span>活动标题</span>
-              <input v-model.trim="form.title" type="text" maxlength="200" placeholder="例如：苏绣体验课" />
+              <input v-model.trim="form.title" type="text" maxlength="200" placeholder="例如：缫丝织品体验课" />
             </label>
 
             <label class="field full">
@@ -56,16 +56,16 @@
 
             <label class="field">
               <span>开始时间</span>
-              <input v-model="form.startTime" type="datetime-local" />
+              <input v-model="form.startTime" type="datetime-local" :min="minStartTime" />
             </label>
 
             <label class="field">
               <span>结束时间</span>
-              <input v-model="form.endTime" type="datetime-local" />
+              <input v-model="form.endTime" type="datetime-local" :min="minEndTime" />
             </label>
 
             <label class="field">
-              <span>价格（元）</span>
+              <span>价格 (CNY)</span>
               <input v-model.number="form.priceYuan" type="number" min="0" step="0.01" placeholder="0 表示免费" />
             </label>
 
@@ -76,17 +76,17 @@
 
             <label class="field">
               <span>省份</span>
-              <input v-model.trim="form.locationProvince" type="text" placeholder="例如：江苏省" />
+              <input v-model.trim="form.locationProvince" type="text" placeholder="例如：广东省" />
             </label>
 
             <label class="field">
               <span>城市</span>
-              <input v-model.trim="form.locationCity" type="text" placeholder="例如：苏州市" />
+              <input v-model.trim="form.locationCity" type="text" placeholder="例如：深圳市" />
             </label>
 
             <label class="field full">
               <span>详细地址</span>
-              <input v-model.trim="form.locationDetail" type="text" maxlength="200" placeholder="请输入详细活动地点" />
+              <input v-model.trim="form.locationDetail" type="text" maxlength="200" placeholder="请输入活动的详细地址" />
             </label>
           </div>
         </section>
@@ -95,7 +95,7 @@
           <div class="section-head">
             <div>
               <h2>活动图片</h2>
-              <p class="hint">最多 9 张，第一张会作为封面图。</p>
+              <p class="hint">最多上传9张图片，第一张将作为封面。</p>
             </div>
             <button class="ghost-btn" type="button" @click="triggerImageUpload" :disabled="uploadingImages || form.images.length >= 9">
               {{ uploadingImages ? '上传中...' : '上传图片' }}
@@ -122,10 +122,10 @@
           <div class="section-head">
             <div>
               <h2>活动视频</h2>
-              <p class="hint">可选，上传后会保存视频 URL 到 `video_url`，详情页会直接播放。</p>
+              <p class="hint">可选。上传后视频URL将存储在视频字段中并显示在详情页。</p>
             </div>
             <button class="ghost-btn" type="button" @click="triggerVideoUpload" :disabled="uploadingVideo">
-              {{ uploadingVideo ? '上传中...' : (form.videoUrl ? '更换视频' : '上传视频') }}
+              {{ uploadingVideo ? '上传中...' : (form.videoUrl ? '替换视频' : '上传视频') }}
             </button>
             <input ref="videoInput" type="file" accept="video/*" hidden @change="handleVideoUpload" />
           </div>
@@ -142,20 +142,20 @@
             </video>
             <div class="video-preview-actions">
               <span class="video-url">{{ form.videoUrl }}</span>
-              <button type="button" class="danger-text-btn" @click="removeVideo">移除视频</button>
+              <button type="button" class="danger-text-btn" @click="removeVideo">删除视频</button>
             </div>
           </div>
 
           <div v-else class="video-empty">
             <i class="bx bx-video-plus"></i>
-            <span>还没有上传活动视频</span>
+            <span>暂无活动视频上传。</span>
           </div>
         </section>
 
         <section class="form-section">
           <h2>活动介绍</h2>
           <label class="field full">
-            <span>详情内容</span>
+            <span>详细内容</span>
             <textarea
               v-model.trim="form.content"
               rows="10"
@@ -167,7 +167,7 @@
         <div class="action-row">
           <button class="secondary-btn" type="button" @click="goBack">取消</button>
           <button class="primary-btn" type="button" :disabled="saving" @click="submitForm">
-            {{ saving ? '保存中...' : (isEdit ? '保存并重新提交审核' : '创建并提交审核') }}
+            {{ saving ? '保存中...' : (isEdit ? '保存并重新提交' : '创建并提交') }}
           </button>
         </div>
       </template>
@@ -192,7 +192,7 @@ const router = useRouter()
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
-const heritageTypes = ['刺绣', '剪纸', '陶瓷', '漆器', '雕刻', '京剧', '昆曲', '古琴', '太极', '中医', '年画', '其他']
+const heritageTypes = ['工艺', '刺绣', '雕塑', '器具', '编织', '纺织', '绘画', '剪纸', '陶瓷', '中医', '编织', '其他']
 
 const imageInput = ref(null)
 const videoInput = ref(null)
@@ -222,6 +222,15 @@ const form = ref({
 })
 
 const isEdit = computed(() => Boolean(route.params.id))
+const currentDateTimeInput = () => {
+  const now = new Date()
+  now.setSeconds(0, 0)
+  const timezoneOffset = now.getTimezoneOffset()
+  const local = new Date(now.getTime() - timezoneOffset * 60000)
+  return local.toISOString().slice(0, 16)
+}
+const minStartTime = computed(() => currentDateTimeInput())
+const minEndTime = computed(() => form.value.startTime || minStartTime.value)
 
 const showError = (message) => notify?.error?.(message)
 const showSuccess = (message) => notify?.success?.(message)
@@ -271,8 +280,8 @@ const toInputDateTime = (value) => {
 const auditLabel = (status) => ({
   pending: '待审核',
   approved: '已通过',
-  rejected: '已驳回'
-}[status] || '待提交')
+  rejected: '已拒绝'
+}[status] || '草稿')
 
 const goBack = () => {
   router.push('/merchant/activities')
@@ -365,7 +374,7 @@ const handleImageUpload = async (event) => {
         }
 
         failures.push(getRequestErrorMessage(result.reason, {
-          timeoutMessage: '图片上传较慢，请稍等后再试',
+          timeoutMessage: '图片上传时间过长，请稍后重试。',
           fallbackMessage: '图片上传失败'
         }))
       })
@@ -376,19 +385,21 @@ const handleImageUpload = async (event) => {
     }
 
     if (!failures.length) {
-      showSuccess(uploadedUrls.length > 1 ? `已上传 ${uploadedUrls.length} 张图片` : '图片上传成功')
+      showSuccess(uploadedUrls.length > 1
+          ? `成功上传 ${uploadedUrls.length} 张图片。`
+          : '图片上传成功。')
       return
     }
 
     if (uploadedUrls.length) {
-      showWarning(`已上传 ${uploadedUrls.length} 张图片，另有 ${failures.length} 张失败：${failures[0]}`)
+      showWarning(`成功上传 ${uploadedUrls.length} 张图片，但 ${failures.length} 张上传失败：${failures[0]}`)
       return
     }
 
     showError(failures[0] || '图片上传失败')
   } catch (error) {
     showError(getRequestErrorMessage(error, {
-      timeoutMessage: '图片上传较慢，请稍等后再试',
+      timeoutMessage: '图片上传时间过长，请稍后重试。',
       fallbackMessage: '图片上传失败'
     }))
   } finally {
@@ -419,7 +430,7 @@ const handleVideoUpload = async (event) => {
       uploadResponse = await uploadVideo(uploadFormData, 'activities/videos')
     } catch (error) {
       showError(getRequestErrorMessage(error, {
-        timeoutMessage: '视频上传较慢，请稍等后再试',
+        timeoutMessage: '视频上传时间过长，请稍后重试。',
         fallbackMessage: '视频上传失败'
       }))
       return
@@ -433,7 +444,7 @@ const handleVideoUpload = async (event) => {
     showSuccess('视频上传成功')
   } catch (error) {
     showError(getRequestErrorMessage(error, {
-      timeoutMessage: '视频上传较慢，请稍等后再试',
+      timeoutMessage: '视频上传时间过长，请稍后重试。',
       fallbackMessage: '视频上传失败'
     }))
   } finally {
@@ -457,14 +468,22 @@ const submitForm = async () => {
     return
   }
   if (!form.value.content) {
-    showWarning('请填写活动介绍')
+    showWarning('请填写活动描述')
     return
   }
   if (!form.value.images.length) {
     showWarning('请至少上传一张活动图片')
     return
   }
-  if (new Date(form.value.endTime).getTime() <= new Date(form.value.startTime).getTime()) {
+  const startTime = new Date(form.value.startTime)
+  const endTime = new Date(form.value.endTime)
+  const now = new Date(currentDateTimeInput())
+
+  if (startTime.getTime() < now.getTime()) {
+    showWarning('开始时间不能早于当前时间')
+    return
+  }
+  if (endTime.getTime() <= startTime.getTime()) {
     showWarning('结束时间必须晚于开始时间')
     return
   }
@@ -509,7 +528,7 @@ const submitForm = async () => {
 
 onMounted(() => {
   const user = readStoredUser()
-  if (user.role !== 'merchant' && user.role !== 'admin') {
+  if (user.role !== 'merchant') {
     showWarning('只有商家可以管理活动')
     router.push('/merchant/apply')
     return
