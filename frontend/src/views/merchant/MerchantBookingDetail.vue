@@ -3,44 +3,44 @@
     <div class="header-nav">
       <button class="back-btn" @click="goBack">
         <i class="bx bx-arrow-back"></i>
-        <span>Back To Bookings</span>
+        <span>返回预订</span>
       </button>
       <div class="breadcrumb">
-        <span @click="goBack">Merchant Bookings</span>
+        <span @click="goBack">商家预订</span>
         <i class="bx bx-chevron-right"></i>
-        <span>Booking Detail</span>
+        <span>订单详情</span>
       </div>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading booking detail...</p>
+      <p>加载订单详情中...</p>
     </div>
 
     <div v-else-if="!booking" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>This booking is not available.</p>
+      <p>此订单不可用。</p>
     </div>
 
     <div v-else class="detail-layout">
       <section class="main-column">
         <article class="info-card hero-card">
-          <img v-if="coverImage" :src="coverImage" :alt="booking.activityTitle || 'Activity cover'" class="cover-image">
+          <img v-if="coverImage" :src="coverImage" :alt="booking.activityTitle || '活动封面'" class="cover-image">
           <div class="hero-copy">
             <div class="title-row">
               <div>
-                <p class="eyebrow">Merchant Booking Detail</p>
-                <h1>{{ booking.activityTitle || 'Activity Booking' }}</h1>
-                <p class="subtitle">{{ booking.activitySubtitle || booking.heritageType || 'Booking detail' }}</p>
+                <p class="eyebrow">商家订单详情</p>
+                <h1>{{ booking.activityTitle || '活动订单' }}</h1>
+                <p class="subtitle">{{ booking.activitySubtitle || booking.heritageType || '订单详情' }}</p>
               </div>
               <span :class="['status-tag', booking.status]">{{ statusText(booking.status) }}</span>
             </div>
 
             <div class="meta-grid">
-              <p>Booking No: {{ booking.reserveNo || '-' }}</p>
-              <p>Activity Time: {{ formatRange(booking.startTime, booking.endTime, booking.activityTime) }}</p>
-              <p>Location: {{ fullLocation }}</p>
-              <p>Created At: {{ formatTime(booking.createTime) }}</p>
+              <p>订单号：{{ booking.reserveNo || '-' }}</p>
+              <p>活动时间：{{ formatRange(booking.startTime, booking.endTime, booking.activityTime) }}</p>
+              <p>地点：{{ fullLocation }}</p>
+              <p>创建时间：{{ formatTime(booking.createTime) }}</p>
             </div>
 
             <p v-if="booking.activityContent" class="activity-content">{{ booking.activityContent }}</p>
@@ -48,66 +48,92 @@
         </article>
 
         <article class="info-card">
-          <h2>Booking Info</h2>
+          <h2>订单信息</h2>
           <div class="meta-grid">
-            <p>Payment Status: {{ paymentText(booking.paymentStatus) }}</p>
-            <p>Payment Method: {{ booking.paymentType || '-' }}</p>
-            <p>Participants: {{ booking.participantCount || 1 }}</p>
-            <p>Total Amount: {{ formatCurrency(booking.totalAmount) }}</p>
-            <p>Paid Amount: {{ formatCurrency(booking.payAmount ?? booking.totalAmount) }}</p>
-            <p>Paid At: {{ formatTime(booking.paymentTime) }}</p>
-            <p>Checked In At: {{ formatTime(booking.verificationTime) }}</p>
-            <p>Refund State: {{ refundStateText }}</p>
+            <p>支付状态：{{ paymentText(booking.paymentStatus) }}</p>
+            <p>支付方式：{{ booking.paymentType || '-' }}</p>
+            <p>参与人数：{{ booking.participantCount || 1 }}</p>
+            <p>总金额：{{ formatCurrency(booking.totalAmount) }}</p>
+            <p>实付金额：{{ formatCurrency(booking.payAmount ?? booking.totalAmount) }}</p>
+            <p>支付时间：{{ formatTime(booking.paymentTime) }}</p>
+            <p>签到时间：{{ formatTime(booking.verificationTime) }}</p>
+            <p>退款状态：{{ refundStateText }}</p>
           </div>
-          <p v-if="booking.remark" class="remark-line">Remark: {{ booking.remark }}</p>
+          <p v-if="booking.remark" class="remark-line">备注：{{ booking.remark }}</p>
         </article>
 
         <article class="info-card">
-          <h2>Customer Info</h2>
+          <h2>用户信息</h2>
           <div class="customer-card">
-            <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="Customer avatar" class="avatar">
+            <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="用户头像" class="avatar">
             <div class="customer-copy">
-              <strong>{{ booking.customerName || booking.participantName || `User ${booking.userId}` }}</strong>
-              <span>Username: {{ booking.customerUsername || '-' }}</span>
-              <span>Phone: {{ booking.customerPhone || booking.participantPhone || '-' }}</span>
-              <span>Email: {{ booking.customerEmail || '-' }}</span>
-              <span>Location: {{ booking.customerLocation || '-' }}</span>
+              <strong>{{ booking.customerName || booking.participantName || `用户 ${booking.userId}` }}</strong>
+              <span>用户名：{{ booking.customerUsername || '-' }}</span>
+              <span>电话：{{ booking.customerPhone || booking.participantPhone || '-' }}</span>
+              <span>邮箱：{{ booking.customerEmail || '-' }}</span>
+              <span>地区：{{ booking.customerLocation || '-' }}</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="info-card">
+          <h2>参与者信息</h2>
+          <div v-if="participantsList.length > 0" class="participants-list">
+            <div v-for="(participant, index) in participantsList" :key="index" class="participant-item">
+              <div class="participant-header">
+                <h4>参与者 {{ index + 1 }}</h4>
+              </div>
+              <div class="participant-info">
+                <p><strong>姓名：</strong>{{ participant.name || '-' }}</p>
+                <p><strong>电话：</strong>{{ participant.phone || '-' }}</p>
+              </div>
+            </div>
+          </div>
+          <div v-else class="participants-list">
+            <div class="participant-item">
+              <div class="participant-header">
+                <h4>参与者 1</h4>
+              </div>
+              <div class="participant-info">
+                <p><strong>姓名：</strong>{{ booking.participantName || '-' }}</p>
+                <p><strong>电话：</strong>{{ booking.participantPhone || '-' }}</p>
+              </div>
             </div>
           </div>
         </article>
 
         <article v-if="timeline.length" class="info-card">
-          <h2>Timeline</h2>
+          <h2>时间线</h2>
           <div class="timeline-list">
             <div v-for="item in timeline" :key="item.id" class="timeline-item">
               <strong>{{ formatTime(item.createTime) }}</strong>
               <span>{{ statusText(item.newStatus) }}</span>
-              <small>{{ item.operatorName || item.operatorType || 'System' }}{{ item.remark ? ` | ${item.remark}` : '' }}</small>
+              <small>{{ item.operatorName || item.operatorType || '系统' }}{{ item.remark ? ` | ${item.remark}` : '' }}</small>
             </div>
           </div>
         </article>
 
         <article v-if="hasReview" class="info-card">
-          <h2>Customer Review</h2>
+          <h2>用户评价</h2>
           <div class="review-box">
             <strong>{{ reviewTitle }}</strong>
-            <p>{{ booking.reviewContent || 'No review content.' }}</p>
-            <small>Reviewed At: {{ formatTime(booking.reviewTime) }}</small>
+            <p>{{ booking.reviewContent || '无评价内容。' }}</p>
+            <small>评价时间：{{ formatTime(booking.reviewTime) }}</small>
           </div>
         </article>
       </section>
 
       <aside class="side-column">
         <article class="info-card sticky-card">
-          <h2>Actions</h2>
+          <h2>操作</h2>
           <p class="side-tip">{{ actionHint }}</p>
 
           <div class="action-list">
             <button v-if="booking.status === 'registered'" class="refund-btn" :disabled="isSubmitting || !booking.canRefund" @click="handleRefund">
-              {{ submittingAction === 'refund' ? 'Refunding...' : 'Refund Only' }}
+              {{ submittingAction === 'refund' ? '退款中...' : '仅退款' }}
             </button>
             <button v-if="booking.canReject" class="danger-btn" :disabled="isSubmitting" @click="handleReject">
-              {{ submittingAction === 'reject' ? 'Rejecting...' : 'Reject Booking' }}
+              {{ submittingAction === 'reject' ? '拒绝中...' : '拒绝订单' }}
             </button>
           </div>
         </article>
@@ -132,11 +158,17 @@ const submittingAction = ref('')
 const booking = ref(null)
 
 const timeline = computed(() => Array.isArray(booking.value?.timeline) ? booking.value.timeline : [])
+const participantsList = computed(() => {
+  if (Array.isArray(booking.value?.participants) && booking.value.participants.length > 0) {
+    return booking.value.participants
+  }
+  return []
+})
 const hasReview = computed(() => booking.value?.reviewScore !== undefined || booking.value?.reviewContent || booking.value?.reviewTime)
 const reviewTitle = computed(() => (
   booking.value?.reviewScore === undefined || booking.value?.reviewScore === null || booking.value?.reviewScore === ''
-    ? 'Review Submitted'
-    : `Score ${Number(booking.value.reviewScore).toFixed(1)} / 5`
+    ? '已提交评价'
+    : `评分 ${Number(booking.value.reviewScore).toFixed(1)} / 5`
 ))
 const coverImage = computed(() => booking.value?.coverImage || booking.value?.activityImages?.[0] || booking.value?.detailImages?.[0] || '')
 const fullLocation = computed(() => (
@@ -147,25 +179,25 @@ const fullLocation = computed(() => (
 const isSubmitting = computed(() => Boolean(submittingAction.value))
 const refundStateText = computed(() => {
   if (booking.value?.paymentStatus === 'refunded' && booking.value?.status === 'registered') {
-    return 'Refunded, user can pay again'
+    return '已退款，用户可再次支付'
   }
   if (booking.value?.paymentStatus === 'refunded' && booking.value?.status === 'rejected') {
-    return 'Refunded and blocked'
+    return '已退款并已阻止'
   }
-  return 'Not refunded'
+  return '未退款'
 })
 const actionHint = computed(() => {
   if (booking.value?.status === 'registered' && booking.value?.canRefund) {
-    return 'Refund Only returns the money but keeps this booking active so the user can pay again later.'
+    return '仅退款会退还金额但保持订单活跃，用户稍后可以再次支付。'
   }
   if (booking.value?.status === 'registered' && !booking.value?.canRefund) {
-    return 'Refund Only is visible here, but it only works after the booking has been paid.'
+    return '仅退款选项在此可见，但仅在订单已支付后生效。'
   }
-  if (booking.value?.canReject) return 'Reject Booking will block this booking. Paid bookings will be refunded first.'
-  if (booking.value?.status === 'rejected') return 'This booking has been rejected and can no longer participate.'
-  if (booking.value?.status === 'checked_in') return 'This booking has already been checked in.'
-  if (booking.value?.status === 'cancelled') return 'This booking has been cancelled.'
-  return 'Review the booking details before taking action.'
+  if (booking.value?.canReject) return '拒绝订单将阻止此订单。已支付的订单将先退款。'
+  if (booking.value?.status === 'rejected') return '此订单已被拒绝，无法再参与活动。'
+  if (booking.value?.status === 'checked_in') return '此订单已完成签到。'
+  if (booking.value?.status === 'cancelled') return '此订单已被取消。'
+  return '在采取行动前，请仔细查看订单详情。'
 })
 
 const loadBooking = async () => {
@@ -173,12 +205,12 @@ const loadBooking = async () => {
   try {
     const response = await getMerchantBookingDetail(route.params.id)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Failed to load booking detail')
+      throw new Error(response.message || '加载订单详情失败')
     }
     booking.value = response.data
   } catch (error) {
     booking.value = null
-    notify?.error?.(error.message || 'Failed to load booking detail')
+    notify?.error?.(error.message || '加载订单详情失败')
   } finally {
     loading.value = false
   }
@@ -283,17 +315,17 @@ const handleReject = async () => {
 }
 
 const formatTime = (value) => (value ? new Date(value).toLocaleString('zh-CN') : '-')
-const formatCurrency = (value) => `CNY ${(Number(value || 0) / 100).toFixed(2)}`
+const formatCurrency = (value) => `¥ ${(Number(value || 0) / 100).toFixed(2)}`
 const formatRange = (start, end, fallback) => {
   if (start || end) {
-    const startText = start ? formatTime(start) : 'TBD'
+    const startText = start ? formatTime(start) : '待定'
     const endText = end ? formatTime(end) : ''
     return endText ? `${startText} - ${endText}` : startText
   }
-  return fallback || 'TBD'
+  return fallback || '待定'
 }
-const paymentText = (status) => ({ paid: 'Paid', unpaid: 'Unpaid', refunded: 'Refunded' }[status] || status || 'Unpaid')
-const statusText = (status) => ({ registered: 'Active', checked_in: 'Checked In', rejected: 'Rejected', cancelled: 'Cancelled' }[status] || status || '-')
+const paymentText = (status) => ({ paid: '已支付', unpaid: '未支付', refunded: '已退款' }[status] || status || '未支付')
+const statusText = (status) => ({ registered: '活跃', checked_in: '已签到', rejected: '已拒绝', cancelled: '已取消' }[status] || status || '-')
 
 onMounted(loadBooking)
 </script>
@@ -329,6 +361,13 @@ onMounted(loadBooking)
 .customer-card { gap: 16px; align-items: center; }
 .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: #f8fafc; }
 .customer-copy { gap: 6px; color: #475569; }
+.participants-list { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+.participant-item { padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.participant-header { margin-bottom: 12px; }
+.participant-header h4 { margin: 0; font-size: 14px; font-weight: 700; color: #1661ab; text-transform: uppercase; letter-spacing: 0.04em; }
+.participant-info { display: flex; flex-direction: column; gap: 8px; }
+.participant-info p { margin: 0; color: #334155; }
+.participant-info strong { color: #0f172a; font-weight: 600; }
 .timeline-list { display: grid; gap: 12px; margin-top: 14px; }
 .timeline-item { padding: 14px 16px; border-radius: 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
 .timeline-item strong { color: #0f172a; }

@@ -6,32 +6,32 @@
           <i class="bx bx-arrow-back"></i>
         </button>
         <div>
-          <p class="eyebrow">Merchant Check-in</p>
-          <h1>Booking Scanner</h1>
+          <p class="eyebrow">商家签到</p>
+          <h1>预订扫描器</h1>
           <p class="header-copy">
-            Use live camera detection when available. If the browser cannot detect QR codes in real time,
-            capture a frame, upload a photo, or enter the booking code manually.
+            可用时使用实时相机检测。如果浏览器无法实时检测二维码，
+            可以捕获帧、上传照片或手动输入预订码。
           </p>
         </div>
       </div>
 
       <div class="header-actions">
-        <button class="ghost-button" type="button" @click="goRecords">Open Records</button>
+        <button class="ghost-button" type="button" @click="goRecords">查看记录</button>
       </div>
     </header>
 
     <section class="capability-strip">
       <div class="capability-item">
-        <span>Camera</span>
-        <strong>{{ cameraSupported ? 'Available' : 'Unavailable' }}</strong>
+        <span>相机</span>
+        <strong>{{ cameraSupported ? '可用' : '不可用' }}</strong>
       </div>
       <div class="capability-item">
-        <span>Live Detect</span>
-        <strong>{{ detectorSupported ? 'Supported' : 'Photo Fallback' }}</strong>
+        <span>实时检测</span>
+        <strong>支持</strong>
       </div>
       <div class="capability-item">
-        <span>Secure Context</span>
-        <strong>{{ secureContextReady ? 'Ready' : 'Limited' }}</strong>
+        <span>安全环境</span>
+        <strong>{{ secureContextReady ? '就绪' : '受限' }}</strong>
       </div>
     </section>
 
@@ -39,7 +39,7 @@
       <section class="panel camera-panel">
         <div class="panel-head">
           <div>
-            <h2>Camera</h2>
+            <h2>相机</h2>
             <p>{{ cameraTip }}</p>
           </div>
           <span class="panel-status">{{ scannerStatus }}</span>
@@ -67,16 +67,16 @@
 
         <div class="action-grid">
           <button class="ghost-button" type="button" :disabled="cameraStarting" @click="startCamera(true)">
-            {{ cameraStarting ? 'Starting...' : (cameraActive ? 'Reconnect Camera' : 'Start Camera') }}
+            {{ cameraStarting ? '启动中...' : (cameraActive ? '重新连接相机' : '启动相机') }}
           </button>
           <button class="ghost-button" type="button" :disabled="!cameraActive" @click="stopCamera">
-            Stop Camera
+            停止相机
           </button>
           <button class="ghost-button" type="button" :disabled="captureDisabled" @click="captureCurrentFrameLookup">
-            {{ photoProcessing ? 'Scanning Photo...' : 'Capture Current Frame' }}
+            {{ photoProcessing ? '扫描照片中...' : '捕获当前帧' }}
           </button>
           <button class="ghost-button" type="button" :disabled="photoProcessing" @click="triggerFilePicker">
-            {{ photoProcessing ? 'Scanning Photo...' : 'Take Photo / Choose Image' }}
+            {{ photoProcessing ? '扫描照片中...' : '拍照 / 选择图片' }}
           </button>
         </div>
 
@@ -90,18 +90,18 @@
         >
 
         <div class="manual-panel">
-          <label class="field-label" for="manual-code">Booking Code</label>
+          <label class="field-label" for="manual-code">预订码</label>
           <div class="manual-row">
             <input
               id="manual-code"
               v-model.trim="manualCode"
               class="manual-input"
               type="text"
-              placeholder="Enter booking no or booking id"
+              placeholder="输入预订号或预订ID"
               @keyup.enter="lookupByManualCode"
             >
             <button class="primary-button" type="button" :disabled="lookupLoading" @click="lookupByManualCode">
-              {{ lookupLoading ? 'Looking Up...' : 'Lookup Booking' }}
+              {{ lookupLoading ? '查找中...' : '查找预订' }}
             </button>
           </div>
         </div>
@@ -110,8 +110,8 @@
       <section class="panel result-panel">
         <div class="panel-head">
           <div>
-            <h2>Lookup Result</h2>
-            <p>Booking detail appears here after a successful scan or lookup.</p>
+            <h2>查找结果</h2>
+            <p>成功扫描或查找后，预订详情会显示在这里。</p>
           </div>
           <span v-if="lookupResult" :class="['result-pill', lookupResult.status]">
             {{ statusText(lookupResult.status) }}
@@ -126,62 +126,62 @@
 
         <div v-else-if="lookupError" class="state-card error">
           <i class="bx bx-error-circle"></i>
-          <strong>Lookup Failed</strong>
+          <strong>查找失败</strong>
           <p>{{ lookupError }}</p>
         </div>
 
         <div v-else-if="lookupResult" class="result-body">
           <div class="result-title-row">
             <div>
-              <strong>{{ lookupResult.activityTitle || 'Activity Booking' }}</strong>
+              <strong>{{ lookupResult.activityTitle || '活动预订' }}</strong>
               <p>{{ lookupResult.reserveNo || lookupResult.id }}</p>
             </div>
             <div class="result-actions-inline">
-              <button class="ghost-button" type="button" @click="refreshCurrentResult">Refresh</button>
-              <button class="ghost-button" type="button" @click="goRecords">Open Records</button>
+              <button class="ghost-button" type="button" @click="refreshCurrentResult">刷新</button>
+              <button class="ghost-button" type="button" @click="goRecords">查看记录</button>
             </div>
           </div>
 
           <div class="result-grid">
             <div class="result-item">
-              <span>Participant</span>
+              <span>参与者</span>
               <strong>{{ lookupResult.customerName || lookupResult.participantName || '-' }}</strong>
             </div>
             <div class="result-item">
-              <span>Phone</span>
+              <span>电话</span>
               <strong>{{ lookupResult.participantPhone || '-' }}</strong>
             </div>
             <div class="result-item">
-              <span>Participants</span>
+              <span>参与人数</span>
               <strong>{{ lookupResult.participantCount || 1 }}</strong>
             </div>
             <div class="result-item">
-              <span>Payment</span>
+              <span>支付状态</span>
               <strong>{{ paymentText(lookupResult.paymentStatus || lookupResult.payStatus) }}</strong>
             </div>
             <div class="result-item wide">
-              <span>Activity Time</span>
+              <span>活动时间</span>
               <strong>{{ lookupResult.activityTime || formatRange(lookupResult) }}</strong>
             </div>
             <div class="result-item wide">
-              <span>Location</span>
+              <span>地点</span>
               <strong>{{ formatLocation(lookupResult) }}</strong>
             </div>
           </div>
 
-          <p v-if="lookupResult.remark" class="remark-text">Remark: {{ lookupResult.remark }}</p>
+          <p v-if="lookupResult.remark" class="remark-text">备注：{{ lookupResult.remark }}</p>
 
           <div class="timeline-strip">
             <div class="timeline-item">
-              <span>Status</span>
+              <span>状态</span>
               <strong>{{ statusText(lookupResult.status) }}</strong>
             </div>
             <div class="timeline-item">
-              <span>Booked At</span>
+              <span>预订时间</span>
               <strong>{{ formatTime(lookupResult.createTime) }}</strong>
             </div>
             <div class="timeline-item">
-              <span>Checked In</span>
+              <span>签到时间</span>
               <strong>{{ formatTime(lookupResult.verificationTime || lookupResult.verifyTime) }}</strong>
             </div>
           </div>
@@ -194,7 +194,7 @@
               :disabled="checkinLoading"
               @click="confirmCheckin"
             >
-              {{ checkinLoading ? 'Checking In...' : 'Confirm Check-in' }}
+              {{ checkinLoading ? '签到中...' : '确认签到' }}
             </button>
             <button v-else class="ghost-button" type="button" disabled>
               {{ resultActionHint }}
@@ -204,8 +204,8 @@
 
         <div v-else class="state-card empty">
           <i class="bx bx-qr-scan"></i>
-          <strong>No Booking Selected</strong>
-          <p>Start the camera, upload a QR image, or enter a booking code to load booking detail.</p>
+          <strong>未选择预订</strong>
+          <p>启动相机、上传二维码图片或输入预订码来加载预订详情。</p>
         </div>
       </section>
     </div>
@@ -215,6 +215,7 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import jsQR from 'jsqr'
 import {
   checkinBooking,
   getMerchantBookings,
@@ -247,17 +248,17 @@ const lookupLoading = ref(false)
 const photoProcessing = ref(false)
 const checkinLoading = ref(false)
 const cameraStarting = ref(false)
-const cameraMessage = ref('Camera is idle. The page will try to start it automatically.')
+const cameraMessage = ref('相机空闲。页面将尝试自动启动它。')
 const activeStream = ref(null)
 
-const detectorSupported = typeof window !== 'undefined' && 'BarcodeDetector' in window
 const cameraSupported = typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia)
 const secureContextReady = typeof window === 'undefined' || window.isSecureContext || isLocalhost()
 
-let detector = null
 let scanTimer = null
 let lastDetectedCode = ''
 let lastDetectedAt = 0
+let scanCanvas = null
+let scanContext = null
 
 const cameraActive = computed(() => Boolean(activeStream.value))
 const showOverlay = computed(() => !cameraActive.value || Boolean(cameraMessage.value))
@@ -265,12 +266,12 @@ const captureDisabled = computed(() => photoProcessing.value || (!cameraActive.v
 const busyState = computed(() => lookupLoading.value || photoProcessing.value || checkinLoading.value)
 
 const scannerStatus = computed(() => {
-  if (cameraStarting.value) return 'Starting'
-  if (photoProcessing.value) return 'Photo Decode'
-  if (cameraActive.value && detectorSupported) return 'Live Detecting'
-  if (cameraActive.value && !detectorSupported) return 'Preview Only'
-  if (cameraSupported) return 'Idle'
-  return 'Unavailable'
+  if (cameraStarting.value) return '启动中'
+  if (photoProcessing.value) return '照片解码中'
+  if (cameraActive.value && scanTimer) return '实时检测中'
+  if (cameraActive.value) return '仅预览'
+  if (cameraSupported) return '空闲'
+  return '不可用'
 })
 
 const overlayIcon = computed(() => {
@@ -280,45 +281,42 @@ const overlayIcon = computed(() => {
 })
 
 const overlayTitle = computed(() => {
-  if (cameraStarting.value) return 'Opening Camera'
-  if (cameraActive.value) return detectorSupported ? 'Camera Ready' : 'Preview Mode'
-  return cameraSupported ? 'Camera Not Running' : 'Camera Unsupported'
+  if (cameraStarting.value) return '正在打开相机'
+  if (cameraActive.value) return '相机已就绪'
+  return cameraSupported ? '相机未运行' : '相机不支持'
 })
 
 const cameraTip = computed(() => {
   if (!cameraSupported) {
-    return 'This browser cannot access the camera. Use image upload or manual booking lookup instead.'
+    return '此浏览器无法访问相机。请使用图片上传或手动预订查找。'
   }
   if (!secureContextReady) {
-    return 'Camera access is usually blocked outside HTTPS or localhost. Uploading a QR image will still work.'
+    return '相机访问通常在HTTPS或本地主机之外被阻止。上传二维码图片仍然可以工作。'
   }
-  if (cameraActive.value && detectorSupported) {
-    return 'QR codes will be detected automatically while the camera preview is active.'
+  if (cameraActive.value) {
+    return '相机预览活跃时，二维码将被自动检测。'
   }
-  if (cameraActive.value && !detectorSupported) {
-    return 'Live QR detection is unavailable here. Capture a frame or choose an image for server-side decoding.'
-  }
-  return 'If the camera cannot start, check permissions, secure context, and whether another app is using it.'
+  return '如果相机无法启动，请检查权限、安全上下文以及是否有其他应用正在使用它。'
 })
 
 const busyTitle = computed(() => {
-  if (checkinLoading.value) return 'Checking In Booking'
-  if (photoProcessing.value) return 'Decoding QR Image'
-  return 'Loading Booking Detail'
+  if (checkinLoading.value) return '正在签到预订'
+  if (photoProcessing.value) return '正在解码二维码图片'
+  return '正在加载预订详情'
 })
 
 const busyMessage = computed(() => {
-  if (checkinLoading.value) return 'The booking is being checked in. Please keep this page open.'
-  if (photoProcessing.value) return 'The image is being prepared, uploaded, and decoded.'
-  return 'Booking information is being loaded.'
+  if (checkinLoading.value) return '预订正在签到中。请保持此页面打开。'
+  if (photoProcessing.value) return '图片正在准备、上传和解码中。'
+  return '预订信息正在加载中。'
 })
 
 const resultActionHint = computed(() => {
   const status = lookupResult.value?.status
-  if (status === 'checked_in') return 'Already Checked In'
-  if (status === 'cancelled') return 'Booking Cancelled'
-  if (status === 'rejected') return 'Booking Rejected'
-  return 'Check-in Unavailable'
+  if (status === 'checked_in') return '已签到'
+  if (status === 'cancelled') return '预订已取消'
+  if (status === 'rejected') return '预订已拒绝'
+  return '签到不可用'
 })
 
 function normalizeCode(value) {
@@ -346,14 +344,17 @@ function goRecords() {
     name: 'merchant-bookings-records',
     query: { backTo: route.fullPath }
   })
-}function stopDetectionLoop() {
+}
+
+function stopDetectionLoop() {
   if (scanTimer) {
     window.clearInterval(scanTimer)
     scanTimer = null
   }
-  detector = null
   lastDetectedCode = ''
   lastDetectedAt = 0
+  scanCanvas = null
+  scanContext = null
 }
 
 function stopCamera() {
@@ -370,7 +371,7 @@ function stopCamera() {
   }
 
   if (cameraSupported) {
-    cameraMessage.value = 'Camera stopped. You can start it again anytime.'
+    cameraMessage.value = '相机已停止。您可以随时重新启动。'
   }
 }
 
@@ -382,19 +383,24 @@ async function attachStream(stream) {
   await new Promise(resolve => {
     const element = videoRef.value
     const onReady = () => {
-      element.removeEventListener('loadedmetadata', onReady)
+      element.removeEventListener('loadeddata', onReady)
+      element.removeEventListener('canplay', onReady)
       resolve()
     }
 
-    if (element.readyState >= 1) {
+    if (element.readyState >= 2) {
       resolve()
       return
     }
 
-    element.addEventListener('loadedmetadata', onReady)
+    element.addEventListener('loadeddata', onReady)
+    element.addEventListener('canplay', onReady)
   })
 
   await videoRef.value.play().catch(() => {})
+  
+  // 额外等待一小段时间确保视频帧可用
+  await new Promise(resolve => setTimeout(resolve, 100))
 }
 
 function buildConstraintAttempts() {
@@ -408,46 +414,26 @@ function buildConstraintAttempts() {
 
 function describeCameraError(error) {
   if (!secureContextReady) {
-    return 'Camera access usually requires HTTPS or localhost. Switch to a secure origin or use image upload.'
+    return '相机访问通常需要HTTPS或本地主机。切换到安全来源或使用图片上传。'
   }
 
   if (['NotAllowedError', 'SecurityError', 'PermissionDeniedError'].includes(error?.name)) {
-    return 'Camera permission was denied. Allow access in the browser and try again.'
+    return '相机权限被拒绝。请在浏览器中允许访问并重试。'
   }
 
   if (['NotFoundError', 'DevicesNotFoundError'].includes(error?.name)) {
-    return 'No available camera device was found.'
+    return '未找到可用的相机设备。'
   }
 
   if (['NotReadableError', 'TrackStartError'].includes(error?.name)) {
-    return 'The camera is already being used by another app.'
+    return '相机已被其他应用程序使用。'
   }
 
   if (['OverconstrainedError', 'ConstraintNotSatisfiedError'].includes(error?.name)) {
-    return 'The preferred camera could not be opened. Try reconnecting the camera.'
+    return '无法打开首选相机。请尝试重新连接相机。'
   }
 
-  return 'Camera start failed. Please check browser permission and device availability.'
-}
-
-function canRunLiveDetect() {
-  return detectorSupported && typeof window.BarcodeDetector === 'function'
-}
-
-function startDetectionLoop() {
-  if (!canRunLiveDetect() || !videoRef.value) {
-    return
-  }
-
-  try {
-    detector = new window.BarcodeDetector({ formats: ['qr_code'] })
-  } catch (error) {
-    detector = null
-    cameraMessage.value = 'Live QR detection is unavailable. Use photo capture or image upload instead.'
-    return
-  }
-
-  scanTimer = window.setInterval(scanFrame, SCAN_INTERVAL_MS)
+  return '相机启动失败。请检查浏览器权限和设备可用性。'
 }
 
 async function startCamera(manual = false) {
@@ -456,7 +442,7 @@ async function startCamera(manual = false) {
   }
 
   cameraStarting.value = true
-  cameraMessage.value = manual ? 'Reconnecting camera...' : 'Starting camera...'
+  cameraMessage.value = manual ? '正在重新连接相机...' : '正在启动相机...'
 
   try {
     stopCamera()
@@ -474,28 +460,40 @@ async function startCamera(manual = false) {
     }
 
     if (!stream) {
-      throw lastError || new Error('Camera start failed')
+      throw lastError || new Error('相机启动失败')
     }
 
     activeStream.value = stream
+    console.log('相机流已获取，正在附加到视频元素...')
     await attachStream(stream)
+    console.log('视频元素已就绪，videoWidth:', videoRef.value?.videoWidth, 'videoHeight:', videoRef.value?.videoHeight)
 
-    if (canRunLiveDetect()) {
-      cameraMessage.value = ''
-      startDetectionLoop()
-    } else {
-      cameraMessage.value = 'Camera preview is active. Use frame capture or image upload for QR decoding.'
+    // 启动实时检测（使用jsQR）
+    if (scanTimer) {
+      clearInterval(scanTimer)
     }
+    scanTimer = window.setInterval(scanFrame, SCAN_INTERVAL_MS)
+    console.log('实时检测已启动（使用jsQR）')
+    cameraMessage.value = ''
   } catch (error) {
     stopCamera()
     cameraMessage.value = describeCameraError(error)
+    console.error('启动相机失败:', error)
   } finally {
     cameraStarting.value = false
   }
 }
 
 async function scanFrame() {
-  if (!detector || !videoRef.value || !cameraActive.value || lookupLoading.value || photoProcessing.value || checkinLoading.value) {
+  if (!videoRef.value) {
+    return
+  }
+  
+  if (!cameraActive.value) {
+    return
+  }
+  
+  if (lookupLoading.value || photoProcessing.value || checkinLoading.value) {
     return
   }
 
@@ -507,18 +505,56 @@ async function scanFrame() {
   lastDetectedAt = now
 
   try {
-    const barcodes = await detector.detect(videoRef.value)
-    const code = normalizeCode(barcodes?.[0]?.rawValue)
-
-    if (!code || code === lastDetectedCode) {
+    const videoWidth = videoRef.value.videoWidth || 0
+    const videoHeight = videoRef.value.videoHeight || 0
+    
+    if (videoWidth === 0 || videoHeight === 0) {
       return
     }
 
-    lastDetectedCode = code
-    manualCode.value = code
-    await lookupBookingByCode(code, { announceSuccess: true })
+    // 初始化canvas（只初始化一次）
+    if (!scanCanvas) {
+      scanCanvas = document.createElement('canvas')
+      scanContext = scanCanvas.getContext('2d', { willReadFrequently: true })
+    }
+
+    // 确保canvas尺寸与视频匹配
+    if (scanCanvas.width !== videoWidth || scanCanvas.height !== videoHeight) {
+      scanCanvas.width = videoWidth
+      scanCanvas.height = videoHeight
+    }
+
+    // 从视频帧绘制到canvas
+    scanContext.drawImage(videoRef.value, 0, 0, videoWidth, videoHeight)
+    
+    // 获取图像数据
+    const imageData = scanContext.getImageData(0, 0, videoWidth, videoHeight)
+    
+    // 使用jsQR解析二维码
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert'
+    })
+
+    if (!code || !code.data) {
+      return
+    }
+
+    const qrCode = normalizeCode(code.data)
+
+    if (!qrCode) {
+      return
+    }
+    
+    if (qrCode === lastDetectedCode) {
+      return
+    }
+
+    console.log('检测到二维码:', qrCode)
+    lastDetectedCode = qrCode
+    manualCode.value = qrCode
+    await lookupBookingByCode(qrCode, { announceSuccess: true })
   } catch (error) {
-    // Keep the scan loop running even if one frame fails.
+    console.error('扫描帧失败:', error)
   }
 }
 
@@ -573,7 +609,7 @@ function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(new Error('Failed to read image file'))
+    reader.onerror = () => reject(new Error('读取图片文件失败'))
     reader.readAsDataURL(file)
   })
 }
@@ -582,7 +618,7 @@ function loadImageElement(source) {
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('Failed to load image'))
+    image.onerror = () => reject(new Error('加载图片失败'))
     image.src = source
   })
 }async function normalizeImageForLookup(imageData) {
@@ -594,7 +630,7 @@ function loadImageElement(source) {
   )
 
   if (!normalized) {
-    throw new Error('Failed to prepare image for QR lookup')
+    throw new Error('准备二维码查找图片失败')
   }
 
   return normalized
@@ -625,7 +661,7 @@ function applyLookupResult(result, code = '') {
 async function lookupBookingByCode(code, options = {}) {
   const normalizedCode = normalizeCode(code)
   if (!normalizedCode) {
-    throw new Error('Please enter a booking code first.')
+    throw new Error('请先输入预订码。')
   }
 
   const announceSuccess = options.announceSuccess === true
@@ -637,12 +673,12 @@ async function lookupBookingByCode(code, options = {}) {
   try {
     const response = await lookupMerchantBooking(normalizedCode)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Booking not found')
+      throw new Error(response.message || '未找到预订')
     }
 
     applyLookupResult(response.data, normalizedCode)
     if (announceSuccess && !silent) {
-      notify('Booking QR detected successfully.', 'success')
+      notify('预订二维码检测成功。', 'success')
     }
     return response.data
   } catch (primaryError) {
@@ -652,7 +688,7 @@ async function lookupBookingByCode(code, options = {}) {
       if (items.length === 1) {
         applyLookupResult(items[0], normalizedCode)
         if (announceSuccess && !silent) {
-          notify('Booking matched successfully.', 'success')
+          notify('预订匹配成功。', 'success')
         }
         return items[0]
       }
@@ -661,7 +697,7 @@ async function lookupBookingByCode(code, options = {}) {
     }
 
     const message = getRequestErrorMessage(primaryError, {
-      fallbackMessage: 'Booking not found'
+      fallbackMessage: '未找到预订'
     })
     lookupResult.value = null
     lookupError.value = message
@@ -671,9 +707,9 @@ async function lookupBookingByCode(code, options = {}) {
   }
 }
 
-async function lookupBookingByImage(imageData, successMessage = 'QR image decoded successfully.') {
+async function lookupBookingByImage(imageData, successMessage = '二维码图片解码成功。') {
   if (!imageData) {
-    throw new Error('Image data is empty')
+    throw new Error('图片数据为空')
   }
 
   photoProcessing.value = true
@@ -682,7 +718,7 @@ async function lookupBookingByImage(imageData, successMessage = 'QR image decode
   try {
     const response = await lookupMerchantBookingByImage(imageData)
     if (response.code !== 200 || !response.data) {
-      throw new Error(response.message || 'Unable to decode booking QR from image')
+      throw new Error(response.message || '无法从图片解码预订二维码')
     }
 
     applyLookupResult(response.data, response.data?.reserveNo || response.data?.id || '')
@@ -692,12 +728,12 @@ async function lookupBookingByImage(imageData, successMessage = 'QR image decode
     lookupResult.value = null
 
     const genericMessage = getRequestErrorMessage(error, {
-      timeoutMessage: 'The image is taking too long to upload. Please try again with a smaller QR image.',
-      fallbackMessage: 'Failed to decode QR image'
+      timeoutMessage: '图片上传时间过长。请尝试使用更小的二维码图片。',
+      fallbackMessage: '解码二维码图片失败'
     })
 
     lookupError.value = error?.response?.status === 500
-      ? 'The image was too large or the server could not process it. Move closer to the QR code and try again.'
+      ? '图片太大或服务器无法处理它。请靠近二维码并重试。'
       : genericMessage
 
     throw error
@@ -713,11 +749,11 @@ async function captureCurrentFrameLookup() {
 
   const imageData = captureCurrentFrame()
   if (!imageData) {
-    lookupError.value = 'The current camera frame is not ready yet. Wait a moment and try again.'
+    lookupError.value = '当前相机帧尚未准备好。请稍等片刻并重试。'
     return
   }
 
-  await lookupBookingByImage(imageData, 'Captured frame decoded successfully.')
+  await lookupBookingByImage(imageData, '捕获帧解码成功。')
 }
 
 async function handleFileSelected(event) {
@@ -729,7 +765,7 @@ async function handleFileSelected(event) {
   try {
     const imageData = await readFileAsDataUrl(file)
     const normalized = await normalizeImageForLookup(imageData)
-    await lookupBookingByImage(normalized, 'Selected image decoded successfully.')
+    await lookupBookingByImage(normalized, '选择的图片解码成功。')
   } catch (error) {
     // Error state is already handled in lookupBookingByImage.
   } finally {
@@ -743,7 +779,7 @@ async function lookupByManualCode() {
   const code = normalizeCode(manualCode.value)
   if (!code) {
     lookupResult.value = null
-    lookupError.value = 'Please enter a booking code first.'
+    lookupError.value = '请先输入预订码。'
     return
   }
 
@@ -777,14 +813,14 @@ async function confirmCheckin() {
   try {
     const response = await checkinBooking(lookupResult.value.id)
     if (response.code !== 200) {
-      throw new Error(response.message || 'Check-in failed')
+      throw new Error(response.message || '签到失败')
     }
 
-    notify('Booking checked in successfully.', 'success')
+    notify('预订签到成功。', 'success')
     applyLookupResult(response.data || lookupResult.value, lookupResult.value.reserveNo || lookupResult.value.id)
     await refreshCurrentResult()
   } catch (error) {
-    notify(getRequestErrorMessage(error, { fallbackMessage: 'Check-in failed' }), 'error')
+    notify(getRequestErrorMessage(error, { fallbackMessage: '签到失败' }), 'error')
   } finally {
     checkinLoading.value = false
   }
@@ -792,29 +828,29 @@ async function confirmCheckin() {
 
 function statusText(status) {
   return {
-    registered: 'Pending Check-in',
-    checked_in: 'Checked In',
-    rejected: 'Rejected',
-    cancelled: 'Cancelled'
+    registered: '待签到',
+    checked_in: '已签到',
+    rejected: '已拒绝',
+    cancelled: '已取消'
   }[status] || String(status || '-').replace(/_/g, ' ')
 }
 
 function paymentText(status) {
   const normalized = String(status ?? '').toLowerCase()
-  if (normalized === 'paid' || normalized === '1') return 'Paid'
-  if (normalized === 'refunded' || normalized === '2') return 'Refunded'
-  return 'Unpaid'
+  if (normalized === 'paid' || normalized === '1') return '已支付'
+  if (normalized === 'refunded' || normalized === '2') return '已退款'
+  return '未支付'
 }
 
 function formatTime(value) {
-  if (!value) return 'Not Recorded'
+  if (!value) return '未记录'
   return new Date(value).toLocaleString()
 }function formatRange(booking) {
   if (!booking?.startTime && !booking?.endTime) {
-    return 'Time TBD'
+    return '时间待定'
   }
 
-  const start = booking?.startTime ? formatTime(booking.startTime) : 'Time TBD'
+  const start = booking?.startTime ? formatTime(booking.startTime) : '时间待定'
   const end = booking?.endTime ? formatTime(booking.endTime) : ''
   return end ? `${start} - ${end}` : start
 }
@@ -825,7 +861,7 @@ function formatLocation(booking) {
     booking?.locationCity,
     booking?.locationDistrict,
     booking?.locationDetail
-  ].filter(Boolean).join(' / ') || 'Location TBD'
+  ].filter(Boolean).join(' / ') || '地点待定'
 }
 
 watch(

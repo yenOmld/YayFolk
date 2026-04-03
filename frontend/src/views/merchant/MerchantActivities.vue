@@ -2,56 +2,56 @@
   <div class="merchant-page">
     <div class="page-header">
       <div>
-        <h2>Activity Management</h2>
-        <p>Review, edit, and organize your merchant activities with a paged workspace.</p>
+        <h2>活动管理</h2>
+        <p>查看、编辑和管理您的商家活动，支持分页显示。</p>
       </div>
-      <button class="create-btn" @click="goCreate">+ Create Activity</button>
+      <button class="create-btn" @click="goCreate">+ 创建活动</button>
     </div>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading activities...</p>
+      <p>加载活动中...</p>
     </div>
 
     <div v-else-if="list.length === 0" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>No activities yet. Create your first activity to get started.</p>
+      <p>暂无活动。创建您的第一个活动开始吧。</p>
     </div>
 
     <template v-else>
       <div class="activity-list">
         <article v-for="item in list" :key="item.id" class="activity-card">
           <img v-if="item.coverImage" :src="item.coverImage" class="card-cover" :alt="item.title" />
-          <div v-else class="cover-placeholder">Activity</div>
+          <div v-else class="cover-placeholder">活动</div>
 
           <div class="card-info">
             <div class="card-head">
               <h3>{{ item.title }}</h3>
               <div class="tag-row">
-                <span class="tag heritage">{{ item.heritageType || 'Uncategorized' }}</span>
+                <span class="tag heritage">{{ item.heritageType || '未分类' }}</span>
                 <span class="tag" :class="item.status">{{ statusLabel(item.status) }}</span>
                 <span class="tag audit" :class="item.auditStatus">{{ auditLabel(item.auditStatus) }}</span>
               </div>
             </div>
 
             <div class="meta-grid">
-              <span>Time: {{ formatDateTime(item.startTime) }}</span>
-              <span>Location: {{ formatLocation(item) }}</span>
-              <span>Price: {{ formatPrice(item.price) }}</span>
-              <span>Bookings: {{ item.currentParticipants || 0 }}/{{ item.maxParticipants || 'Unlimited' }}</span>
+              <span>时间：{{ formatDateTime(item.startTime) }}</span>
+              <span>地点：{{ formatLocation(item) }}</span>
+              <span>价格：{{ formatPrice(item.price) }}</span>
+              <span>预订：{{ item.currentParticipants || 0 }}/{{ item.maxParticipants || '不限' }}</span>
             </div>
 
             <p v-if="item.subtitle" class="subtitle">{{ item.subtitle }}</p>
-            <p v-if="item.auditRemark" class="audit-remark">Audit Note: {{ item.auditRemark }}</p>
+            <p v-if="item.auditRemark" class="audit-remark">审核备注：{{ item.auditRemark }}</p>
             <p v-else-if="item.auditStatus === 'pending'" class="audit-tip">
-              Saving changes will send the activity back into audit review before it appears publicly.
+              保存更改后，活动将重新进入审核流程，通过后才能公开展示。
             </p>
           </div>
 
           <div class="card-actions">
-            <button class="act-btn edit" @click="goEdit(item.id)">Edit</button>
-            <button class="act-btn bookings" @click="viewBookings(item)">Bookings ({{ item.currentParticipants || 0 }})</button>
-            <button class="act-btn delete" @click="handleDelete(item.id)">Delete</button>
+            <button class="act-btn edit" @click="goEdit(item.id)">编辑</button>
+            <button class="act-btn bookings" @click="viewBookings(item)">预订 ({{ item.currentParticipants || 0 }})</button>
+            <button class="act-btn delete" @click="handleDelete(item.id)">删除</button>
           </div>
         </article>
       </div>
@@ -64,16 +64,16 @@
 
         <div class="pagination-controls">
           <label class="page-size-field">
-            <span>Per Page</span>
+            <span>每页</span>
             <select v-model="pageSize" @change="handlePageSizeChange">
               <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
             </select>
           </label>
 
           <div class="pager-buttons">
-            <button class="pager-btn" :disabled="currentPage <= 1 || loading" @click="changePage(currentPage - 1)">Previous</button>
-            <span class="page-indicator">Page {{ currentPage }} / {{ totalPages || 1 }}</span>
-            <button class="pager-btn" :disabled="currentPage >= totalPages || loading" @click="changePage(currentPage + 1)">Next</button>
+            <button class="pager-btn" :disabled="currentPage <= 1 || loading" @click="changePage(currentPage - 1)">上一页</button>
+            <span class="page-indicator">第 {{ currentPage }} 页 / 共 {{ totalPages || 1 }} 页</span>
+            <button class="pager-btn" :disabled="currentPage >= totalPages || loading" @click="changePage(currentPage + 1)">下一页</button>
           </div>
         </div>
       </div>
@@ -104,11 +104,11 @@ const pageSize = ref(DEFAULT_PAGE_SIZE)
 
 const pageSummary = computed(() => {
   if (!total.value) {
-    return 'No activity records available.'
+    return '暂无活动记录。'
   }
   const start = (currentPage.value - 1) * pageSize.value + 1
   const end = Math.min(currentPage.value * pageSize.value, total.value)
-  return `Showing ${start}-${end} of ${total.value} activities.`
+  return `显示 ${start}-${end} 共 ${total.value} 个活动。`
 })
 
 const syncStateFromRoute = () => {
@@ -177,16 +177,16 @@ const viewBookings = (item) => {
 
 const handleDelete = async (id) => {
   confirm({
-    title: 'Delete Activity',
-    message: 'Are you sure you want to delete this activity?',
+    title: '删除活动',
+    message: '确定要删除这个活动吗？',
     onConfirm: async () => {
       try {
         const res = await deleteMerchantActivity(id)
         if (res.code !== 200) {
-          throw new Error(res.message || 'Failed to delete activity')
+          throw new Error(res.message || '删除活动失败')
         }
 
-        notify('Activity deleted successfully.', 'success')
+        notify('活动删除成功。', 'success')
 
         if (list.value.length === 1 && currentPage.value > 1) {
           currentPage.value -= 1
@@ -195,7 +195,7 @@ const handleDelete = async (id) => {
 
         await load()
       } catch (error) {
-        notify(error.message || 'Failed to delete activity', 'error')
+        notify(error.message || '删除活动失败', 'error')
       }
     }
   })
@@ -216,22 +216,22 @@ const handlePageSizeChange = async () => {
   await load()
 }
 
-const formatDateTime = (value) => value ? new Date(value).toLocaleString('zh-CN') : 'TBD'
-const formatLocation = (item) => [item.locationProvince, item.locationCity, item.locationDetail].filter(Boolean).join(' / ') || 'TBD'
-const formatPrice = (price) => !price ? 'Free' : `CNY ${(Number(price) / 100).toFixed(2)}`
+const formatDateTime = (value) => value ? new Date(value).toLocaleString('zh-CN') : '待定'
+const formatLocation = (item) => [item.locationProvince, item.locationCity, item.locationDetail].filter(Boolean).join(' / ') || '待定'
+const formatPrice = (price) => !price ? '免费' : `¥ ${(Number(price) / 100).toFixed(2)}`
 
 const statusLabel = (status) => ({
-  signup: 'Open',
-  full: 'Full',
-  ongoing: 'Ongoing',
-  ended: 'Ended'
-}[status] || 'Draft')
+  signup: '开放',
+  full: '已满',
+  ongoing: '进行中',
+  ended: '已结束'
+}[status] || '草稿')
 
 const auditLabel = (status) => ({
-  pending: 'Pending Audit',
-  approved: 'Approved',
-  rejected: 'Rejected'
-}[status] || 'Pending Submit')
+  pending: '待审核',
+  approved: '已通过',
+  rejected: '已拒绝'
+}[status] || '待提交')
 
 watch(
   () => route.fullPath,

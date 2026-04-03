@@ -110,6 +110,9 @@
           <button class="ghost-btn" type="button" @click="goBack">
             返回我的活动
           </button>
+          <button class="ghost-btn" type="button" @click="goToActivityList">
+            回到活动列表
+          </button>
         </div>
       </aside>
     </section>
@@ -119,6 +122,7 @@
       <h2>报名不可用</h2>
       <p>{{ errorMessage || '无法加载报名详情。' }}</p>
       <button class="primary-btn" type="button" @click="goBack">返回我的活动</button>
+      <button class="ghost-btn" type="button" @click="goToActivityList">回到活动列表</button>
     </section>
   </div>
 </template>
@@ -326,6 +330,10 @@ const openActivity = () => {
 
 const goBack = () => {
   router.push(resolvedBackTo.value)
+}
+
+const goToActivityList = () => {
+  router.push('/home/activity')
 }
 
 const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`

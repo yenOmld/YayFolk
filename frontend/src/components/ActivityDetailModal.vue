@@ -10,18 +10,18 @@
 
         <div v-if="loading" class="state-block">
           <i class="bx bx-loader-alt bx-spin"></i>
-          <p>Loading activity detail...</p>
+          <p>加载活动详情中...</p>
         </div>
 
         <div v-else-if="!detail" class="state-block">
           <i class="bx bx-calendar-x"></i>
-          <p>Activity detail is unavailable.</p>
+          <p>活动详情不可用。</p>
         </div>
 
         <div v-else class="modal-layout">
           <div class="media-column">
             <div class="hero-image">
-              <img :src="activeImage" :alt="detail.title || 'Activity cover'">
+              <img :src="activeImage" :alt="detail.title || '活动封面'">
               <span class="status-pill" :class="statusTone">{{ statusLabel(detail.status || detail.auditStatus) }}</span>
             </div>
 
@@ -34,13 +34,13 @@
                 :class="{ active: currentImageIndex === index }"
                 @click="currentImageIndex = index"
               >
-                <img :src="image" :alt="`Activity image ${index + 1}`">
+                <img :src="image" :alt="`活动图片 ${index + 1}`">
               </button>
             </div>
 
             <div v-if="videoUrl" class="content-panel">
               <div class="panel-head">
-                <h3>Activity Video</h3>
+                <h3>活动视频</h3>
               </div>
               <video controls preload="metadata" playsinline class="video-player" :poster="videoPoster">
                 <source :src="videoUrl">
@@ -51,31 +51,31 @@
           <div class="info-column">
             <div class="headline-card">
               <div class="eyebrow-row">
-                <span class="type-pill">{{ detail.heritageType || 'Uncategorized' }}</span>
+                <span class="type-pill">{{ detail.heritageType || '未分类' }}</span>
                 <span class="type-pill subtle">{{ activityTypeLabel(detail.activityType) }}</span>
               </div>
-              <h2>{{ detail.title || 'Untitled Activity' }}</h2>
-              <p class="subtitle">{{ detail.subtitle || detail.content || 'No activity summary yet.' }}</p>
+              <h2>{{ detail.title || '未命名活动' }}</h2>
+              <p class="subtitle">{{ detail.subtitle || detail.content || '暂无活动简介。' }}</p>
 
               <div class="meta-grid">
                 <div class="meta-item">
                   <i class="bx bx-calendar"></i>
                   <div>
-                    <span class="meta-label">Time</span>
+                    <span class="meta-label">时间</span>
                     <strong>{{ formatDateRange(detail) }}</strong>
                   </div>
                 </div>
                 <div class="meta-item">
                   <i class="bx bx-map"></i>
                   <div>
-                    <span class="meta-label">Location</span>
+                    <span class="meta-label">地点</span>
                     <strong>{{ formatLocation(detail) }}</strong>
                   </div>
                 </div>
                 <div class="meta-item">
                   <i class="bx bx-group"></i>
                   <div>
-                    <span class="meta-label">Capacity</span>
+                    <span class="meta-label">人数</span>
                     <strong>{{ participantSummary }}</strong>
                   </div>
                 </div>
@@ -83,7 +83,7 @@
 
               <div class="action-bar">
                 <div class="price-block">
-                  <span class="price-label">Price</span>
+                  <span class="price-label">价格</span>
                   <strong>{{ priceLabel }}</strong>
                 </div>
 
@@ -98,33 +98,33 @@
               </div>
 
               <div v-if="isMerchantOwner" class="owner-actions">
-                <button class="secondary-action" type="button" @click="goEditActivity">Edit Activity</button>
-                <button class="secondary-action" type="button" @click="goMerchantBookings">Booking Management</button>
+                <button class="secondary-action" type="button" @click="goEditActivity">编辑活动</button>
+                <button class="secondary-action" type="button" @click="goMerchantBookings">预订管理</button>
               </div>
             </div>
 
             <div class="content-panel merchant-panel">
               <div class="panel-head">
-                <h3>Merchant</h3>
+                <h3>商家</h3>
               </div>
               <div class="merchant-row">
-                <img class="merchant-avatar" :src="detail.merchantAvatar || placeholderAvatar" :alt="detail.merchantName || 'Merchant'">
+                <img class="merchant-avatar" :src="detail.merchantAvatar || placeholderAvatar" :alt="detail.merchantName || '商家'">
                 <div class="merchant-copy">
-                  <strong>{{ detail.merchantName || 'Merchant' }}</strong>
-                  <p>{{ detail.merchantIntro || 'No merchant introduction yet.' }}</p>
+                  <strong>{{ detail.merchantName || '商家' }}</strong>
+                  <p>{{ detail.merchantIntro || '暂无商家介绍。' }}</p>
                 </div>
               </div>
               <div v-if="detail.merchantId" class="merchant-actions">
-                <button class="secondary-action" type="button" @click="contactMerchant">Message Merchant</button>
-                <button class="secondary-action" type="button" @click="goMerchantHomepage">View Homepage</button>
+                <button class="secondary-action" type="button" @click="contactMerchant">联系商家</button>
+                <button class="secondary-action" type="button" @click="goMerchantHomepage">查看主页</button>
               </div>
             </div>
 
             <div class="content-panel">
               <div class="panel-head">
-                <h3>Activity Description</h3>
+                <h3>活动描述</h3>
               </div>
-              <p class="rich-text">{{ detail.content || detail.subtitle || 'No description yet.' }}</p>
+              <p class="rich-text">{{ detail.content || detail.subtitle || '暂无描述。' }}</p>
             </div>
           </div>
         </div>
@@ -197,8 +197,8 @@ const galleryImages = computed(() => {
 const activeImage = computed(() => galleryImages.value[currentImageIndex.value] || detail.value?.coverImage || '')
 const videoUrl = computed(() => detail.value?.videoUrl || '')
 const videoPoster = computed(() => detail.value?.videoCoverUrl || detail.value?.coverImage || activeImage.value || '')
-const participantSummary = computed(() => `${detail.value?.currentParticipants || 0}/${detail.value?.maxParticipants || 'Unlimited'}`)
-const priceLabel = computed(() => Number(detail.value?.price || 0) > 0 ? `CNY ${(Number(detail.value.price) / 100).toFixed(2)}` : 'Free')
+const participantSummary = computed(() => `${detail.value?.currentParticipants || 0}/${detail.value?.maxParticipants || '不限'}`)
+const priceLabel = computed(() => Number(detail.value?.price || 0) > 0 ? `CNY ${(Number(detail.value.price) / 100).toFixed(2)}` : '免费')
 const canBook = computed(() => {
   if (!detail.value) {
     return false
@@ -217,21 +217,21 @@ const canBook = computed(() => {
 })
 const bookingButtonText = computed(() => {
   if (!detail.value) {
-    return 'Book Activity'
+    return '预订活动'
   }
   if (isMerchantOwner.value) {
-    return 'Manage Activity'
+    return '管理活动'
   }
   if (isMerchantAccount.value) {
-    return 'Merchant Account Cannot Book'
+    return '商家账户不可预订'
   }
   if (String(detail.value.status || '').toLowerCase() === 'ended') {
-    return 'Activity Ended'
+    return '活动已结束'
   }
   if (!canBook.value) {
-    return 'Fully Booked'
+    return '已满员'
   }
-  return 'Book Now'
+  return '立即预订'
 })
 const statusTone = computed(() => {
   const status = String(detail.value?.status || detail.value?.auditStatus || '').toLowerCase()
@@ -287,33 +287,33 @@ function lockBody(locked) {
 
 function statusLabel(status) {
   return {
-    signup: 'Open for Booking',
-    ongoing: 'Ongoing',
-    ended: 'Ended',
-    full: 'Fully Booked',
-    pending: 'Pending Review',
-    approved: 'Approved',
-    rejected: 'Rejected'
-  }[String(status || '').toLowerCase()] || 'Upcoming'
+    signup: '开放预订',
+    ongoing: '进行中',
+    ended: '已结束',
+    full: '已满员',
+    pending: '待审核',
+    approved: '已通过',
+    rejected: '已拒绝'
+  }[String(status || '').toLowerCase()] || '即将开始'
 }
 
 function activityTypeLabel(type) {
   return {
-    offline: 'Offline Experience',
-    online: 'Online Session',
-    exhibition: 'Exhibition'
-  }[String(type || '').toLowerCase()] || 'Activity'
+    offline: '线下体验',
+    online: '线上活动',
+    exhibition: '展览'
+  }[String(type || '').toLowerCase()] || '活动'
 }
 
 function formatDateTime(value) {
-  return value ? new Date(value).toLocaleString('zh-CN') : 'Time TBD'
+  return value ? new Date(value).toLocaleString('zh-CN') : '时间待定'
 }
 
 function formatDateRange(item) {
   if (!item?.startTime && !item?.endTime) {
-    return 'Time TBD'
+    return '时间待定'
   }
-  const start = item?.startTime ? formatDateTime(item.startTime) : 'Time TBD'
+  const start = item?.startTime ? formatDateTime(item.startTime) : '时间待定'
   const end = item?.endTime ? formatDateTime(item.endTime) : ''
   return end ? `${start} - ${end}` : start
 }
@@ -321,7 +321,7 @@ function formatDateRange(item) {
 function formatLocation(item) {
   return [item?.locationProvince, item?.locationCity, item?.locationDistrict, item?.locationDetail]
     .filter(Boolean)
-    .join(' / ') || 'Location TBD'
+    .join(' / ') || '地点待定'
 }
 
 function goToBooking() {
@@ -384,7 +384,7 @@ function contactMerchant() {
     return
   }
   if (Number(detail.value.merchantId) === currentUserId.value) {
-    notify.warning('You cannot message yourself.')
+    notify.warning('您不能给自己发消息。')
     return
   }
   router.push({

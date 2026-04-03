@@ -1,5 +1,17 @@
 <template>
   <div class="activities-page">
+    <div class="header-nav">
+      <button class="back-btn" @click="goBack">
+        <i class="bx bx-arrow-back"></i>
+        <span>返回个人中心</span>
+      </button>
+      <div class="breadcrumb">
+        <span @click="goBack">个人中心</span>
+        <i class="bx bx-chevron-right"></i>
+        <span>我的活动报名</span>
+      </div>
+    </div>
+
     <section class="hero-card">
       <div class="hero-copy">
         <p class="eyebrow">活动中心</p>
@@ -316,6 +328,10 @@ const formatLocation = (booking) => (
 )
 const formatMoney = (value) => `¥${(Number(value || 0) / 100).toFixed(2)}`
 
+const goBack = () => {
+  router.push('/home/personal')
+}
+
 onMounted(loadData)
 </script>
 
@@ -327,6 +343,50 @@ onMounted(loadData)
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.08);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #f8fafc;
+  box-shadow: 0 12px 28px rgba(15,23,42,0.12);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.breadcrumb span:first-child {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb span:first-child:hover {
+  color: #0f766e;
 }
 
 .hero-card,

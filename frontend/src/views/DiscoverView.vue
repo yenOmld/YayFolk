@@ -363,7 +363,7 @@ const route = useRoute()
 const categories = computed(() => [
   { id: 'all', name: '全部' },
   { id: '服饰妆造', name: '服饰妆造' },
-  { id: '美妆造物', name: '美妆造物' },
+  { id: '美术造物', name: '美术造物' },
   { id: '民族节气', name: '民族节气' },
   { id: '戏曲演绎', name: '戏曲演绎' },
   { id: '织物手工', name: '织物手工' }
@@ -395,14 +395,14 @@ const pendingFilesMap = ref(new Map())
 const customTagsInput = ref('')
 const presetTags = computed(() => [
   '服饰妆造',
-  '美妆造物',
+  '美术造物',
   '民族节气',
   '戏曲演绎',
   '织物手工'
 ])
 const classifierTagMap = computed(() => ({
   '服饰妆造': '服饰妆造',
-  '美妆造物': '美妆造物',
+  '美术造物': '美术造物',
   '民族节气': '民族节气',
   '戏曲演绎': '戏曲演绎',
   '织物手工': '织物手工'
@@ -973,7 +973,7 @@ body {
 
 .top-nav {
   color: white;
-  padding: 10px 0;
+  padding: 2px 2px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -985,25 +985,25 @@ body {
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
   width: 100%;
 }
 
 .logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: white;
+  line-height: 1;
 }
 
 .search-input {
   flex: 1;
-  max-width: 600px;
-  margin: 0 40px;
+  max-width: 480px;
+  margin: 0 5px;
   display: flex;
   align-items: center;
   background: #f0f0f0;
-  border-radius: 20px;
-  padding: 8px 15px;
+  border-radius: 18px;
+  padding: 6px 12px;
   border: 2px solid #7494ec;
   position: relative;
   overflow: hidden;
@@ -1042,8 +1042,8 @@ body {
 
 .search-input i {
   color: #7494ec;
-  margin-right: 10px;
-  font-size: 18px;
+  margin-right: 8px;
+  font-size: 16px;
   z-index: 1;
 }
 
@@ -1052,7 +1052,7 @@ body {
   background: transparent;
   flex: 1;
   outline: none;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: #333;
   z-index: 1;
@@ -1085,20 +1085,20 @@ body {
 .main-nav-buttons {
   display: flex;
   flex-direction: row;
-  gap: 20px;
-  margin: 0 20px;
+  gap: 12px;
+  margin: 0 16px;
 }
 
 .nav-button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   color: white;
   transition: all 0.3s ease;
   position: relative;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -1109,14 +1109,14 @@ body {
 
 .nav-button .badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: #ff2442;
   color: white;
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 12px;
-  min-width: 18px;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  min-width: 16px;
   text-align: center;
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(255, 36, 66, 0.3);
@@ -1130,11 +1130,11 @@ body {
 }
 
 .nav-button i {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .nav-button span {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -2365,7 +2365,7 @@ body {
 
 .search-input input {
   height: 100%;
-  padding: 0 !important;
+  padding: 0 5px;
   font-size: 15px !important;
   color: var(--pc-ink) !important;
 }
@@ -2416,7 +2416,7 @@ body {
 }
 
 .category-tabs-wrapper {
-  top: 118px !important;
+  top: 95px;
   gap: 18px;
   padding: 18px 20px !important;
   border-radius: 24px !important;
@@ -2780,11 +2780,11 @@ body {
   }
 
   .search-input {
-    min-height: 50px;
+    min-height: 35px;
   }
 
   .category-tabs-wrapper {
-    top: 106px !important;
+    top: 90px;
     gap: 14px;
   }
 

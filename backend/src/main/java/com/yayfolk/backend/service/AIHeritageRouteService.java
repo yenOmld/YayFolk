@@ -739,7 +739,7 @@ public class AIHeritageRouteService {
         if (hasText(activity.getActivityType())) {
             return activity.getActivityType().trim();
         }
-        return valueOrDefault(activity.getTitle(), "activity");
+        return valueOrDefault(activity.getTitle(), "活动");
     }
     private int scoreActivity(Activity activity,
                               DestinationScope destination,
@@ -1330,10 +1330,10 @@ public class AIHeritageRouteService {
                 experience.put("description", abbreviate(activity.getContent(), 88));
                 experience.put("tags", buildActivityTags(activity));
                 experience.put("details", Arrays.asList(
-                        detail("Province", valueOrDefault(activity.getLocationProvince(), "TBD")),
-                        detail("City", valueOrDefault(activity.getLocationCity(), "TBD")),
-                        detail("Price", activity.getPrice() == null || activity.getPrice() == 0 ? "Free" : "CNY " + (activity.getPrice() / 100.0)),
-                        detail("Time", formatDateTime(activity.getStartTime()))
+                        detail("省份", valueOrDefault(activity.getLocationProvince(), "待定")),
+                        detail("城市", valueOrDefault(activity.getLocationCity(), "待定")),
+                        detail("费用", activity.getPrice() == null || activity.getPrice() == 0 ? "免费" : "¥" + (activity.getPrice() / 100.0)),
+                        detail("时间", formatDateTime(activity.getStartTime()))
                 ));
                 experience.put("business", buildBusiness(activity.getMerchantId(), activity.getLocationDetail()));
                 dayActivities.add(experience);
@@ -1342,11 +1342,11 @@ public class AIHeritageRouteService {
             if (dayActivities.isEmpty()) {
                 Map<String, Object> fallback = new HashMap<>();
                 fallback.put("type", "fallback");
-                fallback.put("time", "All day");
-                fallback.put("name", "Flexible exploration");
-                fallback.put("description", "No stronger activity match was found for this day. You can keep it open for a museum visit, a heritage venue, or a traditional street walk.");
-                fallback.put("tags", Arrays.asList("Flexible", "Culture walk"));
-                fallback.put("details", Collections.singletonList(detail("Suggestion", "Try a more specific city or add more activity data for this area.")));
+                fallback.put("time", "全天");
+                fallback.put("name", "自由探索");
+                fallback.put("description", "当天未找到更匹配的活动。您可以安排博物馆参观、非遗场馆或传统街区漫步。");
+                fallback.put("tags", Arrays.asList("自由行", "文化漫步"));
+                fallback.put("details", Collections.singletonList(detail("建议", "尝试更具体的城市或为该地区添加更多活动数据。")));
                 dayActivities.add(fallback);
             }
 
@@ -1358,7 +1358,7 @@ public class AIHeritageRouteService {
 
     private String buildActivityDayTheme(List<Activity> activities, int index) {
         if (activities == null || activities.isEmpty()) {
-            return "Open exploration";
+            return "自由探索";
         }
 
         LinkedHashSet<String> labels = new LinkedHashSet<>();
@@ -1371,9 +1371,9 @@ public class AIHeritageRouteService {
             }
         }
         if (!labels.isEmpty()) {
-            return String.join(" + ", labels) + " route";
+            return String.join(" + ", labels) + " 路线";
         }
-        return "Experience route day " + (index + 1);
+        return "体验路线第 " + (index + 1) + " 天";
     }
 
     private List<IntangibleCulturalHeritage> selectRelatedHeritages(List<Activity> activities,
@@ -1461,9 +1461,9 @@ public class AIHeritageRouteService {
         for (IntangibleCulturalHeritage heritage : heritages.subList(0, Math.min(heritages.size(), 4))) {
             Map<String, Object> highlight = new HashMap<>();
             highlight.put("title", heritage.getName());
-            highlight.put("category", valueOrDefault(heritage.getCategory(), "Heritage topic"));
+            highlight.put("category", valueOrDefault(heritage.getCategory(), "非遗主题"));
             highlight.put("summary", abbreviate(primaryHeritageDescription(heritage), 110));
-            highlight.put("region", valueOrDefault(heritage.getRegion(), "Region TBD"));
+            highlight.put("region", valueOrDefault(heritage.getRegion(), "地区待定"));
             highlight.put("relatedType", matchActivityTypeForHeritage(heritage, activities));
             highlights.add(highlight);
         }
@@ -1481,7 +1481,7 @@ public class AIHeritageRouteService {
                 }
             }
         }
-        return "Related introduction";
+        return "相关介绍";
     }
     private List<Map<String, Object>> buildOfficialHighlights(List<IntangibleCulturalHeritage> heritages, List<OfficialContent> contents) {
         List<Map<String, Object>> highlights = new ArrayList<>();

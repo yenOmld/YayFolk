@@ -13,7 +13,7 @@ export default defineConfig({
     port: 5173,
     open: true,
     host: '0.0.0.0',
-    allowedHosts: ['u3d6a23b.natappfree.cc'],
+    allowedHosts: ['ed629c77.natappfree.cc'],
     cors: true,
     proxy: {
       '/api': {

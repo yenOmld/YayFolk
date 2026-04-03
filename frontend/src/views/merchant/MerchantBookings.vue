@@ -8,12 +8,12 @@
         <div>
           <h1>{{ pageTitle }}</h1>
           <p>{{ pageDescription }}</p>
-          <p v-if="currentActivityTitle" class="activity-note">Current Activity: {{ currentActivityTitle }}</p>
+          <p v-if="currentActivityTitle" class="activity-note">当前活动：{{ currentActivityTitle }}</p>
         </div>
       </div>
       <div class="header-actions">
-        <button class="ghost-btn" @click="goScanPage">Open Scanner</button>
-        <button class="ghost-btn" @click="goRecordsPage">Open Records</button>
+        <button class="ghost-btn" @click="goScanPage">打开扫描器</button>
+        <button class="ghost-btn" @click="goRecordsPage">打开记录</button>
       </div>
     </div>
 
@@ -35,25 +35,25 @@
           v-model.trim="keyword"
           type="text"
           class="keyword-input"
-          placeholder="Search booking no, contact, phone, or activity"
+          placeholder="搜索订单号、联系人、电话或活动"
           @keyup.enter="applyFilters"
         >
         <select v-model="selectedActivityId" class="activity-select" @change="applyFilters">
-          <option value="">All Activities</option>
+          <option value="">全部活动</option>
           <option v-for="item in activities" :key="item.id" :value="String(item.id)">{{ item.title }}</option>
         </select>
-        <button class="primary-btn" @click="applyFilters">Apply Filters</button>
+        <button class="primary-btn" @click="applyFilters">应用筛选</button>
       </div>
     </section>
 
     <div v-if="loading" class="state-card">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading merchant bookings...</p>
+      <p>加载商家预订中...</p>
     </div>
 
     <div v-else-if="bookings.length === 0" class="state-card">
       <i class="bx bx-calendar-x"></i>
-      <p>No bookings match the current filters.</p>
+      <p>没有符合当前筛选条件的预订。</p>
     </div>
 
     <template v-else>
@@ -61,57 +61,57 @@
         <article v-for="booking in bookings" :key="booking.id" class="booking-card">
           <div class="booking-card__top">
             <div>
-              <strong>{{ booking.activityTitle || 'Activity' }}</strong>
-              <span>Booking No: {{ booking.reserveNo || booking.id }}</span>
+              <strong>{{ booking.activityTitle || '活动' }}</strong>
+              <span>订单号：{{ booking.reserveNo || booking.id }}</span>
             </div>
             <em :class="['status-badge', booking.status]">{{ statusText(booking.status) }}</em>
           </div>
 
           <div class="booking-card__body">
             <div class="booking-user">
-              <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="Customer avatar" class="avatar">
+              <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="用户头像" class="avatar">
               <div>
-                <strong>{{ booking.customerName || booking.participantName || `User ${booking.userId}` }}</strong>
+                <strong>{{ booking.customerName || booking.participantName || `用户 ${booking.userId}` }}</strong>
                 <span>{{ booking.participantPhone || '-' }}</span>
               </div>
             </div>
 
             <div class="info-grid">
-              <div><span>Activity Time</span><strong>{{ booking.activityTime || formatRange(booking) }}</strong></div>
-              <div><span>Location</span><strong>{{ formatLocation(booking) }}</strong></div>
-              <div><span>Participants</span><strong>{{ booking.participantCount || 1 }}</strong></div>
-              <div><span>Payment</span><strong>{{ paymentText(booking.paymentStatus) }}</strong></div>
-              <div><span>Amount</span><strong>{{ formatCurrency(booking.payAmount ?? booking.totalAmount) }}</strong></div>
-              <div><span>Created At</span><strong>{{ formatTime(booking.createTime) }}</strong></div>
+              <div><span>活动时间</span><strong>{{ booking.activityTime || formatRange(booking) }}</strong></div>
+              <div><span>地点</span><strong>{{ formatLocation(booking) }}</strong></div>
+              <div><span>参与人数</span><strong>{{ booking.participantCount || 1 }}</strong></div>
+              <div><span>支付状态</span><strong>{{ paymentText(booking.paymentStatus) }}</strong></div>
+              <div><span>金额</span><strong>{{ formatCurrency(booking.payAmount ?? booking.totalAmount) }}</strong></div>
+              <div><span>创建时间</span><strong>{{ formatTime(booking.createTime) }}</strong></div>
             </div>
 
             <p v-if="booking.paymentStatus === 'refunded' && booking.status === 'registered'" class="hint-banner refund-hint">
-              This booking was refunded. The user can pay again and continue to participate.
+              此订单已退款。用户可以再次付款并继续参与。
             </p>
             <p v-else-if="booking.status === 'rejected'" class="hint-banner reject-hint">
-              This booking has been rejected and the user is blocked from joining with this record.
+              此订单已被拒绝，用户将被阻止使用此记录参与活动。
             </p>
-            <p v-if="booking.remark" class="remark">Remark: {{ booking.remark }}</p>
+            <p v-if="booking.remark" class="remark">备注：{{ booking.remark }}</p>
 
             <div v-if="booking.timeline?.length" class="timeline">
               <div v-for="item in booking.timeline" :key="item.id" class="timeline-item">
                 <span>{{ formatTime(item.createTime) }}</span>
                 <strong>{{ statusText(item.newStatus) }}</strong>
-                <small>{{ item.operatorName || item.operatorType || 'System' }}{{ item.remark ? ` | ${item.remark}` : '' }}</small>
+                <small>{{ item.operatorName || item.operatorType || '系统' }}{{ item.remark ? ` | ${item.remark}` : '' }}</small>
               </div>
             </div>
           </div>
 
           <div class="booking-card__actions">
-            <button class="ghost-btn" @click="goDetailPage(booking)">Booking Detail</button>
-            <button class="ghost-btn" @click="goScanPage(booking.reserveNo || booking.id)">Scan / Lookup</button>
+            <button class="ghost-btn" @click="goDetailPage(booking)">订单详情</button>
+            <button class="ghost-btn" @click="goScanPage(booking.reserveNo || booking.id)">扫描 / 查找</button>
             <button
               v-if="booking.status === 'registered'"
               class="refund-btn"
               :disabled="isBusy(booking.id) || !booking.canRefund"
               @click="handleRefund(booking)"
             >
-              {{ actionLabel(booking.id, 'refund', 'Refund Only') }}
+              {{ actionLabel(booking.id, 'refund', '仅退款') }}
             </button>
             <button
               v-if="booking.canReject"
@@ -119,7 +119,7 @@
               :disabled="isBusy(booking.id)"
               @click="handleReject(booking)"
             >
-              {{ actionLabel(booking.id, 'reject', 'Reject Booking') }}
+              {{ actionLabel(booking.id, 'reject', '拒绝预订') }}
             </button>
             <button
               v-if="booking.canCheckin"
@@ -127,7 +127,7 @@
               :disabled="isBusy(booking.id)"
               @click="handleCheckin(booking)"
             >
-              {{ actionLabel(booking.id, 'checkin', 'Confirm Check-in') }}
+              {{ actionLabel(booking.id, 'checkin', '确认签到') }}
             </button>
           </div>
         </article>
@@ -141,16 +141,16 @@
 
         <div class="pagination-controls">
           <label class="page-size-field">
-            <span>Per Page</span>
+            <span>每页</span>
             <select v-model="pageSize" @change="handlePageSizeChange">
               <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
             </select>
           </label>
 
           <div class="pager-buttons">
-            <button class="pager-btn" :disabled="currentPage <= 1 || loading" @click="changePage(currentPage - 1)">Previous</button>
-            <span class="page-indicator">Page {{ currentPage }} / {{ totalPages || 1 }}</span>
-            <button class="pager-btn" :disabled="currentPage >= totalPages || loading" @click="changePage(currentPage + 1)">Next</button>
+            <button class="pager-btn" :disabled="currentPage <= 1 || loading" @click="changePage(currentPage - 1)">上一页</button>
+            <span class="page-indicator">第 {{ currentPage }} 页 / 共 {{ totalPages || 1 }} 页</span>
+            <button class="pager-btn" :disabled="currentPage >= totalPages || loading" @click="changePage(currentPage + 1)">下一页</button>
           </div>
         </div>
       </section>
@@ -188,19 +188,19 @@ const total = ref(0)
 const totalPages = ref(0)
 
 const isRecordPage = computed(() => route.name === 'merchant-bookings-records')
-const pageTitle = computed(() => (isRecordPage.value ? 'Booking Records' : 'Booking Management'))
+const pageTitle = computed(() => (isRecordPage.value ? '预订记录' : '预订管理'))
 const pageDescription = computed(() => (
   isRecordPage.value
-    ? 'Review completed, rejected, cancelled, and historical booking records.'
-    : 'Process active bookings, scan QR codes, refund payments, or block participation.'
+    ? '查看已完成、已拒绝、已取消和历史预订记录。'
+    : '处理活跃预订，扫描二维码，退款或阻止参与。'
 ))
 const pageSummary = computed(() => {
   if (!total.value) {
-    return 'No booking records available.'
+    return '暂无预订记录。'
   }
   const start = (currentPage.value - 1) * pageSize.value + 1
   const end = Math.min(currentPage.value * pageSize.value, total.value)
-  return `Showing ${start}-${end} of ${total.value} bookings.`
+  return `显示 ${start}-${end} 共 ${total.value} 个预订。`
 })
 
 const emptySummary = () => ({
@@ -212,11 +212,11 @@ const emptySummary = () => ({
 })
 
 const tabs = computed(() => [
-  { key: 'registered', label: 'Active', count: Number(summary.value.pendingCheckinCount || 0) },
-  { key: 'checked_in', label: 'Checked In', count: Number(summary.value.checkedInCount || 0) },
-  { key: 'rejected', label: 'Rejected', count: Number(summary.value.rejectedCount || 0) },
-  { key: 'cancelled', label: 'Cancelled', count: Number(summary.value.cancelledCount || 0) },
-  { key: 'all', label: 'All', count: Number(summary.value.bookingCount || 0) }
+  { key: 'registered', label: '活跃', count: Number(summary.value.pendingCheckinCount || 0) },
+  { key: 'checked_in', label: '已签到', count: Number(summary.value.checkedInCount || 0) },
+  { key: 'rejected', label: '已拒绝', count: Number(summary.value.rejectedCount || 0) },
+  { key: 'cancelled', label: '已取消', count: Number(summary.value.cancelledCount || 0) },
+  { key: 'all', label: '全部', count: Number(summary.value.bookingCount || 0) }
 ])
 
 const normalizeRouteState = () => {
@@ -402,28 +402,28 @@ const actionLabel = (bookingId, action, idleLabel) => {
     return idleLabel
   }
   return {
-    refund: 'Refunding...',
-    reject: 'Rejecting...',
-    checkin: 'Checking In...'
+    refund: '退款中...',
+    reject: '拒绝中...',
+    checkin: '签到中...'
   }[action] || idleLabel
 }
 
 const handleCheckin = async (booking) => {
   confirm({
-    title: 'Confirm Check-in',
-    message: `Confirm check-in for booking ${booking.reserveNo || booking.id}?`,
+    title: '确认签到',
+    message: `确认签到订单 ${booking.reserveNo || booking.id}？`,
     onConfirm: async () => {
       submittingId.value = booking.id
       submittingAction.value = 'checkin'
       try {
         const response = await checkinBooking(booking.id)
         if (response.code !== 200) {
-          throw new Error(response.message || 'Failed to check in booking')
+          throw new Error(response.message || '签到失败')
         }
-        notify('Booking checked in successfully.', 'success')
+        notify('签到成功。', 'success')
         await loadBookings()
       } catch (error) {
-        notify(error.message || 'Failed to check in booking', 'error')
+        notify(error.message || '签到失败', 'error')
       } finally {
         submittingId.value = null
         submittingAction.value = ''
@@ -434,26 +434,26 @@ const handleCheckin = async (booking) => {
 
 const handleRefund = async (booking) => {
   if (!booking?.canRefund) {
-    notify('Only paid bookings can be refunded.', 'warning')
+    notify('只有已支付的订单才能退款。', 'warning')
     return
   }
   confirm({
-    title: 'Confirm Refund',
-    message: `Refund booking ${booking.reserveNo || booking.id}? The user will be allowed to pay again afterwards.`,
+    title: '确认退款',
+    message: `退款订单 ${booking.reserveNo || booking.id}？用户之后可以再次付款。`,
     onConfirm: async () => {
       submittingId.value = booking.id
       submittingAction.value = 'refund'
       try {
         const response = await refundMerchantBooking(booking.id, {
-          reason: 'Merchant refund with booking kept active'
+          reason: '商家退款，订单保持活跃'
         })
         if (response.code !== 200) {
-          throw new Error(response.message || 'Failed to refund booking')
+          throw new Error(response.message || '退款失败')
         }
-        notify('Refund completed. The user can pay again later.', 'success')
+        notify('退款完成。用户稍后可以再次付款。', 'success')
         await loadBookings()
       } catch (error) {
-        notify(error.message || 'Failed to refund booking', 'error')
+        notify(error.message || '退款失败', 'error')
       } finally {
         submittingId.value = null
         submittingAction.value = ''
@@ -464,26 +464,26 @@ const handleRefund = async (booking) => {
 
 const handleReject = async (booking) => {
   const message = booking.canRefund
-    ? `Reject booking ${booking.reserveNo || booking.id}? Paid bookings will be refunded and the user will be blocked from joining with this record.`
-    : `Reject booking ${booking.reserveNo || booking.id}? The user will be blocked from joining with this record.`
+    ? `拒绝订单 ${booking.reserveNo || booking.id}？已支付的订单将被退款，用户将被阻止使用此记录参与活动。`
+    : `拒绝订单 ${booking.reserveNo || booking.id}？用户将被阻止使用此记录参与活动。`
 
   confirm({
-    title: 'Reject Booking',
+    title: '拒绝预订',
     message,
     onConfirm: async () => {
       submittingId.value = booking.id
       submittingAction.value = 'reject'
       try {
         const response = await rejectBooking(booking.id, {
-          reason: 'Merchant rejected the booking'
+          reason: '商家拒绝预订'
         })
         if (response.code !== 200) {
-          throw new Error(response.message || 'Failed to reject booking')
+          throw new Error(response.message || '拒绝失败')
         }
-        notify('Booking rejected successfully.', 'success')
+        notify('拒绝成功。', 'success')
         await loadBookings()
       } catch (error) {
-        notify(error.message || 'Failed to reject booking', 'error')
+        notify(error.message || '拒绝失败', 'error')
       } finally {
         submittingId.value = null
         submittingAction.value = ''
@@ -492,17 +492,17 @@ const handleReject = async (booking) => {
   })
 }
 
-const formatTime = (value) => (value ? new Date(value).toLocaleString('zh-CN') : 'Not Recorded')
-const formatCurrency = (value) => `CNY ${(Number(value || 0) / 100).toFixed(2)}`
+const formatTime = (value) => (value ? new Date(value).toLocaleString('zh-CN') : '未记录')
+const formatCurrency = (value) => `¥ ${(Number(value || 0) / 100).toFixed(2)}`
 const formatRange = (booking) => {
-  if (!booking?.startTime && !booking?.endTime) return 'TBD'
-  const start = booking.startTime ? formatTime(booking.startTime) : 'TBD'
+  if (!booking?.startTime && !booking?.endTime) return '待定'
+  const start = booking.startTime ? formatTime(booking.startTime) : '待定'
   const end = booking.endTime ? formatTime(booking.endTime) : ''
   return end ? `${start} - ${end}` : start
 }
-const formatLocation = (booking) => [booking.locationProvince, booking.locationCity, booking.locationDistrict, booking.locationDetail].filter(Boolean).join(' / ') || 'TBD'
-const paymentText = (status) => ({ paid: 'Paid', unpaid: 'Unpaid', refunded: 'Refunded' }[status] || status || 'Unpaid')
-const statusText = (status) => ({ registered: 'Active', checked_in: 'Checked In', rejected: 'Rejected', cancelled: 'Cancelled' }[status] || status)
+const formatLocation = (booking) => [booking.locationProvince, booking.locationCity, booking.locationDistrict, booking.locationDetail].filter(Boolean).join(' / ') || '待定'
+const paymentText = (status) => ({ paid: '已支付', unpaid: '未支付', refunded: '已退款' }[status] || status || '未支付')
+const statusText = (status) => ({ registered: '活跃', checked_in: '已签到', rejected: '已拒绝', cancelled: '已取消' }[status] || status)
 
 watch(
   () => route.fullPath,

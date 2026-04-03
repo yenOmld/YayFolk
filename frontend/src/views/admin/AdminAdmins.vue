@@ -56,7 +56,7 @@
                   <button
                     class="ghost-btn danger"
                     :disabled="Number(item.isSuperAdmin) === 1"
-                    @click="handleDelete(item)"
+                    @click="openDeleteModal(item)"
                   >
                     删除
                   </button>
@@ -167,6 +167,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 删除确认弹窗 -->
+    <div v-if="deleteModal.show" class="dialog-mask" @click.self="closeDeleteModal">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3>确认删除</h3>
+          <button class="close-btn" @click="closeDeleteModal">×</button>
+        </div>
+        <p class="dialog-intro">确认删除管理员账号 {{ deleteModal.admin?.username }} 吗？</p>
+        <div class="dialog-actions">
+          <button class="subtle-btn" @click="closeDeleteModal">取消</button>
+          <button class="primary-btn danger" @click="submitDelete">确认删除</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -192,6 +207,10 @@ const pageSize = 5
 const createVisible = ref(false)
 const editVisible = ref(false)
 const passwordVisible = ref(false)
+const deleteModal = ref({
+  show: false,
+  admin: null
+})
 
 const totalPages = computed(() => Math.max(1, Math.ceil(admins.value.length / pageSize)))
 const pagedAdmins = computed(() => {
@@ -351,19 +370,35 @@ const handleUpdatePassword = async () => {
   }
 }
 
-const handleDelete = async (item) => {
+// 打开删除确认模态框
+const openDeleteModal = (item) => {
   if (Number(item.isSuperAdmin) === 1) {
     notify?.warning('超级管理员账号不允许删除')
     return
   }
-
-  if (!window.confirm(`确认删除管理员账号 ${item.username} 吗？`)) {
-    return
+  deleteModal.value = {
+    show: true,
+    admin: item
   }
+}
+
+// 关闭删除确认模态框
+const closeDeleteModal = () => {
+  deleteModal.value = {
+    show: false,
+    admin: null
+  }
+}
+
+// 提交删除
+const submitDelete = async () => {
+  const { admin } = deleteModal.value
+  if (!admin) return
 
   try {
-    const res = await deleteAdminAccount(item.id)
+    const res = await deleteAdminAccount(admin.id)
     notify?.success(res.message || '管理员删除成功')
+    closeDeleteModal()
     await loadAdmins()
   } catch (error) {
     notify?.error(error?.response?.data?.message || '管理员删除失败')
@@ -664,6 +699,22 @@ onMounted(loadAdmins)
   margin-bottom: 14px;
   color: #b45309;
   font-size: 14px;
+}
+
+.dialog-intro {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.primary-btn.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.primary-btn.danger:hover {
+  background: #b91c1c;
 }
 
 .form-grid {

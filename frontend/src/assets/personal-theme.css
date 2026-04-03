@@ -434,7 +434,7 @@
 }
 
 .discover-page .nav-content {
-  padding: 16px 20px !important;
+  padding:5px 15px;
 }
 
 .discover-page .logo,
@@ -710,7 +710,6 @@
     border-radius: 20px !important;
   }
 
-  .discover-page .nav-content,
   .discover-page .category-tabs-wrapper,
   .discover-page .notification-container,
   .discover-page .post-container,

@@ -54,8 +54,6 @@
           <div class="meta-grid">
             <p>订单号: {{ booking.reserveNo || '-' }}</p>
             <p>支付状态: {{ paymentStatusText }}</p>
-            <p>参与者: {{ booking.participantName || '-' }}</p>
-            <p>电话: {{ booking.participantPhone || '-' }}</p>
             <p>参与人数: {{ booking.participantCount || 1 }}</p>
             <p>支付方式: {{ booking.paymentType || '-' }}</p>
             <p>总金额: {{ formatMoney(booking.totalAmount) }}</p>
@@ -64,6 +62,32 @@
             <p v-if="booking.verificationTime">核销时间: {{ formatTime(booking.verificationTime) }}</p>
           </div>
           <p v-if="booking.remark" class="remark-line">备注: {{ booking.remark }}</p>
+        </article>
+
+        <article class="info-card">
+          <h2>参与者信息</h2>
+          <div v-if="participantsList.length > 0" class="participants-list">
+            <div v-for="(participant, index) in participantsList" :key="index" class="participant-item">
+              <div class="participant-header">
+                <h4>参与者 {{ index + 1 }}</h4>
+              </div>
+              <div class="participant-info">
+                <p><strong>姓名:</strong> {{ participant.name || '-' }}</p>
+                <p><strong>电话:</strong> {{ participant.phone || '-' }}</p>
+              </div>
+            </div>
+          </div>
+          <div v-else class="participants-list">
+            <div class="participant-item">
+              <div class="participant-header">
+                <h4>参与者 1</h4>
+              </div>
+              <div class="participant-info">
+                <p><strong>姓名:</strong> {{ booking.participantName || '-' }}</p>
+                <p><strong>电话:</strong> {{ booking.participantPhone || '-' }}</p>
+              </div>
+            </div>
+          </div>
         </article>
 
         <article v-if="timeline.length" class="info-card">
@@ -168,6 +192,12 @@ const fullLocation = computed(() => (
     .join(' / ') || '-'
 ))
 const timeline = computed(() => Array.isArray(booking.value?.timeline) ? booking.value.timeline : [])
+const participantsList = computed(() => {
+  if (Array.isArray(booking.value?.participants) && booking.value.participants.length > 0) {
+    return booking.value.participants
+  }
+  return []
+})
 const paymentStatusText = computed(() => ({
   paid: '已支付',
   unpaid: '未支付',
@@ -316,6 +346,13 @@ onMounted(loadBooking)
 .status-tag.rejected { background: #fee2e2; color: #b91c1c; }
 .meta-grid { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 18px; }
 .activity-content { margin-top: 14px; white-space: pre-line; }
+.participants-list { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+.participant-item { padding: 16px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.participant-header { margin-bottom: 12px; }
+.participant-header h4 { margin: 0; font-size: 14px; font-weight: 700; color: #9d2929; text-transform: uppercase; letter-spacing: 0.04em; }
+.participant-info { display: flex; flex-direction: column; gap: 8px; }
+.participant-info p { margin: 0; color: #5a5045; }
+.participant-info strong { color: #2c2c2c; font-weight: 600; }
 .timeline-list { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 .timeline-item { padding: 12px 14px; border-radius: 14px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px; }
 .timeline-item strong { color: #9d2929; }

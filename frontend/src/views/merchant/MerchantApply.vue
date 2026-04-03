@@ -2,13 +2,13 @@
   <div class="merchant-dashboard-page">
     <section class="hero-card">
       <div class="hero-copy">
-        <p class="hero-eyebrow">Merchant Workspace</p>
+        <p class="hero-eyebrow">商家工作台</p>
         <h1>{{ pageTitle }}</h1>
         <p>{{ pageDescription }}</p>
         <div class="hero-meta">
           <span :class="['status-pill', statusMeta.className]">{{ statusMeta.badge }}</span>
           <span v-if="storedInfo.shopName">{{ storedInfo.shopName }}</span>
-          <span v-if="storedInfo.updateTime">Updated {{ formatTime(storedInfo.updateTime) }}</span>
+          <span v-if="storedInfo.updateTime">更新于 {{ formatTime(storedInfo.updateTime) }}</span>
         </div>
       </div>
 
@@ -19,7 +19,7 @@
           class="secondary-btn"
           @click="router.push('/merchant/activities')"
         >
-          Open Activities
+          查看活动
         </button>
         <button
           v-if="hasApplication && !isApproved"
@@ -28,7 +28,7 @@
           :disabled="loading || submitting"
           @click="resetFormToStored"
         >
-          Reset Form
+          重置表单
         </button>
       </div>
     </section>
@@ -36,9 +36,9 @@
     <section v-if="canShowStats" class="panel-card stats-card-shell">
       <div class="section-head">
         <div>
-          <p class="section-eyebrow">Business Overview</p>
-          <h2>Merchant Analytics</h2>
-          <p>Overview of bookings, booking revenue, activity performance, and recent reviews.</p>
+          <p class="section-eyebrow">业务概览</p>
+          <h2>商家分析</h2>
+          <p>预订、收入、活动表现和最近评价的概览。</p>
         </div>
         <button
           type="button"
@@ -46,7 +46,7 @@
           :disabled="merchantStatsLoading"
           @click="loadMerchantStats"
         >
-          {{ merchantStatsLoading ? 'Refreshing...' : 'Refresh Stats' }}
+          {{ merchantStatsLoading ? '刷新中...' : '刷新数据' }}
         </button>
       </div>
 
@@ -61,7 +61,7 @@
     <section class="panel-card status-card" :class="statusMeta.className">
       <div class="section-head status-head">
         <div>
-          <p class="section-eyebrow">Application Status</p>
+          <p class="section-eyebrow">申请状态</p>
           <h2>{{ statusMeta.title }}</h2>
           <p>{{ statusMeta.description }}</p>
         </div>
@@ -73,7 +73,7 @@
             :disabled="loading || submitting"
             @click="openFormModal"
           >
-            Update Merchant Information
+            更新商家信息
           </button>
           <span :class="['status-pill', statusMeta.className]">{{ statusMeta.badge }}</span>
         </div>
@@ -81,52 +81,52 @@
 
       <div v-if="hasApplication" class="detail-grid">
         <div class="detail-item">
-          <span>Legal Name</span>
+          <span>真实姓名</span>
           <strong>{{ displayValue(storedInfo.realName) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Phone</span>
+          <span>手机号码</span>
           <strong>{{ displayValue(storedInfo.phone) }}</strong>
         </div>
         <div class="detail-item">
-          <span>ID Card</span>
+          <span>身份证号</span>
           <strong>{{ displayValue(storedInfo.idCard) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Heritage Type</span>
+          <span>非遗类型</span>
           <strong>{{ displayValue(storedInfo.heritageType) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Shop Name</span>
+          <span>店铺名称</span>
           <strong>{{ displayValue(storedInfo.shopName) }}</strong>
         </div>
         <div class="detail-item">
-          <span>Region</span>
+          <span>地区</span>
           <strong>{{ displayValue(regionText(storedInfo)) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Shop Address</span>
+          <span>店铺地址</span>
           <strong>{{ displayValue(storedInfo.shopAddress) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Heritage Description</span>
+          <span>非遗描述</span>
           <strong>{{ displayValue(storedInfo.heritageDescription) }}</strong>
         </div>
         <div class="detail-item full-span">
-          <span>Shop Introduction</span>
+          <span>店铺介绍</span>
           <strong>{{ displayValue(storedInfo.intro) }}</strong>
         </div>
       </div>
 
       <div v-else class="empty-state compact-empty">
         <i class="bx bx-file-find"></i>
-        <p>No merchant application has been submitted yet.</p>
+        <p>尚未提交商家申请。</p>
       </div>
 
       <div v-if="storedProofImages.length" class="proof-section">
         <div class="proof-head">
-          <span>Submitted Proof Files</span>
-          <small>{{ storedProofImages.length }} file(s)</small>
+          <span>提交的证明文件</span>
+          <small>{{ storedProofImages.length }} 个文件</small>
         </div>
         <div class="proof-grid">
           <a
@@ -137,27 +137,27 @@
             target="_blank"
             rel="noreferrer"
           >
-            <img :src="image" :alt="`Proof ${index + 1}`">
+            <img :src="image" :alt="`证明文件 ${index + 1}`">
           </a>
         </div>
       </div>
 
       <div v-if="storedInfo.auditRemark" class="remark-box">
-        <span>Audit Remark</span>
+        <span>审核备注</span>
         <p>{{ storedInfo.auditRemark }}</p>
       </div>
 
       <div v-if="hasApplication" class="status-meta">
-        <span>Submitted {{ formatTime(storedInfo.createTime) }}</span>
-        <span>Updated {{ formatTime(storedInfo.updateTime || storedInfo.createTime) }}</span>
-        <span v-if="storedInfo.auditTime">Reviewed {{ formatTime(storedInfo.auditTime) }}</span>
+        <span>提交于 {{ formatTime(storedInfo.createTime) }}</span>
+        <span>更新于 {{ formatTime(storedInfo.updateTime || storedInfo.createTime) }}</span>
+        <span v-if="storedInfo.auditTime">审核于 {{ formatTime(storedInfo.auditTime) }}</span>
       </div>
     </section>
 
     <section v-if="showInlineForm" class="panel-card form-card">
       <div class="section-head">
         <div>
-          <p class="section-eyebrow">Merchant Profile</p>
+          <p class="section-eyebrow">商家资料</p>
           <h2>{{ formTitle }}</h2>
           <p>{{ formDescription }}</p>
         </div>
@@ -185,7 +185,7 @@
         <section class="modal-card">
           <div class="modal-head">
             <div>
-              <p class="section-eyebrow">Merchant Profile</p>
+              <p class="section-eyebrow">商家资料</p>
               <h2>{{ formTitle }}</h2>
               <p>{{ formDescription }}</p>
             </div>
@@ -237,18 +237,18 @@ const notify = (type, message) => {
 }
 
 const heritageTypes = [
-  'Embroidery',
-  'Paper Cutting',
-  'Ceramics',
-  'Lacquerware',
-  'Wood Carving',
-  'Opera',
-  'Kunqu',
-  'Guqin',
-  'Tai Chi',
-  'Traditional Medicine',
-  'New Year Painting',
-  'Other'
+  '刺绣',
+  '剪纸',
+  '陶瓷',
+  '漆器',
+  '木雕',
+  '戏曲',
+  '昆曲',
+  '古琴',
+  '太极',
+  '传统医药',
+  '年画',
+  '其他'
 ]
 
 const createEmptyForm = () => ({
@@ -304,67 +304,67 @@ const statusMeta = computed(() => {
   if (status === 'approved') {
     return {
       className: 'approved',
-      title: 'Approved Merchant Profile',
-      badge: 'Approved',
-      description: 'Your merchant profile is active. Saving the form again will submit a fresh review request.'
+      title: '已通过的商家资料',
+      badge: '已通过',
+      description: '您的商家资料已激活。再次保存表单将提交新的审核请求。'
     }
   }
   if (status === 'rejected') {
     return {
       className: 'rejected',
-      title: 'Changes Required',
-      badge: 'Rejected',
-      description: 'Please update the profile based on the audit remark and submit it again.'
+      title: '需要修改',
+      badge: '已拒绝',
+      description: '请根据审核备注更新资料并重新提交。'
     }
   }
   if (status === 'pending') {
     return {
       className: 'pending',
-      title: 'Review In Progress',
-      badge: 'Pending',
-      description: 'Your latest merchant profile is waiting for review.'
+      title: '审核进行中',
+      badge: '审核中',
+      description: '您最新的商家资料正在等待审核。'
     }
   }
   return {
     className: 'draft',
-    title: 'Draft Merchant Application',
-    badge: 'Draft',
-    description: 'Submit your merchant information to start the approval process.'
+    title: '商家申请草稿',
+    badge: '草稿',
+    description: '提交您的商家信息以开始审批流程。'
   }
 })
 
 const pageTitle = computed(() => (
   canShowStats.value
-    ? 'Merchant Center'
+    ? '商家中心'
     : hasApplication.value
-      ? 'Merchant Application Workspace'
-      : 'Apply to Become a Merchant'
+      ? '商家申请工作台'
+      : '申请成为商家'
 ))
 
 const pageDescription = computed(() => (
   canShowStats.value
-    ? 'Manage merchant qualifications, check the health of recent bookings, and jump directly into activities or booking management.'
-    : 'Complete the merchant profile, upload proof materials, and track the application review result here.'
+    ? '管理商家资质，查看最近预订情况，直接进入活动或预订管理。'
+    : '在此完成商家资料，上传证明材料，并跟踪申请审核结果。'
 ))
 
-const formTitle = computed(() => (hasApplication.value ? 'Update Merchant Information' : 'Merchant Application Form'))
+const formTitle = computed(() => (hasApplication.value ? '更新商家信息' : '商家申请表单'))
 const formDescription = computed(() => (
   hasApplication.value
-    ? 'The form below is prefilled with your latest submitted merchant profile. Saving will start a new review round.'
-    : 'Provide complete merchant information so the platform team can review your qualification request.'
+    ? '以下表单已预填您最新提交的商家资料。保存将开始新一轮审核。'
+    : '请提供完整的商家信息，以便平台团队审核您的资质申请。'
 ))
 
 const submitButtonText = computed(() => {
   if (submitting.value) {
-    return hasApplication.value ? 'Saving...' : 'Submitting...'
+    return hasApplication.value ? '保存中...' : '提交中...'
   }
-  return hasApplication.value ? 'Save and Resubmit' : 'Submit Application'
+  return hasApplication.value ? '保存并重新提交' : '提交申请'
 })
 
 const submitHint = computed(() => (
   hasApplication.value
-    ? 'Any update to this form will reset the review status to pending.'
-    : 'After submission, please wait for the merchant review result.'
+    ? '对本表单的任何更新都将重置审核状态为待审核。'
+    : '提交后，请等待商家审核结果。'
 ))
 
 function normalizeStatus(value) {
@@ -444,20 +444,20 @@ function regionText(source = {}) {
 }
 
 function displayValue(value) {
-  return value ? value : 'Not provided'
+  return value ? value : '未提供'
 }
 
 function formatTime(value) {
   if (!value) {
-    return 'Not recorded'
+    return '未记录'
   }
 
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
-    return 'Not recorded'
+    return '未记录'
   }
 
-  return date.toLocaleString('en-US')
+  return date.toLocaleString('zh-CN')
 }
 
 function resetFormToStored() {

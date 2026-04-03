@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.ActivityReserve;
+import com.yayfolk.backend.entity.ActivityReserveParticipant;
 import com.yayfolk.backend.entity.MerchantApplication;
 import com.yayfolk.backend.entity.MerchantProfile;
 import com.yayfolk.backend.entity.MerchantReview;
@@ -12,6 +13,7 @@ import com.yayfolk.backend.entity.Product;
 import com.yayfolk.backend.entity.ReserveStatusLog;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.ActivityRepository;
+import com.yayfolk.backend.repository.ActivityReserveParticipantRepository;
 import com.yayfolk.backend.repository.ActivityReserveRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
 import com.yayfolk.backend.repository.MerchantProfileRepository;
@@ -51,6 +53,7 @@ public class MerchantService {
     private final MerchantApplicationRepository applicationRepository;
     private final ActivityRepository activityRepository;
     private final ActivityReserveRepository activityReserveRepository;
+    private final ActivityReserveParticipantRepository activityReserveParticipantRepository;
     private final ReserveStatusLogRepository reserveStatusLogRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
@@ -62,6 +65,7 @@ public class MerchantService {
                            MerchantApplicationRepository applicationRepository,
                            ActivityRepository activityRepository,
                            ActivityReserveRepository activityReserveRepository,
+                           ActivityReserveParticipantRepository activityReserveParticipantRepository,
                            ReserveStatusLogRepository reserveStatusLogRepository,
                            ProductRepository productRepository,
                            OrderRepository orderRepository,
@@ -72,6 +76,7 @@ public class MerchantService {
         this.applicationRepository = applicationRepository;
         this.activityRepository = activityRepository;
         this.activityReserveRepository = activityReserveRepository;
+        this.activityReserveParticipantRepository = activityReserveParticipantRepository;
         this.reserveStatusLogRepository = reserveStatusLogRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
@@ -862,9 +867,48 @@ public class MerchantService {
         booking.setReserveStatus("registered");
         activityReserveRepository.save(booking);
 
+        // 保存参与者信息
+        saveParticipants(booking.getId(), data, user);
+
         createStatusLog(booking.getId(), null, booking.getReserveStatus(), user.getId(), "user", "User created booking");
         syncActivityCurrentParticipants(activity.getId());
         return userBookingToMap(booking);
+    }
+
+    private void saveParticipants(Long reserveId, Map<String, Object> data, User user) {
+        Object participantsObj = data.get("participants");
+        if (participantsObj != null) {
+            try {
+                List<Map<String, String>> participants = objectMapper.convertValue(
+                    participantsObj, 
+                    new TypeReference<List<Map<String, String>>>() {}
+                );
+                
+                if (participants != null && !participants.isEmpty()) {
+                    for (Map<String, String> participant : participants) {
+                        ActivityReserveParticipant participantEntity = new ActivityReserveParticipant();
+                        participantEntity.setReserveId(reserveId);
+                        participantEntity.setName(StringUtils.hasText(participant.get("name")) ? participant.get("name") : displayName(user));
+                        participantEntity.setPhone(StringUtils.hasText(participant.get("phone")) ? participant.get("phone") : defaultString(user.getPhone()));
+                        activityReserveParticipantRepository.save(participantEntity);
+                    }
+                }
+            } catch (Exception e) {
+                // 如果解析失败，使用旧的方式保存第一个参与者
+                ActivityReserveParticipant participant = new ActivityReserveParticipant();
+                participant.setReserveId(reserveId);
+                participant.setName(StringUtils.hasText(stringValue(data.get("participantName"))) ? stringValue(data.get("participantName")) : displayName(user));
+                participant.setPhone(StringUtils.hasText(stringValue(data.get("participantPhone"))) ? stringValue(data.get("participantPhone")) : defaultString(user.getPhone()));
+                activityReserveParticipantRepository.save(participant);
+            }
+        } else {
+            // 如果没有participants数组，使用旧的方式保存
+            ActivityReserveParticipant participant = new ActivityReserveParticipant();
+            participant.setReserveId(reserveId);
+            participant.setName(StringUtils.hasText(stringValue(data.get("participantName"))) ? stringValue(data.get("participantName")) : displayName(user));
+            participant.setPhone(StringUtils.hasText(stringValue(data.get("participantPhone"))) ? stringValue(data.get("participantPhone")) : defaultString(user.getPhone()));
+            activityReserveParticipantRepository.save(participant);
+        }
     }
 
     public Map<String, Object> createOrder(String username, Map<String, Object> data) {
@@ -1441,7 +1485,18 @@ public class MerchantService {
     private Map<String, Object> buildUserBookingDetailMap(ActivityReserve booking, MerchantReview review) {
         Map<String, Object> map = userBookingToMap(booking);
         map.put("timeline", buildTimeline(booking.getId()));
-        map.put("participants", Collections.emptyList());
+        
+        // 获取参与者信息
+        List<ActivityReserveParticipant> participants = activityReserveParticipantRepository.findByReserveId(booking.getId());
+        List<Map<String, Object>> participantsList = new ArrayList<>();
+        for (ActivityReserveParticipant participant : participants) {
+            Map<String, Object> participantMap = new HashMap<>();
+            participantMap.put("name", participant.getName());
+            participantMap.put("phone", participant.getPhone());
+            participantsList.add(participantMap);
+        }
+        map.put("participants", participantsList);
+        
         map.put("activitySchedules", Collections.emptyList());
         if (review != null) {
             map.put("reviewId", review.getId());
@@ -1500,7 +1555,18 @@ public class MerchantService {
 
     private Map<String, Object> buildMerchantBookingDetailMap(ActivityReserve booking) {
         Map<String, Object> map = buildMerchantBookingItem(booking);
-        map.put("participants", Collections.emptyList());
+        
+        // 获取参与者信息
+        List<ActivityReserveParticipant> participants = activityReserveParticipantRepository.findByReserveId(booking.getId());
+        List<Map<String, Object>> participantsList = new ArrayList<>();
+        for (ActivityReserveParticipant participant : participants) {
+            Map<String, Object> participantMap = new HashMap<>();
+            participantMap.put("name", participant.getName());
+            participantMap.put("phone", participant.getPhone());
+            participantsList.add(participantMap);
+        }
+        map.put("participants", participantsList);
+        
         map.put("activitySchedules", Collections.emptyList());
         return map;
     }

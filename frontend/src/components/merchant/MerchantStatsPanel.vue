@@ -2,7 +2,7 @@
   <div class="stats-panel">
     <div v-if="loading" class="stats-empty">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading merchant analytics...</p>
+      <p>加载商家分析数据中...</p>
     </div>
 
     <template v-else>
@@ -34,8 +34,8 @@
       <div class="split-grid">
         <section class="panel-card">
           <div class="panel-head">
-            <h4>Booking Status</h4>
-            <span>{{ bookingStatus.length }} items</span>
+            <h4>预订状态</h4>
+            <span>{{ bookingStatus.length }} 项</span>
           </div>
           <div class="status-stack">
             <button
@@ -54,8 +54,8 @@
 
         <section class="panel-card">
           <div class="panel-head">
-            <h4>Top Activities</h4>
-            <span>{{ topActivities.length }} items</span>
+            <h4>热门活动</h4>
+            <span>{{ topActivities.length }} 项</span>
           </div>
           <div v-if="topActivities.length" class="list-stack">
             <button
@@ -66,20 +66,20 @@
               @click="emitNavigate({ type: 'activity', activityId: item.activityId, title: item.title })"
             >
               <div>
-                <strong>{{ item.title || 'Untitled Activity' }}</strong>
-                <small>{{ formatCount(item.bookingCount) }} bookings / {{ formatCount(item.participantCount) }} participants</small>
+                <strong>{{ item.title || '未命名活动' }}</strong>
+                <small>{{ formatCount(item.bookingCount) }} 个预订 / {{ formatCount(item.participantCount) }} 位参与者</small>
               </div>
               <em>{{ formatCurrency(item.revenue) }}</em>
             </button>
           </div>
-          <div v-else class="empty-note">No activity data yet.</div>
+          <div v-else class="empty-note">暂无活动数据。</div>
         </section>
       </div>
 
       <section class="panel-card">
         <div class="panel-head">
-          <h4>Recent Reviews</h4>
-          <span>{{ recentReviews.length }} items</span>
+          <h4>最近评价</h4>
+          <span>{{ recentReviews.length }} 项</span>
         </div>
         <div v-if="recentReviews.length" class="review-stack">
           <div
@@ -87,18 +87,18 @@
             :key="item.id"
             class="review-row"
           >
-            <img :src="item.userAvatar || '/default-avatar.svg'" alt="reviewer" class="review-avatar">
+            <img :src="item.userAvatar || '/default-avatar.svg'" alt="评价者" class="review-avatar">
             <div class="review-copy">
               <div class="review-top">
-                <strong>{{ item.userName || 'Anonymous User' }}</strong>
-                <span>{{ item.targetName || 'Activity Review' }}</span>
+                <strong>{{ item.userName || '匿名用户' }}</strong>
+                <span>{{ item.targetName || '活动评价' }}</span>
               </div>
-              <p>{{ item.content || 'No text review was provided.' }}</p>
+              <p>{{ item.content || '未提供文本评价。' }}</p>
             </div>
             <b>{{ formatScore(item.score) }}</b>
           </div>
         </div>
-        <div v-else class="empty-note">No review data yet.</div>
+        <div v-else class="empty-note">暂无评价数据。</div>
       </section>
     </template>
   </div>
@@ -155,44 +155,44 @@ const formatScore = (value) => (value === null || value === undefined || value =
 const summaryCards = computed(() => [
   {
     key: 'activities',
-    label: 'Activities',
+    label: '活动',
     value: formatCount(summary.value.activityCount),
-    note: 'Open activity management and review all published activities.',
+    note: '打开活动管理并查看所有已发布的活动。',
     target: { type: 'activities' }
   },
   {
     key: 'bookings',
-    label: 'Bookings',
+    label: '预订',
     value: formatCount(summary.value.bookingCount),
-    note: 'Open booking management and review all booking records.',
+    note: '打开预订管理并查看所有预订记录。',
     target: { type: 'bookings', status: 'all' }
   },
   {
     key: 'pending',
-    label: 'Pending Check-in',
+    label: '待签到',
     value: formatCount(summary.value.pendingCheckinCount),
-    note: 'Check bookings that are waiting for on-site verification.',
+    note: '查看等待现场验证的预订。',
     target: { type: 'bookings', status: 'registered' }
   },
   {
     key: 'checked',
-    label: 'Checked In',
+    label: '已签到',
     value: formatCount(summary.value.checkedInCount),
-    note: 'Review bookings that have already completed check-in.',
+    note: '查看已完成签到的预订。',
     target: { type: 'bookings', status: 'checked_in' }
   },
   {
     key: 'reviews',
-    label: 'Reviews',
+    label: '评价',
     value: formatCount(summary.value.reviewCount),
-    note: 'Monitor feedback left by customers after completed bookings.',
+    note: '监控客户在完成预订后留下的反馈。',
     target: { type: 'bookings', status: 'checked_in' }
   },
   {
     key: 'revenue',
-    label: 'Booking Revenue',
+    label: '预订收入',
     value: formatCurrency(summary.value.totalRevenue ?? summary.value.bookingRevenue),
-    note: 'Track the total revenue generated from valid activity bookings.',
+    note: '跟踪有效活动预订产生的总收入。',
     target: { type: 'bookings', status: 'all' }
   }
 ])
@@ -212,22 +212,22 @@ const chartMode = computed(() => {
 const chartMeta = computed(() => {
   if (chartMode.value === 'trend') {
     return {
-      title: 'Last 7 Days Booking Trend',
-      description: 'Bars show booking revenue. The line shows booking volume.',
-      linkLabel: 'Open booking management'
+      title: '最近7天预订趋势',
+      description: '柱状图显示预订收入。折线图显示预订量。',
+      linkLabel: '打开预订管理'
     }
   }
   if (chartMode.value === 'activity') {
     return {
-      title: 'Activity Performance Snapshot',
-      description: 'Compare your top activities by bookings, participants, and booking revenue.',
-      linkLabel: 'Open activity management'
+      title: '活动表现快照',
+      description: '通过预订量、参与人数和预订收入比较您的热门活动。',
+      linkLabel: '打开活动管理'
     }
   }
   return {
-    title: 'Merchant Analytics Overview',
-    description: 'Create activities or receive bookings to unlock visual trends here.',
-    linkLabel: 'Open merchant center'
+    title: '商家分析概览',
+    description: '创建活动或接收预订以解锁此处的可视化趋势。',
+    linkLabel: '打开商家中心'
   }
 })
 
@@ -249,7 +249,7 @@ const activityChartData = computed(() => topActivities.value.slice(0, 5).map((it
 function shortenLabel(value) {
   const text = String(value || '').trim()
   if (!text) {
-    return 'Untitled Activity'
+    return '未命名活动'
   }
   return text.length > 14 ? `${text.slice(0, 14)}...` : text
 }
@@ -543,7 +543,7 @@ function buildEmptyOption() {
             type: 'text',
             top: -10,
             style: {
-              text: 'No chart data yet',
+              text: '暂无图表数据',
               fill: '#64748b',
               fontSize: 18,
               fontWeight: 600,
@@ -554,7 +554,7 @@ function buildEmptyOption() {
             type: 'text',
             top: 22,
             style: {
-              text: 'Publish activities or receive bookings to unlock analytics.',
+              text: '发布活动或接收预订以解锁分析功能。',
               fill: '#94a3b8',
               fontSize: 14,
               textAlign: 'center'

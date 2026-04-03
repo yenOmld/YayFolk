@@ -2,66 +2,66 @@
   <div>
     <div v-if="loading" class="empty-state loading-state">
       <i class="bx bx-loader-alt bx-spin"></i>
-      <p>Loading merchant information...</p>
+      <p>加载商家信息中...</p>
     </div>
 
     <form v-else class="apply-form" @submit.prevent="$emit('submit')">
       <div class="form-grid">
         <label class="form-field">
-          <span>Legal Name <em>*</em></span>
+          <span>真实姓名 <em>*</em></span>
           <input v-model.trim="form.realName" type="text" maxlength="50" required>
         </label>
 
         <label class="form-field">
-          <span>ID Card</span>
+          <span>身份证号</span>
           <input v-model.trim="form.idCard" type="text" maxlength="18">
         </label>
 
         <label class="form-field">
-          <span>Phone <em>*</em></span>
+          <span>手机号码 <em>*</em></span>
           <input v-model.trim="form.phone" type="text" maxlength="20" required>
         </label>
 
         <label class="form-field">
-          <span>Heritage Type <em>*</em></span>
+          <span>非遗类型 <em>*</em></span>
           <select v-model="form.heritageType" required>
-            <option value="">Select one</option>
+            <option value="">请选择</option>
             <option v-for="item in heritageTypes" :key="item" :value="item">{{ item }}</option>
           </select>
         </label>
 
         <label class="form-field">
-          <span>Shop Name <em>*</em></span>
+          <span>店铺名称 <em>*</em></span>
           <input v-model.trim="form.shopName" type="text" maxlength="100" required>
         </label>
 
         <label class="form-field">
-          <span>Province</span>
+          <span>省份</span>
           <input v-model.trim="form.province" type="text" maxlength="32">
         </label>
 
         <label class="form-field">
-          <span>City</span>
+          <span>城市</span>
           <input v-model.trim="form.city" type="text" maxlength="32">
         </label>
 
         <label class="form-field full-span">
-          <span>Shop Address</span>
+          <span>店铺地址</span>
           <input v-model.trim="form.shopAddress" type="text" maxlength="200">
         </label>
 
         <label class="form-field full-span">
-          <span>Heritage Description <em>*</em></span>
+          <span>非遗项目描述 <em>*</em></span>
           <textarea v-model.trim="form.heritageDescription" rows="5" maxlength="1000" required></textarea>
         </label>
 
         <label class="form-field full-span">
-          <span>Shop Introduction</span>
+          <span>店铺介绍</span>
           <textarea v-model.trim="form.intro" rows="4" maxlength="255"></textarea>
         </label>
 
         <div class="form-field full-span">
-          <span>Proof Images</span>
+          <span>证明材料</span>
           <div class="uploader-card">
             <div class="uploader-actions">
               <button
@@ -70,7 +70,7 @@
                 :disabled="uploadingProofs || submitting"
                 @click="openProofPicker"
               >
-                {{ uploadingProofs ? 'Uploading...' : 'Upload Images' }}
+                {{ uploadingProofs ? '上传中...' : '上传图片' }}
               </button>
               <button
                 type="button"
@@ -78,7 +78,7 @@
                 :disabled="!form.proofImages.length || submitting"
                 @click="$emit('clear-proof-images')"
               >
-                Clear All
+                清空全部
               </button>
             </div>
 
@@ -97,18 +97,18 @@
                 :key="`${image}-${index}`"
                 class="proof-thumb editable-thumb"
               >
-                <img :src="image" :alt="`Selected proof ${index + 1}`">
+                <img :src="image" :alt="`已选择的证明材料 ${index + 1}`">
                 <button
                   type="button"
                   class="remove-proof-btn"
                   :disabled="submitting"
                   @click="$emit('remove-proof-image', index)"
                 >
-                  Remove
+                  删除
                 </button>
               </div>
             </div>
-            <p v-else class="proof-empty">Upload business license, identity proof, or other qualification files.</p>
+            <p v-else class="proof-empty">请上传营业执照、身份证明或其他资质文件。</p>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@
             :disabled="submitting"
             @click="$emit('reset')"
           >
-            Reset
+            重置
           </button>
           <button type="submit" class="primary-btn" :disabled="submitting || uploadingProofs">
             {{ submitButtonText }}

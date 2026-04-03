@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿<template>
   <div class="admin-page">
     <div class="page-header">
       <div>
@@ -151,7 +151,7 @@
               <td>
                 <div class="action-row">
                   <button class="link-btn" @click="openEdit(row)">编辑</button>
-                  <button class="danger-btn" @click="removeRow(row)">删除</button>
+                  <button class="danger-btn" @click="openDeleteModal(row)">删除</button>
                 </div>
               </td>
             </tr>
@@ -251,6 +251,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 删除确认弹窗 -->
+    <div v-if="deleteModal.show" class="dialog-mask" @click.self="closeDeleteModal">
+      <div class="dialog-card">
+        <div class="dialog-head">
+          <h3>确认删除</h3>
+          <button class="close-btn" @click="closeDeleteModal">×</button>
+        </div>
+        <p class="dialog-intro">确认删除 {{ deleteModal.item?.title || deleteModal.item?.name || '此项' }} 吗？</p>
+        <div class="dialog-actions">
+          <button class="secondary-btn" @click="closeDeleteModal">取消</button>
+          <button class="primary-btn danger" @click="submitDelete">确认删除</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -309,6 +324,10 @@ const heritageImageInput = ref(null)
 const heritageVideoInput = ref(null)
 const uploadingHeritageImage = ref(false)
 const uploadingHeritageVideo = ref(false)
+const deleteModal = ref({
+  show: false,
+  item: null
+})
 
 const currentTab = computed(() => tabs.find((tab) => tab.key === activeTab.value) || tabs[0])
 const currentRows = computed(() => datasets.value[activeTab.value] || [])
@@ -468,14 +487,33 @@ async function submitDialog() {
     await loadAll()
   } catch (error) { notify(getRequestErrorMessage(error, '保存失败'), 'error') } finally { saving.value = false }
 }
-async function removeRow(row) {
-  const label = activeTab.value === 'activities' ? row.title : (row.name || row.title)
-  if (!window.confirm('删除 ' + (label || '此项') + '？')) return
+// 打开删除确认模态框
+function openDeleteModal(row) {
+  deleteModal.value = {
+    show: true,
+    item: row
+  }
+}
+
+// 关闭删除确认模态框
+function closeDeleteModal() {
+  deleteModal.value = {
+    show: false,
+    item: null
+  }
+}
+
+// 提交删除
+async function submitDelete() {
+  const { item } = deleteModal.value
+  if (!item) return
+  
   try {
-    if (activeTab.value === 'activities') unwrap(await deleteOfficialActivity(row.id), '删除活动失败')
-    else if (activeTab.value === 'heritages') unwrap(await deleteOfficialHeritage(row.id), '删除非遗项目失败')
-    else unwrap(await deleteOfficialWork(row.id), '删除作品失败')
+    if (activeTab.value === 'activities') unwrap(await deleteOfficialActivity(item.id), '删除活动失败')
+    else if (activeTab.value === 'heritages') unwrap(await deleteOfficialHeritage(item.id), '删除非遗项目失败')
+    else unwrap(await deleteOfficialWork(item.id), '删除作品失败')
     notify('删除成功', 'success')
+    closeDeleteModal()
     await loadAll()
   } catch (error) { notify(getRequestErrorMessage(error, '删除失败'), 'error') }
 }
@@ -549,7 +587,30 @@ onMounted(loadAll)
 .dialog-mask { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 .dialog-card { width: min(920px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 20px; padding: 22px; }
 .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.close-btn { width: 38px; height: 38px; border-radius: 50%; background: #f3f4f6; color: #374151; font-size: 20px; }
+.close-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 20px;
+}
+
+.dialog-intro {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.primary-btn.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.primary-btn.danger:hover {
+  background: #b91c1c;
+}
 .grid { display: grid; gap: 14px; }
 .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .field { display: flex; flex-direction: column; gap: 8px; }

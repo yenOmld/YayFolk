@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿<template>
   <div class="admin-page">
     <div class="page-header">
       <div class="header-content">
@@ -66,8 +66,8 @@
                 <td class="reason-cell" :title="u.banReason || ''">{{ u.banReason || '-' }}</td>
                 <td class="small-text">{{ formatTime(u.createTime) }}</td>
                 <td>
-                  <button v-if="u.status === 1" class="action-btn ban" @click="handleBan(u)">封禁</button>
-                  <button v-else class="action-btn unban" @click="handleUnban(u)">直接解封</button>
+                  <button v-if="u.status === 1" class="action-btn ban" @click="openBanModal(u)">封禁</button>
+                  <button v-else class="action-btn unban" @click="openUnbanModal(u)">直接解封</button>
                 </td>
               </tr>
             </tbody>
@@ -111,8 +111,8 @@
               <td class="reason-cell" :title="item.adminRemark || ''">{{ item.adminRemark || '-' }}</td>
               <td>
                 <template v-if="item.status === 'pending'">
-                  <button class="action-btn unban" @click="handleApproveApplication(item)">通过并解封</button>
-                  <button class="action-btn ban" @click="handleRejectApplication(item)">驳回</button>
+                  <button class="action-btn unban" @click="openApproveModal(item)">通过并解封</button>
+                  <button class="action-btn ban" @click="openRejectModal(item)">驳回</button>
                 </template>
                 <span v-else class="small-text">已处理</span>
               </td>
@@ -122,6 +122,78 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- 封禁用户弹窗 -->
+    <div v-if="banModal.show" class="modal-mask" @click.self="closeBanModal">
+      <div class="modal">
+        <h3>封禁用户</h3>
+        <p class="modal-intro">{{ banModal.user?.username }}</p>
+        <div class="modal-field">
+          <label class="field-label">封禁原因</label>
+          <textarea 
+            v-model.trim="banModal.reason" 
+            rows="4" 
+            placeholder="请输入封禁原因"
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn cancel" @click="closeBanModal">取消</button>
+          <button class="btn ban" @click="submitBan">确认封禁</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解封用户弹窗 -->
+    <div v-if="unbanModal.show" class="modal-mask" @click.self="closeUnbanModal">
+      <div class="modal">
+        <h3>确认解封</h3>
+        <p class="modal-intro">确定要直接解封用户 {{ unbanModal.user?.username }} 吗？</p>
+        <div class="modal-actions">
+          <button class="btn cancel" @click="closeUnbanModal">取消</button>
+          <button class="btn unban" @click="submitUnban">确认解封</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 通过解封申请弹窗 -->
+    <div v-if="approveModal.show" class="modal-mask" @click.self="closeApproveModal">
+      <div class="modal">
+        <h3>通过解封申请</h3>
+        <p class="modal-intro">{{ approveModal.item?.username }}</p>
+        <div class="modal-field">
+          <label class="field-label">解封备注（选填）</label>
+          <textarea 
+            v-model.trim="approveModal.remark" 
+            rows="3" 
+            placeholder="可填写解封备注，留空可直接通过"
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn cancel" @click="closeApproveModal">取消</button>
+          <button class="btn unban" @click="submitApprove">确认通过</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 驳回解封申请弹窗 -->
+    <div v-if="rejectModal.show" class="modal-mask" @click.self="closeRejectModal">
+      <div class="modal">
+        <h3>驳回解封申请</h3>
+        <p class="modal-intro">{{ rejectModal.item?.username }}</p>
+        <div class="modal-field">
+          <label class="field-label">驳回原因</label>
+          <textarea 
+            v-model.trim="rejectModal.remark" 
+            rows="4" 
+            placeholder="请输入驳回原因"
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn cancel" @click="closeRejectModal">取消</button>
+          <button class="btn ban" @click="submitReject">确认驳回</button>
+        </div>
       </div>
     </div>
   </div>
@@ -151,6 +223,30 @@ const applications = ref([])
 const loadingApplications = ref(false)
 const appealStatus = ref('pending')
 const activeTab = ref('users')
+
+// 模态框状态
+const banModal = ref({
+  show: false,
+  user: null,
+  reason: ''
+})
+
+const unbanModal = ref({
+  show: false,
+  user: null
+})
+
+const approveModal = ref({
+  show: false,
+  item: null,
+  remark: ''
+})
+
+const rejectModal = ref({
+  show: false,
+  item: null,
+  remark: ''
+})
 
 const switchTab = (tab) => {
   activeTab.value = tab
@@ -207,32 +303,70 @@ const loadApplications = async () => {
   }
 }
 
-const handleBan = async (user) => {
-  const reasonInput = window.prompt(`请输入封禁用户 ${user.username} 的原因：`, user.banReason || '')
-  if (reasonInput === null) return
+// 打开封禁模态框
+const openBanModal = (user) => {
+  banModal.value = {
+    show: true,
+    user,
+    reason: user.banReason || ''
+  }
+}
 
-  const reason = reasonInput.trim()
-  if (!reason) {
+// 关闭封禁模态框
+const closeBanModal = () => {
+  banModal.value = {
+    show: false,
+    user: null,
+    reason: ''
+  }
+}
+
+// 提交封禁
+const submitBan = async () => {
+  const { user, reason } = banModal.value
+  if (!user) return
+  
+  const trimmedReason = reason.trim()
+  if (!trimmedReason) {
     notifyMsg('warning', '封禁原因不能为空')
     return
   }
 
   try {
-    const res = await banUser(user.id, reason)
+    const res = await banUser(user.id, trimmedReason)
     if (res.code !== 200) {
       throw new Error(res.message || '封禁失败')
     }
     user.status = 0
-    user.banReason = reason
+    user.banReason = trimmedReason
     notifyMsg('success', '封禁成功，已通知用户邮箱')
+    closeBanModal()
     await loadApplications()
   } catch (error) {
     notifyMsg('error', error.message || '封禁失败')
   }
 }
 
-const handleUnban = async (user) => {
-  if (!window.confirm(`确认直接解封用户 ${user.username}？`)) return
+// 打开解封模态框
+const openUnbanModal = (user) => {
+  unbanModal.value = {
+    show: true,
+    user
+  }
+}
+
+// 关闭解封模态框
+const closeUnbanModal = () => {
+  unbanModal.value = {
+    show: false,
+    user: null
+  }
+}
+
+// 提交解封
+const submitUnban = async () => {
+  const { user } = unbanModal.value
+  if (!user) return
 
   try {
     const res = await unbanUser(user.id)
@@ -242,22 +376,43 @@ const handleUnban = async (user) => {
     user.status = 1
     user.banReason = null
     notifyMsg('success', '解封成功，已通知用户邮箱')
+    closeUnbanModal()
     await loadApplications()
   } catch (error) {
     notifyMsg('error', error.message || '解封失败')
   }
 }
 
-const handleApproveApplication = async (item) => {
-  const remarkInput = window.prompt('可填写解封备注（选填，留空可直接通过）：', item.adminRemark || '')
-  if (remarkInput === null) return
+// 打开通过申请模态框
+const openApproveModal = (item) => {
+  approveModal.value = {
+    show: true,
+    item,
+    remark: item.adminRemark || ''
+  }
+}
+
+// 关闭通过申请模态框
+const closeApproveModal = () => {
+  approveModal.value = {
+    show: false,
+    item: null,
+    remark: ''
+  }
+}
+
+// 提交通过申请
+const submitApprove = async () => {
+  const { item, remark } = approveModal.value
+  if (!item) return
 
   try {
-    const res = await auditAdminUnbanApplication(item.id, true, remarkInput.trim())
+    const res = await auditAdminUnbanApplication(item.id, true, remark.trim())
     if (res.code !== 200) {
       throw new Error(res.message || '处理申请失败')
     }
     notifyMsg('success', '申请已通过，用户已解封并发送邮件通知')
+    closeApproveModal()
     await loadApplications()
     await loadUsers()
   } catch (error) {
@@ -265,22 +420,42 @@ const handleApproveApplication = async (item) => {
   }
 }
 
-const handleRejectApplication = async (item) => {
-  const remarkInput = window.prompt('请输入驳回原因：', item.adminRemark || '')
-  if (remarkInput === null) return
+// 打开驳回申请模态框
+const openRejectModal = (item) => {
+  rejectModal.value = {
+    show: true,
+    item,
+    remark: item.adminRemark || ''
+  }
+}
 
-  const remark = remarkInput.trim()
-  if (!remark) {
+// 关闭驳回申请模态框
+const closeRejectModal = () => {
+  rejectModal.value = {
+    show: false,
+    item: null,
+    remark: ''
+  }
+}
+
+// 提交驳回申请
+const submitReject = async () => {
+  const { item, remark } = rejectModal.value
+  if (!item) return
+
+  const trimmedRemark = remark.trim()
+  if (!trimmedRemark) {
     notifyMsg('warning', '驳回原因不能为空')
     return
   }
 
   try {
-    const res = await auditAdminUnbanApplication(item.id, false, remark)
+    const res = await auditAdminUnbanApplication(item.id, false, trimmedRemark)
     if (res.code !== 200) {
       throw new Error(res.message || '驳回失败')
     }
     notifyMsg('success', '已驳回申请')
+    closeRejectModal()
     await loadApplications()
   } catch (error) {
     notifyMsg('error', error.message || '驳回失败')
@@ -587,5 +762,103 @@ onMounted(async () => {
   .reason-cell {
     max-width: 180px;
   }
+}
+
+/* 模态框样式 */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 480px;
+  max-width: 90vw;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.modal-intro {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.modal-field {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 100px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal textarea:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal .btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.modal .btn.cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal .btn.ban {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.modal .btn.unban {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.modal .btn:hover {
+  opacity: 0.9;
 }
 </style>

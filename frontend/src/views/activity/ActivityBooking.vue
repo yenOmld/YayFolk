@@ -49,24 +49,68 @@
         <div class="section-card">
           <div class="form-grid">
             <label class="field">
-              <span>姓名</span>
-              <input v-model.trim="form.participantName" type="text" placeholder="请输入您的姓名">
-            </label>
-
-            <label class="field">
-              <span>电话</span>
-              <input v-model.trim="form.participantPhone" type="tel" placeholder="请输入您的手机号码">
-            </label>
-
-            <label class="field">
               <span>参与人数</span>
               <div class="quantity-box">
-                <button type="button" @click="changeCount(-1)">-</button>
-                <input v-model.number="form.participantCount" type="number" min="1" :max="remainingSlots">
-                <button type="button" @click="changeCount(1)">+</button>
+                <button 
+                  type="button" 
+                  @click="changeCount(-1)"
+                  :disabled="participantCount <= 1"
+                  class="quantity-btn minus"
+                >
+                  <i class="bx bx-minus"></i>
+                </button>
+                <input 
+                  :value="participantCount" 
+                  type="number" 
+                  min="1" 
+                  :max="remainingSlots"
+                  class="quantity-input"
+                  readonly
+                >
+                <button 
+                  type="button" 
+                  @click="changeCount(1)"
+                  :disabled="participantCount >= remainingSlots"
+                  class="quantity-btn plus"
+                >
+                  <i class="bx bx-plus"></i>
+                </button>
               </div>
               <small>剩余名额: {{ remainingSlots }}</small>
             </label>
+
+            <div class="field full">
+              <span>参与者信息</span>
+              <div class="participants-list">
+                <div 
+                  v-for="(participant, index) in form.participants" 
+                  :key="index"
+                  class="participant-item"
+                >
+                  <div class="participant-header">
+                    <h4>参与者 {{ index + 1 }}</h4>
+                  </div>
+                  <div class="participant-fields">
+                    <label class="field">
+                      <span>姓名</span>
+                      <input 
+                        v-model.trim="participant.name" 
+                        type="text" 
+                        placeholder="请输入姓名"
+                      >
+                    </label>
+                    <label class="field">
+                      <span>电话</span>
+                      <input 
+                        v-model.trim="participant.phone" 
+                        type="tel" 
+                        placeholder="请输入手机号码"
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <label class="field full">
               <span>备注</span>
@@ -131,9 +175,12 @@ const loading = ref(false)
 const submitting = ref(false)
 const activity = ref(null)
 const form = ref({
-  participantName: '',
-  participantPhone: '',
-  participantCount: 1,
+  participants: [
+    {
+      name: '',
+      phone: ''
+    }
+  ],
   remark: ''
 })
 
@@ -159,21 +206,28 @@ const remainingSlots = computed(() => {
   return Math.max(0, max - current)
 })
 
+const participantCount = computed(() => form.value.participants.length)
+
 const canSubmit = computed(() => {
-  const phone = /^1[3-9]\d{9}$/
-  return Boolean(
-    activity.value
-    && form.value.participantName
-    && phone.test(form.value.participantPhone)
-    && form.value.participantCount >= 1
-    && form.value.participantCount <= Math.max(remainingSlots.value, 1)
-  )
+  const phoneRegex = /^1[3-9]\d{9}$/
+  
+  if (!activity.value || participantCount.value < 1) {
+    return false
+  }
+  
+  for (const participant of form.value.participants) {
+    if (!participant.name || !phoneRegex.test(participant.phone)) {
+      return false
+    }
+  }
+  
+  return participantCount.value <= Math.max(remainingSlots.value, 1)
 })
 
 const priceValue = computed(() => Number(activity.value?.price || 0) / 100)
 const priceText = computed(() => (priceValue.value > 0 ? `¥${priceValue.value.toFixed(2)}` : '免费'))
 const totalPriceText = computed(() => {
-  const total = priceValue.value * Number(form.value.participantCount || 0)
+  const total = priceValue.value * participantCount.value
   return total > 0 ? `¥${total.toFixed(2)}` : '免费'
 })
 const submitText = computed(() => (priceValue.value > 0 ? '去支付' : '确认报名'))
@@ -187,21 +241,26 @@ const loadActivity = async () => {
   try {
     const response = await getPublicActivityDetail(route.params.id)
     if (response.code !== 200) {
-      throw new Error(response.message || 'Failed to load activity')
+      throw new Error(response.message || '加载活动失败')
     }
 
     const detail = response.data || null
     const current = Number(detail?.currentParticipants || 0)
     const max = Number(detail?.maxParticipants || 0)
     if (detail?.status === 'ended' || detail?.status === 'full' || (detail?.maxParticipants && current >= max)) {
-      throw new Error('This activity is currently unavailable')
+      throw new Error('该活动当前无法报名')
     }
 
     activity.value = detail
-    form.value.participantCount = Math.min(Math.max(form.value.participantCount, 1), Math.max(remainingSlots.value, 1))
+    
+    // 调整参与者数量，确保不超过剩余名额
+    const maxAllowed = Math.max(remainingSlots.value, 1)
+    if (participantCount.value > maxAllowed) {
+      form.value.participants = form.value.participants.slice(0, maxAllowed)
+    }
   } catch (error) {
     activity.value = null
-    showError(error.message || 'Failed to load activity')
+    showError(error.message || '加载活动失败')
   } finally {
     loading.value = false
   }
@@ -212,8 +271,24 @@ const goBack = () => {
 }
 
 const changeCount = (delta) => {
-  const next = Number(form.value.participantCount || 1) + delta
-  form.value.participantCount = Math.min(Math.max(next, 1), Math.max(remainingSlots.value, 1))
+  const currentCount = participantCount.value
+  const nextCount = currentCount + delta
+  const maxCount = Math.max(remainingSlots.value, 1)
+  
+  if (nextCount < 1 || nextCount > maxCount) {
+    return
+  }
+  
+  if (delta > 0) {
+    // 增加人数，添加新的参与者对象
+    form.value.participants.push({
+      name: '',
+      phone: ''
+    })
+  } else {
+    // 减少人数，移除最后一个参与者
+    form.value.participants.pop()
+  }
 }
 
 const openBookingDetail = (bookingId) => {
@@ -238,32 +313,33 @@ const openPayment = (bookingId) => {
 
 const submitBooking = async () => {
   if (!canSubmit.value || !activity.value) {
-    showError('Please complete the booking form first')
+    showError('请先完整填写报名信息')
     return
   }
 
   submitting.value = true
   try {
     const response = await bookActivity(activity.value.id, {
-      participantName: form.value.participantName,
-      participantPhone: form.value.participantPhone,
-      participantCount: form.value.participantCount,
-      remark: form.value.remark || undefined
+      participantName: form.value.participants[0].name,
+      participantPhone: form.value.participants[0].phone,
+      participantCount: participantCount.value,
+      remark: form.value.remark || undefined,
+      participants: form.value.participants
     })
     if (response.code !== 200 || !response.data?.id) {
-      throw new Error(response.message || 'Failed to create booking')
+      throw new Error(response.message || '报名失败')
     }
 
     if (response.data.paymentStatus === 'paid' || Number(response.data.payAmount || 0) <= 0) {
-      showSuccess('Booking created successfully')
+      showSuccess('报名成功')
       openBookingDetail(response.data.id)
       return
     }
 
-    showSuccess('Booking created, continue payment next')
+    showSuccess('报名成功，即将进入支付')
     openPayment(response.data.id)
   } catch (error) {
-    showError(error.message || 'Failed to create booking')
+    showError(error.message || '报名失败')
   } finally {
     submitting.value = false
   }
@@ -287,12 +363,15 @@ onMounted(() => {
   const user = readStoredUser()
   const role = String(user.role || '').toLowerCase()
   if (role && role !== 'user') {
-    showWarning('Merchant and admin accounts cannot create activity bookings')
+    showWarning('商家和管理员账户不能创建活动报名')
     router.replace(`/activity/${route.params.id}`)
     return
   }
-  form.value.participantName = user.nickname || user.username || ''
-  form.value.participantPhone = user.phone || ''
+  // 设置第一个参与者的信息
+  if (form.value.participants[0]) {
+    form.value.participants[0].name = user.nickname || user.username || ''
+    form.value.participants[0].phone = user.phone || ''
+  }
   loadActivity()
 })
 </script>
@@ -478,15 +557,23 @@ onMounted(() => {
   width: 100%;
   min-height: 52px;
   padding: 14px 16px;
-  border: 1px solid #d9cfc1;
-  border-radius: 16px;
+  border: none;
   background: #fff;
   font-size: 14px;
   outline: none;
+  box-shadow: 0 2px 8px rgba(74, 46, 23, 0.06);
+  transition: all 0.3s ease;
+}
+
+.field input:focus,
+.field textarea:focus {
+  box-shadow: 0 4px 12px rgba(157, 41, 41, 0.15);
+  transform: translateY(-1px);
 }
 
 .field textarea {
   min-height: 132px;
+  resize: vertical;
 }
 
 .field small {
@@ -494,28 +581,120 @@ onMounted(() => {
 }
 
 .quantity-box {
-  display: inline-grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: stretch;
-  max-width: 196px;
-  border: 1px solid #d9cfc1;
-  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  max-width: 200px;
+  border: 2px solid #d9cfc1;
+  border-radius: 20px;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(74, 46, 23, 0.08);
+  transition: all 0.3s ease;
 }
 
-.quantity-box button,
-.quantity-box input {
+.quantity-box:hover {
+  border-color: #9d2929;
+  box-shadow: 0 6px 16px rgba(157, 41, 41, 0.12);
+}
+
+.quantity-btn {
+  flex: 0 0 50px;
+  height: 52px;
   border: none;
-  background: transparent;
-  height: 46px;
-  text-align: center;
-}
-
-.quantity-box button {
-  cursor: pointer;
   background: #f6efe5;
   color: #9d2929;
+  font-size: 18px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: #e8ded2;
+  transform: translateY(-1px);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f9f5f0;
+  color: #cbbfb1;
+}
+
+.quantity-input {
+  flex: 1;
+  min-width: 60px;
+  height: 50px;
+  border: none;
+  border-left: 1px solid #d9cfc1;
+  border-right: 1px solid #d9cfc1;
+  background: #fff;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c2c2c;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.quantity-input:focus {
+  background: #f9f5f0;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input {
+  -moz-appearance: textfield;
+}
+
+.participants-list {
+  margin-top: 16px;
+}
+
+.participant-item {
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #f9f5f0;
+  border: 1px solid rgba(217, 207, 193, 0.7);
+  transition: all 0.3s ease;
+}
+
+.participant-item:hover {
+  border-color: #9d2929;
+  box-shadow: 0 4px 12px rgba(157, 41, 41, 0.08);
+}
+
+.participant-header {
+  margin-bottom: 16px;
+}
+
+.participant-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #9d2929;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.participant-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .participant-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .sticky-card {
