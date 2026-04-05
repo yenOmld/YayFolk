@@ -917,6 +917,7 @@ const copyLink = async () => {
   width: 400px;
   display: flex;
   flex-direction: column;
+  background: white;
 }
 
 .modal-header {

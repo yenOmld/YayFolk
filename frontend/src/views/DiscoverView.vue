@@ -1744,7 +1744,7 @@ body {
   max-width: 1200px;
   background: white;
   border-radius: 12px;
-  padding: 30px;
+  margin-top: 25px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 

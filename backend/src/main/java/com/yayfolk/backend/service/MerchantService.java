@@ -12,6 +12,7 @@ import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.Product;
 import com.yayfolk.backend.entity.ReserveStatusLog;
 import com.yayfolk.backend.entity.User;
+import com.yayfolk.backend.entity.OfficialContent;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.ActivityReserveParticipantRepository;
 import com.yayfolk.backend.repository.ActivityReserveRepository;
@@ -22,6 +23,7 @@ import com.yayfolk.backend.repository.OrderRepository;
 import com.yayfolk.backend.repository.ProductRepository;
 import com.yayfolk.backend.repository.ReserveStatusLogRepository;
 import com.yayfolk.backend.repository.UserRepository;
+import com.yayfolk.backend.repository.OfficialContentRepository;
 import com.yayfolk.backend.util.QrCodeUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,7 @@ public class MerchantService {
     private final OrderRepository orderRepository;
     private final MerchantReviewRepository merchantReviewRepository;
     private final ObjectMapper objectMapper;
+    private final OfficialContentRepository officialContentRepository;
 
     public MerchantService(UserRepository userRepository,
                            MerchantProfileRepository merchantProfileRepository,
@@ -70,6 +73,7 @@ public class MerchantService {
                            ProductRepository productRepository,
                            OrderRepository orderRepository,
                            MerchantReviewRepository merchantReviewRepository,
+                           OfficialContentRepository officialContentRepository,
                            ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
@@ -81,6 +85,7 @@ public class MerchantService {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.merchantReviewRepository = merchantReviewRepository;
+        this.officialContentRepository = officialContentRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -248,6 +253,15 @@ public class MerchantService {
         activity.setAuditStatus("pending");
         activity.setAuditRemark(null);
         activityRepository.save(activity);
+
+        // 同步处理官方内容
+        OfficialContent content = officialContentRepository.findByActivityId(id);
+        if (content != null) {
+            // 活动重新进入审核，标记为不公开
+            content.setIsPublic(0);
+            officialContentRepository.save(content);
+        }
+
         return activityToMap(activity);
     }
 
@@ -447,7 +461,17 @@ public class MerchantService {
     }
 
     private void syncActivityStatus(Activity activity) {
-        activity.setStatus(resolveActivityStatus(activity));
+        String newStatus = resolveActivityStatus(activity);
+        activity.setStatus(newStatus);
+
+        // 同步处理官方内容
+        if ("ended".equals(newStatus)) {
+            OfficialContent content = officialContentRepository.findByActivityId(activity.getId());
+            if (content != null) {
+                content.setIsPublic(0); // 活动结束，标记为不公开
+                officialContentRepository.save(content);
+            }
+        }
     }
 
     public List<Map<String, Object>> getActivityBookings(String username, Long activityId) {

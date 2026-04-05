@@ -153,13 +153,16 @@
         </div>
       </div>
     </div>
+
+    <PostDetailModal :visible="showPostDetail" :post="detailPost" @close="closePostDetail" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyDiscoverPosts, deleteMyDiscoverPost, updateDiscoverPost, uploadPostImage } from '../api/app'
+import { getMyDiscoverPosts, deleteMyDiscoverPost, updateDiscoverPost, uploadPostImage, getDiscoverPostDetail } from '../api/app'
+import PostDetailModal from '../components/PostDetailModal.vue'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -171,6 +174,8 @@ const loading = ref(false)
 const showEditModal = ref(false)
 const saving = ref(false)
 const editingPostId = ref(null)
+const showPostDetail = ref(false)
+const detailPost = ref(null)
 
 const categories = ref([
   { id: '服饰妆造', name: '服饰妆造' },
@@ -234,10 +239,21 @@ const loadPosts = async () => {
 
 const viewPost = async (post) => {
   try {
-    router.push({ path: '/discover', query: { postId: post.id } })
+    const response = await getDiscoverPostDetail(post.id)
+    if (response.code === 200) {
+      detailPost.value = response.data
+      showPostDetail.value = true
+    } else {
+      notify.error(response.message || '加载详情失败')
+    }
   } catch (error) {
     notify.error('加载详情失败，请重试')
   }
+}
+
+const closePostDetail = () => {
+  showPostDetail.value = false
+  detailPost.value = null
 }
 
 const openEditModal = async (post) => {

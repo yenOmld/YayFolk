@@ -151,6 +151,7 @@
               打开核销二维码
             </button>
             <button class="link-btn" @click="openActivity">打开活动页面</button>
+            <button class="link-btn" @click="goToActivityList">打开活动列表</button>
           </div>
         </article>
       </aside>
@@ -302,6 +303,10 @@ const openActivity = () => {
     return
   }
   router.push(`/activity/${booking.value.activityId}`)
+}
+
+const goToActivityList = () => {
+  router.push('/home/activity')
 }
 
 const timelineStatus = (status) => ({

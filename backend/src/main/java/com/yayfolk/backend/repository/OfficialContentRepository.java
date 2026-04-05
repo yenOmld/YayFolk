@@ -12,4 +12,5 @@ public interface OfficialContentRepository extends JpaRepository<OfficialContent
     List<OfficialContent> findAllByOrderByCreateTimeDesc();
     List<OfficialContent> findByIsPublicAndCategoryOrderByCreateTimeDesc(Integer isPublic, String category);
     OfficialContent findTopByCategoryAndIsPublicOrderByCreateTimeDesc(String category, Integer isPublic);
+    OfficialContent findByActivityId(Long activityId);
 }

@@ -6,6 +6,7 @@ import com.yayfolk.backend.entity.ActivityReserve;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.DiscoverPostCollection;
 import com.yayfolk.backend.entity.DiscoverPostHistory;
+import com.yayfolk.backend.entity.MerchantReview;
 import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.UserFollow;
@@ -44,6 +45,7 @@ public class UserCenterService {
     private final DiscoverPostHistoryRepository historyRepository;
     private final UserFollowRepository userFollowRepository;
     private final UserProfileVisitRepository userProfileVisitRepository;
+    private final com.yayfolk.backend.repository.MerchantReviewRepository merchantReviewRepository;
     private final ObjectMapper objectMapper;
 
     public UserCenterService(UserRepository userRepository,
@@ -54,6 +56,7 @@ public class UserCenterService {
                              DiscoverPostHistoryRepository historyRepository,
                              UserFollowRepository userFollowRepository,
                              UserProfileVisitRepository userProfileVisitRepository,
+                             com.yayfolk.backend.repository.MerchantReviewRepository merchantReviewRepository,
                              ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
@@ -63,6 +66,7 @@ public class UserCenterService {
         this.historyRepository = historyRepository;
         this.userFollowRepository = userFollowRepository;
         this.userProfileVisitRepository = userProfileVisitRepository;
+        this.merchantReviewRepository = merchantReviewRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -83,14 +87,14 @@ public class UserCenterService {
         long historyCount = histories.size();
 
         List<Map<String, Object>> badges = new ArrayList<>();
-        badges.add(buildBadge("first-order", "First Order", "Complete your first product order", productOrderCount, 1, "order"));
-        badges.add(buildBadge("collector", "Collector", "Complete 3 product orders", productOrderCount, 3, "order"));
-        badges.add(buildBadge("first-booking", "First Booking", "Join your first activity", bookingCount, 1, "activity"));
-        badges.add(buildBadge("check-in", "Check-in", "Complete your first offline check-in", checkedInCount, 1, "checkin"));
-        badges.add(buildBadge("deep-explorer", "Deep Explorer", "Complete 3 offline check-ins", checkedInCount, 3, "checkin"));
-        badges.add(buildBadge("storyteller", "Storyteller", "Publish your first post", postCount, 1, "post"));
-        badges.add(buildBadge("partner-host", "Partner Host", "Publish your first partner post", partnerPostCount, 1, "partner"));
-        badges.add(buildBadge("wanderer", "Wanderer", "Browse 10 posts", historyCount, 10, "history"));
+        badges.add(buildBadge("first-order", "首次下单", "完成你的第一笔产品订单", productOrderCount, 1, "order"));
+        badges.add(buildBadge("collector", "收藏家", "完成3笔产品订单", productOrderCount, 3, "order"));
+        badges.add(buildBadge("first-booking", "初次体验", "参加你的第一次活动", bookingCount, 1, "activity"));
+        badges.add(buildBadge("check-in", "签到达人", "完成你的第一次线下签到", checkedInCount, 1, "checkin"));
+        badges.add(buildBadge("deep-explorer", "深度探索者", "完成3次线下签到", checkedInCount, 3, "checkin"));
+        badges.add(buildBadge("storyteller", "故事讲述者", "发布你的第一篇帖子", postCount, 1, "post"));
+        badges.add(buildBadge("partner-host", "合作伙伴", "发布你的第一篇合作伙伴帖子", partnerPostCount, 1, "partner"));
+        badges.add(buildBadge("wanderer", "漫游者", "浏览10篇帖子", historyCount, 10, "history"));
 
         long unlockedCount = badges.stream().filter(item -> Boolean.TRUE.equals(item.get("unlocked"))).count();
 
@@ -156,6 +160,22 @@ public class UserCenterService {
         long totalCollects = posts.stream().map(DiscoverPost::getCollectCount).filter(Objects::nonNull).mapToLong(Integer::longValue).sum();
         long totalComments = posts.stream().map(DiscoverPost::getCommentCount).filter(Objects::nonNull).mapToLong(Integer::longValue).sum();
 
+        // 获取评价数据
+        List<MerchantReview> reviews = Collections.emptyList();
+        double averageScore = 0;
+        long reviewCount = 0;
+        
+        if (isMerchant(profileUser)) {
+            reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(profileUser.getId());
+            reviewCount = reviews.size();
+            if (reviewCount > 0) {
+                averageScore = reviews.stream()
+                        .mapToDouble(review -> review.getScore() != null ? review.getScore().doubleValue() : 0)
+                        .average()
+                        .orElse(0);
+            }
+        }
+
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("postCount", posts.size());
         summary.put("collectionCount", collections.size());
@@ -166,12 +186,32 @@ public class UserCenterService {
         summary.put("unlockedBadgeCount", safeLong(achievementSummary.get("unlockedCount")));
         summary.put("badgeCount", badgeList.size());
         summary.put("activityCount", 0);
-        summary.put("reviewCount", 0);
-        summary.put("averageScore", null);
+        summary.put("reviewCount", reviewCount);
+        summary.put("averageScore", reviewCount > 0 ? averageScore : null);
 
         Map<String, Object> reviewSummary = new LinkedHashMap<>();
-        reviewSummary.put("averageScore", null);
-        reviewSummary.put("reviewCount", 0);
+        reviewSummary.put("averageScore", reviewCount > 0 ? averageScore : null);
+        reviewSummary.put("reviewCount", reviewCount);
+
+        // 构建评价列表
+        List<Map<String, Object>> reviewList = new ArrayList<>();
+        for (MerchantReview review : reviews) {
+            Map<String, Object> reviewMap = new LinkedHashMap<>();
+            reviewMap.put("id", review.getId());
+            reviewMap.put("score", review.getScore());
+            reviewMap.put("content", review.getContent());
+            reviewMap.put("createTime", formatDate(review.getCreateTime()));
+            // 获取用户信息
+            if (review.getUserId() != null) {
+                User reviewer = userRepository.findById(review.getUserId()).orElse(null);
+                if (reviewer != null) {
+                    reviewMap.put("username", reviewer.getUsername());
+                    reviewMap.put("nickname", displayName(reviewer));
+                    reviewMap.put("avatar", reviewer.getAvatar());
+                }
+            }
+            reviewList.add(reviewMap);
+        }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("isCurrentUser", isCurrentUser);
@@ -181,7 +221,7 @@ public class UserCenterService {
         result.put("collections", collections);
         result.put("badges", badgeList);
         result.put("activities", Collections.emptyList());
-        result.put("reviews", Collections.emptyList());
+        result.put("reviews", reviewList);
         result.put("reviewSummary", reviewSummary);
         result.put("achievementSummary", achievementSummary);
         return result;

@@ -39,6 +39,9 @@ public class OfficialContent {
     @Column(name = "admin_id", nullable = false)
     private Long adminId;
 
+    @Column(name = "activity_id")
+    private Long activityId;
+
     @Column(name = "create_time", updatable = false)
     private Date createTime;
 

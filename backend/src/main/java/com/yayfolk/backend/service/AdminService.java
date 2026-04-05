@@ -294,6 +294,38 @@ public class AdminService {
         activity.setAuditRemark(approve ? null : trimmedRemark);
         activityRepository.save(activity);
 
+        // 同步处理官方内容
+        if (approve) {
+            // 检查是否已存在对应的官方内容
+            OfficialContent existingContent = officialContentRepository.findByActivityId(activityId);
+            if (existingContent == null) {
+                // 创建新的官方内容
+                OfficialContent content = new OfficialContent();
+                content.setAdminId(admin.getId());
+                content.setActivityId(activityId);
+                content.setTitle(activity.getTitle());
+                content.setContent(activity.getContent());
+                content.setCategory("activity");
+                content.setCoverImage(activity.getCoverImage());
+                content.setIsPublic(1); // 默认为公开
+                officialContentRepository.save(content);
+            } else {
+                // 更新现有官方内容
+                existingContent.setTitle(activity.getTitle());
+                existingContent.setContent(activity.getContent());
+                existingContent.setCoverImage(activity.getCoverImage());
+                existingContent.setIsPublic(1); // 确保公开
+                officialContentRepository.save(existingContent);
+            }
+        } else {
+            // 审核拒绝时，移除或标记为不可见
+            OfficialContent content = officialContentRepository.findByActivityId(activityId);
+            if (content != null) {
+                content.setIsPublic(0); // 标记为不公开
+                officialContentRepository.save(content);
+            }
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("id", activity.getId());
         result.put("auditStatus", activity.getAuditStatus());

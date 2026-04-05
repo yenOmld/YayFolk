@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="user-homepage">
     <div class="shell">
       <div class="topbar">
@@ -136,7 +136,7 @@
                 <div class="badge-head">
                   <div class="badge-medallion" :class="'badge-' + badge.type">
                     <div class="badge-icon" :class="'icon-' + badge.type">
-                      <i :class="badgeIcon(badge.type)"></i>
+                      <img :src="badgeImage(badge.code)" :alt="badge.name || badge.badgeName" class="badge-img">
                     </div>
                   </div>
                   <div class="badge-copy">
@@ -196,7 +196,26 @@
               <div class="sum-box"><strong>{{ user.merchantKeyword || user.shopName || '非遗手作' }}</strong><span>关键词</span></div>
             </div>
             <div v-if="reviews.length" class="stack review-list">
-              <article v-for="item in reviews" :key="item.id" class="review-card"><strong>{{ item.nickname || item.username || '匿名用户' }}</strong><span>{{ score(item.score) }} 分</span><p>{{ item.content || '该用户没有留下文字评价。' }}</p></article>
+              <article v-for="item in reviews" :key="item.id" class="review-card">
+                <div class="review-header">
+                  <div class="review-user">
+                    <img :src="item.avatar || defaultAvatar" class="review-avatar" alt="用户头像">
+                    <div class="review-user-info">
+                      <strong>{{ item.nickname || item.username || '匿名用户' }}</strong>
+                      <span class="review-time">{{ formatTime(item.createTime) }}</span>
+                    </div>
+                  </div>
+                  <div class="review-score">
+                    <div class="stars">
+                      <i v-for="star in 5" :key="star" class="bx" :class="star <= (item.score || 0) ? 'bxs-star' : 'bx-star'" style="color: #f59e0b;"></i>
+                    </div>
+                    <span class="score-text">{{ score(item.score) }} 分</span>
+                  </div>
+                </div>
+                <div class="review-content">
+                  <p>{{ item.content || '该用户没有留下文字评价。' }}</p>
+                </div>
+              </article>
             </div>
             <div v-else class="empty"><i class='bx bx-message-rounded-dots'></i><p>目前还没有可展示的评价内容</p></div>
           </template>
@@ -325,15 +344,29 @@ const filteredActivities = computed(() => activities.value.filter(item => {
 }))
 const count = (value) => Number(value || 0).toLocaleString('zh-CN')
 const score = (value) => value === null || value === undefined || value === '' || Number.isNaN(Number(value)) ? '--' : Number(value).toFixed(1)
+
+const formatTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 const time = (value) => { const d = value ? new Date(value) : null; return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('zh-CN') : '时间待定' }
-const badgeIcon = (type) => ({
-  order: 'bx bxs-coin',      // 铜钱
-  activity: 'bx bxs-hot',    // 灯笼火焰
-  checkin: 'bx bxs-check-shield', // 印章
-  post: 'bx bxs-pen',        // 毛笔
-  partner: 'bx bxs-group',   // 人群
-  history: 'bx bxs-compass'  // 罗盘
-}[type] || 'bx bx-medal')
+const badgeImage = (code) => ({
+  'first-booking': '/medal/m1.png',     // 初次体验
+  'check-in': '/medal/m2.png',          // 签到达人
+  'deep-explorer': '/medal/m3.png',     // 深度探索者
+  'storyteller': '/medal/m4.png',       // 故事讲述者
+  'collector': '/medal/m5.png',         // 收藏家
+  'wanderer': '/medal/m6.png',          // 漫游者
+  'social-butterfly': '/medal/m7.png',  // 社交达人
+  'influencer': '/medal/m8.png'         // 影响力者
+}[code] || '/medal/m9.png')
 const badgeProgress = (badge) => badge?.unlocked ? '已解锁' : `进度 ${badge?.progress || 0}/${badge?.target || 1}`
 const switchTab = (key) => { if (visibleTabs.value.some(item => item.key === key)) { activeTab.value = key; router.replace({ path: route.path, query: { ...route.query, tab: key } }) } }
 const syncTab = () => { const tab = String(route.query.tab || ''); activeTab.value = visibleTabs.value.some(item => item.key === tab) ? tab : visibleTabs.value[0]?.key || 'posts' }
@@ -1284,261 +1317,11 @@ onUnmounted(() => {
   transform: translateY(-6px) scale(1.02);
 }
 
-/* ===== 订单类 - 景泰蓝青花瓷风 ===== */
-.badge-order {
-  background: linear-gradient(135deg, #f8fbff 0%, #e8f4fc 50%, #d6eaf8 100%);
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-order::before {
-  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-order:hover {
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-order .badge-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #93c5fd 0%, #3b82f6 40%, #1d4ed8 100%);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  animation: floatBadge 4s ease-in-out infinite;
-}
-
-.badge-order .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  animation: rotateSlow 20s linear infinite;
-}
-
-/* ===== 活动类 - 剪纸中国红风 ===== */
-.badge-activity {
-  background: linear-gradient(135deg, #fffaf0 0%, #fef3f0 50%, #fee8e4 100%);
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-activity::before {
-  background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-activity:hover {
-  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-activity .badge-icon {
-  width: 72px;
-  height: 80px;
-  border-radius: 36px 36px 16px 16px;
-  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 35%, #dc2626 70%, #b91c1c 100%);
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35), inset 0 2px 4px rgba(255, 200, 200, 0.4);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: swingBadge 3s ease-in-out infinite;
-}
-
-.badge-activity .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 30px 30px 12px 12px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-style: dashed;
-}
-
-/* ===== 打卡类 - 篆刻印章风 ===== */
-.badge-checkin {
-  background: linear-gradient(135deg, #fefefe 0%, #fef2f2 50%, #fee8e8 100%);
-  box-shadow: 0 4px 20px rgba(185, 28, 28, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-checkin::before {
-  background: linear-gradient(90deg, #b91c1c, #dc2626, #b91c1c);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-checkin:hover {
-  box-shadow: 0 12px 32px rgba(185, 28, 28, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-checkin .badge-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #dc2626 0%, #b91c1c 50%, #7f1d1d 100%);
-  box-shadow: 0 8px 24px rgba(153, 27, 27, 0.35), inset 0 2px 4px rgba(255, 150, 150, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  animation: stampBadge 2s ease-in-out infinite;
-}
-
-.badge-checkin .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border-radius: 4px;
-  border: 3px solid rgba(255, 255, 255, 0.5);
-}
-
-/* ===== 发帖类 - 水墨山水风 ===== */
-.badge-post {
-  background: linear-gradient(135deg, #f8fcf8 0%, #f0f9f0 50%, #e8f5e8 100%);
-  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-post::before {
-  background: linear-gradient(90deg, #16a34a, #22c55e, #16a34a);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-post:hover {
-  box-shadow: 0 12px 32px rgba(34, 197, 94, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-post .badge-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #86efac 0%, #22c55e 40%, #15803d 100%);
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: floatBadge 4s ease-in-out infinite 0.5s;
-}
-
-.badge-post .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255, 255, 255, 0.12) 6px, rgba(255, 255, 255, 0.12) 8px);
-}
-
-/* ===== 搭子类 - 苏绣丝绸风 ===== */
-.badge-partner {
-  background: linear-gradient(135deg, #fdfaff 0%, #faf5ff 50%, #f3e8ff 100%);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-partner::before {
-  background: linear-gradient(90deg, #9333ea, #a855f7, #9333ea);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-partner:hover {
-  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-partner .badge-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #d8b4fe 0%, #a855f7 40%, #7c3aed 100%);
-  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulseBadge 3s ease-in-out infinite;
-}
-
-.badge-partner .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.15) 0deg 10deg, transparent 10deg 20deg);
-  animation: rotateSlow 15s linear infinite;
-}
-
-/* ===== 浏览类 - 琥珀琉璃风 ===== */
-.badge-history {
-  background: linear-gradient(135deg, #fffdf5 0%, #fef9e7 50%, #fef3c7 100%);
-  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-history::before {
-  background: linear-gradient(90deg, #d97706, #f59e0b, #d97706);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.badge-history:hover {
-  box-shadow: 0 12px 32px rgba(217, 119, 6, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.badge-history .badge-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #fcd34d 0%, #f59e0b 40%, #b45309 100%);
-  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: floatBadge 4s ease-in-out infinite 1s;
-}
-
-.badge-history .badge-icon::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-/* ===== 动画关键帧 ===== */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes floatBadge {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes swingBadge {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
-}
-
-@keyframes stampBadge {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.05) rotate(-2deg); }
-  75% { transform: scale(1.05) rotate(2deg); }
-}
-
-@keyframes pulseBadge {
-  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35); }
-  50% { transform: scale(1.05); box-shadow: 0 12px 32px rgba(168, 85, 247, 0.5); }
-}
-
-@keyframes rotateSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.badge-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: all 0.3s ease;
 }
 
 /* ===== 通用图标样式 ===== */
@@ -1550,45 +1333,82 @@ onUnmounted(() => {
 }
 
 .badge-icon {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-/* 流光动画效果 */
-.badge-aura {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.4) 32%, transparent 62%);
-  transform: translateX(-100%);
-  transition: transform 0.8s ease;
-  pointer-events: none;
+/* 悬停效果 */
+.badge-card:hover .badge-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
-.badge-card:hover .badge-aura,
-.badge-card.revealed .badge-aura {
-  transform: translateX(100%);
+.badge-card:hover .badge-img {
+  transform: scale(1.15);
 }
 
-/* 解锁状态光效 */
-.badge-card.unlocked {
-  animation: unlockGlow 2s ease-out;
-}
-
+/* 解锁动画 */
 .badge-card.unlocked .badge-icon {
-  animation: unlockBadge 0.6s ease-out;
+  animation: badgeUnlock 1s ease-out;
 }
 
-@keyframes unlockGlow {
-  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5); }
-  50% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.3); }
-  100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+.badge-card.unlocked .badge-img {
+  animation: badgeImgUnlock 1s ease-out;
 }
 
-@keyframes unlockBadge {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2) rotate(10deg); }
-  100% { transform: scale(1) rotate(0deg); }
+/* 浮动效果 */
+.badge-card.unlocked .badge-icon {
+  animation: badgeFloat 3s ease-in-out infinite;
+}
+
+/* 动画关键帧 */
+@keyframes badgeUnlock {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes badgeImgUnlock {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes badgeFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) rotate(-2deg);
+  }
 }
 
 /* 未解锁状态 */
@@ -1754,9 +1574,12 @@ textarea {
   flex-wrap: wrap;
 }
 
-.sum-box,
-.review-card {
+.sum-box {
   padding: 18px;
+}
+
+.review-card {
+  padding: 20px;
 }
 
 .sum-box {
@@ -1770,6 +1593,91 @@ textarea {
 
 .review-list {
   margin-top: 18px;
+}
+
+.review-card {
+  background: #ffffff;
+  border: 1px solid #f0e6d2;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.review-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.review-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f0e6d2;
+  border: 2px solid #f7ede0;
+}
+
+.review-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-user strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c2c2c;
+}
+
+.review-time {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.review-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.score-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.review-content {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0e6d2;
+}
+
+.review-content p {
+  margin: 0;
+  line-height: 1.6;
+  color: #2c2c2c;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .blocked,
