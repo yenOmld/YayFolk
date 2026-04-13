@@ -21,10 +21,6 @@
   --pc-success: #588157;
   min-height: 100vh;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top left, rgba(157, 41, 41, 0.1), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(180, 144, 103, 0.18), transparent 28%),
-    var(--pc-bg) !important;
   color: var(--pc-ink);
 }
 

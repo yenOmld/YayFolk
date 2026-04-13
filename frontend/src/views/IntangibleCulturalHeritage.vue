@@ -435,7 +435,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: -20%;
-  background: url('/heritage/爱上紫禁城.jpg') center/cover no-repeat;
+  background: url('/heritage/love_forbidden_city.jpg') center/cover no-repeat;
   will-change: transform;
 }
 

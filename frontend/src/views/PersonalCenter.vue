@@ -1,24 +1,17 @@
 <template>
   <div class="personal-center">
-    <!-- 顶部设置图标 -->
-    <div class="page-header">
-      <div class="page-heading">
-        <p class="page-eyebrow">PERSONAL CENTER</p>
-        <h1>个人中心</h1>
-        <p class="page-subtitle">这里负责账号管理与常用入口，个人主页单独承担对外展示。</p>
-      </div>
-      <button class="settings-trigger" @click="showSettingsDrawer = true">
-        <i class='bx bx-cog'></i>
-        设置
-      </button>
-    </div>
-    
     <!-- 客服消息模态框 -->
     <CustomerServiceView 
       :visible="showCustomerServiceModal" 
       @close="showCustomerServiceModal = false"
     />
 
+    <!-- 设置按钮 -->
+    <div class="top-right-settings">
+      <button class="settings-trigger" @click="showSettingsDrawer = true">
+        <i class='bx bx-cog'></i>
+      </button>
+    </div>
 
     <!-- 个人信息概览 -->
     <div class="overview-card">
@@ -35,13 +28,14 @@
           <div class="profile-copy">
             <div class="profile-title-row">
               <h2>{{ userInfo.nickname }}</h2>
-              <div class="role-badge" v-if="isMerchantRole">
-                <i :class="userInfo.role === 'admin' ? 'bx bxs-shield' : 'bx bxs-store'"></i>
-                {{ userInfo.role === 'admin' ? '管理员' : '商家' }}
+              <div class="profile-actions">
+                <div class="role-badge" v-if="isMerchantRole">
+                  <i :class="userInfo.role === 'admin' ? 'bx bxs-shield' : 'bx bxs-store'"></i>
+                  {{ userInfo.role === 'admin' ? '管理员' : '商家' }}
+                </div>
               </div>
             </div>
             <p class="username">@{{ userInfo.username }}</p>
-            <p class="profile-summary">{{ profileSummary }}</p>
           </div>
         </div>
         <div class="primary-actions">
@@ -49,7 +43,7 @@
             <i class='bx bx-user-circle'></i>
             个人主页
           </button>
-          <button class="secondary-action-btn" :class="{ 'has-alert': hasWorkbenchAlert }" @click="handleSecondaryAction">
+          <button v-if="isMerchantRole" class="secondary-action-btn" :class="{ 'has-alert': hasWorkbenchAlert }" @click="handleSecondaryAction">
             <i :class="secondaryActionIcon"></i>
             {{ secondaryActionLabel }}
             <span v-if="hasWorkbenchAlert" class="workbench-alert-pill">{{ workbenchAlertText }}</span>
@@ -106,7 +100,6 @@
         <div v-if="isMerchantRole" class="merchant-dashboard">
           <div class="section-header">
             <h3>常用工作台</h3>
-            <span class="section-caption">个人中心只保留管理入口，主页展示请通过上方"个人主页"进入。</span>
           </div>
 
           <div class="dashboard-grid">
@@ -116,7 +109,6 @@
               </div>
               <div class="card-info">
                 <h4>活动管理</h4>
-                <p>发布、编辑和下架活动</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMerchantReservations">
@@ -125,7 +117,6 @@
               </div>
               <div class="card-info">
                 <h4>预约订单</h4>
-                <p>处理用户报名与到店核销</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMerchantApply">
@@ -134,7 +125,6 @@
               </div>
               <div class="card-info">
                 <h4>商家信息</h4>
-                <p>管理商家申请资料和审核状态</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyPosts">
@@ -143,7 +133,6 @@
               </div>
               <div class="card-info">
                 <h4>我的发布</h4>
-                <p>查看公开展示的内容</p>
               </div>
             </div>
           </div>
@@ -161,7 +150,6 @@
               </div>
               <div class="card-info">
                 <h4>我的预约</h4>
-                <p>查看活动报名与当前状态</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyCollections">
@@ -170,7 +158,6 @@
               </div>
               <div class="card-info">
                 <h4>我的收藏</h4>
-                <p>回看收藏过的内容</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToMyPosts">
@@ -179,7 +166,6 @@
               </div>
               <div class="card-info">
                 <h4>我的发布</h4>
-                <p>管理自己公开发布的内容</p>
               </div>
             </div>
             <div class="content-card" @click="navigateToHistory">
@@ -188,7 +174,6 @@
               </div>
               <div class="card-info">
                 <h4>浏览历史</h4>
-                <p>继续之前浏览过的内容</p>
               </div>
             </div>
           </div>
@@ -672,7 +657,7 @@
           <i class='bx bx-x close-btn' @click="showFollowersModal = false"></i>
         </div>
         <div class="user-list" v-if="!loadingFollowers">
-          <div class="user-item" v-for="user in followersList" :key="user.id">
+          <div class="user-item" v-for="user in followersList" :key="user.id" @click="router.push(`/user-homepage/${user.id}`)">
             <img :src="user.avatar" class="user-avatar" />
             <div class="user-info">
               <span class="user-name">{{ user.nickname }}</span>
@@ -699,7 +684,7 @@
           <i class='bx bx-x close-btn' @click="showFollowingModal = false"></i>
         </div>
         <div class="user-list" v-if="!loadingFollowing">
-          <div class="user-item" v-for="user in followingList" :key="user.id">
+          <div class="user-item" v-for="user in followingList" :key="user.id" @click="router.push(`/user-homepage/${user.id}`)">
             <img :src="user.avatar" class="user-avatar" />
             <div class="user-info">
               <span class="user-name">{{ user.nickname }}</span>
@@ -734,7 +719,7 @@
             </div>
 
             <div class="user-list visitor-list" v-if="viewedUsersList.length > 0">
-              <div class="user-item" v-for="visitor in viewedUsersList" :key="`viewed-${visitor.id}`">
+              <div class="user-item" v-for="visitor in viewedUsersList" :key="`viewed-${visitor.id}`" @click="router.push(`/user-homepage/${visitor.id}`)">
                 <img :src="visitor.avatar" class="user-avatar" />
                 <div class="user-info">
                   <span class="user-name">{{ visitor.nickname }}</span>
@@ -755,7 +740,7 @@
             </div>
 
             <div class="user-list visitor-list" v-if="visitorsList.length > 0">
-              <div class="user-item" v-for="visitor in visitorsList" :key="`received-${visitor.id}`">
+              <div class="user-item" v-for="visitor in visitorsList" :key="`received-${visitor.id}`" @click="router.push(`/user-homepage/${visitor.id}`)">
                 <img :src="visitor.avatar" class="user-avatar" />
                 <div class="user-info">
                   <span class="user-name">{{ visitor.nickname }}</span>
@@ -781,7 +766,7 @@
 <script setup>
 import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, login } from '../api/app'
+import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, getFollowers, getFollowing, getUserProfile, login } from '../api/app'
 import CustomerServiceView from './CustomerServiceView.vue'
 import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
 
@@ -815,10 +800,38 @@ const loadingFollowing = ref(false)
 
 const openFollowers = async () => {
   showFollowersModal.value = true
+  loadingFollowers.value = true
+  try {
+    const response = await getFollowers(userInfo.value.id)
+    if (response?.code === 200 && response.data) {
+      followersList.value = Array.isArray(response.data) ? response.data : []
+      return
+    }
+    followersList.value = []
+  } catch (error) {
+    console.error('获取粉丝列表失败:', error)
+    followersList.value = []
+  } finally {
+    loadingFollowers.value = false
+  }
 }
 
 const openFollowing = async () => {
   showFollowingModal.value = true
+  loadingFollowing.value = true
+  try {
+    const response = await getFollowing(userInfo.value.id)
+    if (response?.code === 200 && response.data) {
+      followingList.value = Array.isArray(response.data) ? response.data : []
+      return
+    }
+    followingList.value = []
+  } catch (error) {
+    console.error('获取关注列表失败:', error)
+    followingList.value = []
+  } finally {
+    loadingFollowing.value = false
+  }
 }
 
 const showVisitorsModal = ref(false)
@@ -1601,10 +1614,11 @@ const loadPersonalCenterData = async () => {
     }
 
     try {
-      const [discoverRes, overviewRes, visitorRes] = await Promise.all([
+      const [discoverRes, overviewRes, visitorRes, profileRes] = await Promise.all([
         getMyDiscoverStats().catch(() => null),
         getMyOrderOverview().catch(() => null),
-        getVisitorRecords().catch(() => null)
+        getVisitorRecords().catch(() => null),
+        getUserProfile().catch(() => null)
       ])
 
       if (discoverRes?.code === 200 && discoverRes.data) {
@@ -1626,6 +1640,10 @@ const loadPersonalCenterData = async () => {
 
       if (visitorRes?.code === 200 && visitorRes.data) {
         applyVisitorRecords(visitorRes.data)
+      }
+
+      if (profileRes?.code === 200 && profileRes.data) {
+        userInfo.value = normalizeUserInfo(profileRes.data)
       }
 
       persistStoredUser({
@@ -1663,16 +1681,35 @@ onBeforeUnmount(() => {
 <style scoped>
 .personal-center {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(31, 111, 235, 0.08), transparent 26%),
-    radial-gradient(circle at top right, rgba(34, 197, 94, 0.08), transparent 24%),
-    #f5f7fa;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   position: relative;
-  padding: 24px 20px 100px;
+  padding: 20px 20px 96px;
   box-sizing: border-box;
+}
+
+.top-right-settings {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.top-right-settings .settings-trigger {
+  border: none;
+  background: transparent;
+  color: #526277;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.top-right-settings .settings-trigger:hover {
+  background: rgba(82, 98, 119, 0.1);
+  color: #16324f;
 }
 
 .page-header {
@@ -1728,8 +1765,8 @@ onBeforeUnmount(() => {
 }
 
 .overview-card {
-  padding: 28px;
-  margin-bottom: 20px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
 }
 
 .overview-main {
@@ -1753,8 +1790,32 @@ onBeforeUnmount(() => {
 .profile-title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+  width: 100%;
+}
+
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-actions .settings-trigger {
+  border: none;
+  background: transparent;
+  color: #526277;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.profile-actions .settings-trigger:hover {
+  background: rgba(82, 98, 119, 0.1);
+  color: #16324f;
 }
 
 .profile-copy h2 {
@@ -1864,12 +1925,12 @@ onBeforeUnmount(() => {
 
 .dashboard-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(300px, 0.95fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.8fr);
   gap: 20px;
 }
 
 .section-card {
-  padding: 24px;
+  padding: 22px;
 }
 
 .section-caption {
@@ -2699,7 +2760,7 @@ onBeforeUnmount(() => {
 
 @media (min-width: 1024px) {
   .personal-center {
-    width: 70%;
+    width: 90%;
   }
 }
 
@@ -2848,6 +2909,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  align-items: flex-start;
 }
 
 .user-name {

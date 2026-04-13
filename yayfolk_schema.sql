@@ -62,14 +62,14 @@ CREATE TABLE `activities` (
   KEY `idx_activities_merchant_profile` (`merchant_profile_id`),
   CONSTRAINT `fk_activities_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_activities_merchant_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -100,7 +100,7 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -128,44 +128,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
--- Table structure for table `activity_bookings`
---
-
-DROP TABLE IF EXISTS `activity_bookings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `activity_bookings` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `activity_id` bigint NOT NULL,
-  `user_id` bigint NOT NULL,
-  `signup_time` datetime DEFAULT NULL,
-  `status` varchar(20) DEFAULT 'registered',
-  `payment_status` varchar(20) DEFAULT 'unpaid',
-  `payment_time` datetime DEFAULT NULL,
-  `reserve_no` varchar(50) DEFAULT NULL,
-  `pay_amount` int DEFAULT '0',
-  `payment_type` varchar(32) DEFAULT NULL,
-  `participant_name` varchar(50) DEFAULT NULL,
-  `participant_phone` varchar(20) DEFAULT NULL,
-  `participant_count` int DEFAULT '1',
-  `remark` varchar(200) DEFAULT NULL,
-  `qr_code` varchar(100) DEFAULT NULL,
-  `verification_time` datetime DEFAULT NULL,
-  `verified_by` bigint DEFAULT NULL,
-  `review_score` decimal(2,1) DEFAULT NULL,
-  `review_content` varchar(500) DEFAULT NULL,
-  `review_time` datetime DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_activity_user` (`activity_id`,`user_id`),
-  KEY `fk_activity_bookings_user` (`user_id`),
-  CONSTRAINT `fk_activity_bookings_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_activity_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `activity_reserve_participants`
 --
 
@@ -182,7 +144,7 @@ CREATE TABLE `activity_reserve_participants` (
   PRIMARY KEY (`id`),
   KEY `idx_reserve_id` (`reserve_id`),
   CONSTRAINT `fk_reserve_participants_reserve` FOREIGN KEY (`reserve_id`) REFERENCES `activity_reserves` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='活动预订参与者信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='活动预订参与者信息表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,103 +185,7 @@ CREATE TABLE `activity_reserves` (
   CONSTRAINT `fk_activity_reserves_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_activity_reserves_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_activity_reserves_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `attraction_images`
---
-
-DROP TABLE IF EXISTS `attraction_images`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `attraction_images` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `attraction_id` int NOT NULL,
-  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_index` int DEFAULT '0',
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `attraction_id` (`attraction_id`),
-  CONSTRAINT `attraction_images_ibfk_1` FOREIGN KEY (`attraction_id`) REFERENCES `attractions` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `attractions`
---
-
-DROP TABLE IF EXISTS `attractions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `attractions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `intro` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '??????',
-  `story` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '??????',
-  `lng` decimal(10,6) NOT NULL,
-  `lat` decimal(10,6) NOT NULL,
-  `radius` int NOT NULL DEFAULT '150',
-  `cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `rating` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '???',
-  `duration` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '???2-3???',
-  `best_season` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '??????',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `backup_merchant_applications_20260328`
---
-
-DROP TABLE IF EXISTS `backup_merchant_applications_20260328`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `backup_merchant_applications_20260328` (
-  `id` bigint NOT NULL DEFAULT '0',
-  `user_id` bigint NOT NULL,
-  `real_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `id_card` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `heritage_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `heritage_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `proof_images` json DEFAULT NULL,
-  `shop_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `shop_address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `province` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '省份',
-  `city` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '城市',
-  `intro` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '商家简介',
-  `application_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
-  `audit_admin_id` bigint DEFAULT NULL,
-  `audit_time` datetime DEFAULT NULL,
-  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `backup_users_merchant_fields_20260328`
---
-
-DROP TABLE IF EXISTS `backup_users_merchant_fields_20260328`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `backup_users_merchant_fields_20260328` (
-  `id` bigint NOT NULL DEFAULT '0',
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user',
-  `shop_status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'none',
-  `shop_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_cover` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_intro` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -418,7 +284,7 @@ CREATE TABLE `merchant_applications` (
   KEY `idx_merchant_applications_profile_id` (`merchant_profile_id`),
   CONSTRAINT `fk_merchant_app_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_merchant_applications_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -463,7 +329,7 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ; 
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -487,7 +353,7 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -553,7 +419,7 @@ CREATE TABLE `merchant_profiles` (
   KEY `idx_merchant_profiles_status` (`business_status`),
   KEY `idx_merchant_profiles_shop_name` (`shop_name`),
   CONSTRAINT `fk_merchant_profiles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='canonical merchant profile table';
+) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='canonical merchant profile table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -580,7 +446,7 @@ CREATE TABLE `merchant_reviews` (
   KEY `idx_merchant_reviews_reserve` (`reserve_id`),
   CONSTRAINT `fk_merchant_reviews_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_merchant_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -654,12 +520,13 @@ CREATE TABLE `official_contents` (
   `is_public` tinyint(1) DEFAULT '1',
   `view_count` int DEFAULT '0',
   `admin_id` bigint NOT NULL,
+  `activity_id` bigint DEFAULT NULL COMMENT '关联的活动ID',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_official_admin` (`admin_id`),
   CONSTRAINT `fk_official_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -703,14 +570,14 @@ CREATE TABLE `orders` (
   CONSTRAINT `fk_orders_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_orders_merchant_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -741,7 +608,7 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -769,26 +636,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
--- Table structure for table `phrases`
---
-
-DROP TABLE IF EXISTS `phrases`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phrases` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '短语ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `text` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '短语文本',
-  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT '收藏' COMMENT '短语分类',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `original_text` longtext COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`id`),
-  KEY `idx_phrase_user` (`user_id`),
-  KEY `idx_phrase_category` (`category`)
-) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='旅行常用语表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `post_reports`
 --
 
@@ -808,72 +655,6 @@ CREATE TABLE `post_reports` (
   KEY `idx_post_reports_post_status` (`post_id`,`status`),
   KEY `idx_post_reports_reporter_status` (`reporter_id`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `rag_activities`
---
-
-DROP TABLE IF EXISTS `rag_activities`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `rag_activities` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `heritage_id` bigint NOT NULL,
-  `merchant_id` bigint NOT NULL,
-  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `season_tag` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `location_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `intro` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_rag_activity_heritage` (`heritage_id`),
-  KEY `fk_rag_activity_merchant` (`merchant_id`),
-  CONSTRAINT `fk_rag_activity_heritage` FOREIGN KEY (`heritage_id`) REFERENCES `rag_heritage_items` (`id`),
-  CONSTRAINT `fk_rag_activity_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `rag_merchants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `rag_heritage_items`
---
-
-DROP TABLE IF EXISTS `rag_heritage_items`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `rag_heritage_items` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `merchant_id` bigint NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `dynasty` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `province` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `city` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `theme_tags` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `poem_tags` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `intro` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `featured_score` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `fk_rag_heritage_merchant` (`merchant_id`),
-  CONSTRAINT `fk_rag_heritage_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `rag_merchants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `rag_merchants`
---
-
-DROP TABLE IF EXISTS `rag_merchants`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `rag_merchants` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `province` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `city` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `intro` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -897,23 +678,7 @@ CREATE TABLE `reserve_status_logs` (
   KEY `idx_reserve_status_logs_operator_id` (`operator_id`),
   CONSTRAINT `fk_reserve_status_logs_operator` FOREIGN KEY (`operator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_reserve_status_logs_reserve` FOREIGN KEY (`reserve_id`) REFERENCES `activity_reserves` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `roles`
---
-
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `roles` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(50) NOT NULL,
-  `role_description` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -939,7 +704,7 @@ CREATE TABLE `route_plans` (
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='路线规划记录表';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='路线规划记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1266,4 +1031,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-03 22:50:38
+-- Dump completed on 2026-04-09  0:20:46

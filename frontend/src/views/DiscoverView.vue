@@ -364,9 +364,10 @@ const categories = computed(() => [
   { id: 'all', name: '全部' },
   { id: '服饰妆造', name: '服饰妆造' },
   { id: '美术造物', name: '美术造物' },
-  { id: '民族节气', name: '民族节气' },
+  { id: '民俗节气', name: '民俗节气' },
   { id: '戏曲演绎', name: '戏曲演绎' },
-  { id: '织物手工', name: '织物手工' }
+  { id: '织物手工', name: '织物手工' },
+  { id: '其他', name: '其他' }
 ])
 
 const posts = ref([])
@@ -396,14 +397,14 @@ const customTagsInput = ref('')
 const presetTags = computed(() => [
   '服饰妆造',
   '美术造物',
-  '民族节气',
+  '民俗节气',
   '戏曲演绎',
   '织物手工'
 ])
 const classifierTagMap = computed(() => ({
   '服饰妆造': '服饰妆造',
   '美术造物': '美术造物',
-  '民族节气': '民族节气',
+  '民俗节气': '民俗节气',
   '戏曲演绎': '戏曲演绎',
   '织物手工': '织物手工'
 }))
@@ -433,7 +434,7 @@ const mergeTags = (incomingTags = []) => {
   const merged = [...postForm.value.tags]
   incomingTags
     .map(tag => (typeof tag === 'string' ? tag.trim() : ''))
-    .map(tag => classifierTagMap.value[tag] || tag)
+    .map(tag => classifierTagMap.value[tag])
     .filter(Boolean)
     .forEach(tag => {
       if (merged.length < 10 && !merged.includes(tag)) {
@@ -446,7 +447,7 @@ const mergeTags = (incomingTags = []) => {
 
 const syncCategoryFromPrediction = (primaryTag, confidence = 0) => {
   const normalizedTag = typeof primaryTag === 'string' ? primaryTag.trim() : ''
-  if (!normalizedTag || !(normalizedTag in classifierTagMap.value)) {
+  if (!normalizedTag) {
     return
   }
 
@@ -458,7 +459,9 @@ const syncCategoryFromPrediction = (primaryTag, confidence = 0) => {
     tag: normalizedTag,
     confidence
   }
-  postForm.value.category = normalizedTag
+  
+  // 如果识别结果不在分类映射中，设置为"其他"
+  postForm.value.category = normalizedTag in classifierTagMap.value ? normalizedTag : '其他'
 }
 
 const classifySelectedImage = async (file) => {

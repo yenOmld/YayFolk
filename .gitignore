@@ -91,3 +91,8 @@ spring-boot-devtools.properties
 # Sensitive runtime config
 backend/src/main/resources/application.yml
 backend/src/main/resources/application-*.yml
+
+
+docs/
+
+*.txt

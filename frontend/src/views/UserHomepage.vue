@@ -251,7 +251,7 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { deleteMyDiscoverPost, followUser, getCollectedBy, getDiscoverPostDetail, getFollowers, getFollowing, getUserHomepage, unfollowUser, updateDiscoverPostVisibility, updateHomepageSettings, updateUserProfile, uploadAvatar, uploadImage } from '../api/app'
+import { deleteMyDiscoverPost, followUser, getCollectedBy, getDiscoverPostDetail, getFollowers, getFollowing, getUserHomepage, unfollowUser, updateDiscoverPostVisibility, updateHomepageSettings, updateUserProfile, uploadAvatar, uploadImage, getMerchantActivities } from '../api/app'
 import PostDetailModal from '../components/PostDetailModal.vue'
 
 const { appContext } = getCurrentInstance()
@@ -320,16 +320,16 @@ const tabs = computed(() => isMerchantProfile.value ? [
 ] : [
   { key: 'posts', label: '动态', count: posts.value.length },
   { key: 'collections', label: '收藏', count: collections.value.length },
-  { key: 'achievements', label: '成就', count: badges.value.length }
+  { key: 'achievements', label: '成就', count: badges.value.filter(badge => badge.unlocked).length }
 ])
 const heroStats = computed(() => isMerchantProfile.value ? [
   { key: 'rating', label: '评分', value: score(reviewSummary.value.averageScore), action: () => switchTab('reviews') },
   { key: 'keyword', label: '关键词', value: user.value.merchantKeyword || user.value.shopName || '非遗手作', action: null },
-  { key: 'followers', label: '粉丝', value: count(user.value.followerCount), action: null }
+  { key: 'followers', label: '粉丝', value: count(user.value.followerCount), action: () => openList('followers') }
 ] : [
-  { key: 'followers', label: '粉丝', value: count(user.value.followerCount), action: null },
+  { key: 'followers', label: '粉丝', value: count(user.value.followerCount), action: () => openList('followers') },
   { key: 'collected', label: '被收藏', value: count(summary.value.collectedCount), action: () => openList('collected') },
-  { key: 'badges', label: '勋章', value: count(summary.value.badgeCount), action: () => switchTab('achievements') }
+  { key: 'badges', label: '勋章', value: count(badges.value.filter(badge => badge.unlocked).length), action: () => switchTab('achievements') }
 ])
 const activityCategoryOptions = computed(() => [...new Set(activities.value.map(item => item.categoryName || item.heritageType).filter(Boolean))])
 const activityStatusOptions = computed(() => [...new Set(activities.value.map(item => item.status || item.auditStatus).filter(Boolean))])
@@ -430,10 +430,22 @@ const loadPage = async () => {
       ? res.data.collections.map(item => ({ ...item, visibility: (res.data.user?.collectionVisibility === 'private' ? 'private' : 'public') }))
       : []
     badges.value = Array.isArray(res.data.badges) ? res.data.badges : []
-    activities.value = Array.isArray(res.data.activities) ? res.data.activities : []
     reviews.value = Array.isArray(res.data.reviews) ? res.data.reviews : []
     reviewSummary.value = res.data.reviewSummary || {}
     isFollowingUser.value = Boolean(res.data.user?.isFollowing)
+    
+    // 如果是商家主页，额外获取商家发布的活动
+    if (isMerchantProfile.value) {
+      const merchantActivitiesRes = await getMerchantActivities()
+      if (merchantActivitiesRes.code === 200 && Array.isArray(merchantActivitiesRes.data)) {
+        activities.value = merchantActivitiesRes.data
+      } else {
+        activities.value = []
+      }
+    } else {
+      activities.value = Array.isArray(res.data.activities) ? res.data.activities : []
+    }
+    
     syncTab()
   } catch (error) { console.error(error); notify.error('加载主页失败，请稍后重试') } finally { loading.value = false }
 }
@@ -1076,7 +1088,7 @@ onUnmounted(() => {
 
 .activity-grid {
   gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .post-card,
@@ -1413,15 +1425,15 @@ onUnmounted(() => {
 
 /* 未解锁状态 */
 .badge-card:not(.unlocked) {
-  opacity: 0.75;
+  opacity: 0.4;
 }
 
 .badge-card:not(.unlocked) .badge-icon {
-  filter: grayscale(0.4) brightness(0.9);
+  filter: grayscale(0.9) brightness(0.6);
 }
 
 .badge-card:not(.unlocked):hover .badge-icon {
-  filter: grayscale(0.2) brightness(0.95);
+  filter: grayscale(0.6) brightness(0.7);
 }
 
 /* 文本样式 */

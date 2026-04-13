@@ -1,14 +1,10 @@
 package com.yayfolk.backend.service;
 
-import com.yayfolk.backend.entity.Phrase;
 import com.yayfolk.backend.entity.User;
-import com.yayfolk.backend.repository.PhraseRepository;
 import com.yayfolk.backend.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -16,12 +12,10 @@ import java.util.Random;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PhraseRepository phraseRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PhraseRepository phraseRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.phraseRepository = phraseRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -64,9 +58,6 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        // 初始化默认常用语（根据用户语言偏好）
-        initializeDefaultPhrases(savedUser, langCode);
-
         return savedUser;
     }
 
@@ -78,93 +69,6 @@ public class UserService {
             }
             throw new RuntimeException("账号已被封禁");
         }
-    }
-
-    private void initializeDefaultPhrases(User user, String langCode) {
-        List<Phrase> defaultPhrases;
-
-        switch (langCode != null ? langCode.toLowerCase() : "zh") {
-            case "en":
-                defaultPhrases = getEnglishPhrases(user);
-                break;
-            case "ja":
-                defaultPhrases = getJapanesePhrases(user);
-                break;
-            case "ko":
-                defaultPhrases = getKoreanPhrases(user);
-                break;
-            case "zh":
-            default:
-                defaultPhrases = getChinesePhrases(user);
-                break;
-        }
-
-        phraseRepository.saveAll(defaultPhrases);
-    }
-
-    // 中文默认常用语
-    private List<Phrase> getChinesePhrases(User user) {
-        return Arrays.asList(
-                createPhrase(user, "你好，请问附近有洗手间吗？", "你好，请问附近有洗手间吗？", "日常"),
-                createPhrase(user, "这个多少钱？", "这个多少钱？", "购物"),
-                createPhrase(user, "请给我一杯咖啡", "请给我一杯咖啡", "餐饮"),
-                createPhrase(user, "请问怎么去机场？", "请问怎么去机场？", "交通"),
-                createPhrase(user, "我需要帮助", "我需要帮助", "紧急"),
-                createPhrase(user, "谢谢你的帮助", "谢谢你的帮助", "礼貌"),
-                createPhrase(user, "我不会说当地语言", "我不会说当地语言", "沟通"),
-                createPhrase(user, "请说慢一点", "请说慢一点", "沟通")
-        );
-    }
-
-    // 英文默认常用语
-    private List<Phrase> getEnglishPhrases(User user) {
-        return Arrays.asList(
-                createPhrase(user, "你好，请问附近有洗手间吗？", "Hello, is there a restroom nearby?", "Daily"),
-                createPhrase(user, "这个多少钱？", "How much is this?", "Shopping"),
-                createPhrase(user, "请给我一杯咖啡", "Please give me a cup of coffee", "Dining"),
-                createPhrase(user, "请问怎么去机场？", "How do I get to the airport?", "Transport"),
-                createPhrase(user, "我需要帮助", "I need help", "Emergency"),
-                createPhrase(user, "谢谢你的帮助", "Thank you for your help", "Polite"),
-                createPhrase(user, "我不会说当地语言", "I don't speak the local language", "Communication"),
-                createPhrase(user, "请说慢一点", "Please speak more slowly", "Communication")
-        );
-    }
-
-    // 日文默认常用语
-    private List<Phrase> getJapanesePhrases(User user) {
-        return Arrays.asList(
-                createPhrase(user, "你好，请问附近有洗手间吗？", "こんにちは、近くにトイレはありますか？", "日常"),
-                createPhrase(user, "这个多少钱？", "これはいくらですか？", "買い物"),
-                createPhrase(user, "请给我一杯咖啡", "コーヒーを一杯ください", "食事"),
-                createPhrase(user, "请问怎么去机场？", "空港まではどうやって行きますか？", "交通"),
-                createPhrase(user, "我需要帮助", "助けが必要です", "緊急"),
-                createPhrase(user, "谢谢你的帮助", "助けてくれてありがとう", "礼儀"),
-                createPhrase(user, "我不会说当地语言", "現地の言葉が話せません", "コミュニケーション"),
-                createPhrase(user, "请说慢一点", "もっとゆっくり話してください", "コミュニケーション")
-        );
-    }
-
-    // 韩文默认常用语
-    private List<Phrase> getKoreanPhrases(User user) {
-        return Arrays.asList(
-                createPhrase(user, "你好，请问附近有洗手间吗？", "실례합니다. 근처에 화장실이 있나요?", "일상"),
-                createPhrase(user, "这个多少钱？", "이거 얼마예요?", "쇼핑"),
-                createPhrase(user, "请给我一杯咖啡", "커피 한 잔 주세요", "식사"),
-                createPhrase(user, "请问怎么去机场？", "공항에 어떻게 가요?", "교통"),
-                createPhrase(user, "我需要帮助", "도움이 필요해요", "비상"),
-                createPhrase(user, "谢谢你的帮助", "도와주셔서 감사합니다", "예의"),
-                createPhrase(user, "我不会说当地语言", "현지어를 할 수 없어요", "커뮤니케이션"),
-                createPhrase(user, "请说慢一点", "좀 더 천천히 말해주세요", "커뮤니케이션")
-        );
-    }
-
-    private Phrase createPhrase(User user, String text, String originalText, String category) {
-        Phrase phrase = new Phrase();
-        phrase.setUser(user);
-        phrase.setText(text);
-        phrase.setOriginalText(originalText);
-        phrase.setCategory(category);
-        return phrase;
     }
 
     public User login(String username, String password) {
@@ -299,9 +203,6 @@ public class UserService {
         user.setLangCode("en"); // GitHub 用户默认使用英文
 
         User savedUser = userRepository.save(user);
-
-        // 初始化默认常用语（GitHub 用户默认使用英文）
-        initializeDefaultPhrases(savedUser, "en");
 
         return savedUser;
     }

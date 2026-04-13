@@ -1,4 +1,4 @@
-﻿﻿<template>
+﻿<template>
   <div class="activity-page">
     <!-- 移动端下拉菜单 -->
     <header class="mobile-header" :class="{ active: showMobileMenu }">
@@ -66,20 +66,98 @@
         <div class="toolbar">
           <div class="search-box">
             <i class='bx bx-search'></i>
-            <input v-model.trim="keyword" type="text" placeholder="搜索精彩活动..." @keyup.enter="loadActivities" />
+            <input v-model.trim="keyword" type="text" placeholder="搜索精彩活动..." @input="debouncedLoadActivities" @keyup.enter="loadActivities" />
             <button class="search-btn" @click="loadActivities">搜索</button>
           </div>
 
           <div class="toolbar-right">
-            <div class="city-box">
-              <i class='bx bx-map-pin'></i>
-              <input v-model.trim="city" type="text" placeholder="按城市筛选" @keyup.enter="loadActivities" />
+            <div class="city-dropdown" @click.stop>
+              <div class="city-box" @click="toggleCityMenu">
+                <i class='bx bx-map-pin'></i>
+                <input 
+                  v-model="cityInput" 
+                  type="text" 
+                  placeholder="按城市筛选" 
+                  @click.stop 
+                  @keyup.enter="loadActivities"
+                />
+                <i class='bx bx-chevron-down'></i>
+              </div>
+              <div v-if="showCityMenu" class="city-menu">
+                <div class="city-search">
+                  <i class='bx bx-search'></i>
+                  <input 
+                    v-model="cityInput" 
+                    type="text" 
+                    placeholder="搜索城市..." 
+                    @click.stop
+                  />
+                </div>
+                <div class="city-list">
+                  <div 
+                    class="city-option" 
+                    :class="{ active: city === '' }"
+                    @click="selectCity('')"
+                  >
+                    全部城市
+                  </div>
+                  <div 
+                    v-for="cityItem in filteredCities" 
+                    :key="cityItem"
+                    class="city-option" 
+                    :class="{ active: city === cityItem }"
+                    @click="selectCity(cityItem)"
+                  >
+                    {{ cityItem }}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="status-options">
-              <span :class="{ active: statusFilter === 'all' }" @click="statusFilter = 'all'">全部状态</span>
-              <span :class="{ active: statusFilter === 'signup' }" @click="statusFilter = 'signup'">报名中</span>
-              <span :class="{ active: statusFilter === 'ongoing' }" @click="statusFilter = 'ongoing'">进行中</span>
-              <span :class="{ active: statusFilter === 'ended' }" @click="statusFilter = 'ended'">已结束</span>
+            <div class="action-buttons">
+              <div class="sort-dropdown" @click.stop>
+                <button class="sort-btn" @click="toggleStatusMenu">
+                  <i class='bx bx-filter'></i>
+                  <span>{{ statusLabel(statusFilter) }}</span>
+                  <i class='bx bx-chevron-down'></i>
+                </button>
+                <div v-if="showStatusMenu" class="sort-menu">
+                  <div 
+                    class="sort-option" 
+                    :class="{ active: statusFilter === 'all' }"
+                    @click="changeStatus('all')"
+                  >
+                    <i class='bx bx-list-ul'></i>
+                    <span>全部状态</span>
+                  </div>
+                  <div 
+                    class="sort-option" 
+                    :class="{ active: statusFilter === 'signup' }"
+                    @click="changeStatus('signup')"
+                  >
+                    <i class='bx bx-calendar-check'></i>
+                    <span>报名中</span>
+                  </div>
+                  <div 
+                    class="sort-option" 
+                    :class="{ active: statusFilter === 'ongoing' }"
+                    @click="changeStatus('ongoing')"
+                  >
+                    <i class='bx bx-play-circle'></i>
+                    <span>进行中</span>
+                  </div>
+                  <div 
+                    class="sort-option" 
+                    :class="{ active: statusFilter === 'ended' }"
+                    @click="changeStatus('ended')"
+                  >
+                    <i class='bx bx-calendar-x'></i>
+                    <span>已结束</span>
+                  </div>
+                </div>
+              </div>
+              <button class="refresh-btn" @click="handleRefresh" :disabled="loading">
+                <i :class="loading ? 'bx bx-loader-alt bx-spin' : 'bx bx-refresh'"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -88,7 +166,7 @@
         <div class="mobile-search-bar">
           <div class="mobile-search-input">
             <i class='bx bx-search'></i>
-            <input v-model.trim="keyword" type="text" placeholder="搜索活动..." @keyup.enter="loadActivities" />
+            <input v-model.trim="keyword" type="text" placeholder="搜索活动..." @input="debouncedLoadActivities" @keyup.enter="loadActivities" />
           </div>
           <button class="mobile-search-btn" @click="loadActivities">
             <i class='bx bx-search'></i>
@@ -203,6 +281,24 @@ const showDetailModal = ref(false)
 const selectedActivityId = ref('')
 const selectedActivity = ref(null)
 const showMobileMenu = ref(false)
+const showStatusMenu = ref(false)
+const showCityMenu = ref(false)
+const cityInput = ref('')
+
+// 城市列表
+const cities = ref([
+  '北京', '上海', '广州', '深圳', '杭州', '成都', '重庆', '西安', '武汉', '南京',
+  '天津', '苏州', '郑州', '长沙', '沈阳', '青岛', '宁波', '东莞', '无锡', '福州',
+  '厦门', '哈尔滨', '济南', '大连', '昆明', '合肥', '南宁', '南昌', '贵阳', '太原',
+  '石家庄', '乌鲁木齐', '兰州', '西宁', '银川', '拉萨', '呼和浩特'
+])
+
+// 过滤后的城市列表
+const filteredCities = computed(() => {
+  if (!cityInput.value) return cities.value
+  const input = cityInput.value.toLowerCase()
+  return cities.value.filter(city => city.toLowerCase().includes(input))
+})
 
 const currentUser = computed(() => {
   try {
@@ -222,6 +318,72 @@ const categories = computed(() => {
   return Array.from(values)
 })
 
+const getStatusScore = (status) => {
+  switch (status) {
+    case 'ongoing': return 100
+    case 'signup': return 90
+    case 'full': return 70
+    case 'ended': return 0
+    default: return 80
+  }
+}
+
+const getProgressScore = (current, max) => {
+  if (!max || max === '不限' || max === '0') return 50
+  const progress = Math.min(current / max, 1)
+  return progress * 100
+}
+
+const getFullStatusScore = (current, max) => {
+  if (!max || max === '不限' || max === '0') return 100
+  return current < max ? 100 : 0
+}
+
+const getTimeScore = (publishTime) => {
+  if (!publishTime) return 50
+  const publishDate = new Date(publishTime)
+  const now = new Date()
+  const days = (now - publishDate) / (1000 * 60 * 60 * 24)
+  const score = 100 * Math.exp(-0.1 * days)
+  return Math.max(0, Math.min(100, score))
+}
+
+const getUrgencyScore = (endTime) => {
+  if (!endTime) return 50
+  const endDate = new Date(endTime)
+  const now = new Date()
+  const daysLeft = Math.max(0, (endDate - now) / (1000 * 60 * 60 * 24))
+  const totalDays = 30 // 假设最长报名周期为30天
+  const score = 100 * (1 - daysLeft / totalDays)
+  return Math.max(0, Math.min(100, score))
+}
+
+const getQualityScore = (activity) => {
+  let score = 60 // 基础分
+  // 封面图质量
+  if (activity.coverImage) score += 10
+  // 标题长度
+  if (activity.title && activity.title.length > 10) score += 10
+  // 价格合理性
+  if (activity.price === 0 || activity.price) score += 10
+  // 地点信息完整
+  if (activity.locationCity && activity.locationDetail) score += 10
+  // 时间信息完整
+  if (activity.startTime && activity.endTime) score += 10
+  return Math.min(100, score)
+}
+
+const getActivityScore = (activity) => {
+  const statusScore = getStatusScore(activity.status) * 0.35
+  const progressScore = getProgressScore(Number(activity.currentParticipants || 0), Number(activity.maxParticipants || 0)) * 0.25
+  const fullStatusScore = getFullStatusScore(Number(activity.currentParticipants || 0), Number(activity.maxParticipants || 0)) * 0.15
+  const timeScore = getTimeScore(activity.createdAt || activity.publishTime) * 0.10
+  const urgencyScore = getUrgencyScore(activity.signupEndTime || activity.endTime) * 0.05
+  const qualityScore = getQualityScore(activity) * 0.05
+  
+  return statusScore + progressScore + fullStatusScore + timeScore + urgencyScore + qualityScore
+}
+
 const filteredActivities = computed(() => {
   let result = [...allActivities.value]
 
@@ -232,6 +394,9 @@ const filteredActivities = computed(() => {
   if (statusFilter.value !== 'all') {
     result = result.filter(item => item.status === statusFilter.value)
   }
+
+  // 按评分排序
+  result.sort((a, b) => getActivityScore(b) - getActivityScore(a))
 
   return result
 })
@@ -268,6 +433,61 @@ const toggleMobileMenu = () => {
 
 const closeMobileMenu = () => {
   showMobileMenu.value = false
+}
+
+const toggleStatusMenu = () => {
+  showStatusMenu.value = !showStatusMenu.value
+}
+
+const changeStatus = (status) => {
+  statusFilter.value = status
+  showStatusMenu.value = false
+  currentPage.value = 1
+}
+
+const toggleCityMenu = () => {
+  showCityMenu.value = !showCityMenu.value
+  // 打开城市菜单时，同步 city 到 cityInput
+  if (showCityMenu.value) {
+    cityInput.value = city.value
+  }
+}
+
+const selectCity = (cityItem) => {
+  city.value = cityItem
+  cityInput.value = cityItem
+  showCityMenu.value = false
+  currentPage.value = 1
+  loadActivities()
+}
+
+const handleRefresh = () => {
+  // 重置所有筛选条件
+  keyword.value = ''
+  city.value = ''
+  cityInput.value = ''
+  selectedCategory.value = ''
+  statusFilter.value = 'all'
+  currentPage.value = 1
+  
+  // 关闭所有下拉菜单
+  showStatusMenu.value = false
+  showCityMenu.value = false
+  
+  // 重新加载活动列表
+  loadActivities()
+}
+
+// 防抖函数
+let searchTimeout = null
+const debouncedLoadActivities = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadActivities()
+  }, 300) // 300毫秒防抖
 }
 
 const loadActivities = async () => {
@@ -337,6 +557,7 @@ const formatLocation = (item) => {
 }
 
 const statusLabel = (status) => ({
+  all: '全部状态',
   signup: '报名中',
   ongoing: '进行中',
   ended: '已结束',
@@ -673,6 +894,239 @@ onMounted(() => {
   color: white;
   background: linear-gradient(135deg, #9d2929, #b33030);
   border-color: #9d2929;
+}
+
+/* ========== 操作按钮组 ========== */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ========== 排序/筛选下拉框 ========== */
+.sort-dropdown {
+  position: relative;
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #d9cfc1;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: #5a5045;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.sort-btn:hover {
+  border-color: #9d2929;
+  color: #9d2929;
+  box-shadow: 0 4px 8px rgba(157, 41, 41, 0.2);
+  transform: translateY(-1px);
+}
+
+.sort-btn i:first-child {
+  font-size: 16px;
+}
+
+.sort-btn i:last-child {
+  font-size: 12px;
+}
+
+.sort-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 120px;
+  z-index: 100;
+  border: 1px solid #d9cfc1;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c2c2c;
+  transition: all 0.2s;
+}
+
+.sort-option:hover {
+  background: rgba(157, 41, 41, 0.05);
+}
+
+.sort-option.active {
+  color: #9d2929;
+  background: rgba(157, 41, 41, 0.08);
+}
+
+.sort-option i {
+  font-size: 18px;
+}
+
+/* ========== 刷新按钮 ========== */
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d9cfc1;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.refresh-btn:hover:not(:disabled) {
+  border-color: #9d2929;
+  color: #9d2929;
+  box-shadow: 0 4px 8px rgba(157, 41, 41, 0.2);
+  transform: translateY(-1px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-btn i {
+  font-size: 18px;
+  color: #5a5045;
+}
+
+.refresh-btn:hover:not(:disabled) i {
+  color: #9d2929;
+}
+
+/* ========== 城市下拉框 ========== */
+.city-dropdown {
+  position: relative;
+}
+
+.city-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f5f0;
+  border: 1px solid #d9cfc1;
+  border-radius: 24px;
+  padding: 0 16px;
+  height: 48px;
+  min-width: 180px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.city-box:hover {
+  border-color: #9d2929;
+  box-shadow: 0 0 0 3px rgba(157, 41, 41, 0.1);
+}
+
+.city-box i:first-child {
+  color: #a09283;
+  font-size: 18px;
+}
+
+.city-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font-size: 14px;
+  color: #2c2c2c;
+  cursor: pointer;
+}
+
+.city-box input::placeholder {
+  color: #a09283;
+}
+
+.city-box i:last-child {
+  color: #a09283;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.city-dropdown:hover .city-box i:last-child {
+  color: #9d2929;
+}
+
+.city-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 200px;
+  z-index: 100;
+  border: 1px solid #d9cfc1;
+}
+
+.city-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d9cfc1;
+  background: #f8f5f0;
+}
+
+.city-search i {
+  color: #a09283;
+  font-size: 16px;
+}
+
+.city-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font-size: 14px;
+  color: #2c2c2c;
+}
+
+.city-search input::placeholder {
+  color: #a09283;
+}
+
+.city-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.city-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c2c2c;
+  transition: all 0.2s;
+}
+
+.city-option:hover {
+  background: rgba(157, 41, 41, 0.05);
+}
+
+.city-option.active {
+  color: #9d2929;
+  background: rgba(157, 41, 41, 0.08);
+  font-weight: 500;
 }
 
 /* ========== 移动端搜索栏 ========== */

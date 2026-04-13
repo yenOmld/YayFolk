@@ -29,7 +29,14 @@
           <h1>{{ booking.activityTitle || '活动报名' }}</h1>
           <p class="sub-copy">{{ booking.shopName || booking.merchantName || '商家' }}</p>
 
-          <div v-if="booking.canOpenQr && qrCodeUrl" class="qr-box">
+          <div v-if="booking.status === 'checked_in'" class="qr-box checked-in">
+            <i class="bx bx-check-circle"></i>
+            <strong>已核销</strong>
+            <span>该订单已成功核销。</span>
+            <p v-if="booking.verificationTime">核销时间: {{ formatTime(booking.verificationTime) }}</p>
+          </div>
+
+          <div v-else-if="booking.canOpenQr && qrCodeUrl" class="qr-box">
             <img :src="qrCodeUrl" alt="报名二维码">
             <strong>{{ booking.reserveNo }}</strong>
             <span>现场向商家出示此二维码进行核销。</span>
@@ -83,7 +90,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getActivityBookingDetail, getActivityBookingQrCode } from '../../api/app'
 
@@ -96,6 +103,7 @@ const loading = ref(false)
 const booking = ref(null)
 const qrCodeUrl = ref('')
 const qrError = ref(false)
+let statusCheckInterval = null
 
 const fullLocation = computed(() => (
   [booking.value?.locationProvince, booking.value?.locationCity, booking.value?.locationDistrict, booking.value?.locationDetail]
@@ -182,6 +190,23 @@ const goBack = () => {
   router.push('/personal/checkins')
 }
 
+const checkStatus = async () => {
+  if (!booking.value?.id) return
+  
+  try {
+    const response = await getActivityBookingDetail(booking.value.id)
+    if (response.code === 200 && response.data) {
+      // 如果状态变为已核销，更新页面
+      if (response.data.status === 'checked_in' && booking.value.status !== 'checked_in') {
+        booking.value = response.data
+        qrCodeUrl.value = '' // 清空二维码
+      }
+    }
+  } catch (error) {
+    // 忽略错误，继续检查
+  }
+}
+
 const formatTime = (value) => (value ? new Date(value).toLocaleString() : '-')
 const formatRange = (start, end) => {
   const startText = start ? formatTime(start) : '待定'
@@ -189,7 +214,24 @@ const formatRange = (start, end) => {
   return endText ? `${startText} - ${endText}` : startText
 }
 
-onMounted(loadBooking)
+onMounted(async () => {
+  await loadBooking()
+  
+  // 启动定时检查状态
+  statusCheckInterval = setInterval(() => {
+    if (booking.value?.status !== 'checked_in') {
+      checkStatus()
+    }
+  }, 3000) // 每3秒检查一次
+})
+
+onUnmounted(() => {
+  // 清理定时器
+  if (statusCheckInterval) {
+    clearInterval(statusCheckInterval)
+    statusCheckInterval = null
+  }
+})
 </script>
 
 <style scoped>
@@ -211,6 +253,10 @@ onMounted(loadBooking)
 .qr-loading i, .qr-fallback i { font-size: 56px; color: #0f766e; }
 .qr-box strong, .qr-fallback strong { color: #111827; font-size: 18px; }
 .qr-box span, .qr-loading span, .qr-fallback p { margin: 0; color: #64748b; line-height: 1.7; }
+.qr-box.checked-in i { font-size: 80px; color: #15803d; }
+.qr-box.checked-in strong { color: #15803d; font-size: 24px; }
+.qr-box.checked-in span { color: #166534; font-weight: 500; }
+.qr-box.checked-in p { margin-top: 8px; color: #65a30d; font-size: 14px; }
 .action-row { display: flex; gap: 12px; margin-top: 20px; }
 .pay-btn, .detail-btn { flex: 1; border: none; border-radius: 14px; padding: 12px 16px; font-weight: 600; cursor: pointer; }
 .pay-btn { background: linear-gradient(135deg, #9d2929, #b33030); color: #fff; }
