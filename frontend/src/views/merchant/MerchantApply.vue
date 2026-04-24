@@ -804,9 +804,7 @@ async function loadApplication() {
     storedInfo.value = data
     applyForm(data)
     const resolvedStatus = normalizeStatus(data.applicationStatus || data.businessStatus || data.shopStatus)
-    const nextRole = currentUser.value?.role === 'admin'
-      ? 'admin'
-      : (Number(data.isMerchant || 0) === 1 || resolvedStatus === 'approved' ? 'merchant' : currentUser.value?.role)
+    const nextRole = Number(data.isMerchant || 0) === 1 || resolvedStatus === 'approved' ? 'merchant' : currentUser.value?.role
 
     syncStoredUser({
       role: nextRole,

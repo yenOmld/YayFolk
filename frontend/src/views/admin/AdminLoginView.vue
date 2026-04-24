@@ -31,8 +31,6 @@
       <section class="login-panel">
         <div class="panel-copy">
           <span class="panel-tag">YayFolk Console</span>
-          <h2>进入管理后台</h2>
-          <p>输入管理员账号与密码后继续。</p>
         </div>
 
         <form class="login-form" @submit.prevent="handleAdminLogin">
@@ -291,7 +289,7 @@ const handleAdminLogin = async () => {
 .login-form label {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   color: rgba(247, 244, 238, 0.82);
   font-size: 14px;
   font-weight: 600;
@@ -334,7 +332,7 @@ const handleAdminLogin = async () => {
 }
 
 .submit-btn {
-  margin-top: 8px;
+  margin-top: 40px;
   padding: 14px 16px;
   border: none;
   border-radius: 16px;
@@ -359,6 +357,7 @@ const handleAdminLogin = async () => {
 
 .footer-links {
   margin-top: 18px;
+  text-align: right;
 }
 
 .footer-links a {

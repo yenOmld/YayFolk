@@ -23,7 +23,7 @@ public class Message {
     @Column(name = "receiver_id", nullable = false)
     private Long receiverId;
 
-    @Column(name = "content", nullable = false, length = 1000)
+    @Column(name = "content", nullable = false, length = 5000)
     private String content;
 
     @Column(name = "type", length = 20)

@@ -520,7 +520,7 @@ onMounted(load)
 .section-label {
   display: block;
   margin-bottom: 6px;
-  color: #475569;
+  color: #000;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -534,7 +534,7 @@ onMounted(load)
 }
 
 .summary {
-  color: #6b7280;
+  color: #242d3fff;
 }
 
 .remark {

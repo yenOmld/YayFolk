@@ -42,9 +42,9 @@
             <span class="user-name">{{ currentUser.nickname || currentUser.username || '管理员' }}</span>
             <span class="user-account">@{{ currentUser.username || 'admin' }}</span>
           </div>
-          <button class="back-btn" @click="goBack">
-            <i class="bx bx-left-arrow-alt"></i>
-            <span>返回应用</span>
+          <button class="back-btn" @click="handleLogout">
+            <i class="bx bx-log-out"></i>
+            <span>退出登录</span>
           </button>
         </div>
       </aside>
@@ -144,7 +144,15 @@ const navItems = computed(() => {
 })
 
 const userBadge = computed(() => (isSuperAdmin ? '超级管理员' : '管理员'))
-const goBack = () => router.push('/home/personal')
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  localStorage.removeItem('userInfo')
+  if (window.$axios) {
+    delete window.$axios.defaults.headers.common.Authorization
+  }
+  router.push('/admin-login')
+}
 
 const navBadgeCountMap = computed(() => ({
   merchants: workbenchBadgeState.admin.merchantsCount,
@@ -624,6 +632,7 @@ onBeforeUnmount(() => {
   border-radius: 16px !important;
   background: rgba(255, 255, 255, 0.12) !important;
   color: var(--admin-ink) !important;
+  caret-color: #fbd8b5 !important;
   box-shadow: none !important;
   min-height: 46px;
   padding: 12px 14px !important;
@@ -633,15 +642,6 @@ onBeforeUnmount(() => {
 :deep(.admin-page input::placeholder),
 :deep(.admin-page textarea::placeholder) {
   color: rgba(247, 244, 238, 0.52);
-}
-
-:deep(.admin-page .search-box input:focus),
-:deep(.admin-page input:focus),
-:deep(.admin-page select:focus),
-:deep(.admin-page textarea:focus) {
-  border-color: rgba(251, 216, 181, 0.42) !important;
-  box-shadow: 0 0 0 4px rgba(251, 216, 181, 0.12) !important;
-  outline: none;
 }
 
 :deep(.admin-page textarea) {

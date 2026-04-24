@@ -11,11 +11,13 @@ import com.yayfolk.backend.repository.MessageRepository;
 import com.yayfolk.backend.repository.NotificationRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserRepository;
+import com.yayfolk.backend.service.AICustomerService;
 import com.yayfolk.backend.util.TextRepairUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ public class MessageService {
     private final UserRepository userRepository;
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
+    private final AICustomerService aiCustomerService;
 
     public MessageService(ConversationRepository conversationRepository,
                           MessageRepository messageRepository,
@@ -45,7 +48,8 @@ public class MessageService {
                           UserFollowRepository userFollowRepository,
                           UserRepository userRepository,
                           StringRedisTemplate redisTemplate,
-                          TranslateService translateService) {
+                          TranslateService translateService,
+                          AICustomerService aiCustomerService) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.notificationRepository = notificationRepository;
@@ -53,6 +57,7 @@ public class MessageService {
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
         this.translateService = translateService;
+        this.aiCustomerService = aiCustomerService;
     }
 
     public List<Map<String, Object>> getConversationList(String username) {
@@ -191,7 +196,9 @@ public class MessageService {
         message.setIsRead(false);
         Message savedMessage = messageRepository.save(message);
 
-        conversation.setLastMessage(content);
+        // 设置 lastMessage，确保不超过1000字符限制
+        String lastMessage = content.length() > 1000 ? content.substring(0, 997) + "..." : content;
+        conversation.setLastMessage(lastMessage);
         conversation.setLastMessageTime(new Date());
         if (userId.equals(conversation.getUser1Id())) {
             conversation.setUnreadCountUser2(safeInt(conversation.getUnreadCountUser2()) + 1);
@@ -200,7 +207,83 @@ public class MessageService {
         }
         conversationRepository.save(conversation);
 
+        // 客服会话的AI回复由SSE连接处理，不再这里生成
+
         return toMessageMap(savedMessage, userId);
+    }
+
+    @Transactional
+    private void generateAIResponse(Long conversationId, Long userId, String userMessage) {
+        // 获取会话历史
+        List<Message> conversationHistory = messageRepository.findByConversationIdOrderByCreateTimeAsc(conversationId);
+        
+        // 生成AI回复
+        String aiResponse = aiCustomerService.generateResponse(conversationHistory, userMessage);
+        
+        // 保存AI回复为消息
+        Message aiMessage = new Message();
+        aiMessage.setConversationId(conversationId);
+        // 假设AI客服的ID为1，需要根据实际情况调整
+        aiMessage.setSenderId(1L);
+        aiMessage.setReceiverId(userId);
+        aiMessage.setContent(aiResponse);
+        aiMessage.setType("text");
+        aiMessage.setSourceLang(detectLanguage(aiResponse));
+        aiMessage.setIsRead(false);
+        messageRepository.save(aiMessage);
+        
+        // 更新会话信息
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+        if (conversation != null) {
+            // 截断 lastMessage，确保不超过数据库字段长度限制
+            String truncatedResponse = aiResponse.length() > 500 ? aiResponse.substring(0, 497) + "..." : aiResponse;
+            conversation.setLastMessage(truncatedResponse);
+            conversation.setLastMessageTime(new Date());
+            if (1L == conversation.getUser1Id()) {
+                conversation.setUnreadCountUser2(safeInt(conversation.getUnreadCountUser2()) + 1);
+            } else {
+                conversation.setUnreadCountUser1(safeInt(conversation.getUnreadCountUser1()) + 1);
+            }
+            conversationRepository.save(conversation);
+        }
+    }
+
+    public Flux<String> streamGenerateAIResponse(Long conversationId, Long userId, String userMessage) {
+        // 获取会话历史
+        List<Message> conversationHistory = messageRepository.findByConversationIdOrderByCreateTimeAsc(conversationId);
+        
+        // 生成AI回复（流式）
+        return aiCustomerService.streamGenerateResponse(conversationHistory, userMessage);
+    }
+
+    @Transactional
+    public void saveAIMessage(Long conversationId, Long userId, String aiResponse) {
+        // 保存AI回复为消息
+        Message aiMessage = new Message();
+        aiMessage.setConversationId(conversationId);
+        // 假设AI客服的ID为1，需要根据实际情况调整
+        aiMessage.setSenderId(1L);
+        aiMessage.setReceiverId(userId);
+        aiMessage.setContent(aiResponse);
+        aiMessage.setType("text");
+        aiMessage.setSourceLang(detectLanguage(aiResponse));
+        aiMessage.setIsRead(false);
+        messageRepository.save(aiMessage);
+        
+        // 更新会话信息
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+        if (conversation != null) {
+            // 截断 lastMessage，确保不超过数据库字段长度限制
+            String truncatedResponse = aiResponse.length() > 500 ? aiResponse.substring(0, 497) + "..." : aiResponse;
+            conversation.setLastMessage(truncatedResponse);
+            conversation.setLastMessageTime(new Date());
+            if (1L == conversation.getUser1Id()) {
+                conversation.setUnreadCountUser2(safeInt(conversation.getUnreadCountUser2()) + 1);
+            } else {
+                conversation.setUnreadCountUser1(safeInt(conversation.getUnreadCountUser1()) + 1);
+            }
+            conversationRepository.save(conversation);
+        }
     }
 
     public List<Map<String, Object>> getMessages(String username, Long conversationId) {
@@ -546,7 +629,7 @@ public class MessageService {
         return map;
     }
 
-    private Long findUserId(String username) {
+    public Long findUserId(String username) {
         return findUser(username).getId();
     }
 
@@ -630,7 +713,29 @@ public class MessageService {
     }
 
     private String visibleText(String value) {
-        return TextRepairUtils.repairIfNeeded(defaultString(value));
+        String repaired = TextRepairUtils.repairIfNeeded(defaultString(value));
+        return removeMarkdown(repaired);
+    }
+
+    private String removeMarkdown(String text) {
+        if (text == null) {
+            return null;
+        }
+        // 去除加粗格式 **text**
+        text = text.replaceAll("\\*\\*(.*?)\\*\\*", "$1");
+        // 去除斜体格式 *text*
+        text = text.replaceAll("\\*(.*?)\\*", "$1");
+        // 去除下划线格式 __text__
+        text = text.replaceAll("__([^_]+)__", "$1");
+        // 去除删除线格式 ~~text~~
+        text = text.replaceAll("~~([^~]+)~~", "$1");
+        // 去除代码块 ```code```
+        text = text.replaceAll("```[\\s\\S]*?```", "");
+        // 去除行内代码 `code`
+        text = text.replaceAll("`([^`]+)`", "$1");
+        // 去除标题格式 # text
+        text = text.replaceAll("^#+\\s+(.+)$", "$1");
+        return text;
     }
 
     private String formatDate(Date date) {

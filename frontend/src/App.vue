@@ -3,6 +3,7 @@
     <router-view />
     <Notification ref="notificationRef" />
     <ConfirmModal ref="confirmModalRef" />
+    <FloatingDoll />
   </div>
 </template>
 
@@ -11,6 +12,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Notification from './components/Notification.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
+import FloatingDoll from './components/FloatingDoll.vue'
 
 const router = useRouter()
 const notificationRef = ref(null)

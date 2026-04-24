@@ -550,16 +550,14 @@ onMounted(load)
   gap: 12px;
   flex-wrap: wrap;
   padding: 12px 14px;
-  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: #f8fafc;
 }
 
 .check-all {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #334155;
+  color: #64748b;
   font-size: 14px;
 }
 

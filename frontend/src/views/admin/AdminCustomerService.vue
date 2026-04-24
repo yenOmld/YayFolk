@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="admin-page admin-service-page">
     <div class="page-header">
       <div>
@@ -59,11 +59,11 @@
               v-for="message in messages"
               :key="message.id"
               class="message-row"
-              :class="{ self: message.isSelf }"
+              :class="{ self: message.isSelf, thinking: message.isThinking }"
             >
-              <div class="message-bubble">
+              <div class="message-bubble" :class="{ 'thinking-bubble': message.isThinking }">
                 <div class="message-content">{{ message.content }}</div>
-                <div class="message-time">{{ message.time }}</div>
+                <div v-if="!message.isThinking" class="message-time">{{ message.time }}</div>
               </div>
             </div>
             <div v-if="messages.length === 0" class="panel-empty">当前会话还没有消息</div>
@@ -189,6 +189,23 @@ const sendReply = async () => {
     currentConversation.value.lastMessageTime = response.data.time
     draft.value = ''
     scrollToBottom()
+    
+    // 添加AI客服正在思考的提示
+    const thinkingMessage = {
+      id: Date.now(),
+      content: 'AI客服正在思考...',
+      time: new Date().toLocaleString('zh-CN'),
+      isSelf: false,
+      isThinking: true
+    }
+    messages.value.push(thinkingMessage)
+    scrollToBottom()
+    
+    // 模拟AI回复延迟，实际项目中可以通过WebSocket或轮询获取AI回复
+    setTimeout(async () => {
+      // 重新加载消息列表，获取AI回复
+      await loadMessagesForConversation(currentConversation.value.id)
+    }, 1000)
   } catch (error) {
     notify.error(error.message || '发送失败')
   } finally {
@@ -431,6 +448,24 @@ onMounted(() => {
   color: rgba(247, 244, 238, 0.52);
   font-size: 12px;
   text-align: right;
+}
+
+.message-row.thinking .message-bubble {
+  background: rgba(100, 100, 100, 0.3);
+  border-color: rgba(150, 150, 150, 0.3);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .composer {

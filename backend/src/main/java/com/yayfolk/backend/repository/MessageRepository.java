@@ -10,5 +10,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     List<Message> findByConversationIdOrderByCreateTimeDesc(Long conversationId);
 
+    List<Message> findTop5ByConversationIdOrderByCreateTimeDesc(Long conversationId);
+
+    List<Message> findTop10ByConversationIdOrderByCreateTimeAsc(Long conversationId);
+
     void deleteByConversationId(Long conversationId);
 }

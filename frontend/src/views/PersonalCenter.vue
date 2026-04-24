@@ -1,10 +1,6 @@
 <template>
   <div class="personal-center">
-    <!-- 客服消息模态框 -->
-    <CustomerServiceView 
-      :visible="showCustomerServiceModal" 
-      @close="showCustomerServiceModal = false"
-    />
+
 
     <!-- 设置按钮 -->
     <div class="top-right-settings">
@@ -30,8 +26,8 @@
               <h2>{{ userInfo.nickname }}</h2>
               <div class="profile-actions">
                 <div class="role-badge" v-if="isMerchantRole">
-                  <i :class="userInfo.role === 'admin' ? 'bx bxs-shield' : 'bx bxs-store'"></i>
-                  {{ userInfo.role === 'admin' ? '管理员' : '商家' }}
+                  <i class="bx bxs-store"></i>
+                  商家
                 </div>
               </div>
             </div>
@@ -437,7 +433,7 @@
           </div>
           <div class="menu-item menu-item--with-alert" v-else @click="openPrimaryPanel" :data-alert="hasWorkbenchAlert ? workbenchAlertText : ''">
             <i class='bx bxs-dashboard'></i>
-            <span>{{ userInfo.role === 'admin' ? '进入管理后台' : '进入商家工作台' }}</span>
+            <span>进入商家工作台</span>
             <i class='bx bx-chevron-right'></i>
           </div>
         </div>
@@ -767,7 +763,6 @@
 import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, getFollowers, getFollowing, getUserProfile, login } from '../api/app'
-import CustomerServiceView from './CustomerServiceView.vue'
 import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
 
 const { appContext } = getCurrentInstance()
@@ -777,7 +772,6 @@ const router = useRouter()
 const showLogoutModal = ref(false)
 const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
-const showCustomerServiceModal = ref(false)
 let badgeTimer = null
 
 const addingAccount = ref(false)
@@ -884,20 +878,14 @@ const merchantForm = ref({
   businessType: ''
 })
 
-const isMerchantRole = computed(() => ['merchant', 'admin'].includes(userInfo.value.role))
+const isMerchantRole = computed(() => userInfo.value.role === 'merchant')
 const hasWorkbenchAlert = computed(() => {
-  if (userInfo.value.role === 'admin') {
-    return workbenchBadgeState.admin.totalCount > 0
-  }
   if (userInfo.value.role === 'merchant') {
     return workbenchBadgeState.merchant.totalCount > 0
   }
   return false
 })
 const workbenchAlertCount = computed(() => {
-  if (userInfo.value.role === 'admin') {
-    return Number(workbenchBadgeState.admin.totalCount || 0)
-  }
   if (userInfo.value.role === 'merchant') {
     return Number(workbenchBadgeState.merchant.totalCount || 0)
   }
@@ -908,9 +896,6 @@ const receivedVisitorCount = computed(() => visitorsList.value.length || 0)
 const viewedVisitorCount = computed(() => viewedUsersList.value.length || 0)
 
 const primaryPanelLabel = computed(() => {
-  if (userInfo.value.role === 'admin') {
-    return '管理后台'
-  }
   if (isMerchantRole.value) {
     return '商家工作台'
   }
@@ -918,9 +903,6 @@ const primaryPanelLabel = computed(() => {
 })
 
 const secondaryActionLabel = computed(() => {
-  if (userInfo.value.role === 'admin') {
-    return '管理后台'
-  }
   if (isMerchantRole.value) {
     return '商家工作台'
   }
@@ -928,9 +910,6 @@ const secondaryActionLabel = computed(() => {
 })
 
 const secondaryActionIcon = computed(() => {
-  if (userInfo.value.role === 'admin') {
-    return 'bx bxs-dashboard'
-  }
   if (isMerchantRole.value) {
     return 'bx bxs-store-alt'
   }
@@ -940,9 +919,6 @@ const secondaryActionIcon = computed(() => {
 const profileSummary = computed(() => {
   if (userInfo.value.bio) {
     return userInfo.value.bio
-  }
-  if (userInfo.value.role === 'admin') {
-    return '这里集中处理后台入口、资料设置和账号操作，个人主页单独作为对外展示页'
   }
   if (isMerchantRole.value) {
     return '这里集中处理商家工作台和账号设置，个人主页单独承担品牌与内容展示'
@@ -1312,17 +1288,7 @@ const handleSecondaryAction = () => {
 
 const openPrimaryPanel = () => {
   closeSettingsDrawer()
-  if (userInfo.value.role === 'admin') {
-    const storedUser = parseStoredUser()
-    const isSuperAdmin = Number(storedUser?.isSuperAdmin || 0) === 1
-    router.push(isSuperAdmin ? '/admin/admins' : '/admin/merchants')
-    return
-  }
-  if (userInfo.value.role === 'merchant') {
-    router.push('/merchant/activities')
-    return
-  }
-  openHomepage()
+  router.push('/merchant/activities')
 }
 
 // 显示修改密码
@@ -1433,7 +1399,7 @@ const submitPasswordChange = async () => {
 // 显示关于我们
 const openCustomerService = async () => {
   closeSettingsDrawer()
-  showCustomerServiceModal.value = true
+  notify.info('请使用右下角的悬浮小人进行客服咨询')
 }
 
 // 显示退出登录确认
