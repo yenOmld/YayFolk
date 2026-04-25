@@ -96,3 +96,4 @@ backend/src/main/resources/application-*.yml
 docs/
 
 *.txt
+*.md

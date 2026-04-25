@@ -42,6 +42,24 @@
         </button>
       </div>
 
+      <div v-if="currentMode === 'explore'" class="explore-history-bar">
+        <button class="new-chat-btn" @click="newExploreChat">+ 新对话</button>
+        <div v-if="loadingExploreHistory" class="history-loading">加载中...</div>
+        <div v-else-if="exploreConversations.length === 0" class="history-empty">暂无历史对话</div>
+        <div v-else class="history-list">
+          <div
+            v-for="conv in exploreConversations"
+            :key="conv.id"
+            class="history-item"
+            :class="{ active: exploreConversationId === conv.id }"
+            @click="loadExploreHistory(conv.id)"
+          >
+            <span class="history-title">{{ conv.title || '对话' }}</span>
+            <button class="history-delete" @click.stop="handleDeleteExploreConversation(conv.id)">×</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 对话区域 -->
       <div class="ai-sidebar-content">
         <div class="message-list" ref="messageList">
@@ -56,6 +74,98 @@
               :class="message.type === 'user' ? 'user-message' : 'bot-message'"
             >
               {{ message.content }}
+              <!-- 资源卡片 -->
+              <div v-if="message.resources" class="resource-cards">
+                <!-- 行程规划 -->
+                <div v-if="message.resources.intent === 'ITINERARY_PLANNING'" class="resource-section">
+                  <h4>行程规划</h4>
+                  <div class="itinerary-card">
+                    <div class="itinerary-text" style="white-space: pre-line;">{{ message.resources.itinerary }}</div>
+                  </div>
+                  <div v-if="message.resources.activities && message.resources.activities.length > 0" style="margin-top: 8px;">
+                    <h4>相关活动</h4>
+                    <div class="card-list">
+                      <div 
+                        v-for="(activity, idx) in message.resources.activities" 
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('activity', activity.id)"
+                      >
+                        <h5>{{ activity.title }}</h5>
+                        <p>{{ activity.location }}</p>
+                        <p>{{ activity.startTime }} · {{ activity.price === 0 ? '免费' : activity.price + '元' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="message.resources.heritages && message.resources.heritages.length > 0" style="margin-top: 8px;">
+                    <h4>相关非遗项目</h4>
+                    <div class="card-list">
+                      <div 
+                        v-for="(heritage, idx) in message.resources.heritages" 
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('heritage', heritage.id)"
+                      >
+                        <h5>{{ heritage.name }}</h5>
+                        <p>{{ heritage.category }} · {{ heritage.region }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 结构化查询 -->
+                <div v-if="message.resources.intent === 'STRUCTURED_QUERY'" class="resource-section">
+                  <div v-if="message.resources.activities && message.resources.activities.length > 0">
+                    <h4>为您找到 {{ message.resources.total }} 个活动</h4>
+                    <div class="card-list">
+                      <div 
+                        v-for="(activity, idx) in message.resources.activities" 
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('activity', activity.id)"
+                      >
+                        <h5>{{ activity.title }}</h5>
+                        <p v-if="activity.subtitle">{{ activity.subtitle }}</p>
+                        <p>{{ activity.location }}</p>
+                        <p>{{ activity.startTime }} · {{ activity.price === 0 ? '免费' : activity.price + '元' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <p>暂无符合条件的活动，试试其他条件吧~</p>
+                  </div>
+                </div>
+                <!-- 知识问答 -->
+                <div v-if="message.resources.intent === 'KNOWLEDGE_QA'" class="resource-section">
+                  <div v-if="message.resources.posts && message.resources.posts.length > 0">
+                    <h4>相关帖子</h4>
+                    <div class="card-list">
+                      <div 
+                        v-for="(post, idx) in message.resources.posts" 
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('post', post.id)"
+                      >
+                        <h5>{{ post.title }}</h5>
+                        <p>{{ post.createTime }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="message.resources.heritages && message.resources.heritages.length > 0" style="margin-top: 8px;">
+                    <h4>相关非遗项目</h4>
+                    <div class="card-list">
+                      <div 
+                        v-for="(heritage, idx) in message.resources.heritages" 
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('heritage', heritage.id)"
+                      >
+                        <h5>{{ heritage.name }}</h5>
+                        <p>{{ heritage.category }} · {{ heritage.region }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -85,6 +195,31 @@
       :class="{ active: sidebarOpen }"
       @click="closeSidebar"
     ></div>
+
+    <!-- 删除确认弹窗 -->
+    <ConfirmModal ref="deleteConfirmModal" />
+
+    <!-- 帖子详情弹窗 -->
+    <PostDetailModal 
+      :visible="showPostModal" 
+      :post="selectedPost" 
+      @close="showPostModal = false"
+      @update="handlePostUpdate"
+    />
+
+    <!-- 活动详情弹窗 -->
+    <ActivityDetailModal 
+      :visible="showActivityModal" 
+      :activity-id="selectedActivityId" 
+      @close="showActivityModal = false"
+    />
+
+    <!-- 非遗详情弹窗 -->
+    <HeritageDetailModal 
+      :visible="showHeritageModal" 
+      :heritage="selectedHeritage" 
+      @close="showHeritageModal = false"
+    />
   </div>
 </template>
 
@@ -94,11 +229,26 @@ import {
   getConversations,
   getMessages,
   markAsRead,
-  sendMessage
+  sendMessage,
+  exploreResources,
+  getExploreConversations,
+  getExploreMessages,
+  deleteExploreConversation,
+  getDiscoverPostDetail
 } from '../api/app'
+import ConfirmModal from './ConfirmModal.vue'
+import PostDetailModal from './PostDetailModal.vue'
+import ActivityDetailModal from './ActivityDetailModal.vue'
+import HeritageDetailModal from './HeritageDetailModal.vue'
 
 export default {
   name: 'FloatingDoll',
+  components: {
+    ConfirmModal,
+    PostDetailModal,
+    ActivityDetailModal,
+    HeritageDetailModal
+  },
   data() {
     return {
       sidebarOpen: false,
@@ -118,6 +268,15 @@ export default {
       initialY: 0,
       xOffset: 0,
       yOffset: 0,
+      exploreConversationId: null,
+      exploreConversations: [],
+      loadingExploreHistory: false,
+      showPostModal: false,
+      selectedPost: null,
+      showActivityModal: false,
+      selectedActivityId: null,
+      showHeritageModal: false,
+      selectedHeritage: null,
       // 知识问答模式相关数据
       loadingList: false,
       sending: false,
@@ -164,7 +323,6 @@ export default {
     },
     switchMode(mode) {
       this.currentMode = mode;
-      // 可以根据不同模式显示不同的欢迎信息
       this.messages = [
         {
           type: 'bot',
@@ -172,10 +330,75 @@ export default {
         }
       ];
       
-      // 如果切换到知识问答模式，初始化会话
       if (mode === 'knowledge') {
         this.initKnowledgeMode();
+      } else if (mode === 'explore') {
+        this.exploreConversationId = null;
+        this.loadExploreConversations();
       }
+    },
+    loadExploreConversations() {
+      this.loadingExploreHistory = true;
+      getExploreConversations()
+        .then(response => {
+          if (response.code === 200) {
+            this.exploreConversations = response.data || [];
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.loadingExploreHistory = false;
+        });
+    },
+    loadExploreHistory(conversationId) {
+      getExploreMessages(conversationId)
+        .then(response => {
+          if (response.code === 200) {
+            this.exploreConversationId = conversationId;
+            this.messages = (response.data || []).map(msg => {
+              if (msg.role === 'user') {
+                return { type: 'user', content: msg.content };
+              } else {
+                return {
+                  type: 'bot',
+                  content: msg.content,
+                  resources: msg.resources || null
+                };
+              }
+            });
+            this.scrollToBottom();
+          }
+        })
+        .catch(() => {});
+    },
+    newExploreChat() {
+      this.exploreConversationId = null;
+      this.messages = [
+        {
+          type: 'bot',
+          content: '你好！我是非遗探索助手，可以帮你搜索活动、规划行程、回答非遗相关问题。试试问我吧！'
+        }
+      ];
+    },
+    handleDeleteExploreConversation(conversationId) {
+      this.$refs.deleteConfirmModal.show({
+        title: '删除对话',
+        message: '确定要删除这条对话记录吗？此操作不可恢复。',
+        confirmText: '删除',
+        cancelText: '取消',
+        onConfirm: () => {
+          deleteExploreConversation(conversationId)
+            .then(response => {
+              if (response.code === 200) {
+                this.loadExploreConversations();
+                if (this.exploreConversationId === conversationId) {
+                  this.newExploreChat();
+                }
+              }
+            })
+            .catch(() => {});
+        }
+      });
     },
     // 读取存储的用户信息
     readStoredUser() {
@@ -303,6 +526,8 @@ export default {
       // 根据模式处理消息
       if (this.currentMode === 'knowledge') {
         this.sendMessageKnowledgeMode(messageContent);
+      } else if (this.currentMode === 'explore') {
+        this.sendMessageExploreMode(messageContent);
       } else {
         // 其他模式使用模拟回复
         this.messages.push({
@@ -403,6 +628,89 @@ export default {
         this.sending = false;
         console.error('发送消息错误:', error);
       }
+    },
+    // 探索资源模式发送消息
+    sendMessageExploreMode(messageContent) {
+      // 显示用户输入的消息
+      this.messages.push({
+        type: 'user',
+        content: messageContent
+      });
+      // 滚动到底部
+      this.scrollToBottom();
+      
+      // 显示加载状态
+      this.messages.push({
+        type: 'bot',
+        content: '正在搜索相关资源...',
+        isLoading: true
+      });
+      // 滚动到底部
+      this.scrollToBottom();
+      
+      // 调用 exploreResources API
+      exploreResources({ userInput: messageContent, conversationId: this.exploreConversationId })
+        .then(response => {
+          if (response.code === 200) {
+            if (response.data.conversationId) {
+              this.exploreConversationId = response.data.conversationId;
+            }
+
+            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+            if (loadingIndex !== -1) {
+              this.messages.splice(loadingIndex, 1);
+            }
+            
+            this.messages.push({
+              type: 'bot',
+              content: this.buildResourceMessage(response.data),
+              resources: response.data
+            });
+          } else {
+            // 显示错误消息
+            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+            if (loadingIndex !== -1) {
+              this.messages[loadingIndex] = {
+                type: 'bot',
+                content: `获取资源失败：${response.message || '未知错误'}`
+              };
+            }
+          }
+        })
+        .catch(error => {
+          // 显示错误消息
+          const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+          if (loadingIndex !== -1) {
+            this.messages[loadingIndex] = {
+              type: 'bot',
+              content: `获取资源失败：${error.message || '网络错误'}`
+            };
+          }
+        })
+        .finally(() => {
+          // 滚动到底部
+          this.scrollToBottom();
+        });
+    },
+    // 构建资源消息
+    buildResourceMessage(data) {
+      if (!data) return '暂无相关资源';
+      
+      if (data.intent === 'ITINERARY_PLANNING') {
+        return `为您规划了${data.days}天的${data.destination}非遗之旅，详见下方行程卡片`;
+      } else if (data.intent === 'STRUCTURED_QUERY') {
+        if (data.activities && data.activities.length > 0) {
+          return `为您找到 ${data.total} 个相关活动，详见下方卡片`;
+        }
+        return '暂无符合条件的活动，试试其他条件吧~';
+      } else if (data.intent === 'KNOWLEDGE_QA') {
+        if (data.answer) {
+          return data.answer;
+        }
+        return '为您找到以下相关内容，详见下方卡片';
+      }
+      
+      return '暂无相关资源';
     },
     // 发送模拟回复
     sendMockResponse(messageContent) {
@@ -612,6 +920,75 @@ export default {
           floatingDoll.classList.remove('active', 'blink');
         }, 600);
       }
+    },
+    // 导航到资源详情页
+    navigateToResource(type, id) {
+      switch (type) {
+        case 'activity':
+          this.selectedActivityId = id;
+          this.showActivityModal = true;
+          break;
+        case 'post':
+          getDiscoverPostDetail(id)
+            .then(response => {
+              if (response.code === 200 && response.data) {
+                this.selectedPost = this.formatPostData(response.data);
+                this.showPostModal = true;
+              }
+            })
+            .catch(err => {
+              console.error('获取帖子详情失败:', err);
+            });
+          break;
+        case 'heritage':
+          this.selectedHeritage = { id };
+          this.showHeritageModal = true;
+          break;
+        default:
+          console.warn('未知资源类型:', type);
+      }
+    },
+    formatPostData(data) {
+      let images = [];
+      if (Array.isArray(data.images)) {
+        images = data.images;
+      } else if (typeof data.images === 'string') {
+        images = data.images.split(',').filter(Boolean);
+      }
+      let hashtags = [];
+      if (Array.isArray(data.tags)) {
+        hashtags = data.tags;
+      } else if (typeof data.tags === 'string') {
+        try {
+          hashtags = JSON.parse(data.tags).filter(Boolean);
+        } catch {
+          hashtags = [];
+        }
+      }
+      return {
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        images: images,
+        time: data.createTime ? new Date(data.createTime).toLocaleString('zh-CN') : '',
+        author: {
+          id: data.userId,
+          name: data.authorName || data.username || '匿名用户',
+          avatar: data.authorAvatar || '/src/assets/default-avatar.png',
+          location: data.authorLocation || '未知'
+        },
+        hashtags: hashtags,
+        comments: data.commentCount || 0,
+        commentList: data.comments || [],
+        collects: data.collectCount || 0,
+        bookmarked: data.bookmarked || false,
+        sourceLang: data.sourceLang || '',
+        auditStatus: data.auditStatus || '',
+        highlightCommentId: data.highlightCommentId || null
+      };
+    },
+    handlePostUpdate(updatedPost) {
+      this.selectedPost = updatedPost;
     }
   }
 }
@@ -798,7 +1175,7 @@ export default {
   padding: 12px 16px;
   border-radius: 18px;
   line-height: 1.4;
-  display: inline-block;
+  display: block;
 }
 
 .user-message {
@@ -873,6 +1250,133 @@ export default {
   visibility: visible;
 }
 
+/* 资源卡片样式 */
+.resource-cards {
+  margin-top: 15px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.resource-section {
+  margin-bottom: 20px;
+}
+
+.resource-section h4 {
+  font-size: 16px;
+  color: #8B4513;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resource-card {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resource-card:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resource-card h5 {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.resource-card p {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0;
+  line-height: 1.3;
+}
+
+/* 行程规划卡片样式 */
+.itinerary-card {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.itinerary-day {
+  margin-bottom: 15px;
+}
+
+.itinerary-day:last-child {
+  margin-bottom: 0;
+}
+
+.itinerary-day h5 {
+  font-size: 14px;
+  color: #8B4513;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.itinerary-activities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itinerary-activity {
+  font-size: 12px;
+  color: #333;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #8B4513;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itinerary-time {
+  font-size: 10px;
+  color: #666;
+  margin-left: 10px;
+}
+
+.itinerary-heritages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.itinerary-heritage {
+  font-size: 12px;
+  color: #333;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #4CAF50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itinerary-category {
+  font-size: 10px;
+  color: #666;
+  margin-left: 10px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .ai-sidebar {
@@ -886,5 +1390,122 @@ export default {
     bottom: 20px;
     right: 20px;
   }
+  
+  .resource-card {
+    padding: 10px;
+  }
+  
+  .resource-card h5 {
+    font-size: 13px;
+  }
+  
+  .resource-card p {
+    font-size: 11px;
+  }
+}
+
+.explore-history-bar {
+  padding: 8px 12px;
+  background: #faf5ef;
+  border-bottom: 1px solid #e0d5c5;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.new-chat-btn {
+  width: 100%;
+  padding: 6px 10px;
+  background: #8B4513;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.new-chat-btn:hover {
+  background: #6B3410;
+}
+
+.history-loading,
+.history-empty {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #555;
+  background: white;
+  border: 1px solid #e0d5c5;
+  transition: all 0.2s;
+}
+
+.history-item:hover {
+  background: #f0e8dc;
+}
+
+.history-item.active {
+  background: #8B4513;
+  color: white;
+  border-color: #8B4513;
+}
+
+.history-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-delete {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.history-item.active .history-delete {
+  color: #ddd;
+}
+
+.history-delete:hover {
+  color: #e74c3c;
+}
+
+.knowledge-answer {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.itinerary-text {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
 }
 </style>

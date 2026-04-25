@@ -788,7 +788,7 @@ const copyLink = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1000;
+  z-index: 10002;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="promotion-page">
     <div class="banner-section" id="banner">
       <div class="banner-bg"></div>
@@ -162,38 +162,8 @@
       </div>
     </div>
 
-    <div class="modal-overlay" v-if="showKnowledgeModal" @click="closeKnowledgeModal">
-      <div class="modal-content" @click.stop>
-        <button class="modal-close" @click="closeKnowledgeModal">
-          <i class='bx bx-x'></i>
-        </button>
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i :class="selectedKnowledge.icon"></i>
-          </div>
-          <h2>{{ selectedKnowledge.title }}</h2>
-        </div>
-        <div class="modal-body">
-          <p>{{ selectedKnowledge.introduction || selectedKnowledge.description || '暂无简介信息' }}</p>
-          <div class="modal-details">
-            <h3>基础信息</h3>
-            <p>{{ heritageBaseInfo }}</p>
-            <h3>历史渊源</h3>
-            <p>{{ selectedKnowledge.history || '暂无历史信息' }}</p>
-            <h3>传承价值</h3>
-            <p>{{ selectedKnowledge.inheritanceValue || '暂无传承价值信息' }}</p>
-            <h3>代表性非遗数量</h3>
-            <p>{{ selectedKnowledge.representativeInheritor || '暂无代表性非遗数量信息' }}</p>
-            <h3>相关诗词</h3>
-            <p>{{ formatKnowledgeList(selectedKnowledge.relatedPoems, '暂无相关诗词信息') }}</p>
-            <h3>相关节气</h3>
-            <p>{{ formatKnowledgeList(selectedKnowledge.relatedSolarTerms, '暂无相关节气信息') }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <PostDetailModal :visible="showPostDetail" :post="detailPost" @close="closePostDetail" />
+    <HeritageDetailModal :visible="showKnowledgeModal" :heritage="selectedKnowledge" @close="closeKnowledgeModal" />
   </div>
 </template>
 
@@ -202,6 +172,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getDiscoverPostDetail } from '@/api/app.js'
 import PostDetailModal from '@/components/PostDetailModal.vue'
+import HeritageDetailModal from '@/components/HeritageDetailModal.vue'
 import { getHomepageOfficialContents } from '@/api/app.js'
 
 const router = useRouter()
@@ -238,18 +209,6 @@ const closePostDetail = () => {
 }
 
 const aboutImage = computed(() => knowledgeData.value[0]?.image || '/videos/202601-鍏诲績娈?鍐-.png')
-const heritageBaseInfo = computed(() => {
-  const item = selectedKnowledge.value || {}
-  const parts = [
-    item.category ? `分类：${item.category}` : '',
-    item.subcategory ? `子类：${item.subcategory}` : '',
-    item.region ? `地区：${item.region}` : '',
-    item.level ? `级别：${item.level}` : '',
-    item.dynasty ? `朝代：${item.dynasty}` : '',
-    typeof item.viewCount === 'number' ? `浏览量：${item.viewCount}` : ''
-  ].filter(Boolean)
-  return parts.join(' / ') || '暂无基础信息'
-})
 
 const mapEventStatus = (status) => {
   const statusMap = {
@@ -267,17 +226,6 @@ const formatDateTime = (value) => {
 
 const formatLocation = (item) => {
   return [item.locationProvince, item.locationCity, item.locationDistrict, item.locationDetail].filter(Boolean).join(' / ') || '位置待定'
-}
-
-const formatKnowledgeList = (value, fallback = '暂无相关信息') => {
-  if (Array.isArray(value)) {
-    const text = value.filter(Boolean).join('、')
-    return text || fallback
-  }
-  if (typeof value === 'string') {
-    return value.trim() || fallback
-  }
-  return fallback
 }
 
 const loadHomepageData = async () => {
@@ -323,12 +271,10 @@ const loadHomepageData = async () => {
 const openKnowledgeModal = (index) => {
   selectedKnowledge.value = knowledgeData.value[index] || {}
   showKnowledgeModal.value = true
-  document.body.style.overflow = 'hidden'
 }
 
 const closeKnowledgeModal = () => {
   showKnowledgeModal.value = false
-  document.body.style.overflow = ''
 }
 
 const handleCardMouseEnter = (index) => {
@@ -1055,152 +1001,6 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 24px;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  background: linear-gradient(135deg, #fff 0%, #fdf5e6 100%);
-  border-radius: 20px;
-  max-width: 700px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  position: relative;
-  top: -50px;
-  animation: slideUp 0.4s ease;
-  box-shadow: 0 25px 80px rgba(79, 9, 21, 0.4);
-}
-.modal-content::-webkit-scrollbar {
-  display: none;
-}
-.modal-content {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #4f0915;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.modal-close:hover {
-  background: #6b101d;
-  transform: rotate(90deg);
-}
-
-.modal-header {
-  text-align: center;
-  padding: 48px 32px 32px;
-  background: linear-gradient(135deg, #4f0915 0%, #6b101d 100%);
-  border-radius: 20px 20px 0 0;
-}
-
-.modal-icon {
-  width: 100px;
-  height: 100px;
-  background: rgba(218, 165, 32, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-}
-
-.modal-icon i {
-  font-size: 48px;
-  color: #daa520;
-}
-
-.modal-header h2 {
-  font-size: 32px;
-  color: #daa520;
-  margin: 0;
-  font-weight: 700;
-}
-
-.modal-body {
-  padding: 32px;
-}
-
-.modal-body > p {
-  font-size: 16px;
-  color: #333;
-  line-height: 1.8;
-  margin-bottom: 32px;
-  text-align: center;
-}
-
-.modal-details h3 {
-  font-size: 20px;
-  color: #4f0915;
-  margin: 24px 0 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.modal-details h3::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: #daa520;
-  border-radius: 2px;
-}
-
-.modal-details p {
-  font-size: 15px;
-  color: #555;
-  line-height: 1.8;
-  margin: 0 0 16px 12px;
-}
-
 .promotion-page {
   background:
     radial-gradient(circle at top left, rgba(157, 41, 41, 0.1), transparent 20%),
@@ -1305,8 +1105,7 @@ onUnmounted(() => {
 .feature-item,
 .event-item,
 .knowledge-card,
-.gallery-item,
-.modal-content {
+.gallery-item {
   border: 1px solid rgba(190, 157, 124, 0.24);
   box-shadow:
     0 22px 46px rgba(74, 46, 23, 0.08),
@@ -1415,24 +1214,6 @@ onUnmounted(() => {
   padding: 28px;
 }
 
-.modal-overlay {
-  background:
-    radial-gradient(circle at top, rgba(157, 41, 41, 0.18), transparent 30%),
-    rgba(19, 10, 6, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 243, 236, 0.96));
-}
-
-.modal-close {
-  box-shadow: 0 14px 24px rgba(44, 44, 44, 0.16);
-}
-
 @media (max-width: 1024px) {
   .banner-title {
     font-size: 120px;
@@ -1500,16 +1281,6 @@ onUnmounted(() => {
   .knowledge-card,
   .event-content {
     padding: 26px 22px;
-  }
-
-  .modal-content {
-    border-radius: 24px;
-  }
-
-  .modal-header,
-  .modal-body {
-    padding-left: 22px;
-    padding-right: 22px;
   }
 }
 </style>

@@ -1,4 +1,4 @@
-﻿import request from '../utils/request'
+﻿﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -204,8 +204,35 @@ export const saveHeritageRoute = (data) => request.post('/ai/heritage-route/favo
 export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favorites')
 export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
 export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
+export const exploreResources = (data) => {
+  return request({
+    url: '/ai/explore-resources',
+    method: 'post',
+    data
+  })
+}
 
-// ========== 闂傚倸鍊搁崐鎼佸磹閹间礁纾归柟闂寸绾惧綊鏌ｉ幋锝呅撻柛銈呭閺屾盯顢曢敐鍡欙紩闂侀€炲苯澧剧紒鐘虫尭閻ｇ兘鎮℃惔顔惧數濠电娀娼ч悧濠囧吹閳ь剙顪冮妶搴′簼缂佽瀚伴獮鎴﹀礋椤栨稒鍎柣鐘叉礌閸撴繆鍊村┑鐘垫暩婵兘寮幖浣哥；婵炴垶顭傚☉妯锋瀻闁规儳纾鍥⒑瑜版帗锛熼柣鎺炵畵瀹曟洖螖娴ｉ绠氶梺闈涚墕閹冲繘宕冲ú顏呯厽闁规儳鍟块弳锝夋煛鐏炵偓绀冪€垫澘瀚板畷鐓庘攽閸♀晝鈧兘鏌ｉ悙瀵稿暡缂佺姵鎸搁～蹇撁洪鍕暰閻熸粌绻掔划濠氭倻濡晲绨诲銈嗗姂閸╁嫬危濞差亝鐓冪憸婊堝礈濮樺崬鏋堢€广儱鎳愰弳鍡涙煙闂傚顦﹂柦鍐枛閺岋綁寮崶顭戜哗缂佺偓鍎抽崥瀣┍婵犲浂鏁嶆繛鎴炵懀娴犮垽姊洪崫銉ヤ哗婵炲鐩崺鐐哄箣閻愯尙鐤囬梻浣侯焾閿曘儱煤閻旇偐宓佸┑鐘叉噽閻も偓濠电偞鍨堕悷銉︾濡ゅ懏鈷戠紓浣股戦悡銉╂煕濮橆剦鍎旈柟顕嗙節瀹曟﹢顢欓悾灞藉箞婵犵數濞€濞佳兾涘Δ鍜佹晜闁冲搫鎳忛悡娑㈡倵閿濆啫濡奸柍褜鍓氱换鍫濐嚕婵犳碍鏅插璺猴功椤斿﹤鈹戞幊閸婃洟宕导鏉戞辈妞ゆ劧闄勯埛鎴︽煕濠靛棗顏繝鈧幍顔剧＜閻庯綆鍋勯悘鎾煕閳瑰灝鐏╂い鎾炽偢瀹曞爼濡搁妷褍閰遍梻鍌欑閹诧繝鎮烽妷鈹у洦瀵奸弶鎴犵暫濠电偛妫欓崹鍦閽樺褰掓晲閸涱喗鍎撻柡宥佸墲缁绘繈鎮介棃娑楃捕闂佹寧娲︽禍婊堫敋閿濆棛绡€婵﹩鍓欏畵鍡涙⒑缂佹ɑ顥堟い銉︽尵缁綁鎮欓悜妯锋嫼闂佸憡鎸昏ぐ鍐╃濠靛牏纾奸悹鍥ㄥ絻閳ь剙缍婇獮鍫ュΩ閿旇棄鍔呴梺鎸庣箓濞层劑鏁?==========
+export const getExploreConversations = () => {
+  return request({
+    url: '/ai/explore-conversations',
+    method: 'get'
+  })
+}
+
+export const getExploreMessages = (conversationId) => {
+  return request({
+    url: `/ai/explore-conversations/${conversationId}/messages`,
+    method: 'get'
+  })
+}
+
+export const deleteExploreConversation = (conversationId) => {
+  return request({
+    url: `/ai/explore-conversations/${conversationId}`,
+    method: 'delete'
+  })
+}
+
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
