@@ -182,8 +182,8 @@ import {
   createMerchantActivity,
   getMerchantActivities,
   updateMerchantActivity,
-  uploadImage,
-  uploadVideo
+  uploadActivityImage,
+  uploadActivityVideo
 } from '../../api/app'
 import { getRequestErrorMessage } from '../../utils/requestError'
 
@@ -355,12 +355,26 @@ const handleImageUpload = async (event) => {
   try {
     const uploadedUrls = []
     const failures = []
-    for (let index = 0; index < selected.length; index += IMAGE_UPLOAD_BATCH_SIZE) {
-      const batch = selected.slice(index, index + IMAGE_UPLOAD_BATCH_SIZE)
-      const results = await Promise.allSettled(batch.map(async (file) => {
+    for (let i = 0; i < selected.length; i += IMAGE_UPLOAD_BATCH_SIZE) {
+      const batch = selected.slice(i, i + IMAGE_UPLOAD_BATCH_SIZE)
+      const results = await Promise.allSettled(batch.map(async (file, batchIndex) => {
         const formData = new FormData()
         formData.append('file', file)
-        const response = await uploadImage(formData, 'activities')
+        
+        // 计算图片的实际索引
+        const actualIndex = form.value.images.length + i + batchIndex + 1
+        
+        let response
+        if (isEdit.value && route.params.id) {
+          // 编辑模式：使用活动ID
+          response = await uploadActivityImage(formData, route.params.id, actualIndex)
+        } else {
+          // 创建模式：暂时使用临时ID，后续会在保存时更新
+          // 这里使用时间戳作为临时ID
+          const tempActivityId = Date.now()
+          response = await uploadActivityImage(formData, tempActivityId, actualIndex)
+        }
+        
         if (response.code !== 200 || !response.data?.url) {
           throw new Error(response.message || '图片上传失败')
         }
@@ -427,7 +441,18 @@ const handleVideoUpload = async (event) => {
 
     let uploadResponse
     try {
-      uploadResponse = await uploadVideo(uploadFormData, 'activities/videos')
+      // 视频索引固定为1
+      const videoIndex = 1
+      
+      if (isEdit.value && route.params.id) {
+        // 编辑模式：使用活动ID
+        uploadResponse = await uploadActivityVideo(uploadFormData, route.params.id, videoIndex)
+      } else {
+        // 创建模式：暂时使用临时ID，后续会在保存时更新
+        // 这里使用时间戳作为临时ID
+        const tempActivityId = Date.now()
+        uploadResponse = await uploadActivityVideo(uploadFormData, tempActivityId, videoIndex)
+      }
     } catch (error) {
       showError(getRequestErrorMessage(error, {
         timeoutMessage: '视频上传时间过长，请稍后重试。',

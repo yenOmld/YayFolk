@@ -6,7 +6,7 @@ import com.yayfolk.backend.dto.TranslateRequest;
 import com.yayfolk.backend.dto.TranslateResponse;
 import com.yayfolk.backend.entity.*;
 import com.yayfolk.backend.repository.*;
-import com.yayfolk.backend.util.OssUtil;
+import com.yayfolk.backend.utils.QiniuOssUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -73,7 +73,7 @@ public class DiscoverService {
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
     private final BaiduContentAuditService baiduContentAuditService;
-    private final OssUtil ossUtil;
+    private final QiniuOssUtil ossUtil;
 
     public DiscoverService(DiscoverPostRepository postRepository,
                            DiscoverPostCollectionRepository collectionRepository,
@@ -87,7 +87,7 @@ public class DiscoverService {
                            StringRedisTemplate redisTemplate,
                            TranslateService translateService,
                            BaiduContentAuditService baiduContentAuditService,
-                           OssUtil ossUtil) {
+                           QiniuOssUtil ossUtil) {
         this.postRepository = postRepository;
         this.collectionRepository = collectionRepository;
         this.commentRepository = commentRepository;

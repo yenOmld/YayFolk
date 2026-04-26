@@ -118,7 +118,7 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getHomepageSettings, updateHomepageSettings, uploadImage } from '../api/app'
+import { getHomepageSettings, updateHomepageSettings, uploadImage, uploadHomepageImage } from '../api/app'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -226,7 +226,8 @@ const uploadImageIfNeeded = async (field) => {
 
   const formData = new FormData()
   formData.append('file', file)
-  const response = await uploadImage(formData, 'homepage')
+  formData.append('type', field)
+  const response = await uploadHomepageImage(formData)
   if (response.code !== 200 || !response.data?.url) {
     throw new Error(response.message || '图片上传失败')
   }

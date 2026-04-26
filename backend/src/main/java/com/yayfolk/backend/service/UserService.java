@@ -244,6 +244,6 @@ public class UserService {
         if (avatarUrl.startsWith("data:image")) {
             return;
         }
-        // OSS 头像会在外部调用 OssUtil.deleteFile 删除
+        // OSS 头像会在外部调用 QiniuOssUtil.deleteFile 删除
     }
 }

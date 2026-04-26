@@ -2,6 +2,7 @@
   <div>
     <!-- 悬浮小人 -->
     <div 
+      v-if="!isLoginPage"
       id="floating-doll" 
       class="floating-doll"
       @mousedown="dragStart"
@@ -11,7 +12,7 @@
     </div>
 
     <!-- AI对话侧边栏 -->
-    <div class="ai-sidebar" :class="{ open: sidebarOpen }">
+    <div v-if="!isLoginPage" class="ai-sidebar" :class="{ open: sidebarOpen }">
       <div class="ai-sidebar-header">
         <h3>智能助手 - Yaya</h3>
         <button id="close-sidebar" @click="closeSidebar">&times;</button>
@@ -257,23 +258,8 @@
 </template>
 
 <script>
-import {
-  exploreResources,
-  getExploreConversations,
-  getExploreMessages,
-  deleteExploreConversation,
-  getDiscoverPostDetail,
-  getKnowledgeConversations,
-  createKnowledgeConversation,
-  getKnowledgeMessages,
-  sendKnowledgeMessage,
-  deleteKnowledgeConversation,
-  createCustomerServiceConversation,
-  getMessages,
-  sendMessage,
-  getServiceMode,
-  closeHumanService
-} from '../api/app'
+import { useRoute } from 'vue-router'
+import { exploreResources, getExploreConversations, getExploreMessages, deleteExploreConversation, getDiscoverPostDetail, getKnowledgeConversations, createKnowledgeConversation, getKnowledgeMessages, sendKnowledgeMessage, deleteKnowledgeConversation, createCustomerServiceConversation, getMessages, sendMessage, getServiceMode, closeHumanService } from '../api/app'
 import ConfirmModal from './ConfirmModal.vue'
 import PostDetailModal from './PostDetailModal.vue'
 import ActivityDetailModal from './ActivityDetailModal.vue'
@@ -286,6 +272,12 @@ export default {
     PostDetailModal,
     ActivityDetailModal,
     HeritageDetailModal
+  },
+  setup() {
+    const route = useRoute()
+    return {
+      route
+    }
   },
   data() {
     return {
@@ -369,6 +361,9 @@ export default {
       }
 
       return result
+    },
+    isLoginPage() {
+      return this.route.path === '/login' || this.route.path === '/register'
     }
   },
   mounted() {

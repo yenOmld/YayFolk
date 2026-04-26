@@ -7,7 +7,7 @@ import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.service.UserCenterService;
 import com.yayfolk.backend.service.UserService;
-import com.yayfolk.backend.util.OssUtil;
+import com.yayfolk.backend.utils.QiniuOssUtil;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,13 +28,13 @@ public class UserController {
 
     private final UserService userService;
     private final UserCenterService userCenterService;
-    private final OssUtil ossUtil;
+    private final QiniuOssUtil ossUtil;
     private final DiscoverPostRepository postRepository;
     private final ObjectMapper objectMapper;
 
     public UserController(UserService userService,
                           UserCenterService userCenterService,
-                          OssUtil ossUtil,
+                          QiniuOssUtil ossUtil,
                           DiscoverPostRepository postRepository,
                           ObjectMapper objectMapper) {
         this.userService = userService;

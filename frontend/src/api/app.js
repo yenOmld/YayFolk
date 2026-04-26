@@ -1,4 +1,4 @@
-﻿﻿import request from '../utils/request'
+﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -387,3 +387,21 @@ export const uploadAvatar = (formData) => request.post('/upload/avatar', formDat
 })
 
 export const uploadVideo = (formData, folder = 'media') => uploadMedia(formData, folder)
+
+export const uploadActivityImage = (formData, activityId, index) => request.post(`/upload/activity/image?activityId=${activityId}&index=${index}`, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
+export const uploadActivityVideo = (formData, activityId, index) => request.post(`/upload/activity/video?activityId=${activityId}&index=${index}`, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
+export const uploadHomepageImage = (formData) => request.post('/upload/homepage/image', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
