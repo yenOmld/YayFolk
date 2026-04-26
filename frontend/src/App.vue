@@ -3,12 +3,12 @@
     <router-view />
     <Notification ref="notificationRef" />
     <ConfirmModal ref="confirmModalRef" />
-    <FloatingDoll />
+    <FloatingDoll v-if="showFloatingDoll" />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Notification from './components/Notification.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
@@ -17,6 +17,17 @@ import FloatingDoll from './components/FloatingDoll.vue'
 const router = useRouter()
 const notificationRef = ref(null)
 const confirmModalRef = ref(null)
+
+const showFloatingDoll = computed(() => {
+  const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
+  if (!raw) return true
+  try {
+    const user = JSON.parse(raw)
+    return user.role !== 'admin'
+  } catch {
+    return true
+  }
+})
 
 // 通知方法
 const notify = {

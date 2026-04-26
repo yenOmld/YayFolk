@@ -35,7 +35,12 @@
             <img :src="conversation.avatar || defaultAvatar" alt="avatar" class="avatar" />
             <div class="service-copy">
               <div class="service-head">
-                <strong>{{ conversation.name || conversation.otherUserName || '用户' }}</strong>
+                <div class="name-section">
+                  <strong>{{ conversation.name || conversation.otherUserName || '用户' }}</strong>
+                  <span v-if="conversation.serviceMode" class="mode-badge" :class="conversation.serviceMode === 'ai' ? 'ai-mode' : 'human-mode'">
+                    {{ conversation.serviceMode === 'ai' ? 'AI' : '人工' }}
+                  </span>
+                </div>
                 <span v-if="conversation.unreadCount" class="count-badge">{{ conversation.unreadCount }}</span>
               </div>
               <span class="sub">@{{ conversation.otherUsername || 'unknown' }}</span>
@@ -50,22 +55,49 @@
           <div class="panel-header">
             <div>
               <h3>{{ currentConversation.name || currentConversation.otherUserName || '用户' }}</h3>
-              <p>@{{ currentConversation.otherUsername || 'unknown' }}</p>
+              <div class="header-info">
+                <p>@{{ currentConversation.otherUsername || 'unknown' }}</p>
+                <span v-if="currentConversation.serviceMode" class="mode-badge" :class="currentConversation.serviceMode === 'ai' ? 'ai-mode' : 'human-mode'">
+                  {{ currentConversation.serviceMode === 'ai' ? 'AI客服' : '人工客服' }}
+                </span>
+              </div>
+            </div>
+            <div class="header-actions">
+              <button v-if="currentConversation.serviceMode === 'human'" class="secondary-btn" @click="closeHumanServiceHandler">
+                结束人工服务
+              </button>
             </div>
           </div>
 
           <div class="message-list" ref="messagesContainer">
-            <div
-              v-for="message in messages"
-              :key="message.id"
-              class="message-row"
-              :class="{ self: message.isSelf, thinking: message.isThinking }"
-            >
-              <div class="message-bubble" :class="{ 'thinking-bubble': message.isThinking }">
-                <div class="message-content">{{ message.content }}</div>
-                <div v-if="!message.isThinking" class="message-time">{{ message.time }}</div>
+            <template v-for="(item, idx) in messagesWithDividers" :key="idx">
+              <div v-if="item.isDivider" class="service-divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">{{ item.text }}</span>
+                <div class="divider-line"></div>
               </div>
-            </div>
+              <div
+                v-else
+                class="message-row"
+                :class="{ 
+                  self: item.isSelf, 
+                  thinking: item.isThinking,
+                  'ai-message': !item.isSelf && item.source === 'ai',
+                  'human-message': !item.isSelf && item.source === 'admin',
+                  'user-message': !item.isSelf && item.source === 'user'
+                }"
+              >
+                <div class="message-bubble" :class="{ 
+                  'thinking-bubble': item.isThinking,
+                  'ai-bubble': !item.isSelf && item.source === 'ai',
+                  'human-bubble': !item.isSelf && item.source === 'admin',
+                  'user-bubble': !item.isSelf && item.source === 'user'
+                }">
+                  <div class="message-content">{{ item.content }}</div>
+                  <div v-if="!item.isThinking" class="message-time">{{ item.time }}</div>
+                </div>
+              </div>
+            </template>
             <div v-if="messages.length === 0" class="panel-empty">当前会话还没有消息</div>
           </div>
 
@@ -76,7 +108,7 @@
               @keydown.ctrl.enter.prevent="sendReply"
             ></textarea>
             <div class="composer-actions">
-              <button class="primary-btn" @click="sendReply" :disabled="sending || !draft.trim()">发送回复</button>
+              <button class="primary-btn" @click="sendReply" :disabled="sending || !draft.trim()">回复</button>
             </div>
           </div>
         </template>
@@ -87,8 +119,8 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
-import { getConversations, getMessages, markAsRead, sendMessage } from '../../api/app'
+import { computed, getCurrentInstance, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { getConversations, getMessages, markAsRead, sendMessage, closeHumanService, getServiceMode } from '../../api/app'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -98,6 +130,7 @@ const keyword = ref('')
 const loadingList = ref(false)
 const sending = ref(false)
 const conversations = ref([])
+const pollingTimer = ref(null)
 const currentConversation = ref(null)
 const messages = ref([])
 const draft = ref('')
@@ -105,14 +138,48 @@ const messagesContainer = ref(null)
 
 const filteredConversations = computed(() => {
   const text = keyword.value.trim().toLowerCase()
-  const serviceConversations = conversations.value.filter(item => item.type === 'service')
+  const humanServiceConversations = conversations.value.filter(
+    item => item.type === 'service' && item.serviceMode === 'human'
+  )
   if (!text) {
-    return serviceConversations
+    return humanServiceConversations
   }
-  return serviceConversations.filter(item => {
+  return humanServiceConversations.filter(item => {
     const fields = [item.name, item.otherUserName, item.otherUsername, item.lastMessage]
     return fields.some(field => String(field || '').toLowerCase().includes(text))
   })
+})
+
+const messagesWithDividers = computed(() => {
+  const result = []
+  let lastServiceSource = null
+
+  for (const msg of messages.value) {
+    let currentServiceSource = null
+    if (msg.isSelf) {
+      currentServiceSource = 'admin'
+    } else if (msg.source === 'ai') {
+      currentServiceSource = 'ai'
+    } else if (msg.source === 'admin') {
+      currentServiceSource = 'admin'
+    }
+
+    if (currentServiceSource && lastServiceSource && currentServiceSource !== lastServiceSource) {
+      if (lastServiceSource === 'ai' && currentServiceSource === 'admin') {
+        result.push({ isDivider: true, text: '人工客服已接管' })
+      } else if (lastServiceSource === 'admin' && currentServiceSource === 'ai') {
+        result.push({ isDivider: true, text: '已切换回AI客服' })
+      }
+    }
+
+    if (currentServiceSource) {
+      lastServiceSource = currentServiceSource
+    }
+
+    result.push({ ...msg, isDivider: false })
+  }
+
+  return result
 })
 
 const scrollToBottom = () => {
@@ -154,15 +221,18 @@ const loadConversations = async () => {
     }
     conversations.value = response.data || []
 
-    const serviceConversations = conversations.value.filter(item => item.type === 'service')
-    if (!serviceConversations.length) {
+    const humanServiceConversations = conversations.value.filter(
+      item => item.type === 'service' && item.serviceMode === 'human'
+    )
+    if (!humanServiceConversations.length) {
       currentConversation.value = null
       messages.value = []
       return
     }
 
     const currentId = currentConversation.value?.id
-    const targetConversation = serviceConversations.find(item => item.id === currentId) || serviceConversations[0]
+    const stillHuman = humanServiceConversations.find(item => item.id === currentId)
+    const targetConversation = stillHuman || humanServiceConversations[0]
     await selectConversation(targetConversation)
   } catch (error) {
     notify.error(error.message || '加载客服会话失败')
@@ -190,22 +260,10 @@ const sendReply = async () => {
     draft.value = ''
     scrollToBottom()
     
-    // 添加AI客服正在思考的提示
-    const thinkingMessage = {
-      id: Date.now(),
-      content: 'AI客服正在思考...',
-      time: new Date().toLocaleString('zh-CN'),
-      isSelf: false,
-      isThinking: true
-    }
-    messages.value.push(thinkingMessage)
-    scrollToBottom()
-    
-    // 模拟AI回复延迟，实际项目中可以通过WebSocket或轮询获取AI回复
+    // 重新加载消息列表，确保显示最新消息
     setTimeout(async () => {
-      // 重新加载消息列表，获取AI回复
       await loadMessagesForConversation(currentConversation.value.id)
-    }, 1000)
+    }, 500)
   } catch (error) {
     notify.error(error.message || '发送失败')
   } finally {
@@ -213,9 +271,59 @@ const sendReply = async () => {
   }
 }
 
+const closeHumanServiceHandler = async () => {
+  if (!currentConversation.value) return
+
+  try {
+    const response = await closeHumanService(currentConversation.value.id)
+    if (response.code === 200) {
+      notify.success('已结束人工服务，切换回智能客服')
+      const closedId = currentConversation.value.id
+      conversations.value = conversations.value.filter(c => c.id !== closedId)
+      currentConversation.value = null
+      messages.value = []
+      const remaining = filteredConversations.value
+      if (remaining.length > 0) {
+        await selectConversation(remaining[0])
+      }
+    } else {
+      throw new Error(response.message || '操作失败')
+    }
+  } catch (error) {
+    notify.error(error.message || '操作失败')
+  }
+}
+
 onMounted(() => {
   loadConversations()
+  pollingTimer.value = setInterval(checkCurrentServiceMode, 8000)
 })
+
+onUnmounted(() => {
+  if (pollingTimer.value) {
+    clearInterval(pollingTimer.value)
+    pollingTimer.value = null
+  }
+})
+
+const checkCurrentServiceMode = async () => {
+  if (!currentConversation.value) return
+  try {
+    const response = await getServiceMode(currentConversation.value.id)
+    if (response.code === 200 && response.data && response.data.serviceMode !== 'human') {
+      const removedId = currentConversation.value.id
+      conversations.value = conversations.value.filter(c => c.id !== removedId)
+      currentConversation.value = null
+      messages.value = []
+      const remaining = filteredConversations.value
+      if (remaining.length > 0) {
+        await selectConversation(remaining[0])
+      }
+    }
+  } catch (e) {
+    // ignore polling errors
+  }
+}
 </script>
 
 <style scoped>
@@ -336,9 +444,42 @@ onMounted(() => {
   gap: 10px;
 }
 
+.name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
 .service-head strong {
   color: #fff7ef;
   font-size: 15px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mode-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ai-mode {
+  background: rgba(30, 136, 229, 0.2);
+  color: #64b5f6;
+  border: 1px solid rgba(30, 136, 229, 0.3);
+}
+
+.human-mode {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81c784;
+  border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .service-copy .sub {
@@ -374,14 +515,57 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
 .panel-header h3 {
   margin: 0;
   font-size: 22px;
 }
 
-.panel-header p {
-  margin: 6px 0 0;
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.header-info p {
+  margin: 0;
   color: rgba(247, 244, 238, 0.62);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.secondary-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff7ef;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .message-list {
@@ -437,6 +621,48 @@ onMounted(() => {
   border-color: rgba(255, 255, 255, 0.04);
 }
 
+.ai-bubble {
+  background: rgba(30, 136, 229, 0.15);
+  border-color: rgba(30, 136, 229, 0.2);
+  color: #e3f2fd;
+}
+
+.human-bubble {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: rgba(76, 175, 80, 0.2);
+  color: #e8f5e8;
+}
+
+.user-bubble {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #fff7ef;
+}
+
+.service-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 0 8px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(251, 216, 181, 0.3), transparent);
+}
+
+.divider-text {
+  font-size: 12px;
+  color: rgba(247, 244, 238, 0.5);
+  white-space: nowrap;
+  padding: 3px 12px;
+  border-radius: 12px;
+  background: rgba(251, 216, 181, 0.08);
+  border: 1px solid rgba(251, 216, 181, 0.15);
+}
+
 .message-content {
   line-height: 1.7;
   white-space: pre-wrap;
@@ -483,6 +709,38 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 14px;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #ff7f35 0%, #ff5722 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 127, 53, 0.3);
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+  box-shadow: 0 4px 12px rgba(255, 127, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(255, 127, 53, 0.3);
+}
+
+.primary-btn:disabled {
+  background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
 }
 
 @media (max-width: 1100px) {

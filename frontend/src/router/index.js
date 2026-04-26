@@ -9,7 +9,7 @@ import UserHomepage from '../views/UserHomepage.vue'
 import NotificationView from '../views/NotificationView.vue'
 import ShareView from '../views/ShareView.vue'
 import IntangibleCulturalHeritage from '../views/IntangibleCulturalHeritage.vue'
-import AIHeritageRoute from '../views/AIHeritageRoute.vue'
+
 import ActivityList from '../views/activity/ActivityList.vue'
 import ActivityDetail from '../views/activity/ActivityDetail.vue'
 import ActivityBooking from '../views/activity/ActivityBooking.vue'
@@ -70,12 +70,7 @@ const routes = [
         component: ActivityList,
         meta: { title: 'Activities - YayFolk' }
       },
-      {
-        path: 'tools',
-        name: 'tools',
-        component: AIHeritageRoute,
-        meta: { title: 'Tools - YayFolk' }
-      },
+
       {
         path: 'discover',
         name: 'discover',
@@ -90,10 +85,7 @@ const routes = [
       }
     ]
   },
-  {
-    path: '/ai-heritage-route',
-    redirect: '/home/tools'
-  },
+
   {
     path: '/personal/edit-profile',
     name: 'edit-profile',

@@ -3,7 +3,7 @@ package com.yayfolk.backend.controller;
 import com.yayfolk.backend.dto.ResponseDto;
 import com.yayfolk.backend.repository.ExploreConversationRepository;
 import com.yayfolk.backend.repository.ExploreMessageRepository;
-import com.yayfolk.backend.service.AIHeritageRouteService;
+
 import com.yayfolk.backend.service.AIResourceService;
 import com.yayfolk.backend.service.RoutePlanService;
 import com.yayfolk.backend.service.UserService;
@@ -24,8 +24,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AIControllerTest {
     
-    @Mock
-    private AIHeritageRouteService aiHeritageRouteService;
+
     
     @Mock
     private RoutePlanService routePlanService;

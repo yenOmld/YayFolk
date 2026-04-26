@@ -41,6 +41,9 @@ public class Message {
     @Column(name = "deleted_by_receiver")
     private Boolean deletedByReceiver = false;
 
+    @Column(name = "source", length = 20)
+    private String source = "user";
+
     @Column(name = "create_time", updatable = false)
     private Date createTime;
 

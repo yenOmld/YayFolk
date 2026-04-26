@@ -42,6 +42,24 @@
         </button>
       </div>
 
+      <div v-if="currentMode === 'knowledge'" class="explore-history-bar">
+        <button class="new-chat-btn" @click="newKnowledgeChat">+ 新对话</button>
+        <div v-if="loadingKnowledgeHistory" class="history-loading">加载中...</div>
+        <div v-else-if="knowledgeConversations.length === 0" class="history-empty">暂无历史对话</div>
+        <div v-else class="history-list">
+          <div
+            v-for="conv in knowledgeConversations"
+            :key="conv.id"
+            class="history-item"
+            :class="{ active: knowledgeConversationId === conv.id }"
+            @click="loadKnowledgeHistory(conv.id)"
+          >
+            <span class="history-title">{{ conv.title || '对话' }}</span>
+            <button class="history-delete" @click.stop="handleDeleteKnowledgeConversation(conv.id)">×</button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="currentMode === 'explore'" class="explore-history-bar">
         <button class="new-chat-btn" @click="newExploreChat">+ 新对话</button>
         <div v-if="loadingExploreHistory" class="history-loading">加载中...</div>
@@ -60,15 +78,29 @@
         </div>
       </div>
 
+      <div v-if="currentMode === 'service'" class="explore-history-bar">
+        <div class="service-status" v-if="serviceConversationId">
+          <span class="status-label">当前模式：</span>
+          <span class="status-badge" :class="serviceMode === 'ai' ? 'ai-mode' : 'human-mode'">
+            {{ serviceMode === 'ai' ? 'AI客服' : '人工客服' }}
+          </span>
+        </div>
+      </div>
+
       <!-- 对话区域 -->
       <div class="ai-sidebar-content">
         <div class="message-list" ref="messageList">
-          <div 
-            v-for="(message, index) in messages" 
-            :key="index"
-            class="message-container"
-            :class="message.type === 'user' ? 'user-message-container' : 'bot-message-container'"
-          >
+          <template v-for="(message, index) in messagesWithDividers" :key="index">
+            <div v-if="message.isDivider" class="service-divider">
+              <div class="divider-line"></div>
+              <span class="divider-text">{{ message.text }}</span>
+              <div class="divider-line"></div>
+            </div>
+            <div
+              v-else
+              class="message-container"
+              :class="message.type === 'user' ? 'user-message-container' : 'bot-message-container'"
+            >
             <div 
               class="message"
               :class="message.type === 'user' ? 'user-message' : 'bot-message'"
@@ -168,6 +200,7 @@
               </div>
             </div>
           </div>
+          </template>
         </div>
 
         <div class="input-area">
@@ -225,16 +258,21 @@
 
 <script>
 import {
-  createCustomerServiceConversation,
-  getConversations,
-  getMessages,
-  markAsRead,
-  sendMessage,
   exploreResources,
   getExploreConversations,
   getExploreMessages,
   deleteExploreConversation,
-  getDiscoverPostDetail
+  getDiscoverPostDetail,
+  getKnowledgeConversations,
+  createKnowledgeConversation,
+  getKnowledgeMessages,
+  sendKnowledgeMessage,
+  deleteKnowledgeConversation,
+  createCustomerServiceConversation,
+  getMessages,
+  sendMessage,
+  getServiceMode,
+  closeHumanService
 } from '../api/app'
 import ConfirmModal from './ConfirmModal.vue'
 import PostDetailModal from './PostDetailModal.vue'
@@ -271,6 +309,9 @@ export default {
       exploreConversationId: null,
       exploreConversations: [],
       loadingExploreHistory: false,
+      knowledgeConversationId: null,
+      knowledgeConversations: [],
+      loadingKnowledgeHistory: false,
       showPostModal: false,
       selectedPost: null,
       showActivityModal: false,
@@ -278,23 +319,56 @@ export default {
       showHeritageModal: false,
       selectedHeritage: null,
       // 知识问答模式相关数据
-      loadingList: false,
       sending: false,
-      conversations: [],
-      currentConversation: null,
+      currentKnowledgeConversation: null,
+      // 客服模式相关数据
+      serviceConversationId: null,
+      serviceMode: 'ai',
+      servicePolling: null,
       uiText: {
-        title: '在线客服',
+        title: '知识问答',
         loadingList: '正在加载会话...',
-        emptyList: '暂无客服会话',
+        emptyList: '暂无知识会话',
         emptyMessages: '暂无消息记录',
         inputPlaceholder: '输入消息...',
         send: '发送',
         loadMessagesFailed: '加载消息失败',
-        createConversationFailed: '创建客服会话失败',
+        createConversationFailed: '创建知识会话失败',
         loadConversationsFailed: '加载会话失败',
         sendFailed: '发送失败',
-        aiThinking: 'AI客服正在思考...'
+        aiThinking: 'AI正在思考...'
       }
+    }
+  },
+  computed: {
+    messagesWithDividers() {
+      if (this.currentMode !== 'service') {
+        return this.messages.map(msg => ({ ...msg, isDivider: false }))
+      }
+
+      const result = []
+      let lastServiceSource = null
+
+      for (const msg of this.messages) {
+        const currentSource = msg.source || null
+
+        if (currentSource && lastServiceSource && currentSource !== lastServiceSource &&
+            !(currentSource === 'user' || lastServiceSource === 'user')) {
+          if (lastServiceSource === 'ai' && currentSource === 'admin') {
+            result.push({ isDivider: true, text: '人工客服已接入' })
+          } else if (lastServiceSource === 'admin' && currentSource === 'ai') {
+            result.push({ isDivider: true, text: '已切换回AI客服' })
+          }
+        }
+
+        if (currentSource && currentSource !== 'user') {
+          lastServiceSource = currentSource
+        }
+
+        result.push({ ...msg, isDivider: false })
+      }
+
+      return result
     }
   },
   mounted() {
@@ -310,6 +384,8 @@ export default {
     document.removeEventListener('mouseup', this.dragEnd);
     document.removeEventListener('touchmove', this.drag);
     document.removeEventListener('touchend', this.dragEnd);
+    // 停止轮询
+    this.stopServicePolling();
   },
   methods: {
     toggleSidebar() {
@@ -331,11 +407,79 @@ export default {
       ];
       
       if (mode === 'knowledge') {
-        this.initKnowledgeMode();
+        this.knowledgeConversationId = null;
+        this.loadKnowledgeConversations();
       } else if (mode === 'explore') {
         this.exploreConversationId = null;
         this.loadExploreConversations();
+      } else if (mode === 'service') {
+        this.serviceConversationId = null;
+        this.serviceMode = 'ai';
+        this.createServiceConversation();
       }
+    },
+    loadKnowledgeConversations() {
+      this.loadingKnowledgeHistory = true;
+      getKnowledgeConversations()
+        .then(response => {
+          if (response.code === 200) {
+            this.knowledgeConversations = response.data || [];
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.loadingKnowledgeHistory = false;
+        });
+    },
+    loadKnowledgeHistory(conversationId) {
+      getKnowledgeMessages(conversationId)
+        .then(response => {
+          if (response.code === 200) {
+            this.knowledgeConversationId = conversationId;
+            this.messages = (response.data || []).map(msg => {
+              if (msg.isSelf) {
+                return { type: 'user', content: msg.content };
+              } else {
+                return {
+                  type: 'bot',
+                  content: msg.content
+                };
+              }
+            });
+            this.scrollToBottom();
+          }
+        })
+        .catch(() => {});
+    },
+    newKnowledgeChat() {
+      this.knowledgeConversationId = null;
+      this.currentKnowledgeConversation = null;
+      this.messages = [
+        {
+          type: 'bot',
+          content: '你好！我是智能助手Yaya，很高兴为你解答关于中国传统非物质文化遗产的问题。'
+        }
+      ];
+    },
+    handleDeleteKnowledgeConversation(conversationId) {
+      this.$refs.deleteConfirmModal.show({
+        title: '删除对话',
+        message: '确定要删除这条对话记录吗？此操作不可恢复。',
+        confirmText: '删除',
+        cancelText: '取消',
+        onConfirm: () => {
+          deleteKnowledgeConversation(conversationId)
+            .then(response => {
+              if (response.code === 200) {
+                this.loadKnowledgeConversations();
+                if (this.knowledgeConversationId === conversationId) {
+                  this.newKnowledgeChat();
+                }
+              }
+            })
+            .catch(() => {});
+        }
+      });
     },
     loadExploreConversations() {
       this.loadingExploreHistory = true;
@@ -400,108 +544,58 @@ export default {
         }
       });
     },
-    // 读取存储的用户信息
-    readStoredUser() {
-      try {
-        const raw = localStorage.getItem('user') || localStorage.getItem('userInfo');
-        return raw ? JSON.parse(raw) : {};
-      } catch {
-        return {};
-      }
-    },
-    // 加载会话消息
-    loadMessagesForConversation(conversationId) {
-      return new Promise((resolve, reject) => {
-        getMessages(conversationId)
-          .then(response => {
-            if (response.code !== 200) {
-              throw new Error(response.message || this.uiText.loadMessagesFailed);
-            }
-            this.messages = Array.isArray(response.data) ? response.data.map(msg => ({
-              type: msg.isSelf ? 'user' : 'bot',
-              content: msg.content,
-              time: msg.time
-            })) : [];
-            this.scrollToBottom();
-            resolve();
-          })
-          .catch(error => {
-            console.error('加载消息失败:', error);
-            reject(error);
-          });
-      });
-    },
-    // 选择会话
-    selectConversation(conversation) {
-      this.currentConversation = conversation;
-      return this.loadMessagesForConversation(conversation.id)
-        .then(() => {
-          if (conversation.unreadCount > 0) {
-            return markAsRead(conversation.id)
-              .then(() => {
-                conversation.unreadCount = 0;
-              });
-          }
-        });
-    },
-    // 确保客服会话存在
-    ensureCustomerServiceConversation() {
-      return createCustomerServiceConversation()
+    // 创建客服会话
+    createServiceConversation() {
+      createCustomerServiceConversation()
         .then(response => {
-          if (response.code !== 200) {
-            throw new Error(response.message || this.uiText.createConversationFailed);
-          }
-          return response.data;
-        });
-    },
-    // 加载会话列表
-    loadConversationList() {
-      return getConversations()
-        .then(response => {
-          if (response.code !== 200) {
-            throw new Error(response.message || this.uiText.loadConversationsFailed);
-          }
-          this.conversations = (Array.isArray(response.data) ? response.data : []).filter(item => item.type === 'service');
-        });
-    },
-    // 初始化知识问答模式
-    initKnowledgeMode() {
-      this.loadingList = true;
-      this.currentConversation = null;
-      this.messages = [];
-
-      this.loadConversationList()
-        .then(() => {
-          if (this.conversations.length === 0) {
-            return this.ensureCustomerServiceConversation()
-              .then(created => {
-                return this.loadConversationList()
-                  .then(() => {
-                    const target = this.conversations.find(item => String(item.id) === String(created.id)) || this.conversations[0];
-                    if (target) {
-                      return this.selectConversation(target);
-                    }
-                  });
-              });
-          } else {
-            const target = this.conversations[0];
-            if (target) {
-              return this.selectConversation(target);
-            }
+          if (response.code === 200) {
+            this.serviceConversationId = response.data.id;
+            this.loadServiceMessages(response.data.id);
+            this.getServiceModeStatus(response.data.id);
           }
         })
         .catch(error => {
-          console.error('初始化知识问答模式失败:', error);
-          this.messages = [
-            {
-              type: 'bot',
-              content: '抱歉，初始化知识问答模式失败，请稍后再试。'
-            }
-          ];
-        })
-        .finally(() => {
-          this.loadingList = false;
+          console.error('创建客服会话失败:', error);
+          this.messages.push({
+            type: 'bot',
+            content: '抱歉，创建客服会话失败，请稍后再试。'
+          });
           this.scrollToBottom();
+        });
+    },
+    // 加载客服消息
+    loadServiceMessages(conversationId) {
+      getMessages(conversationId)
+        .then(response => {
+          if (response.code === 200) {
+            this.messages = (response.data || []).map(msg => {
+              if (msg.isSelf) {
+                return { type: 'user', content: msg.content, source: 'user' };
+              } else {
+                return {
+                  type: 'bot',
+                  content: msg.content,
+                  source: msg.source || 'ai'
+                };
+              }
+            });
+            this.scrollToBottom();
+          }
+        })
+        .catch(error => {
+          console.error('加载客服消息失败:', error);
+        });
+    },
+    // 获取客服模式状态
+    getServiceModeStatus(conversationId) {
+      getServiceMode(conversationId)
+        .then(response => {
+          if (response.code === 200) {
+            this.serviceMode = response.data.serviceMode || 'ai';
+          }
+        })
+        .catch(error => {
+          console.error('获取客服模式失败:', error);
         });
     },
     getWelcomeMessage(mode) {
@@ -528,6 +622,8 @@ export default {
         this.sendMessageKnowledgeMode(messageContent);
       } else if (this.currentMode === 'explore') {
         this.sendMessageExploreMode(messageContent);
+      } else if (this.currentMode === 'service') {
+        this.sendMessageServiceMode(messageContent);
       } else {
         // 其他模式使用模拟回复
         this.messages.push({
@@ -541,92 +637,155 @@ export default {
     },
     // 知识问答模式发送消息
     sendMessageKnowledgeMode(messageContent) {
-      if (!this.currentConversation || this.sending) {
+      if (this.sending) {
         return;
       }
 
-      // 生成临时消息ID
       const tempMessageId = Date.now();
-      // 创建临时消息对象
       const tempMessage = {
         id: tempMessageId,
         type: 'user',
         content: messageContent,
-        time: new Date().toLocaleString('zh-CN'),
         isSending: true
       };
-      // 立即添加到消息列表
       this.messages.push(tempMessage);
-      // 滚动到底部
       this.scrollToBottom();
-      // 更新会话信息
-      this.currentConversation.lastMessage = messageContent;
-      this.currentConversation.lastMessageTime = tempMessage.time;
 
       this.sending = true;
       try {
-        // 立即显示AI客服正在思考的提示（不等待后端响应）
         const thinkingMessage = {
           id: Date.now(),
           type: 'bot',
           content: this.uiText.aiThinking,
-          time: new Date().toLocaleString('zh-CN'),
           isThinking: true
         };
         this.messages.push(thinkingMessage);
         this.scrollToBottom();
-        
-        // 并行处理：同时保存用户消息和建立SSE连接
-        Promise.all([
-          // 保存用户消息到后端
-          sendMessage(this.currentConversation.id, {
-            content: messageContent
-          }),
-          // 立即开始流式AI回复（不等待消息保存完成）
-          this.streamAIResponse(this.currentConversation.id, messageContent)
-        ])
-        .then(([response]) => {
-          if (response.code !== 200) {
-            throw new Error(response.message || this.uiText.sendFailed);
-          }
-          
-          // 替换临时消息为实际消息
-          const index = this.messages.findIndex(msg => msg.id === tempMessageId);
-          if (index !== -1) {
-            this.messages.splice(index, 1, {
-              type: 'user',
-              content: response.data.content,
-              time: response.data.time
+
+        if (!this.knowledgeConversationId) {
+          createKnowledgeConversation({ userInput: messageContent })
+            .then(response => {
+              if (response.code === 200) {
+                this.knowledgeConversationId = response.data.id;
+                this.loadKnowledgeConversations();
+                this.sendKnowledgeMessageRequest(response.data.id, messageContent, tempMessageId);
+              } else {
+                throw new Error(response.message || this.uiText.createConversationFailed);
+              }
+            })
+            .catch(error => {
+              console.error('创建知识会话失败:', error);
+              const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
+              if (thinkingIndex !== -1) {
+                this.messages[thinkingIndex] = {
+                  type: 'bot',
+                  content: '抱歉，创建会话失败，请稍后再试。'
+                };
+              }
+              this.sending = false;
             });
-          }
-        })
-        .catch(error => {
-          // 发送失败，更新临时消息状态
-          const index = this.messages.findIndex(msg => msg.id === tempMessageId);
-          if (index !== -1) {
-            this.messages[index].isSending = false;
-            this.messages[index].isFailed = true;
-            this.messages[index].content = `发送失败: ${messageContent}`;
-          }
-          console.error('发送消息失败:', error);
-          
-          // 显示错误信息
-          const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
-          if (thinkingIndex !== -1) {
-            this.messages[thinkingIndex] = {
-              type: 'bot',
-              content: '抱歉，AI客服暂时无法回复，请稍后再试。',
-              time: new Date().toLocaleString('zh-CN')
-            };
-          }
-        })
-        .finally(() => {
-          this.sending = false;
-          this.scrollToBottom();
-        });
+        } else {
+          this.sendKnowledgeMessageRequest(this.knowledgeConversationId, messageContent, tempMessageId);
+        }
       } catch (error) {
         this.sending = false;
         console.error('发送消息错误:', error);
+      }
+    },
+    sendKnowledgeMessageRequest(conversationId, messageContent, tempMessageId) {
+      const user = this.readStoredUser();
+      const token = user?.token || localStorage.getItem('token');
+
+      let aiMessageContent = '';
+      const aiMessageId = Date.now();
+
+      const eventSource = new EventSource(`/api/knowledge/conversations/${conversationId}/stream?content=${encodeURIComponent(messageContent)}&token=${encodeURIComponent(token)}`);
+
+      eventSource.onmessage = (event) => {
+        const data = event.data;
+
+        if (data === '[DONE]' || data === '') {
+          eventSource.close();
+
+          const tempIndex = this.messages.findIndex(msg => msg.id === tempMessageId);
+          if (tempIndex !== -1) {
+            this.messages[tempIndex].isSending = false;
+          }
+
+          const convIndex = this.knowledgeConversations.findIndex(c => c.id === conversationId);
+          if (convIndex !== -1) {
+            this.knowledgeConversations[convIndex].lastMessage = messageContent;
+            this.knowledgeConversations[convIndex].lastMessageTime = new Date().toISOString();
+          }
+
+          this.sending = false;
+          this.scrollToBottom();
+          return;
+        }
+
+        if (data && data.trim() !== '') {
+          aiMessageContent += data;
+
+          const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
+          if (thinkingIndex !== -1) {
+            this.messages[thinkingIndex].content = aiMessageContent;
+            this.messages[thinkingIndex].isThinking = false;
+          } else {
+            const existingAIMessageIndex = this.messages.findIndex(msg => msg.id === aiMessageId && msg.type === 'bot');
+            if (existingAIMessageIndex !== -1) {
+              this.messages[existingAIMessageIndex].content = aiMessageContent;
+            }
+          }
+          this.scrollToBottom();
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error);
+
+        if (eventSource.readyState === 2) {
+          eventSource.close();
+          return;
+        }
+
+        eventSource.close();
+
+        const tempIndex = this.messages.findIndex(msg => msg.id === tempMessageId);
+        if (tempIndex !== -1) {
+          this.messages[tempIndex].isSending = false;
+          this.messages[tempIndex].isFailed = true;
+        }
+
+        const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
+        if (thinkingIndex !== -1) {
+          if (aiMessageContent) {
+            this.messages[thinkingIndex].content = aiMessageContent;
+            this.messages[thinkingIndex].isThinking = false;
+          } else {
+            this.messages[thinkingIndex] = {
+              type: 'bot',
+              content: '抱歉，AI暂时无法回复，请稍后再试。'
+            };
+          }
+        }
+
+        this.sending = false;
+        this.scrollToBottom();
+      };
+
+      setTimeout(() => {
+        if (eventSource.readyState !== EventSource.CLOSED) {
+          eventSource.close();
+          this.sending = false;
+        }
+      }, 60000);
+    },
+    readStoredUser() {
+      try {
+        const raw = localStorage.getItem('user') || localStorage.getItem('userInfo');
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
       }
     },
     // 探索资源模式发送消息
@@ -712,6 +871,98 @@ export default {
       
       return '暂无相关资源';
     },
+    // 客服模式发送消息
+    sendMessageServiceMode(messageContent) {
+      if (this.sending) {
+        return;
+      }
+
+      // 显示用户消息
+      this.messages.push({
+        type: 'user',
+        content: messageContent
+      });
+      this.scrollToBottom();
+
+      this.sending = true;
+
+      // 显示加载状态
+      this.messages.push({
+        type: 'bot',
+        content: '正在处理您的消息...',
+        isLoading: true
+      });
+      this.scrollToBottom();
+
+      if (!this.serviceConversationId) {
+        this.createServiceConversation();
+        this.sending = false;
+        return;
+      }
+
+      // 发送消息
+      sendMessage(this.serviceConversationId, { content: messageContent })
+        .then(response => {
+          if (response.code === 200) {
+            // 清除加载状态
+            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+            if (loadingIndex !== -1) {
+              this.messages.splice(loadingIndex, 1);
+            }
+
+            // 等待 AI 回复或人工回复
+            setTimeout(() => {
+              this.loadServiceMessages(this.serviceConversationId);
+              this.getServiceModeStatus(this.serviceConversationId);
+            }, 500);
+
+            // 启动轮询（如果是人工模式）
+            this.startServicePolling();
+          } else {
+            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+            if (loadingIndex !== -1) {
+              this.messages[loadingIndex] = {
+                type: 'bot',
+                content: `发送失败：${response.message || '未知错误'}`
+              };
+            }
+          }
+        })
+        .catch(error => {
+          const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+          if (loadingIndex !== -1) {
+            this.messages[loadingIndex] = {
+              type: 'bot',
+              content: `发送失败：${error.message || '网络错误'}`
+            };
+          }
+        })
+        .finally(() => {
+          this.sending = false;
+          this.scrollToBottom();
+        });
+    },
+    // 启动客服消息轮询
+    startServicePolling() {
+      // 清除之前的轮询
+      if (this.servicePolling) {
+        clearInterval(this.servicePolling);
+      }
+
+      // 仅在人工模式下轮询
+      if (this.serviceMode === 'human') {
+        this.servicePolling = setInterval(() => {
+          this.loadServiceMessages(this.serviceConversationId);
+        }, 3000); // 每3秒轮询一次
+      }
+    },
+    // 停止客服消息轮询
+    stopServicePolling() {
+      if (this.servicePolling) {
+        clearInterval(this.servicePolling);
+        this.servicePolling = null;
+      }
+    },
     // 发送模拟回复
     sendMockResponse(messageContent) {
       setTimeout(() => {
@@ -733,116 +984,6 @@ export default {
         // 滚动到底部
         this.scrollToBottom();
       }, 1000);
-    },
-    // 流式AI回复
-    streamAIResponse(conversationId, messageContent) {
-      return new Promise((resolve, reject) => {
-        try {
-          // 获取token
-          const user = this.readStoredUser();
-          const token = user?.token || localStorage.getItem('token');
-          
-          // 使用思考消息的ID，确保消息一致性
-          const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
-          const aiMessageId = thinkingIndex !== -1 ? this.messages[thinkingIndex].id : Date.now();
-          let aiMessageContent = '';
-          
-          // 使用EventSource处理SSE连接
-          const eventSource = new EventSource(`/api/messages/conversations/${conversationId}/stream?content=${encodeURIComponent(messageContent)}&token=${encodeURIComponent(token)}`);
-          
-          // 监听消息事件
-          eventSource.onmessage = (event) => {
-            const rawData = event.data;
-            console.log('Received SSE raw data:', rawData);
-            
-            // 直接使用原始数据，因为后端已经处理了SSE格式
-            let data = rawData;
-            
-            // 检查是否为结束标记
-            if (data === '[DONE]' || data === '') {
-              console.log('SSE stream completed');
-              eventSource.close();
-              resolve();
-              return;
-            }
-            
-            if (data && data.trim() !== '') {
-              // 更新AI消息内容
-              aiMessageContent += data;
-              console.log('Updated AI message content:', aiMessageContent);
-              
-              // 找到思考消息的索引
-              const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
-              if (thinkingIndex !== -1) {
-                // 直接更新思考消息的内容，而不是替换整个对象
-                this.messages[thinkingIndex].content = aiMessageContent;
-                this.messages[thinkingIndex].isThinking = false;
-              } else {
-                // 如果思考消息不存在，检查是否已经有AI消息（使用相同的ID）
-                const existingAIMessageIndex = this.messages.findIndex(msg => msg.id === aiMessageId && msg.type === 'bot');
-                if (existingAIMessageIndex !== -1) {
-                  // 更新现有AI消息的内容
-                  this.messages[existingAIMessageIndex].content = aiMessageContent;
-                }
-              }
-              this.scrollToBottom();
-            }
-          };
-          
-          // 监听打开事件
-          eventSource.onopen = (event) => {
-            console.log('SSE connection opened:', event);
-          };
-          
-          // 监听错误事件
-          eventSource.onerror = (error) => {
-            console.error('SSE connection error:', error);
-            console.error('EventSource readyState:', eventSource.readyState);
-            
-            // 忽略连接被服务器主动关闭的情况（readyState为2表示连接已关闭）
-            if (eventSource.readyState === 2) {
-              console.log('SSE connection closed normally');
-              eventSource.close();
-              resolve();
-              return;
-            }
-            
-            eventSource.close();
-            
-            // 显示错误信息
-            const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
-            if (thinkingIndex !== -1) {
-              this.messages[thinkingIndex] = {
-                type: 'bot',
-                content: '抱歉，AI客服暂时无法回复，请稍后再试。',
-                time: new Date().toLocaleString('zh-CN')
-              };
-            }
-            this.scrollToBottom();
-            reject(error);
-          };
-          
-          // 监听完成事件
-          eventSource.addEventListener('done', () => {
-            console.log('Stream completed');
-            eventSource.close();
-            resolve();
-          });
-          
-          // 设置超时，防止连接一直保持
-          setTimeout(() => {
-            if (eventSource.readyState !== EventSource.CLOSED) {
-              console.log('SSE timeout, closing connection');
-              eventSource.close();
-              resolve();
-            }
-          }, 60000); // 60秒超时
-          
-        } catch (error) {
-          console.error('Stream AI response error:', error);
-          reject(error);
-        }
-      });
     },
     scrollToBottom() {
       setTimeout(() => {
@@ -1489,6 +1630,58 @@ export default {
 
 .history-delete:hover {
   color: #e74c3c;
+}
+
+.service-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.status-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.ai-mode {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.human-mode {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.service-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 8px;
+}
+
+.service-divider .divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.12), transparent);
+}
+
+.service-divider .divider-text {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #f5f5f5;
+  border: 1px solid #e8e8e8;
 }
 
 .knowledge-answer {

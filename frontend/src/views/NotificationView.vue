@@ -555,6 +555,10 @@ const handleRecallMessage = async () => {
 const handleDeleteConversation = async () => {
   if (!selectedConvForDelete.value) return
   
+  // 保存会话ID，防止异步操作中被清空
+  const conversationId = selectedConvForDelete.value.id
+  const currentConvId = currentConversation.value?.id
+  
   confirm({
     title: '确认删除会话',
     message: '你确定要删除这个会话吗？',
@@ -562,18 +566,23 @@ const handleDeleteConversation = async () => {
     cancelText: '取消',
     onConfirm: async () => {
       try {
-        const response = await deleteConversation(selectedConvForDelete.value.id)
+        const response = await deleteConversation(conversationId)
         if (response.code === 200) {
-          conversations.value = conversations.value.filter(c => c.id !== selectedConvForDelete.value.id)
-          if (currentConversation.value?.id === selectedConvForDelete.value.id) {
+          // 从本地会话列表中移除
+          conversations.value = conversations.value.filter(c => c.id !== conversationId)
+          // 清空当前对话和消息
+          if (currentConvId === conversationId) {
             currentConversation.value = null
             messages.value = []
           }
+          // 显示删除成功提示
+          notify.success('删除成功')
         } else {
           notify.error(response.message || '删除失败')
         }
       } catch (error) {
-        notify.error('删除失败，请稍后重试')
+        const errorMsg = error.response?.data?.message || error.message || '删除失败，请稍后重试'
+        notify.error(errorMsg)
       } finally {
         closeContextMenu()
       }

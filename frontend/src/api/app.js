@@ -162,6 +162,14 @@ export const translateMessage = (messageId, targetLang) => {
   })
 }
 
+export const getServiceMode = (conversationId) => {
+  return request.get(`/messages/conversations/${conversationId}/service-mode`)
+}
+
+export const closeHumanService = (conversationId) => {
+  return request.post(`/messages/conversations/${conversationId}/close-human-service`)
+}
+
 export const getPhrases = () => {
   return request.get('/phrases')
 }
@@ -195,15 +203,7 @@ export const uploadPostImage = (formData, postId, index) => {
   })
 }
 
-export const generateHeritageRoute = (data) => {
-  return request.post('/ai/heritage-route', data, {
-    timeout: 60000
-  })
-}
-export const saveHeritageRoute = (data) => request.post('/ai/heritage-route/favorites', data)
-export const getSavedHeritageRoutes = () => request.get('/ai/heritage-route/favorites')
-export const getSavedHeritageRouteDetail = (id) => request.get(`/ai/heritage-route/favorites/${id}`)
-export const deleteSavedHeritageRoute = (id) => request.delete(`/ai/heritage-route/favorites/${id}`)
+
 export const exploreResources = (data) => {
   return request({
     url: '/ai/explore-resources',
@@ -229,6 +229,43 @@ export const getExploreMessages = (conversationId) => {
 export const deleteExploreConversation = (conversationId) => {
   return request({
     url: `/ai/explore-conversations/${conversationId}`,
+    method: 'delete'
+  })
+}
+
+export const getKnowledgeConversations = () => {
+  return request({
+    url: '/knowledge/conversations',
+    method: 'get'
+  })
+}
+
+export const createKnowledgeConversation = (data) => {
+  return request({
+    url: '/knowledge/conversations',
+    method: 'post',
+    data
+  })
+}
+
+export const getKnowledgeMessages = (conversationId) => {
+  return request({
+    url: `/knowledge/conversations/${conversationId}/messages`,
+    method: 'get'
+  })
+}
+
+export const sendKnowledgeMessage = (conversationId, data) => {
+  return request({
+    url: `/knowledge/conversations/${conversationId}/message`,
+    method: 'post',
+    data
+  })
+}
+
+export const deleteKnowledgeConversation = (conversationId) => {
+  return request({
+    url: `/knowledge/conversations/${conversationId}`,
     method: 'delete'
   })
 }

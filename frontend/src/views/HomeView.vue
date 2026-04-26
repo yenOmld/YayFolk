@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="home-container">
     <!-- 主内容区 -->
     <router-view v-slot="{ Component, route }">
@@ -38,14 +38,7 @@
         </div>
         <span>发现</span>
       </div>
-      <div 
-        class="nav-item" 
-        :class="{ active: currentRoute === '/home/tools' }"
-        @click="navigateTo('/home/tools')"
-      >
-        <i class='bx bx-wrench'></i>
-        <span>工具</span>
-      </div>
+
       <div 
         class="nav-item" 
         :class="{ active: currentRoute === '/home/personal' }"

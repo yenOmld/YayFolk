@@ -35,6 +35,12 @@ public class Conversation {
     @Column(name = "unread_count_user2")
     private Integer unreadCountUser2 = 0;
 
+    @Column(name = "service_mode", length = 20)
+    private String serviceMode = "ai";
+
+    @Column(name = "last_human_reply_time")
+    private Date lastHumanReplyTime;
+
     @Column(name = "create_time", updatable = false)
     private Date createTime;
 

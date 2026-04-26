@@ -12,6 +12,8 @@ import com.yayfolk.backend.repository.NotificationRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserRepository;
 import com.yayfolk.backend.service.AICustomerService;
+import com.yayfolk.backend.service.CustomerKnowledgeService;
+import com.yayfolk.backend.service.TransferToHumanDetector;
 import com.yayfolk.backend.util.TextRepairUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,8 @@ public class MessageService {
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
     private final AICustomerService aiCustomerService;
+    private final CustomerKnowledgeService customerKnowledgeService;
+    private final TransferToHumanDetector transferToHumanDetector;
 
     public MessageService(ConversationRepository conversationRepository,
                           MessageRepository messageRepository,
@@ -49,7 +53,9 @@ public class MessageService {
                           UserRepository userRepository,
                           StringRedisTemplate redisTemplate,
                           TranslateService translateService,
-                          AICustomerService aiCustomerService) {
+                          AICustomerService aiCustomerService,
+                          CustomerKnowledgeService customerKnowledgeService,
+                          TransferToHumanDetector transferToHumanDetector) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.notificationRepository = notificationRepository;
@@ -58,6 +64,8 @@ public class MessageService {
         this.redisTemplate = redisTemplate;
         this.translateService = translateService;
         this.aiCustomerService = aiCustomerService;
+        this.customerKnowledgeService = customerKnowledgeService;
+        this.transferToHumanDetector = transferToHumanDetector;
     }
 
     public List<Map<String, Object>> getConversationList(String username) {
@@ -89,6 +97,9 @@ public class MessageService {
             item.put("otherUserName", displayName(otherUser));
             item.put("otherUsername", otherUser == null ? "" : defaultString(otherUser.getUsername()));
             item.put("otherRole", otherUser == null ? "" : defaultString(otherUser.getRole()));
+            if ("service".equals(type)) {
+                item.put("serviceMode", defaultString(conversation.getServiceMode()));
+            }
             result.add(item);
         }
 
@@ -186,6 +197,14 @@ public class MessageService {
             ensureFollowing(userId, receiverId);
         }
 
+        User sender = findUser(username);
+        boolean isServiceConversation = "service".equals(defaultString(conversation.getType()));
+        boolean isSenderAdmin = isAdmin(sender);
+
+        if (isServiceConversation && isSenderAdmin) {
+            return handleAdminServiceMessage(conversation, userId, receiverId, content);
+        }
+
         Message message = new Message();
         message.setConversationId(conversationId);
         message.setSenderId(userId);
@@ -194,9 +213,9 @@ public class MessageService {
         message.setType("text");
         message.setSourceLang(detectLanguage(content));
         message.setIsRead(false);
+        message.setSource("user");
         Message savedMessage = messageRepository.save(message);
 
-        // 设置 lastMessage，确保不超过1000字符限制
         String lastMessage = content.length() > 1000 ? content.substring(0, 997) + "..." : content;
         conversation.setLastMessage(lastMessage);
         conversation.setLastMessageTime(new Date());
@@ -207,9 +226,95 @@ public class MessageService {
         }
         conversationRepository.save(conversation);
 
-        // 客服会话的AI回复由SSE连接处理，不再这里生成
+        if (isServiceConversation && "ai".equals(defaultString(conversation.getServiceMode()))) {
+            handleAIServiceReply(conversation, userId, content);
+        }
 
         return toMessageMap(savedMessage, userId);
+    }
+
+    @Transactional
+    private Map<String, Object> handleAdminServiceMessage(Conversation conversation, Long adminId, Long userOrAdminId, String content) {
+        conversation.setServiceMode("human");
+        conversation.setLastHumanReplyTime(new Date());
+
+        Long receiverId = adminId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
+
+        Message message = new Message();
+        message.setConversationId(conversation.getId());
+        message.setSenderId(adminId);
+        message.setReceiverId(receiverId);
+        message.setContent(content);
+        message.setType("text");
+        message.setSourceLang(detectLanguage(content));
+        message.setIsRead(false);
+        message.setSource("admin");
+        Message savedMessage = messageRepository.save(message);
+
+        String lastMessage = content.length() > 1000 ? content.substring(0, 997) + "..." : content;
+        conversation.setLastMessage(lastMessage);
+        conversation.setLastMessageTime(new Date());
+        if (adminId.equals(conversation.getUser1Id())) {
+            conversation.setUnreadCountUser2(safeInt(conversation.getUnreadCountUser2()) + 1);
+        } else {
+            conversation.setUnreadCountUser1(safeInt(conversation.getUnreadCountUser1()) + 1);
+        }
+        conversationRepository.save(conversation);
+
+        return toMessageMap(savedMessage, adminId);
+    }
+
+    @Transactional
+    private void handleAIServiceReply(Conversation conversation, Long userId, String userMessage) {
+        Long adminId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
+
+        if (transferToHumanDetector.shouldTransfer(userMessage)) {
+            conversation.setServiceMode("human");
+            conversation.setLastHumanReplyTime(null);
+            conversationRepository.save(conversation);
+
+            String transferReply = "已为您转接人工客服，请稍候，客服人员将尽快为您服务。";
+            saveServiceAIMessage(conversation.getId(), adminId, userId, transferReply);
+            return;
+        }
+
+        String knowledgeReply = customerKnowledgeService.match(userMessage);
+        if (knowledgeReply != null) {
+            saveServiceAIMessage(conversation.getId(), adminId, userId, knowledgeReply);
+            return;
+        }
+
+        String fallbackReply = "抱歉，我暂时无法回答这个问题。您可以输入\"转人工\"联系人工客服获取帮助。";
+        saveServiceAIMessage(conversation.getId(), adminId, userId, fallbackReply);
+    }
+
+    @Transactional
+    public void saveServiceAIMessage(Long conversationId, Long senderId, Long receiverId, String content) {
+        Message aiMessage = new Message();
+        aiMessage.setConversationId(conversationId);
+        aiMessage.setSenderId(0L);
+        aiMessage.setReceiverId(receiverId);
+        aiMessage.setContent(content);
+        aiMessage.setType("text");
+        aiMessage.setSourceLang(detectLanguage(content));
+        aiMessage.setIsRead(false);
+        aiMessage.setSource("ai");
+        messageRepository.save(aiMessage);
+
+        Conversation conv = conversationRepository.findById(conversationId).orElse(null);
+        if (conv != null) {
+            String truncated = content.length() > 500 ? content.substring(0, 497) + "..." : content;
+            conv.setLastMessage(truncated);
+            conv.setLastMessageTime(new Date());
+            if (senderId != null && senderId != 0) {
+                if (senderId.equals(conv.getUser1Id())) {
+                    conv.setUnreadCountUser2(safeInt(conv.getUnreadCountUser2()) + 1);
+                } else {
+                    conv.setUnreadCountUser1(safeInt(conv.getUnreadCountUser1()) + 1);
+                }
+            }
+            conversationRepository.save(conv);
+        }
     }
 
     @Transactional
@@ -258,16 +363,15 @@ public class MessageService {
 
     @Transactional
     public void saveAIMessage(Long conversationId, Long userId, String aiResponse) {
-        // 保存AI回复为消息
         Message aiMessage = new Message();
         aiMessage.setConversationId(conversationId);
-        // 假设AI客服的ID为1，需要根据实际情况调整
         aiMessage.setSenderId(1L);
         aiMessage.setReceiverId(userId);
         aiMessage.setContent(aiResponse);
         aiMessage.setType("text");
         aiMessage.setSourceLang(detectLanguage(aiResponse));
         aiMessage.setIsRead(false);
+        aiMessage.setSource("ai");
         messageRepository.save(aiMessage);
         
         // 更新会话信息
@@ -602,6 +706,7 @@ public class MessageService {
         map.put("isSelf", currentUserId.equals(message.getSenderId()));
         map.put("isRead", message.getIsRead());
         map.put("sourceLang", message.getSourceLang());
+        map.put("source", defaultString(message.getSource()));
         return map;
     }
 
@@ -631,6 +736,58 @@ public class MessageService {
 
     public Long findUserId(String username) {
         return findUser(username).getId();
+    }
+
+    public Map<String, Object> getServiceMode(String username, Long conversationId) {
+        Long userId = findUserId(username);
+        Conversation conversation = conversationRepository.findById(conversationId)
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
+
+        if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
+            throw new RuntimeException("You do not have permission to view this conversation");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("serviceMode", defaultString(conversation.getServiceMode()));
+        return result;
+    }
+
+    @Transactional
+    public void transferToHuman(String username, Long conversationId) {
+        Long userId = findUserId(username);
+        Conversation conversation = conversationRepository.findById(conversationId)
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
+
+        if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
+            throw new RuntimeException("You do not have permission to modify this conversation");
+        }
+
+        if (!"service".equals(defaultString(conversation.getType()))) {
+            throw new RuntimeException("Only service conversations can be transferred to human");
+        }
+
+        conversation.setServiceMode("human");
+        conversation.setLastHumanReplyTime(null);
+        conversationRepository.save(conversation);
+    }
+
+    @Transactional
+    public void closeHumanService(String username, Long conversationId) {
+        Long userId = findUserId(username);
+        Conversation conversation = conversationRepository.findById(conversationId)
+            .orElseThrow(() -> new RuntimeException("Conversation does not exist"));
+
+        if (!userId.equals(conversation.getUser1Id()) && !userId.equals(conversation.getUser2Id())) {
+            throw new RuntimeException("You do not have permission to modify this conversation");
+        }
+
+        conversation.setServiceMode("ai");
+        conversation.setLastHumanReplyTime(null);
+        conversationRepository.save(conversation);
+
+        Long otherUserId = userId.equals(conversation.getUser1Id()) ? conversation.getUser2Id() : conversation.getUser1Id();
+        String systemMsg = "人工客服已结束服务，已为您切换回智能客服。如需再次转人工，请输入\"转人工\"。";
+        saveServiceAIMessage(conversationId, 0L, otherUserId, systemMsg);
     }
 
     private User findUser(String username) {
@@ -694,6 +851,9 @@ public class MessageService {
         result.put("otherUserName", displayName(otherUser));
         result.put("otherUserAvatar", avatarOf(otherUser));
         result.put("name", conversationName(currentUser, otherUser, defaultString(conversation.getType())));
+        if ("service".equals(defaultString(conversation.getType()))) {
+            result.put("serviceMode", defaultString(conversation.getServiceMode()));
+        }
         return result;
     }
 
@@ -754,10 +914,13 @@ public class MessageService {
 
         List<Conversation> directConversations = conversationRepository.findDirectConversationsByUserId(userId);
         for (Conversation conversation : directConversations) {
-            if (userId.equals(conversation.getUser1Id())) {
-                total += safeInt(conversation.getUnreadCountUser1());
-            } else {
-                total += safeInt(conversation.getUnreadCountUser2());
+            // 排除客服会话的未读消息计数
+            if (!"service".equals(conversation.getType())) {
+                if (userId.equals(conversation.getUser1Id())) {
+                    total += safeInt(conversation.getUnreadCountUser1());
+                } else {
+                    total += safeInt(conversation.getUnreadCountUser2());
+                }
             }
         }
 

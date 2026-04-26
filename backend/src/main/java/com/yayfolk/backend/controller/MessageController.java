@@ -281,6 +281,27 @@ public class MessageController {
         }
     }
 
+    @GetMapping("/conversations/{id}/service-mode")
+    public ResponseDto getServiceMode(@PathVariable("id") Long conversationId, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(messageService.getServiceMode(username, conversationId));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/conversations/{id}/close-human-service")
+    public ResponseDto closeHumanService(@PathVariable("id") Long conversationId, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            messageService.closeHumanService(username, conversationId);
+            return ResponseDto.success("已切换回智能客服");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     private String requireUsername(HttpServletRequest request) {
         Object usernameObj = request.getAttribute("username");
         if (usernameObj == null) {
