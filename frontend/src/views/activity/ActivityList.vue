@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="activity-page">
     <!-- 移动端下拉菜单 -->
     <header class="mobile-header" :class="{ active: showMobileMenu }">

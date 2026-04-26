@@ -5,7 +5,6 @@ import com.yayfolk.backend.repository.ExploreConversationRepository;
 import com.yayfolk.backend.repository.ExploreMessageRepository;
 
 import com.yayfolk.backend.service.AIResourceService;
-import com.yayfolk.backend.service.RoutePlanService;
 import com.yayfolk.backend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +24,6 @@ import static org.mockito.Mockito.when;
 public class AIControllerTest {
     
 
-    
-    @Mock
-    private RoutePlanService routePlanService;
     
     @Mock
     private AIResourceService aiResourceService;

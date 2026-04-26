@@ -8,7 +8,6 @@ import com.yayfolk.backend.repository.ExploreConversationRepository;
 import com.yayfolk.backend.repository.ExploreMessageRepository;
 
 import com.yayfolk.backend.service.AIResourceService;
-import com.yayfolk.backend.service.RoutePlanService;
 import com.yayfolk.backend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,18 +19,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/ai")
 public class AIController {
 
-    private final RoutePlanService routePlanService;
     private final AIResourceService aiResourceService;
     private final ExploreConversationRepository exploreConversationRepository;
     private final ExploreMessageRepository exploreMessageRepository;
     private final UserService userService;
 
-    public AIController(RoutePlanService routePlanService,
-                        AIResourceService aiResourceService,
+    public AIController(AIResourceService aiResourceService,
                         ExploreConversationRepository exploreConversationRepository,
                         ExploreMessageRepository exploreMessageRepository,
                         UserService userService) {
-        this.routePlanService = routePlanService;
         this.aiResourceService = aiResourceService;
         this.exploreConversationRepository = exploreConversationRepository;
         this.exploreMessageRepository = exploreMessageRepository;
