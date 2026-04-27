@@ -265,4 +265,53 @@ public class UploadController {
             return ResponseDto.error(500, "上传失败: " + e.getMessage());
         }
     }
+
+    @PostMapping("/model")
+    public ResponseDto uploadModel(@RequestParam("file") MultipartFile file,
+                                   @RequestParam(value = "activityId", required = false) String activityIdStr,
+                                   @RequestParam(value = "folder", defaultValue = "models") String folder) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseDto.error(400, "请选择要上传的文件");
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            log.info("VR上传 - activityIdStr: {}, folder: {}, originalFilename: {}", activityIdStr, folder, originalFilename);
+
+            if (originalFilename == null ||
+                (!originalFilename.toLowerCase().endsWith(".glb") &&
+                 !originalFilename.toLowerCase().endsWith(".gltf"))) {
+                return ResponseDto.error(400, "只能上传 .glb 或 .gltf 格式的3D模型文件");
+            }
+
+            long maxSize = 100 * 1024 * 1024;
+            if (file.getSize() > maxSize) {
+                return ResponseDto.error(400, "模型文件大小不能超过100MB");
+            }
+
+            Long activityId = null;
+            if (activityIdStr != null && !activityIdStr.isEmpty()) {
+                try {
+                    activityId = Long.parseLong(activityIdStr);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid activityId format: {}", activityIdStr);
+                }
+            }
+
+            String url;
+            if (activityId != null) {
+                url = ossUtil.uploadActivityVR(file, activityId);
+            } else {
+                url = ossUtil.uploadFile(file, folder);
+            }
+            log.info("3D模型上传成功: {}", url);
+
+            Map<String, String> result = new HashMap<>();
+            result.put("url", url);
+            return ResponseDto.success(result);
+        } catch (Exception e) {
+            log.error("3D模型上传失败", e);
+            return ResponseDto.error(500, "上传失败: " + e.getMessage());
+        }
+    }
 }

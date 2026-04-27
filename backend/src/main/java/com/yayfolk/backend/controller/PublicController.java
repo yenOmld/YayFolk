@@ -99,6 +99,15 @@ public class PublicController {
             return ResponseDto.error(400, e.getMessage());
         }
     }
+
+    @GetMapping("/activities/{id}/reviews")
+    public ResponseDto getActivityReviews(@PathVariable Long id) {
+        try {
+            return ResponseDto.success(publicContentService.getActivityReviews(id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
 }
 
 

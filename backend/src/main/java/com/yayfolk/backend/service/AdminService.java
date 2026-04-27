@@ -861,6 +861,7 @@ public class AdminService {
         m.put("imageList", imageList);
         m.put("videoUrl", activity.getVideoUrl());
         m.put("videoCoverUrl", activity.getVideoCoverUrl());
+        m.put("vrModelUrl", activity.getVrModelUrl());
         m.put("heritageType", activity.getHeritageType());
         m.put("activityType", activity.getActivityType());
         m.put("startTime", activity.getStartTime());

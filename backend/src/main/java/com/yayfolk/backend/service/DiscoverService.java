@@ -69,6 +69,7 @@ public class DiscoverService {
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
     private final PostReportRepository postReportRepository;
+    private final ActivityRepository activityRepository;
     private final ObjectMapper objectMapper;
     private final StringRedisTemplate redisTemplate;
     private final TranslateService translateService;
@@ -83,6 +84,7 @@ public class DiscoverService {
                            UserRepository userRepository,
                            NotificationRepository notificationRepository,
                            PostReportRepository postReportRepository,
+                           ActivityRepository activityRepository,
                            ObjectMapper objectMapper,
                            StringRedisTemplate redisTemplate,
                            TranslateService translateService,
@@ -96,6 +98,7 @@ public class DiscoverService {
         this.userRepository = userRepository;
         this.notificationRepository = notificationRepository;
         this.postReportRepository = postReportRepository;
+        this.activityRepository = activityRepository;
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
         this.translateService = translateService;
@@ -193,6 +196,27 @@ public class DiscoverService {
         boolean bookmarked = publiclyVisibleOrOwnerAccessible(post, userId) && collectionRepository.existsByUserIdAndPostId(userId, postId);
         User author = userRepository.findById(post.getUserId()).orElse(null);
         Map<String, Object> detail = toPostSummary(post, author, bookmarked);
+
+        // 获取关联的活动信息
+        if (post.getActivityId() != null) {
+            Activity activity = activityRepository.findById(post.getActivityId()).orElse(null);
+            if (activity != null) {
+                Map<String, Object> activityInfo = new HashMap<>();
+                activityInfo.put("id", activity.getId());
+                activityInfo.put("title", activity.getTitle());
+                activityInfo.put("subtitle", activity.getSubtitle());
+                activityInfo.put("coverImage", activity.getCoverImage());
+                activityInfo.put("startTime", activity.getStartTime());
+                activityInfo.put("endTime", activity.getEndTime());
+                activityInfo.put("price", activity.getPrice());
+                activityInfo.put("originalPrice", activity.getOriginalPrice());
+                activityInfo.put("locationProvince", activity.getLocationProvince());
+                activityInfo.put("locationCity", activity.getLocationCity());
+                activityInfo.put("locationDetail", activity.getLocationDetail());
+                activityInfo.put("status", activity.getStatus());
+                detail.put("activity", activityInfo);
+            }
+        }
 
         List<DiscoverPostComment> comments = commentRepository.findByPostIdOrderByCreateTimeAsc(postId);
         Set<Long> commentUserIds = comments.stream().map(DiscoverPostComment::getUserId).collect(Collectors.toSet());

@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.IntangibleCulturalHeritage;
+import com.yayfolk.backend.entity.MerchantReview;
 import com.yayfolk.backend.entity.OfficialContent;
 import com.yayfolk.backend.entity.Product;
+import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.IntangibleCulturalHeritageRepository;
+import com.yayfolk.backend.repository.MerchantReviewRepository;
 import com.yayfolk.backend.repository.OfficialContentRepository;
 import com.yayfolk.backend.repository.ProductRepository;
 import com.yayfolk.backend.repository.UserRepository;
@@ -41,6 +44,7 @@ public class PublicContentService {
     private final UserRepository userRepository;
     private final IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository;
     private final DiscoverPostRepository discoverPostRepository;
+    private final MerchantReviewRepository merchantReviewRepository;
     private final ObjectMapper objectMapper;
 
     public PublicContentService(ActivityRepository activityRepository,
@@ -49,6 +53,7 @@ public class PublicContentService {
                                 UserRepository userRepository,
                                 IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository,
                                 DiscoverPostRepository discoverPostRepository,
+                                MerchantReviewRepository merchantReviewRepository,
                                 ObjectMapper objectMapper) {
         this.activityRepository = activityRepository;
         this.productRepository = productRepository;
@@ -56,6 +61,7 @@ public class PublicContentService {
         this.userRepository = userRepository;
         this.intangibleCulturalHeritageRepository = intangibleCulturalHeritageRepository;
         this.discoverPostRepository = discoverPostRepository;
+        this.merchantReviewRepository = merchantReviewRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -105,6 +111,10 @@ public class PublicContentService {
             result.put("merchantIntro", u.getShopIntro());
             result.put("merchantCover", u.getShopCover());
         });
+        Double avgScore = merchantReviewRepository.getAverageScoreByMerchantId(activity.getMerchantId());
+        Long reviewCount = merchantReviewRepository.countByMerchantId(activity.getMerchantId());
+        result.put("avgScore", avgScore != null ? avgScore : 0.0);
+        result.put("reviewCount", reviewCount != null ? reviewCount : 0);
         return result;
     }
 
@@ -407,6 +417,7 @@ public class PublicContentService {
         m.put("images", a.getImages());
         m.put("videoUrl", a.getVideoUrl());
         m.put("videoCoverUrl", a.getVideoCoverUrl());
+        m.put("vrModelUrl", a.getVrModelUrl());
         m.put("heritageType", a.getHeritageType());
         m.put("activityType", a.getActivityType());
         m.put("startTime", a.getStartTime());
@@ -471,6 +482,40 @@ public class PublicContentService {
         m.put("heritageType", p.getHeritageType());
         m.put("status", p.getStatus());
         return m;
+    }
+
+    public List<Map<String, Object>> getActivityReviews(Long activityId) {
+        List<DiscoverPost> posts = discoverPostRepository.findByActivityIdAndStatusAndAuditStatusOrderByCreateTimeDesc(activityId, 1, "passed");
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        
+        Map<Long, User> userMap = new HashMap<Long, User>();
+        for (DiscoverPost post : posts) {
+            if (!userMap.containsKey(post.getUserId())) {
+                userRepository.findById(post.getUserId()).ifPresent(user -> {
+                    userMap.put(post.getUserId(), user);
+                });
+            }
+        }
+        
+        for (DiscoverPost post : posts) {
+            Map<String, Object> review = new HashMap<String, Object>();
+            review.put("id", post.getId());
+            review.put("content", post.getContent());
+            review.put("score", post.getScore());
+            review.put("createTime", post.getCreateTime());
+            review.put("images", parseStringList(post.getImages()));
+            
+            User author = userMap.get(post.getUserId());
+            if (author != null) {
+                review.put("authorId", author.getId());
+                review.put("authorName", author.getNickname() != null ? author.getNickname() : author.getUsername());
+                review.put("authorAvatar", author.getAvatar());
+            }
+            
+            result.add(review);
+        }
+        
+        return result;
     }
 }
 

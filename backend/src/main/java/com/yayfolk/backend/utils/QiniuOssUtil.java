@@ -474,4 +474,45 @@ public class QiniuOssUtil {
         log.info("Homepage image uploaded successfully: userId={}, type={}, url={}", userId, type, fileUrl);
         return fileUrl;
     }
+
+    public String uploadActivityVR(MultipartFile file, Long activityId) throws Exception {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File must not be empty");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+        String fileName = "activities/" + activityId + "/VR/vr" + suffix;
+
+        Configuration cfg = new Configuration(Region.autoRegion());
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
+        UploadManager uploadManager = new UploadManager(cfg);
+
+        try {
+            byte[] uploadBytes = file.getBytes();
+            ByteArrayInputStream byteInputStream = new ByteArrayInputStream(uploadBytes);
+            Auth auth = Auth.create(qiniuOssProperties.getAccessKey(), qiniuOssProperties.getSecretKey());
+            String upToken = auth.uploadToken(qiniuOssProperties.getBucketName());
+
+            try {
+                uploadManager.put(byteInputStream, fileName, upToken, null, null);
+            } catch (QiniuException ex) {
+                Response r = ex.response;
+                log.error("七牛云ERROR:{}", r.toString());
+                try {
+                    log.error("七牛云ERROR:{}", r.bodyString());
+                } catch (QiniuException ex2) {
+                    ex2.printStackTrace();
+                }
+                throw new RuntimeException("VR模型上传失败", ex);
+            }
+        } catch (Exception ex) {
+            log.error("VR模型上传失败", ex);
+            throw new RuntimeException("VR模型上传失败", ex);
+        }
+
+        String fileUrl = String.format("%s/%s", qiniuOssProperties.getDomainName(), fileName);
+        log.info("Activity VR model uploaded successfully: activityId={}, url={}", activityId, fileUrl);
+        return fileUrl;
+    }
 }

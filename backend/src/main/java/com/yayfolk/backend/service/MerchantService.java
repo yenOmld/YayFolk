@@ -310,6 +310,9 @@ public class MerchantService {
         if (data.containsKey("videoCoverUrl")) {
             activity.setVideoCoverUrl(stringValue(data.get("videoCoverUrl")));
         }
+        if (data.containsKey("vrModelUrl")) {
+            activity.setVrModelUrl(stringValue(data.get("vrModelUrl")));
+        }
         if (data.containsKey("heritageType")) {
             activity.setHeritageType(stringValue(data.get("heritageType")));
         }
@@ -395,6 +398,7 @@ public class MerchantService {
         map.put("images", parseImageList(activity.getImages()));
         map.put("videoUrl", activity.getVideoUrl());
         map.put("videoCoverUrl", activity.getVideoCoverUrl());
+        map.put("vrModelUrl", activity.getVrModelUrl());
         map.put("content", activity.getContent());
         map.put("activityType", activity.getActivityType());
         map.put("heritageType", activity.getHeritageType());
