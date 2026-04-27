@@ -24,6 +24,12 @@ public class DiscoverPost {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "activity_id")
+    private Long activityId;
+
+    @Column(name = "score")
+    private Integer score;
+
     @Column(name = "title", nullable = false, length = 120)
     private String title;
 
@@ -35,6 +41,9 @@ public class DiscoverPost {
 
     @Column(name = "category", length = 30)
     private String category;
+
+    @Column(name = "type", length = 20)
+    private String type;
 
     @Column(name = "audit_status", length = 20)
     private String auditStatus;
@@ -97,6 +106,12 @@ public class DiscoverPost {
         }
         if (visibility == null || visibility.isEmpty()) {
             visibility = "public";
+        }
+        if (type == null || type.isEmpty()) {
+            type = "normal";
+        }
+        if (score == null) {
+            score = 0;
         }
     }
 

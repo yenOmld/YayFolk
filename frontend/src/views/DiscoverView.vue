@@ -18,14 +18,6 @@
           </div>
           <div 
             class="nav-button" 
-            :class="{ active: currentPage === 'post' }"
-            @click="switchPage('post')"
-          >
-            <i class='bx bx-edit-alt'></i>
-            <span>发布</span>
-          </div>
-          <div 
-            class="nav-button" 
             :class="{ active: currentPage === 'notification' }"
             @click="switchPage('notification')"
           >
@@ -45,14 +37,6 @@
           >
             <i class='bx bx-compass'></i>
             <span>发现</span>
-          </div>
-          <div 
-            class="mobile-menu-item" 
-            :class="{ active: currentPage === 'post' }"
-            @click="switchPageMobile('post')"
-          >
-            <i class='bx bx-edit-alt'></i>
-            <span>发布</span>
           </div>
           <div 
             class="mobile-menu-item" 
@@ -174,111 +158,10 @@
       </div>
 
       <div v-else-if="currentPage === 'post'" class="main-content post-page">
-        <div class="post-container">
-          <h2>发布新帖子</h2>
-          <div class="post-form-horizontal">
-            <div class="post-form-left">
-              <div class="form-group">
-                <label>标题</label>
-                <input v-model="postForm.title" type="text" placeholder="标题" />
-              </div>
-              <div class="form-group">
-                <label>内容</label>
-                <textarea v-model="postForm.content" placeholder="内容"></textarea>
-              </div>
-              <div class="form-group">
-                <label>分类</label>
-                <select v-model="postForm.category">
-                  <option v-for="category in categories.filter(item => item.id !== 'all')" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="post-form-right">
-              <div class="form-group">
-                <label>添加图片</label>
-                <div class="image-upload-area" @click="$refs.imageInput.click()">
-                  <i class='bx bx-plus-circle'></i>
-                  <span>添加图片</span>
-                  <input 
-                    ref="imageInput"
-                    type="file" 
-                    multiple 
-                    accept="image/*" 
-                    @change="handleImageUpload"
-                    style="display: none;"
-                  />
-                </div>
-                <div v-if="selectedImages.length > 0" class="selected-images">
-                  <div 
-                    v-for="(image, index) in selectedImages" 
-                    :key="index"
-                    class="image-preview-item"
-                    draggable="true"
-                    @dragstart="onDragStart($event, index)"
-                    @dragover.prevent="onDragOver($event)"
-                    @drop="onDrop($event, index)"
-                    @dragend="onDragEnd($event)"
-                    @click="previewImage(image)"
-                    @touchstart="onTouchStart($event, index)"
-                    @touchmove.prevent="onTouchMove($event)"
-                    @touchend="onTouchEnd($event, index)"
-                    style="touch-action: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"
-                  >
-                    <img :src="image" alt="Preview" class="preview-image" />
-                    <button class="remove-image-btn" @click.stop="removeImage(index)">
-                      <i class='bx bx-x'></i>
-                    </button>
-                    <div class="drag-handle">
-                      <i class='bx bx-move'></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>标签 <span class="tag-count">({{ postForm.tags.length }}/10)</span></label>
-                <div class="tags-container">
-                  <div v-if="postForm.tags.length > 0" class="selected-tags">
-                    <span
-                      v-for="tag in postForm.tags"
-                      :key="tag"
-                      class="selected-tag-item"
-                    >
-                      #{{ tag }}
-                      <i class='bx bx-x' @click="removeTag(tag)"></i>
-                    </span>
-                  </div>
-                  <div class="preset-tags">
-                    <span
-                      v-for="tag in presetTags"
-                      :key="tag"
-                      class="tag-item"
-                      :class="{ active: postForm.tags.includes(tag), disabled: !postForm.tags.includes(tag) && postForm.tags.length >= 10 }"
-                      @click="toggleTag(tag)"
-                    >#{{ tag }}</span>
-                  </div>
-                  <div class="tag-input-container">
-                    <input 
-                      v-model="customTagsInput" 
-                      type="text" 
-                      placeholder="添加标签" 
-                      @keyup.enter="addCustomTags"
-                      :disabled="postForm.tags.length >= 10"
-                    />
-                    <div class="tag-buttons">
-                      <button class="tag-btn" @click.prevent="addCustomTags" :disabled="postForm.tags.length >= 10">添加</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button class="submit-post-btn" :disabled="submittingPost" @click="submitPost">
-                {{ submittingPost ? '发布中...' : '发布' }}
-              </button>
-            </div>
-          </div>
-        </div>
+        <PostCreator 
+          :initial-form="postCreatorInitialForm"
+          @post-created="handlePostCreated"
+        />
       </div>
 
       <div v-else-if="currentPage === 'notification'" class="main-content notification-page">
@@ -327,31 +210,21 @@
     @searchTag="handleSearchTag"
   />
 
-  <div v-if="showImagePreview" class="image-preview-modal">
-    <div class="modal-overlay" @click="closeImagePreview"></div>
-    <div class="modal-content">
-      <button class="close-btn" @click="closeImagePreview">
-        <i class='bx bx-x'></i>
-      </button>
-      <img :src="previewImageSrc" alt="Preview" class="preview-image-full" />
-    </div>
-  </div>
+
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, getCurrentInstance } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  createDiscoverPost,
   getDiscoverPostDetail,
   getDiscoverPosts,
   getUnreadCount,
-  toggleDiscoverPostCollect,
-  uploadPostImage,
-  updateDiscoverPost,
-  classifyDiscoverImage
+  toggleDiscoverPostCollect
 } from '../api/app'
+import { readAiHeritageDraft } from '../utils/aiHeritage'
 import PostDetailModal from '../components/PostDetailModal.vue'
+import PostCreator from './post/PostCreator.vue'
 
 
 const { appContext } = getCurrentInstance()
@@ -377,7 +250,6 @@ const showPostModal = ref(false)
 const currentPost = ref(null)
 const searchKeyword = ref('')
 const loadingPosts = ref(false)
-const submittingPost = ref(false)
 const unreadCount = ref(0)
 const showMobileMenu = ref(false)
 const sortBy = ref('latest')
@@ -385,110 +257,20 @@ const showSortMenu = ref(false)
 const isRefreshing = ref(false)
 const isCategoryTabsHidden = ref(false)
 const lastScrollY = ref(0)
-const postForm = ref({
+
+const postCreatorInitialForm = ref({
   title: '',
   content: '',
   category: '服饰妆造',
   tags: [],
   images: []
 })
-const pendingFilesMap = ref(new Map())
-const customTagsInput = ref('')
-const presetTags = computed(() => [
-  '服饰妆造',
-  '美术造物',
-  '民俗节气',
-  '戏曲演绎',
-  '织物手工'
-])
-const classifierTagMap = computed(() => ({
-  '服饰妆造': '服饰妆造',
-  '美术造物': '美术造物',
-  '民俗节气': '民俗节气',
-  '戏曲演绎': '戏曲演绎',
-  '织物手工': '织物手工'
-}))
-const bestClassification = ref({
-  tag: '',
-  confidence: 0
-})
-const selectedImages = computed(() => postForm.value.images)
+
 const displayPosts = computed(() => posts.value)
-const draggedIndex = ref(null)
-const showImagePreview = ref(false)
-const previewImageSrc = ref('')
 
-
-
-
-const touchStartX = ref(0)
-const touchStartY = ref(0)
-const touchDragged = ref(false)
-const touchDraggedIndex = ref(null)
-
-const mergeTags = (incomingTags = []) => {
-  if (!Array.isArray(incomingTags) || incomingTags.length === 0) {
-    return
-  }
-
-  const merged = [...postForm.value.tags]
-  incomingTags
-    .map(tag => (typeof tag === 'string' ? tag.trim() : ''))
-    .map(tag => classifierTagMap.value[tag])
-    .filter(Boolean)
-    .forEach(tag => {
-      if (merged.length < 10 && !merged.includes(tag)) {
-        merged.push(tag)
-      }
-    })
-
-  postForm.value.tags = merged
-}
-
-const syncCategoryFromPrediction = (primaryTag, confidence = 0) => {
-  const normalizedTag = typeof primaryTag === 'string' ? primaryTag.trim() : ''
-  if (!normalizedTag) {
-    return
-  }
-
-  if (confidence < bestClassification.value.confidence) {
-    return
-  }
-
-  bestClassification.value = {
-    tag: normalizedTag,
-    confidence
-  }
-  
-  // 如果识别结果不在分类映射中，设置为"其他"
-  postForm.value.category = normalizedTag in classifierTagMap.value ? normalizedTag : '其他'
-}
-
-const classifySelectedImage = async (file) => {
-  if (!file) {
-    return
-  }
-
-  const formData = new FormData()
-  formData.append('image', file)
-
-  try {
-    const response = await classifyDiscoverImage(formData)
-    if (response.code === 200) {
-      const primaryTag = typeof response.data?.primaryTag === 'string' ? response.data.primaryTag.trim() : ''
-      const confidence = Number(response.data?.confidence || 0)
-      const autoTags = Array.isArray(response.data?.autoTags) ? response.data.autoTags : []
-      syncCategoryFromPrediction(primaryTag, confidence)
-      mergeTags(autoTags)
-      return
-    }
-
-    if (response.code === 503) {
-      console.warn('本地图片分类器不可用。', response.message)
-    }
-  } catch (error) {
-    console.error('发现页图片分类失败。', error)
-  }
+const handlePostCreated = async (post) => {
+  currentPage.value = 'discover'
+  await loadPosts()
 }
 
 const toggleMobileMenu = () => {
@@ -655,262 +437,6 @@ const toggleCollect = async (post) => {
   }
 }
 
-const toggleTag = (tag) => {
-  const current = postForm.value.tags
-  const exists = current.includes(tag)
-  if (!exists && current.length >= 10) {
-    notify.warning('最多添加10个标签')
-    return
-  }
-  postForm.value.tags = exists ? current.filter(item => item !== tag) : [...current, tag]
-}
-
-const addCustomTags = () => {
-  const tags = customTagsInput.value.split(/[\s,\uFF0C]+/).map(item => item.trim()).filter(Boolean)
-  if (!tags.length) {
-    return
-  }
-  const merged = [...postForm.value.tags]
-  let addedCount = 0
-  tags.forEach(tag => {
-    if (merged.length >= 10) {
-      return
-    }
-    if (!merged.includes(tag)) {
-      merged.push(tag)
-      addedCount++
-    }
-  })
-  if (addedCount < tags.length) {
-    notify.warning('最多添加10个标签')
-  }
-  postForm.value.tags = merged
-  customTagsInput.value = ''
-}
-
-const removeTag = (tag) => {
-  postForm.value.tags = postForm.value.tags.filter(item => item !== tag)
-}
-
-const handleImageUpload = async (event) => {
-  const input = event.target
-  const files = input?.files ? Array.from(input.files) : []
-  if (files.length === 0) return
-
-  const remainingSlots = 9 - postForm.value.images.length
-  if (remainingSlots <= 0) {
-    notify.warning('最多上传9张图片')
-    if (input) {
-      input.value = ''
-    }
-    return
-  }
-
-  const filesToUpload = files.slice(0, remainingSlots)
-  const classifyTasks = []
-
-  filesToUpload.forEach(file => {
-    const previewUrl = URL.createObjectURL(file)
-    postForm.value.images.push(previewUrl)
-    pendingFilesMap.value.set(previewUrl, file)
-    classifyTasks.push(classifySelectedImage(file))
-  })
-
-  if (input) {
-    input.value = ''
-  }
-
-  Promise.allSettled(classifyTasks)
-}
-
-
-const removeImage = (index) => {
-  const previewUrl = postForm.value.images[index]
-  if (previewUrl && previewUrl.startsWith('blob:')) {
-    URL.revokeObjectURL(previewUrl)
-    pendingFilesMap.value.delete(previewUrl)
-  }
-  postForm.value.images = postForm.value.images.filter((_, i) => i !== index)
-}
-
-const resetPostForm = () => {
-  postForm.value.images.forEach(url => {
-    if (url && url.startsWith('blob:')) {
-      URL.revokeObjectURL(url)
-    }
-  })
-  postForm.value = {
-    title: '',
-    content: '',
-    category: '服饰妆造',
-    tags: [],
-    images: []
-  }
-  pendingFilesMap.value = new Map()
-  bestClassification.value = {
-    tag: '',
-    confidence: 0
-  }
-  customTagsInput.value = ''
-}
-
-const onDragStart = (event, index) => {
-  draggedIndex.value = index
-  event.target.style.opacity = '0.5'
-}
-
-const onDragOver = (event) => {
-  event.preventDefault()
-}
-
-const onDrop = (event, dropIndex) => {
-  event.preventDefault()
-  if (draggedIndex.value !== null && draggedIndex.value !== dropIndex) {
-    const images = [...postForm.value.images]
-    const [draggedImage] = images.splice(draggedIndex.value, 1)
-    images.splice(dropIndex, 0, draggedImage)
-    postForm.value.images = images
-    
-    // Update pendingFilesMap if needed
-    if (draggedImage.startsWith('blob:')) {
-      const files = [...pendingFilesMap.value.entries()]
-      const [key, value] = files.splice(draggedIndex.value, 1)[0]
-      files.splice(dropIndex, 0, [key, value])
-      pendingFilesMap.value = new Map(files)
-    }
-  }
-  draggedIndex.value = null
-  event.target.style.opacity = '1'
-}
-
-const onDragEnd = (event) => {
-  event.target.style.opacity = '1'
-  draggedIndex.value = null
-}
-
-
-const onTouchStart = (event, index) => {
-  const touch = event.touches[0]
-  touchStartX.value = touch.clientX
-  touchStartY.value = touch.clientY
-  touchDragged.value = false
-  touchDraggedIndex.value = index
-}
-
-const onTouchMove = (event) => {
-  if (!touchDraggedIndex.value) return
-  
-  const touch = event.touches[0]
-  const deltaX = Math.abs(touch.clientX - touchStartX.value)
-  const deltaY = Math.abs(touch.clientY - touchStartY.value)
-  
-  
-  if (deltaX > 10 || deltaY > 10) {
-    touchDragged.value = true
-  }
-}
-
-const onTouchEnd = (event, index) => {
-  if (touchDragged.value && touchDraggedIndex.value !== null && touchDraggedIndex.value !== index) {
-    const images = [...postForm.value.images]
-    const [draggedImage] = images.splice(touchDraggedIndex.value, 1)
-    images.splice(index, 0, draggedImage)
-    postForm.value.images = images
-    
-    // Update pendingFilesMap if needed
-    if (draggedImage.startsWith('blob:')) {
-      const files = [...pendingFilesMap.value.entries()]
-      const [key, value] = files.splice(touchDraggedIndex.value, 1)[0]
-      files.splice(index, 0, [key, value])
-      pendingFilesMap.value = new Map(files)
-    }
-  }
-  
-  touchDragged.value = false
-  touchDraggedIndex.value = null
-}
-
-const previewImage = (imageUrl) => {
-  previewImageSrc.value = imageUrl
-  showImagePreview.value = true
-}
-
-const closeImagePreview = () => {
-  showImagePreview.value = false
-  previewImageSrc.value = ''
-}
-
-const submitPost = async () => {
-  if (!postForm.value.title.trim()) {
-    notify.warning('请输入标题')
-    return
-  }
-  if (!postForm.value.content.trim()) {
-    notify.warning('请输入内容')
-    return
-  }
-  if (!postForm.value.images || postForm.value.images.length === 0) {
-    notify.warning('请上传图片')
-    return
-  }
-  submittingPost.value = true
-  try {
-    const finalTags = [...postForm.value.tags]
-    
-    const createResponse = await createDiscoverPost({
-      title: postForm.value.title.trim(),
-      content: postForm.value.content.trim(),
-      category: postForm.value.category,
-      tags: finalTags,
-      images: []
-    })
-    if (createResponse.code !== 200) {
-      notify.error(createResponse.message || '发布失败')
-      return
-    }
-    const postId = createResponse.data.id
-
-    
-    const ossUrls = []
-    let index = 1
-    for (const previewUrl of postForm.value.images) {
-      const file = pendingFilesMap.value.get(previewUrl)
-      if (file) {
-        const formData = new FormData()
-        formData.append('file', file)
-        const response = await uploadPostImage(formData, postId, index)
-        if (response.code === 200 && response.data && response.data.url) {
-          ossUrls.push(response.data.url)
-          index++
-        } else {
-          throw new Error(response.message || '图片上传失败')
-        }
-      }
-    }
-
-    
-    const updateResponse = await updateDiscoverPost(postId, {
-      title: postForm.value.title.trim(),
-      content: postForm.value.content.trim(),
-      category: postForm.value.category,
-      tags: finalTags,
-      images: ossUrls
-    })
-    if (updateResponse.code === 200) {
-      notify.success('发布成功')
-      resetPostForm()
-      currentPage.value = 'discover'
-      await loadPosts()
-    } else {
-      notify.error(updateResponse.message || '发布失败')
-    }
-  } catch (error) {
-    notify.error('发布失败，请重试')
-  } finally {
-    submittingPost.value = false
-  }
-}
-
 onMounted(async () => {
   lastScrollY.value = window.scrollY || window.pageYOffset || 0
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
@@ -918,6 +444,27 @@ onMounted(async () => {
   loadUnreadCount()
   const postId = route.query.postId
   const commentId = route.query.commentId
+  const source = route.query.source
+  const page = route.query.page
+  const postType = route.query.postType
+  
+  // 处理从AI大片生成流程跳转过来的情况
+  if (source === 'ai-heritage') {
+    const aiDraft = readAiHeritageDraft()
+    if (aiDraft && aiDraft.generatedImageUrl) {
+      // 切换到发布页面
+      currentPage.value = 'post'
+      // 填充AI生成的图片到发布表单
+      postCreatorInitialForm.value = {
+        title: 'AI非遗大片',
+        content: '分享我的AI非遗大片',
+        category: '其他',
+        tags: ['AI生成', '非遗文化'],
+        images: [aiDraft.generatedImageUrl]
+      }
+    }
+  }
+  
   if (postId) {
     try {
       const response = await getDiscoverPostDetail(parseInt(postId))
@@ -1740,396 +1287,6 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 40px 20px;
-}
-
-.post-container {
-  width: 100%;
-  max-width: 1200px;
-  background: white;
-  border-radius: 12px;
-  margin-top: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.post-container h2 {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-}
-
-.post-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-
-.post-form-horizontal {
-  display: flex;
-  gap: 30px;
-}
-
-.post-form-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.post-form-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.post-form-left .form-group textarea {
-  min-height: 200px;
-  flex: 1;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
-}
-
-
-
-.form-group input,
-.form-group textarea {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: #ff2442;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.form-group select {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  background: #fff;
-}
-
-
-.tags-container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-
-.tag-count {
-  font-size: 12px;
-  color: #999;
-  font-weight: normal;
-}
-
-
-.selected-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.selected-tag-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: #ff2442;
-  color: #fff;
-  border-radius: 16px;
-  font-size: 12px;
-}
-
-.selected-tag-item i {
-  cursor: pointer;
-  font-size: 14px;
-  transition: opacity 0.3s;
-}
-
-.selected-tag-item i:hover {
-  opacity: 0.8;
-}
-
-
-.preset-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.tag-item {
-  padding: 6px 12px;
-  background: #f5f5f5;
-  border-radius: 16px;
-  font-size: 12px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tag-item:hover {
-  background: #e8e8e8;
-  color: #333;
-}
-
-.tag-item.active {
-  background: #ff2442;
-  color: #fff;
-}
-
-.tag-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.more-tags {
-  font-weight: 500;
-}
-
-
-.tag-input-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tag-input-container input {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.tag-input-container input:focus {
-  border-color: #ff2442;
-}
-
-
-.tag-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.tag-btn {
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  font-size: 12px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tag-btn:hover {
-  background: #e8e8e8;
-  border-color: #d0d0d0;
-  color: #333;
-}
-
-.tag-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tag-input-container input:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.image-upload-area {
-  border: 2px dashed #e0e0e0;
-  border-radius: 8px;
-  padding: 40px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-
-.image-upload-area:hover {
-  border-color: #ff2442;
-  background: rgba(255, 36, 66, 0.05);
-}
-
-.image-upload-area i {
-  font-size: 32px;
-  color: #999;
-  margin-bottom: 10px;
-}
-
-.image-upload-area span {
-  font-size: 14px;
-  color: #666;
-}
-
-.image-upload-area input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.selected-images {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.image-preview-item {
-  position: relative;
-  width: 70px;
-  height: 70px;
-  touch-action: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  transition: all 0.3s;
-  cursor: pointer;
-}
-
-.image-preview-item:active {
-  opacity: 0.7;
-  transform: scale(0.95);
-}
-
-.preview-image {
-  width: 70px;
-  height: 70px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 20px;
-  height: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.remove-image-btn:hover {
-  background: rgba(255, 36, 66, 0.9);
-  transform: scale(1.1);
-}
-
-.submit-post-btn {
-  padding: 12px;
-  background: #ff2442;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.submit-post-btn:hover {
-  background: #ff3a56;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.3);
-}
-
-.submit-post-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-
-.image-preview-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-preview-modal .modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-}
-
-.image-preview-modal .modal-content {
-  position: relative;
-  max-width: 90%;
-  max-height: 90vh;
-  z-index: 1;
-}
-
-.image-preview-modal .close-btn {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: white;
-  cursor: pointer;
-  padding: 0;
-}
-
-.preview-image-full {
-  max-width: 100%;
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: 8px;
 }
 
 

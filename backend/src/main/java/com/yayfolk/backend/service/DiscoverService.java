@@ -790,6 +790,9 @@ public class DiscoverService {
         item.put("content", defaultString(post.getContent()));
         item.put("sourceLang", normalizeSourceLang(post.getSourceLang(), post.getContent()));
         item.put("category", defaultString(post.getCategory()));
+        item.put("type", defaultString(post.getType()));
+        item.put("activityId", post.getActivityId());
+        item.put("score", post.getScore());
         item.put("images", readStringArray(post.getImages()));
         item.put("hashtags", readStringArray(post.getTags()));
         item.put("collects", safeInt(post.getCollectCount()));
@@ -855,6 +858,133 @@ public class DiscoverService {
 
     private boolean publiclyVisibleOrOwnerAccessible(DiscoverPost post, Long userId) {
         return isPubliclyVisiblePost(post) || canOwnerAccessPost(post, userId);
+    }
+
+    public Map<String, Object> createReviewPost(String username, Map<String, Object> payload) {
+        User author = findUser(username);
+        Long userId = author.getId();
+        String title = normalizeText((String) payload.get("title"));
+        String content = normalizeText((String) payload.get("content"));
+        if (!StringUtils.hasText(title)) {
+            throw new RuntimeException("Please enter a title");
+        }
+        if (!StringUtils.hasText(content)) {
+            throw new RuntimeException("Please enter content");
+        }
+
+        String category = normalizeText((String) payload.get("category"));
+        if (!StringUtils.hasText(category)) {
+            category = "review";
+        }
+        List<String> imageUrls = readStringArray(writeJsonArray(payload.get("images")));
+        List<String> videoUrls = readStringArray(writeJsonArray(payload.get("videos")));
+        ModerationDecision decision = runModerationPipeline(author, null, title, content, imageUrls, videoUrls);
+
+        DiscoverPost post = new DiscoverPost();
+        post.setUserId(userId);
+        post.setTitle(title);
+        post.setContent(content);
+        post.setSourceLang(detectLanguage(content));
+        post.setCategory(category);
+        post.setType("review");
+        post.setImages(writeJsonArray(imageUrls));
+        post.setTags(writeJsonArray(payload.get("tags")));
+        post.setStatus(1);
+        post.setAuditStatus(decision.getAuditStatus());
+        post.setAuditRemark(decision.getAuditRemark());
+        post.setVisibility(normalizePostVisibility(payload.get("visibility") == null ? null : String.valueOf(payload.get("visibility"))));
+        post.setActivityId(payload.get("activityId") != null ? Long.valueOf(String.valueOf(payload.get("activityId"))) : null);
+        post.setScore(payload.get("score") != null ? Integer.valueOf(String.valueOf(payload.get("score"))) : 0);
+
+        DiscoverPost saved = postRepository.save(post);
+        return toPostSummary(saved, author, false);
+    }
+
+    @Transactional
+    public Map<String, Object> updateReviewPost(String username, Long postId, Map<String, Object> payload) {
+        User author = findUser(username);
+        Long userId = author.getId();
+        DiscoverPost post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!userId.equals(post.getUserId())) {
+            throw new RuntimeException("You do not have permission to edit this post");
+        }
+        if (!canOwnerEditPost(post, userId)) {
+            throw new RuntimeException("Post does not exist");
+        }
+
+        String title = normalizeText((String) payload.get("title"));
+        String content = normalizeText((String) payload.get("content"));
+        if (!StringUtils.hasText(title)) {
+            throw new RuntimeException("Please enter a title");
+        }
+        if (!StringUtils.hasText(content)) {
+            throw new RuntimeException("Please enter content");
+        }
+
+        String category = normalizeText((String) payload.get("category"));
+        if (!StringUtils.hasText(category)) {
+            category = "review";
+        }
+
+        List<String> oldImages = readStringArray(post.getImages());
+        List<String> newImages = readStringArray(writeJsonArray(payload.get("images")));
+        List<String> videoUrls = readStringArray(writeJsonArray(payload.get("videos")));
+        for (String oldImage : oldImages) {
+            if (!newImages.contains(oldImage) && ossUtil.isOssUrl(oldImage)) {
+                ossUtil.deleteFile(oldImage);
+                System.out.println("Deleted removed post image: " + oldImage);
+            }
+        }
+        ModerationDecision decision = runModerationPipeline(author, postId, title, content, newImages, videoUrls);
+
+        post.setTitle(title);
+        post.setContent(content);
+        post.setSourceLang(detectLanguage(content));
+        post.setCategory(category);
+        post.setType("review");
+        post.setImages(writeJsonArray(newImages));
+        post.setTags(writeJsonArray(payload.get("tags")));
+        post.setStatus(1);
+        post.setAuditStatus(decision.getAuditStatus());
+        post.setAuditRemark(decision.getAuditRemark());
+        if (payload.containsKey("visibility")) {
+            post.setVisibility(normalizePostVisibility(payload.get("visibility") == null ? null : String.valueOf(payload.get("visibility"))));
+        } else {
+            post.setVisibility(normalizePostVisibility(post.getVisibility()));
+        }
+        post.setActivityId(payload.get("activityId") != null ? Long.valueOf(String.valueOf(payload.get("activityId"))) : null);
+        post.setScore(payload.get("score") != null ? Integer.valueOf(String.valueOf(payload.get("score"))) : 0);
+        DiscoverPost saved = postRepository.save(post);
+        clearPostTranslateCache(postId);
+
+        return toPostSummary(saved, author, false);
+    }
+
+    @Transactional
+    public void deleteReviewPost(String username, Long postId) {
+        Long userId = findUserId(username);
+        DiscoverPost post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post does not exist"));
+        if (!userId.equals(post.getUserId())) {
+            throw new RuntimeException("You do not have permission to delete this post");
+        }
+
+        List<String> images = readStringArray(post.getImages());
+        for (String image : images) {
+            if (ossUtil.isOssUrl(image)) {
+                ossUtil.deleteFile(image);
+                System.out.println("Deleted post image: " + image);
+            }
+        }
+
+        post.setStatus(0);
+        post.setAuditStatus("deleted");
+        post.setAuditRemark(null);
+        postRepository.save(post);
+        clearPostTranslateCache(postId);
+        collectionRepository.deleteByPostId(postId);
+        commentRepository.deleteByPostId(postId);
+        historyRepository.deleteByPostId(postId);
     }
 
     private boolean shouldShowInMyPosts(DiscoverPost post) {

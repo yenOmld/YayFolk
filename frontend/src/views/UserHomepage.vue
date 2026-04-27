@@ -135,9 +135,17 @@
                 <div class="badge-aura"></div>
                 <div class="badge-head">
                   <div class="badge-medallion" :class="'badge-' + badge.type">
-                    <div class="badge-icon" :class="'icon-' + badge.type">
-                      <img :src="badgeImage(badge.code)" :alt="badge.name || badge.badgeName" class="badge-img">
-                    </div>
+                    <button
+                      class="badge-portal"
+                      type="button"
+                      :disabled="!isBadgeUnlocked(badge)"
+                      @click.stop="openBadgeAr(badge)"
+                    >
+                      <div class="badge-icon" :class="'icon-' + badge.type">
+                        <img :src="badgeImage(badge.code)" :alt="badge.name || badge.badgeName" class="badge-img">
+                      </div>
+                      <span class="badge-portal-tip">{{ isBadgeUnlocked(badge) ? '打开AR' : '未解锁' }}</span>
+                    </button>
                   </div>
                   <div class="badge-copy">
                     <div class="badge-topline">
@@ -190,34 +198,14 @@
           </template>
 
           <template v-if="activeTab==='reviews'">
-            <div class="review-summary">
-              <div class="sum-box"><strong>{{ score(reviewSummary.averageScore) }}</strong><span>综合评分</span></div>
-              <div class="sum-box"><strong>{{ reviewSummary.reviewCount || 0 }}</strong><span>评价数量</span></div>
-              <div class="sum-box"><strong>{{ user.merchantKeyword || user.shopName || '非遗手作' }}</strong><span>关键词</span></div>
-            </div>
-            <div v-if="reviews.length" class="stack review-list">
-              <article v-for="item in reviews" :key="item.id" class="review-card">
-                <div class="review-header">
-                  <div class="review-user">
-                    <img :src="item.avatar || defaultAvatar" class="review-avatar" alt="用户头像">
-                    <div class="review-user-info">
-                      <strong>{{ item.nickname || item.username || '匿名用户' }}</strong>
-                      <span class="review-time">{{ formatTime(item.createTime) }}</span>
-                    </div>
-                  </div>
-                  <div class="review-score">
-                    <div class="stars">
-                      <i v-for="star in 5" :key="star" class="bx" :class="star <= (item.score || 0) ? 'bxs-star' : 'bx-star'" style="color: #f59e0b;"></i>
-                    </div>
-                    <span class="score-text">{{ score(item.score) }} 分</span>
-                  </div>
-                </div>
-                <div class="review-content">
-                  <p>{{ item.content || '该用户没有留下文字评价。' }}</p>
-                </div>
-              </article>
-            </div>
-            <div v-else class="empty"><i class='bx bx-message-rounded-dots'></i><p>目前还没有可展示的评价内容</p></div>
+            <MerchantReviewPanel
+              :reviews="reviews"
+              :activities="activities"
+              :loading="loading"
+              :empty-text="'目前还没有可展示的评价内容'"
+              :show-summary="true"
+              :lift-summary="false"
+            />
           </template>
         </section>
 
@@ -245,6 +233,12 @@
     </div>
 
     <PostDetailModal :visible="showDetail" :post="detailPost" @close="closeDetail" @update="syncPost" />
+
+    <GiftBoxModal
+      :visible="showGiftBox"
+      :badge="activeBadge"
+      @close="closeGiftBox"
+    />
   </div>
 </template>
 
@@ -253,6 +247,8 @@ import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from
 import { useRoute, useRouter } from 'vue-router'
 import { deleteMyDiscoverPost, followUser, getCollectedBy, getDiscoverPostDetail, getFollowers, getFollowing, getUserHomepage, unfollowUser, updateDiscoverPostVisibility, updateHomepageSettings, updateUserProfile, uploadAvatar, uploadImage, getMerchantActivities } from '../api/app'
 import PostDetailModal from '../components/PostDetailModal.vue'
+import GiftBoxModal from '../components/GiftBoxModal.vue'
+import MerchantReviewPanel from '../components/merchant/MerchantReviewPanel.vue'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -288,6 +284,8 @@ const isCurrentUser = ref(false)
 const isFollowingUser = ref(false)
 const activeTab = ref('posts')
 const activityFilter = ref({ category: 'all', time: 'all', status: 'all' })
+const activeBadge = ref(null)
+const showGiftBox = ref(false)
 
 const readUser = () => { try { return JSON.parse(localStorage.getItem('user') || localStorage.getItem('userInfo') || 'null') } catch { return null } }
 const saveUserPatch = (patch) => { const current = readUser(); if (!current) return; const next = { ...current, ...patch }; localStorage.setItem('user', JSON.stringify(next)); localStorage.setItem('userInfo', JSON.stringify(next)) }
@@ -399,6 +397,23 @@ const contactTarget = () => {
   router.push({ path: '/notification', query: { userId: user.value.id, returnTo: route.fullPath, scope: 'chat' } })
 }
 const toggleBadge = (badge) => { const key = badge.code || badge.id; revealed.value = { ...revealed.value, [key]: !revealed.value[key] } }
+const isBadgeUnlocked = (badge) => Boolean(badge?.unlocked || String(badge?.status || '').toLowerCase() === 'unlocked')
+const openBadgeAr = (badge) => {
+  if (!isCurrentUser.value) {
+    notify.warning('解锁后才能打开AR扫描')
+    return
+  }
+  if (!isBadgeUnlocked(badge)) {
+    notify.warning('你只能查看自己已解锁的AR勋章')
+    return
+  }
+  activeBadge.value = badge
+  showGiftBox.value = true
+}
+const closeGiftBox = () => {
+  showGiftBox.value = false
+  activeBadge.value = null
+}
 const handleDocumentClick = () => { showProfileMenu.value = false }
 const listPrimary = (item) => item.bio || (listType.value === 'collected' ? '这个人收藏过主页内容。' : '@' + (item.username || 'yayfolk-user'))
 const listMeta = (item) => listType.value === 'collected' ? `${item.collectCount || 0} 次收藏` : (item.latestCollectTime || item.visitTime || item.viewTime || '')
@@ -1343,6 +1358,34 @@ onUnmounted(() => {
   justify-content: center;
 }
 
+.badge-portal {
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-portal:disabled {
+  cursor: not-allowed;
+}
+
+.badge-portal-tip {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.badge-portal:not(:disabled):hover .badge-portal-tip {
+  color: #4338ca;
+}
+
 .badge-icon {
   width: 80px;
   height: 80px;
@@ -1351,6 +1394,14 @@ onUnmounted(() => {
   justify-content: center;
   transition: all 0.3s ease;
   position: relative;
+  border-radius: 50%;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+}
+
+.badge-portal:not(:disabled):hover .badge-icon {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(67, 56, 202, 0.3);
 }
 
 /* 悬停效果 */

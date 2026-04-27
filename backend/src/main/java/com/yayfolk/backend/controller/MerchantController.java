@@ -258,4 +258,14 @@ public class MerchantController {
             return ResponseDto.error(400, e.getMessage());
         }
     }
+
+    @GetMapping("/reviews")
+    public ResponseDto getMerchantReviews(HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(merchantService.getMerchantReviews(username));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
 }

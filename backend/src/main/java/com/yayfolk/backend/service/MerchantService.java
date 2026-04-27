@@ -790,6 +790,22 @@ public class MerchantService {
         return result;
     }
 
+    public List<Map<String, Object>> getMerchantReviews(String username) {
+        User user = getUser(username);
+        List<MerchantReview> reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
+        List<ActivityReserve> bookings = activityReserveRepository.findByMerchantIdOrderByUpdateTimeDesc(user.getId());
+        List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
+
+        Map<Long, ActivityReserve> bookingMap = new HashMap<Long, ActivityReserve>();
+        for (ActivityReserve booking : bookings) {
+            bookingMap.put(booking.getId(), booking);
+        }
+
+        Map<Long, Activity> activityMap = buildActivityMap(activities);
+
+        return buildMerchantReviews(reviews, bookingMap, activityMap);
+    }
+
     private void fillProduct(Product product, Map<String, Object> data) {
         if (data.containsKey("name")) {
             product.setName(stringValue(data.get("name")));

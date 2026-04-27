@@ -39,6 +39,9 @@ public class Activity {
     @Column(name = "video_cover_url", length = 500)
     private String videoCoverUrl;
 
+    @Column(name = "vr_model_url", length = 500)
+    private String vrModelUrl;
+
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 

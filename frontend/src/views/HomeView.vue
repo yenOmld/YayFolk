@@ -28,6 +28,20 @@
         <span>活动</span>
       </div>
       <div 
+        class="nav-item center-btn"
+        @mouseenter="showPostSelector = true"
+        @mouseleave="showPostSelector = false"
+      >
+        <div class="plus-btn">
+          <i class='bx bx-plus'></i>
+        </div>
+        <!-- 悬停弹出的选项 -->
+        <PostTypeSelector 
+          :visible="showPostSelector" 
+          @select="handlePostTypeSelect"
+        />
+      </div>
+      <div 
         class="nav-item" 
         :class="{ active: currentRoute === '/home/discover' }"
         @click="navigateTo('/home/discover')"
@@ -38,7 +52,6 @@
         </div>
         <span>发现</span>
       </div>
-
       <div 
         class="nav-item" 
         :class="{ active: currentRoute === '/home/personal' }"
@@ -55,11 +68,13 @@
 import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getUnreadCount } from '../api/app'
+import PostTypeSelector from '../components/PostTypeSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
 const currentRoute = ref('/home/heritage')
 const unreadCount = ref(0)
+const showPostSelector = ref(false)
 
 const updateCurrentRoute = () => {
   currentRoute.value = route.path
@@ -67,6 +82,17 @@ const updateCurrentRoute = () => {
 
 const navigateTo = (path) => {
   router.push(path)
+}
+
+const handlePostTypeSelect = (type) => {
+  showPostSelector.value = false
+  if (type === 'share') {
+    router.push({ name: 'create-share-post' })
+  } else if (type === 'review') {
+    router.push({ name: 'create-review-post' })
+  } else if (type === 'ai-heritage') {
+    router.push({ name: 'create-ai-heritage-upload' })
+  }
 }
 
 const loadUnreadCount = async () => {
@@ -233,6 +259,52 @@ onMounted(() => {
   opacity: 0;
 }
 
+.nav-item.center-btn {
+  flex: 0 0 auto;
+  min-width: auto;
+  padding: 0;
+  background: transparent;
+  position: relative;
+}
+
+.nav-item.center-btn:hover {
+  background: transparent;
+}
+
+.plus-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #9d2929 0%, #c2410c 100%);
+  box-shadow:
+    0 8px 24px rgba(157, 41, 41, 0.35),
+    0 4px 12px rgba(157, 41, 41, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.plus-btn:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 12px 32px rgba(157, 41, 41, 0.45),
+    0 6px 16px rgba(157, 41, 41, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.25);
+}
+
+.plus-btn:active {
+  transform: scale(0.95);
+}
+
+.plus-btn i {
+  font-size: 32px;
+  color: #fff;
+  line-height: 1;
+}
+
 @media (max-width: 640px) {
   .page-shell {
     padding-bottom: 0;
@@ -262,6 +334,15 @@ onMounted(() => {
 
   .nav-icon-wrapper .badge {
     right: -10px;
+  }
+
+  .plus-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .plus-btn i {
+    font-size: 28px;
   }
 }
 </style>

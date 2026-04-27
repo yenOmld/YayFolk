@@ -4,7 +4,14 @@
       <button class="back-btn" @click="goBack">
         <i class='bx bxs-chevron-left'></i>
       </button>
-      <h1>我的帖子</h1>
+      <h1>动态管理</h1>
+    </div>
+
+    <div class="privacy-banner">
+      <div>
+        <strong>单条帖子可直接切换公开 / 私密</strong>
+        <p>锁图标会同步更新帖子展示状态，不影响内容编辑。</p>
+      </div>
     </div>
 
     <div class="posts-content">
@@ -24,6 +31,23 @@
           <div class="post-content">
             <div class="post-status-row">
               <span :class="['audit-chip', post.auditStatus || 'pending']">{{ formatAuditStatus(post.auditStatus) }}</span>
+              <span :class="['type-chip', `type-${normalizePostType(post)}`]">{{ getPostTypeLabel(post) }}</span>
+              <button
+                class="visibility-toggle-btn"
+                type="button"
+                @click.stop="togglePostVisibility(post)"
+                :title="post.visibility === 'private' ? '设为公开' : '设为私密'"
+              >
+                <i :class="post.visibility === 'private' ? 'bx bx-lock-open-alt' : 'bx bx-lock-alt'"></i>
+                <span>{{ post.visibility === 'private' ? '私密' : '公开' }}</span>
+              </button>
+              <span
+                v-if="isReviewPost(post)"
+                class="activity-chip"
+                @click.stop="openLinkedActivity(post)"
+              >
+                活动关联
+              </span>
             </div>
             <h4>{{ post.title }}</h4>
             <p class="post-text">{{ post.content }}</p>
@@ -154,15 +178,28 @@
       </div>
     </div>
 
-    <PostDetailModal :visible="showPostDetail" :post="detailPost" @close="closePostDetail" />
+    <PostDetailModal
+      :visible="showPostDetail"
+      :post="detailPost"
+      @close="closePostDetail"
+      @open-activity="openLinkedActivity"
+    />
+
+    <ActivityDetailModal
+      :visible="showActivityDetail"
+      :activity-id="selectedActivityId"
+      :z-index="1900"
+      @close="closeActivityDetail"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyDiscoverPosts, deleteMyDiscoverPost, updateDiscoverPost, uploadPostImage, getDiscoverPostDetail } from '../api/app'
+import { getMyDiscoverPosts, deleteMyDiscoverPost, updateDiscoverPost, updateDiscoverPostVisibility, uploadPostImage, getDiscoverPostDetail } from '../api/app'
 import PostDetailModal from '../components/PostDetailModal.vue'
+import ActivityDetailModal from '@/components/ActivityDetailModal.vue'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
@@ -173,9 +210,12 @@ const posts = ref([])
 const loading = ref(false)
 const showEditModal = ref(false)
 const saving = ref(false)
+const uploadingImages = ref(false)
 const editingPostId = ref(null)
 const showPostDetail = ref(false)
 const detailPost = ref(null)
+const showActivityDetail = ref(false)
+const selectedActivityId = ref('')
 
 const categories = ref([
   { id: '服饰妆造', name: '服饰妆造' },
@@ -251,10 +291,53 @@ const viewPost = async (post) => {
   }
 }
 
+const togglePostVisibility = async (post) => {
+  const nextVisibility = post.visibility === 'private' ? 'public' : 'private'
+  try {
+    const response = await updateDiscoverPostVisibility(post.id, nextVisibility)
+    if (response.code !== 200 || !response.data) {
+      notify.error(response.message || '更新帖子公开状态失败')
+      return
+    }
+
+    const nextPost = { ...post, visibility: response.data.visibility || nextVisibility }
+    posts.value = posts.value.map(item => (item.id === post.id ? nextPost : item))
+    if (detailPost.value && detailPost.value.id === post.id) {
+      detailPost.value = { ...detailPost.value, visibility: nextPost.visibility }
+    }
+    notify.success(nextPost.visibility === 'private' ? '帖子已设为私密' : '帖子已设为公开')
+  } catch (error) {
+    notify.error('更新帖子公开状态失败，请重试')
+  }
+}
+
 const closePostDetail = () => {
   showPostDetail.value = false
   detailPost.value = null
 }
+
+const openLinkedActivity = (payload) => {
+  const activityId = Number(payload?.id || payload?.activityId || payload?.sourceId || 0)
+  if (!activityId) return
+  selectedActivityId.value = String(activityId)
+  showActivityDetail.value = true
+}
+
+const closeActivityDetail = () => {
+  showActivityDetail.value = false
+  selectedActivityId.value = ''
+}
+
+const normalizePostType = (post) => String(post?.type || post?.postType || 'normal').toLowerCase()
+
+const getPostTypeLabel = (post) => {
+  const type = normalizePostType(post)
+  if (type === 'review') return '评价贴'
+  if (type === 'ai_video') return 'AI 内容'
+  return '分享帖'
+}
+
+const isReviewPost = (post) => normalizePostType(post) === 'review'
 
 const openEditModal = async (post) => {
   editingPostId.value = post.id
@@ -325,13 +408,29 @@ const handleEditImageUpload = async (event) => {
   }
 
   const filesToUpload = files.slice(0, remainingSlots)
-  filesToUpload.forEach(file => {
-    const previewUrl = URL.createObjectURL(file)
-    editForm.value.images.push(previewUrl)
-  })
-
-  if (input) {
-    input.value = ''
+  uploadingImages.value = true
+  
+  try {
+    const uploadedUrls = []
+    for (const file of filesToUpload) {
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await uploadPostImage(formData, 'posts')
+      if (response.code === 200 && response.data?.url) {
+        uploadedUrls.push(response.data.url)
+      } else {
+        throw new Error(response.message || '图片上传失败')
+      }
+    }
+    editForm.value.images.push(...uploadedUrls)
+    notify.success(`成功上传 ${uploadedUrls.length} 张图片`)
+  } catch (error) {
+    notify.error(error.message || '图片上传失败，请重试')
+  } finally {
+    uploadingImages.value = false
+    if (input) {
+      input.value = ''
+    }
   }
 }
 
@@ -488,6 +587,26 @@ onMounted(() => {
   margin: 0;
 }
 
+.privacy-banner {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(157, 41, 41, 0.08), rgba(201, 145, 63, 0.12));
+  border: 1px solid rgba(157, 41, 41, 0.1);
+  color: #5b2a22;
+}
+
+.privacy-banner strong {
+  display: block;
+  font-size: 15px;
+}
+
+.privacy-banner p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #7b5a4d;
+}
+
 .posts-content {
   max-width: 800px;
   margin: 0 auto;
@@ -590,6 +709,10 @@ onMounted(() => {
 
 .post-status-row {
   margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .audit-chip {
@@ -597,6 +720,81 @@ onMounted(() => {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
+  font-weight: 500;
+}
+
+.audit-chip.pending {
+  background: rgba(201, 145, 63, 0.15);
+  color: #c9913f;
+}
+
+.audit-chip.passed {
+  background: rgba(82, 146, 82, 0.15);
+  color: #529252;
+}
+
+.audit-chip.rejected {
+  background: rgba(157, 41, 41, 0.15);
+  color: #9d2929;
+}
+
+.type-chip,
+.activity-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.type-chip {
+  background: rgba(31, 111, 235, 0.1);
+  color: #1f6feb;
+}
+
+.visibility-toggle-btn {
+  border: 1px solid rgba(157, 41, 41, 0.12);
+  background: #fff7f4;
+  color: #9d2929;
+  border-radius: 999px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.visibility-toggle-btn:hover {
+  background: #fff0ea;
+}
+
+.type-chip.type-review {
+  background: rgba(157, 41, 41, 0.12);
+  color: #9d2929;
+}
+
+.type-chip.type-ai_video {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+}
+
+.activity-chip {
+  background: #ecfdf5;
+  color: #047857;
+  cursor: pointer;
+}
+
+.post-content h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c1810;
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 500;
 }
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -294,6 +294,7 @@ export const checkinBooking = (id) => request.post(`/merchant/bookings/${id}/che
 export const refundMerchantBooking = (id, data = {}) => request.post(`/merchant/bookings/${id}/refund`, data)
 export const rejectBooking = (id, data = {}) => request.post(`/merchant/bookings/${id}/reject`, data)
 export const getMerchantStats = () => request.get('/merchant/stats')
+export const getMerchantReviewPosts = () => request.get('/merchant/reviews')
 
 
 
@@ -405,3 +406,11 @@ export const uploadHomepageImage = (formData) => request.post('/upload/homepage/
     'Content-Type': 'multipart/form-data'
   }
 })
+
+export const generateAiHeritagePoster = (data) => request.post('/ai/heritage-poster', data, {
+  timeout: 300000 // 5分钟超时
+})
+
+export const createDiscoverReviewPost = (data) => request.post('/discover/review-posts', data)
+export const updateDiscoverReviewPost = (postId, data) => request.put(`/discover/review-posts/${postId}`, data)
+export const deleteMyDiscoverReviewPost = (postId) => request.delete(`/discover/review-posts/${postId}`)

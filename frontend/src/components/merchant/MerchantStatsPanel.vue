@@ -76,30 +76,7 @@
         </section>
       </div>
 
-      <section class="panel-card">
-        <div class="panel-head">
-          <h4>最近评价</h4>
-          <span>{{ recentReviews.length }} 项</span>
-        </div>
-        <div v-if="recentReviews.length" class="review-stack">
-          <div
-            v-for="item in recentReviews"
-            :key="item.id"
-            class="review-row"
-          >
-            <img :src="item.userAvatar || '/default-avatar.svg'" alt="评价者" class="review-avatar">
-            <div class="review-copy">
-              <div class="review-top">
-                <strong>{{ item.userName || '匿名用户' }}</strong>
-                <span>{{ item.targetName || '活动评价' }}</span>
-              </div>
-              <p>{{ item.content || '未提供文本评价。' }}</p>
-            </div>
-            <b>{{ formatScore(item.score) }}</b>
-          </div>
-        </div>
-        <div v-else class="empty-note">暂无评价数据。</div>
-      </section>
+
     </template>
   </div>
 </template>
@@ -141,16 +118,16 @@ const summary = computed(() => props.stats?.summary || {})
 const bookingStatus = computed(() => Array.isArray(props.stats?.bookingStatus) ? props.stats.bookingStatus : [])
 const salesTrend = computed(() => Array.isArray(props.stats?.salesTrend) ? props.stats.salesTrend : [])
 const topActivities = computed(() => Array.isArray(props.stats?.topActivities) ? props.stats.topActivities : [])
-const recentReviews = computed(() => Array.isArray(props.stats?.recentReviews) ? props.stats.recentReviews : [])
+
 
 const formatCount = (value) => Number(value || 0).toLocaleString('en-US')
-const formatCurrency = (value) => `CNY ${(Number(value || 0) / 100).toFixed(2)}`
+const formatCurrency = (value) => `¥ ${(Number(value || 0) / 100).toFixed(2)}`
 const formatCurrencyAxis = (value) => {
   const amount = Number(value || 0) / 100
   const precision = Math.abs(amount) >= 100 ? 0 : Math.abs(amount) >= 10 ? 1 : 2
-  return `CNY ${amount.toFixed(precision)}`
+  return `¥ ${amount.toFixed(precision)}`
 }
-const formatScore = (value) => (value === null || value === undefined || value === '' ? '--' : Number(value).toFixed(1))
+
 
 const summaryCards = computed(() => [
   {
@@ -334,7 +311,7 @@ function buildTrendOption() {
       containLabel: true
     },
     legend: {
-      data: ['Revenue', 'Bookings'],
+      data: ['收入', '预订量'],
       top: 0,
       textStyle: {
         color: '#4b5563'
@@ -378,7 +355,7 @@ function buildTrendOption() {
     ],
     series: [
       {
-        name: 'Revenue',
+        name: '收入',
         type: 'bar',
         barWidth: 18,
         itemStyle: {
@@ -388,7 +365,7 @@ function buildTrendOption() {
         data: revenueData
       },
       {
-        name: 'Bookings',
+        name: '预订量',
         type: 'line',
         yAxisIndex: 1,
         smooth: true,
@@ -443,7 +420,7 @@ function buildActivityOption() {
       containLabel: true
     },
     legend: {
-      data: ['Bookings', 'Participants', 'Revenue'],
+      data: ['预订量', '参与人数', '收入'],
       top: 0,
       textStyle: {
         color: '#4b5563'
@@ -489,7 +466,7 @@ function buildActivityOption() {
     ],
     series: [
       {
-        name: 'Bookings',
+        name: '预订量',
         type: 'bar',
         barMaxWidth: 18,
         itemStyle: {
@@ -499,7 +476,7 @@ function buildActivityOption() {
         data: bookingData
       },
       {
-        name: 'Participants',
+        name: '参与人数',
         type: 'bar',
         barMaxWidth: 18,
         itemStyle: {
@@ -509,7 +486,7 @@ function buildActivityOption() {
         data: participantData
       },
       {
-        name: 'Revenue',
+        name: '收入',
         type: 'line',
         yAxisIndex: 1,
         smooth: true,
@@ -753,7 +730,6 @@ onBeforeUnmount(() => {
 
 .chart-head,
 .panel-head,
-.review-top,
 .rank-row,
 .status-row {
   display: flex;
@@ -791,8 +767,7 @@ onBeforeUnmount(() => {
 }
 
 .status-stack,
-.list-stack,
-.review-stack {
+.list-stack {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -800,8 +775,7 @@ onBeforeUnmount(() => {
 }
 
 .status-row,
-.rank-row,
-.review-row {
+.rank-row {
   width: 100%;
   padding: 14px 16px;
   border-radius: 16px;
@@ -810,14 +784,12 @@ onBeforeUnmount(() => {
 }
 
 .status-row strong,
-.rank-row strong,
-.review-row strong {
+.rank-row strong {
   color: #1f2937;
 }
 
 .status-row em,
-.rank-row em,
-.review-row b {
+.rank-row em {
   color: #c04851;
   font-style: normal;
   font-weight: 700;
@@ -835,38 +807,11 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 
-.rank-row small,
-.review-copy span,
-.review-copy p {
+.rank-row small {
   color: #6b7280;
 }
 
-.review-row {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: flex-start;
-}
 
-.review-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.review-copy {
-  min-width: 0;
-}
-
-.review-top {
-  gap: 12px;
-}
-
-.review-copy p {
-  margin: 8px 0 0;
-  line-height: 1.7;
-}
 
 .clickable {
   cursor: pointer;
@@ -893,10 +838,6 @@ button.clickable {
 @media (max-width: 760px) {
   .chart-area {
     height: 260px;
-  }
-
-  .review-row {
-    grid-template-columns: 1fr;
   }
 }
 </style>

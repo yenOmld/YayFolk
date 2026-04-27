@@ -92,10 +92,15 @@ const routes = [
     component: EditProfile,
     meta: { title: 'Edit Profile - YayFolk', requiresAuth: true }
   },
-  {
-    path: '/personal/edit-homepage',
+  { path: '/personal/edit-homepage',
     name: 'edit-homepage',
     redirect: '/merchant/apply'
+  },
+  {
+    path: '/ai-suggestions',
+    name: 'ai-suggestions',
+    component: () => import('../views/AISuggestions.vue'),
+    meta: { title: 'AI Suggestions - YayFolk', requiresAuth: true }
   },
   {
     path: '/user-homepage/:userId',
@@ -156,6 +161,12 @@ const routes = [
     name: 'history',
     component: () => import('../views/History.vue'),
     meta: { title: 'History - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/personal/my-reviews',
+    name: 'my-reviews',
+    component: () => import('../views/MyReviews.vue'),
+    meta: { title: 'My Reviews - YayFolk', requiresAuth: true }
   },
   {
     path: '/notification',
@@ -224,6 +235,42 @@ const routes = [
       }
     ]
   },
+
+  {
+    path: '/post/create/review',
+    name: 'create-review-post',
+    component: () => import('../views/post/CreateReviewPost.vue'),
+    meta: { title: 'Create Review Post - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/post/create/share',
+    name: 'create-share-post',
+    component: () => import('../views/post/PostCreator.vue'),
+    meta: { title: 'Create Share Post - YayFolk', requiresAuth: true }
+  },
+  {
+    path: '/post/create/ai-heritage',
+    name: 'create-ai-heritage-post',
+    redirect: '/post/create/ai-heritage/upload'
+  },
+  {
+    path: '/post/create/ai-heritage/upload',
+    name: 'create-ai-heritage-upload',
+    component: () => import('../views/post/CreateAIHeritagePost.vue'),
+    meta: { title: 'Create AI Heritage Post - Upload Source', requiresAuth: true }
+  },
+  {
+    path: '/post/create/ai-heritage/style',
+    name: 'create-ai-heritage-style',
+    component: () => import('../views/post/ai-heritage/AIHeritageStyleStep.vue'),
+    meta: { title: 'Create AI Heritage Post - Choose Style', requiresAuth: true }
+  },
+  {
+    path: '/post/create/ai-heritage/publish',
+    name: 'create-ai-heritage-publish',
+    component: () => import('../views/post/ai-heritage/AIHeritagePublishStep.vue'),
+    meta: { title: 'Create AI Heritage Post - Publish', requiresAuth: true }
+  },
   {
     path: '/unban-application',
     name: 'unban-application',
@@ -240,6 +287,12 @@ const routes = [
         name: 'merchant-apply',
         component: () => import('../views/merchant/MerchantApply.vue'),
         meta: { title: 'Merchant Application - Merchant Center' }
+      },
+      {
+        path: 'analysis',
+        name: 'merchant-analysis',
+        component: () => import('../views/merchant/MerchantAnalysis.vue'),
+        meta: { title: 'Data Analysis - Merchant Center' }
       },
       {
         path: 'activities',
@@ -282,6 +335,12 @@ const routes = [
         name: 'merchant-bookings-records',
         component: () => import('../views/merchant/MerchantBookings.vue'),
         meta: { title: 'Booking Records - Merchant Center' }
+      },
+      {
+        path: 'activity-reviews',
+        name: 'merchant-activity-reviews',
+        component: () => import('../views/merchant/MerchantActivityReviews.vue'),
+        meta: { title: 'Activity Reviews - Merchant Center' }
       }
     ]
   }

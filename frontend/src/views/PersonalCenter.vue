@@ -1,6 +1,10 @@
 <template>
   <div class="personal-center">
-
+    <!-- 客服消息模态框 -->
+    <CustomerServiceView 
+      :visible="showCustomerServiceModal" 
+      @close="showCustomerServiceModal = false"
+    />
 
     <!-- 设置按钮 -->
     <div class="top-right-settings">
@@ -54,20 +58,15 @@
             <strong class="metric-value">{{ stats.activityBookingCount }}</strong>
             <span class="metric-footnote">已核销 {{ stats.checkedInCount }}</span>
           </button>
-          <button class="metric-card" @click="openFollowers">
-            <span class="metric-label">粉丝</span>
-            <strong class="metric-value">{{ userInfo.followerCount || 0 }}</strong>
-            <span class="metric-footnote">查看关注你的人</span>
-          </button>
-          <button class="metric-card" @click="openVisitors">
-            <span class="metric-label">访客</span>
-            <strong class="metric-value">{{ receivedVisitorCount }}</strong>
-            <span class="metric-footnote">查看 {{ viewedVisitorCount }} 人 · 被看 {{ receivedVisitorCount }} 人</span>
+          <button class="metric-card" @click="navigateToMerchantReviews">
+            <span class="metric-label">活动总平均分</span>
+            <strong class="metric-value">{{ formatAverageScore(merchantStats.averageScore) }}</strong>
+            <span class="metric-footnote">{{ merchantStats.reviewCount }} 条评价</span>
           </button>
           <button class="metric-card" @click="navigateToMyPosts">
-            <span class="metric-label">内容发布</span>
+            <span class="metric-label">动态管理</span>
             <strong class="metric-value">{{ stats.posts }}</strong>
-            <span class="metric-footnote">查看已发布内容</span>
+            <span class="metric-footnote">公开 / 私密发布内容</span>
           </button>
         </template>
         <template v-else>
@@ -115,20 +114,20 @@
                 <h4>预约订单</h4>
               </div>
             </div>
-            <div class="content-card" @click="navigateToMerchantApply">
+            <div class="content-card" @click="navigateToMerchantAnalysis">
               <div class="card-icon" style="background: #eef2ff; color: #4f46e5;">
-                <i class='bx bxs-store-alt'></i>
+                <i class='bx bxs-bar-chart-alt-2'></i>
               </div>
               <div class="card-info">
-                <h4>商家信息</h4>
+                <h4>数据统计</h4>
               </div>
             </div>
-            <div class="content-card" @click="navigateToMyPosts">
+            <div class="content-card" @click="navigateToMerchantReviews">
               <div class="card-icon" style="background: #ecfeff; color: #0891b2;">
-                <i class='bx bxs-edit-alt'></i>
+                <i class='bx bxs-message-dots'></i>
               </div>
               <div class="card-info">
-                <h4>我的发布</h4>
+                <h4>活动评价</h4>
               </div>
             </div>
           </div>
@@ -148,28 +147,28 @@
                 <h4>我的预约</h4>
               </div>
             </div>
-            <div class="content-card" @click="navigateToMyCollections">
+            <div class="content-card" @click="navigateToMyReviews">
               <div class="card-icon" style="background: #fff0f6; color: #ff5f95;">
-                <i class='bx bxs-star'></i>
+                <i class='bx bxs-star-half'></i>
               </div>
               <div class="card-info">
-                <h4>我的收藏</h4>
+                <h4>我的评价</h4>
               </div>
             </div>
-            <div class="content-card" @click="navigateToMyPosts">
+            <div class="content-card" @click="navigateToMyAchievements">
               <div class="card-icon" style="background: #eef2ff; color: #4facfe;">
-                <i class='bx bxs-edit-alt'></i>
+                <i class='bx bxs-medal'></i>
               </div>
               <div class="card-info">
-                <h4>我的发布</h4>
+                <h4>我的成就</h4>
               </div>
             </div>
-            <div class="content-card" @click="navigateToHistory">
+            <div class="content-card" @click="navigateToAiLarge">
               <div class="card-icon" style="background: #fff7e6; color: #fa8c16;">
-                <i class='bx bx-time'></i>
+                <i class='bx bx-movie'></i>
               </div>
               <div class="card-info">
-                <h4>浏览历史</h4>
+                <h4>AI大片</h4>
               </div>
             </div>
           </div>
@@ -433,7 +432,7 @@
           </div>
           <div class="menu-item menu-item--with-alert" v-else @click="openPrimaryPanel" :data-alert="hasWorkbenchAlert ? workbenchAlertText : ''">
             <i class='bx bxs-dashboard'></i>
-            <span>进入商家工作台</span>
+            <span>{{ userInfo.role === 'admin' ? '进入管理后台' : '进入商家工作台' }}</span>
             <i class='bx bx-chevron-right'></i>
           </div>
         </div>
@@ -762,7 +761,8 @@
 <script setup>
 import { computed, ref, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
-import { createCustomerServiceConversation, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, getFollowers, getFollowing, getUserProfile, login } from '../api/app'
+import { createCustomerServiceConversation, getMerchantStats, getMyDiscoverStats, getMyOrderOverview, getVisitorRecords, getFollowers, getFollowing, getUserProfile, login } from '../api/app'
+import CustomerServiceView from './CustomerServiceView.vue'
 import { refreshWorkbenchBadges, workbenchBadgeState } from '@/utils/workbenchBadge.js'
 
 const { appContext } = getCurrentInstance()
@@ -772,6 +772,7 @@ const router = useRouter()
 const showLogoutModal = ref(false)
 const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
+const showCustomerServiceModal = ref(false)
 let badgeTimer = null
 
 const addingAccount = ref(false)
@@ -868,7 +869,9 @@ const stats = ref({
 
 const merchantStats = ref({
   weeklySales: '0',
-  growthRate: '+0.0%'
+  growthRate: '+0.0%',
+  averageScore: 0,
+  reviewCount: 0
 })
 
 const showMerchantCertModal = ref(false)
@@ -878,14 +881,20 @@ const merchantForm = ref({
   businessType: ''
 })
 
-const isMerchantRole = computed(() => userInfo.value.role === 'merchant')
+const isMerchantRole = computed(() => ['merchant', 'admin'].includes(userInfo.value.role))
 const hasWorkbenchAlert = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return workbenchBadgeState.admin.totalCount > 0
+  }
   if (userInfo.value.role === 'merchant') {
     return workbenchBadgeState.merchant.totalCount > 0
   }
   return false
 })
 const workbenchAlertCount = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return Number(workbenchBadgeState.admin.totalCount || 0)
+  }
   if (userInfo.value.role === 'merchant') {
     return Number(workbenchBadgeState.merchant.totalCount || 0)
   }
@@ -896,6 +905,9 @@ const receivedVisitorCount = computed(() => visitorsList.value.length || 0)
 const viewedVisitorCount = computed(() => viewedUsersList.value.length || 0)
 
 const primaryPanelLabel = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return '管理后台'
+  }
   if (isMerchantRole.value) {
     return '商家工作台'
   }
@@ -903,6 +915,9 @@ const primaryPanelLabel = computed(() => {
 })
 
 const secondaryActionLabel = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return '管理后台'
+  }
   if (isMerchantRole.value) {
     return '商家工作台'
   }
@@ -910,6 +925,9 @@ const secondaryActionLabel = computed(() => {
 })
 
 const secondaryActionIcon = computed(() => {
+  if (userInfo.value.role === 'admin') {
+    return 'bx bxs-dashboard'
+  }
   if (isMerchantRole.value) {
     return 'bx bxs-store-alt'
   }
@@ -920,11 +938,18 @@ const profileSummary = computed(() => {
   if (userInfo.value.bio) {
     return userInfo.value.bio
   }
+  if (userInfo.value.role === 'admin') {
+    return '这里集中处理后台入口、资料设置和账号操作，个人主页单独作为对外展示页'
+  }
   if (isMerchantRole.value) {
     return '这里集中处理商家工作台和账号设置，个人主页单独承担品牌与内容展示'
   }
   return '这里集中处理资料、订单和我的内容入口，个人主页单独展示给其他用户。'
 })
+
+const formatAverageScore = (score) => {
+  return Number(score || 0).toFixed(1)
+}
 
 const submitMerchantCert = async () => {
   if (!merchantForm.value.realName || !merchantForm.value.phone) {
@@ -1096,6 +1121,11 @@ const openAccountManager = () => {
   showAccountManagerModal.value = true
 }
 
+const openCustomerService = () => {
+  closeSettingsDrawer()
+  showCustomerServiceModal.value = true
+}
+
 const closeAccountManager = () => {
   showAccountManagerModal.value = false
   resetAccountForm()
@@ -1239,6 +1269,28 @@ const navigateToHistory = () => {
   router.push('/personal/history')
 }
 
+const navigateToMyReviews = () => {
+  closeSettingsDrawer()
+  router.push('/personal/my-reviews')
+}
+
+const navigateToMyAchievements = () => {
+  closeSettingsDrawer()
+  if (userInfo.value.id) {
+    router.push({
+      path: `/user-homepage/${userInfo.value.id}`,
+      query: { tab: 'achievements' }
+    })
+    return
+  }
+  router.push('/home/personal')
+}
+
+const navigateToAiLarge = () => {
+  closeSettingsDrawer()
+  router.push({ name: 'create-ai-heritage-post' })
+}
+
 const navigateToMyReservations = () => {
   closeSettingsDrawer()
   router.push('/personal/activities')
@@ -1257,6 +1309,16 @@ const navigateToMerchantActivities = () => {
 const navigateToMerchantReservations = () => {
   closeSettingsDrawer()
   router.push('/merchant/bookings')
+}
+
+const navigateToMerchantAnalysis = () => {
+  closeSettingsDrawer()
+  router.push('/merchant/analysis')
+}
+
+const navigateToMerchantReviews = () => {
+  closeSettingsDrawer()
+  router.push('/merchant/activity-reviews')
 }
 
 const navigateToMerchantProducts = () => {
@@ -1288,7 +1350,17 @@ const handleSecondaryAction = () => {
 
 const openPrimaryPanel = () => {
   closeSettingsDrawer()
-  router.push('/merchant/activities')
+  if (userInfo.value.role === 'admin') {
+    const storedUser = parseStoredUser()
+    const isSuperAdmin = Number(storedUser?.isSuperAdmin || 0) === 1
+    router.push(isSuperAdmin ? '/admin/admins' : '/admin/merchants')
+    return
+  }
+  if (userInfo.value.role === 'merchant') {
+    router.push('/merchant/activities')
+    return
+  }
+  openHomepage()
 }
 
 // 显示修改密码
@@ -1397,7 +1469,7 @@ const submitPasswordChange = async () => {
 }
 
 // 显示关于我们
-const openCustomerService = async () => {
+const openAboutUs = async () => {
   closeSettingsDrawer()
   notify.info('请使用右下角的悬浮小人进行客服咨询')
 }
@@ -1580,11 +1652,12 @@ const loadPersonalCenterData = async () => {
     }
 
     try {
-      const [discoverRes, overviewRes, visitorRes, profileRes] = await Promise.all([
+      const [discoverRes, overviewRes, visitorRes, profileRes, merchantStatsRes] = await Promise.all([
         getMyDiscoverStats().catch(() => null),
         getMyOrderOverview().catch(() => null),
         getVisitorRecords().catch(() => null),
-        getUserProfile().catch(() => null)
+        getUserProfile().catch(() => null),
+        getMerchantStats().catch(() => null)
       ])
 
       if (discoverRes?.code === 200 && discoverRes.data) {
@@ -1610,6 +1683,16 @@ const loadPersonalCenterData = async () => {
 
       if (profileRes?.code === 200 && profileRes.data) {
         userInfo.value = normalizeUserInfo(profileRes.data)
+      }
+
+      if (merchantStatsRes?.code === 200 && merchantStatsRes.data) {
+        merchantStats.value = {
+          ...merchantStats.value,
+          weeklySales: merchantStatsRes.data.weeklySales || '0',
+          growthRate: merchantStatsRes.data.growthRate || '+0.0%',
+          averageScore: merchantStatsRes.data.averageScore || 0,
+          reviewCount: merchantStatsRes.data.reviewCount || 0
+        }
       }
 
       persistStoredUser({

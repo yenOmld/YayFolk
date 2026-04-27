@@ -14,14 +14,6 @@
 
       <div class="hero-actions">
         <button
-          v-if="canShowStats"
-          type="button"
-          class="secondary-btn"
-          @click="router.push('/merchant/activities')"
-        >
-          查看活动
-        </button>
-        <button
           v-if="hasApplication && !isApproved"
           type="button"
           class="ghost-btn"
@@ -31,31 +23,6 @@
           重置表单
         </button>
       </div>
-    </section>
-
-    <section v-if="canShowStats" class="panel-card stats-card-shell">
-      <div class="section-head">
-        <div>
-          <p class="section-eyebrow">业务概览</p>
-          <h2>商家分析</h2>
-          <p>预订、收入、活动表现和最近评价的概览。</p>
-        </div>
-        <button
-          type="button"
-          class="ghost-btn"
-          :disabled="merchantStatsLoading"
-          @click="loadMerchantStats"
-        >
-          {{ merchantStatsLoading ? '刷新中...' : '刷新数据' }}
-        </button>
-      </div>
-
-      <MerchantStatsPanel
-        :stats="merchantStats"
-        :loading="merchantStatsLoading"
-        :visible="canShowStats"
-        @navigate="handleStatsNavigate"
-      />
     </section>
 
     <section class="panel-card status-card" :class="statusMeta.className">
@@ -222,15 +189,13 @@
 
 <script setup>
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import MerchantProfileForm from '@/components/merchant/MerchantProfileForm.vue'
-import MerchantStatsPanel from '@/components/merchant/MerchantStatsPanel.vue'
-import { applyMerchant, getMerchantActivities, getMerchantBookings, getMerchantStats, getMyApplication, uploadImage } from '@/api/app.js'
+import { applyMerchant, getMyApplication, uploadImage } from '@/api/app.js'
 
 const { appContext } = getCurrentInstance()
 const notifyApi = appContext.config.globalProperties.$notify
 const router = useRouter()
-const route = useRoute()
 
 const notify = (type, message) => {
   notifyApi?.[type]?.(message)
@@ -271,25 +236,8 @@ const storedInfo = ref({})
 const loading = ref(false)
 const submitting = ref(false)
 const uploadingProofs = ref(false)
-const merchantStatsLoading = ref(false)
-const merchantStats = ref({})
 const showFormModal = ref(false)
 
-const hasMerchantAccess = computed(() => {
-  const storedRole = currentUser.value?.role
-  if (storedRole === 'merchant' || storedRole === 'admin') {
-    return true
-  }
-
-  if (Number(storedInfo.value?.isMerchant || 0) === 1) {
-    return true
-  }
-
-  const status = normalizeStatus(storedInfo.value?.applicationStatus || storedInfo.value?.businessStatus || storedInfo.value?.shopStatus)
-  return status === 'approved'
-})
-
-const canShowStats = computed(() => hasMerchantAccess.value)
 const isApproved = computed(() => normalizeStatus(storedInfo.value?.applicationStatus || storedInfo.value?.businessStatus || storedInfo.value?.shopStatus) === 'approved')
 const showInlineForm = computed(() => !isApproved.value)
 const storedProofImages = computed(() => parseProofImages(storedInfo.value?.proofImages))
@@ -334,17 +282,13 @@ const statusMeta = computed(() => {
 })
 
 const pageTitle = computed(() => (
-  canShowStats.value
-    ? '商家中心'
-    : hasApplication.value
-      ? '商家申请工作台'
-      : '申请成为商家'
+  hasApplication.value
+    ? '商家申请工作台'
+    : '申请成为商家'
 ))
 
 const pageDescription = computed(() => (
-  canShowStats.value
-    ? '管理商家资质，查看最近预订情况，直接进入活动或预订管理。'
-    : '在此完成商家资料，上传证明材料，并跟踪申请审核结果。'
+  '在此完成商家资料，上传证明材料，并跟踪申请审核结果。'
 ))
 
 const formTitle = computed(() => (hasApplication.value ? '更新商家信息' : '商家申请表单'))
@@ -476,271 +420,6 @@ function closeFormModal() {
   showFormModal.value = false
 }
 
-function createRecentSalesTrend(days = 7) {
-  const today = new Date()
-  const salesTrend = []
-  for (let offset = days - 1; offset >= 0; offset -= 1) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - offset)
-    const dateKey = date.toISOString().slice(0, 10)
-    salesTrend.push({
-      date: dateKey,
-      label: dateKey.slice(5),
-      bookingCount: 0,
-      participantCount: 0,
-      bookingRevenue: 0
-    })
-  }
-  return salesTrend
-}
-
-function createEmptyMerchantStats() {
-  return {
-    summary: {
-      activityCount: 0,
-      bookingCount: 0,
-      pendingCheckinCount: 0,
-      checkedInCount: 0,
-      rejectedCount: 0,
-      cancelledCount: 0,
-      reviewCount: 0,
-      totalRevenue: 0,
-      bookingRevenue: 0,
-      averageScore: 0,
-      followerCount: 0,
-      uniqueCustomerCount: 0
-    },
-    bookingStatus: [
-      { key: 'registered', label: 'Active', color: '#1661ab', count: 0 },
-      { key: 'checked_in', label: 'Checked In', color: '#1f8a70', count: 0 },
-      { key: 'rejected', label: 'Rejected', color: '#c04851', count: 0 },
-      { key: 'cancelled', label: 'Cancelled', color: '#6b7280', count: 0 }
-    ],
-    salesTrend: createRecentSalesTrend(),
-    topActivities: [],
-    recentReviews: []
-  }
-}
-
-function normalizeStatsPayload(payload) {
-  const base = createEmptyMerchantStats()
-  const stats = payload && typeof payload === 'object' ? payload : {}
-  return {
-    summary: {
-      ...base.summary,
-      ...(stats.summary || {})
-    },
-    bookingStatus: Array.isArray(stats.bookingStatus) && stats.bookingStatus.length ? stats.bookingStatus : base.bookingStatus,
-    salesTrend: Array.isArray(stats.salesTrend) && stats.salesTrend.length ? stats.salesTrend : base.salesTrend,
-    topActivities: Array.isArray(stats.topActivities) ? stats.topActivities : base.topActivities,
-    recentReviews: Array.isArray(stats.recentReviews) ? stats.recentReviews : base.recentReviews
-  }
-}
-
-function normalizeBookingStatus(status) {
-  if (!status) {
-    return 'registered'
-  }
-  if (['registered', 'pending'].includes(status)) {
-    return 'registered'
-  }
-  if (['checked_in', 'completed'].includes(status)) {
-    return 'checked_in'
-  }
-  if (status === 'rejected') {
-    return 'rejected'
-  }
-  if (status === 'cancelled') {
-    return 'cancelled'
-  }
-  return status
-}
-
-function safeNumber(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-function toDateKey(value) {
-  if (!value) {
-    return ''
-  }
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return ''
-  }
-  return date.toISOString().slice(0, 10)
-}
-
-function sortByCreateTimeDesc(items = []) {
-  return [...items].sort((left, right) => {
-    const leftTime = new Date(left?.createTime || 0).getTime() || 0
-    const rightTime = new Date(right?.createTime || 0).getTime() || 0
-    return rightTime - leftTime
-  })
-}
-
-function buildFallbackSalesTrend(bookings = []) {
-  const recentBuckets = createRecentSalesTrend()
-  const grouped = new Map(recentBuckets.map(item => [item.date, { ...item }]))
-
-  bookings.forEach((booking) => {
-    const bookingDate = toDateKey(booking.paymentTime || booking.createTime)
-    if (!bookingDate || !grouped.has(bookingDate)) {
-      return
-    }
-
-    const bucket = grouped.get(bookingDate)
-    bucket.bookingCount += 1
-    bucket.participantCount += safeNumber(booking.participantCount ?? booking.participantNum ?? 1)
-    if (booking.paymentStatus === 'paid' || safeNumber(booking.payStatus) === 1) {
-      bucket.bookingRevenue += safeNumber(booking.payAmount ?? booking.totalAmount)
-    }
-  })
-
-  return [...grouped.values()].sort((left, right) => left.date.localeCompare(right.date))
-}
-
-function buildFallbackTopActivities(activities = [], bookings = []) {
-  const grouped = new Map()
-
-  activities.forEach((activity) => {
-    grouped.set(String(activity.id), {
-      activityId: activity.id,
-      title: activity.title || 'Untitled Activity',
-      bookingCount: safeNumber(activity.bookingCount),
-      participantCount: safeNumber(activity.currentParticipants),
-      revenue: 0,
-      viewCount: safeNumber(activity.viewCount),
-      collectCount: safeNumber(activity.collectCount),
-      signupCount: safeNumber(activity.signupCount)
-    })
-  })
-
-  bookings.forEach((booking) => {
-    const key = String(booking.activityId || '')
-    if (!key) {
-      return
-    }
-
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        activityId: booking.activityId,
-        title: booking.activityTitle || 'Untitled Activity',
-        bookingCount: 0,
-        participantCount: 0,
-        revenue: 0,
-        viewCount: 0,
-        collectCount: 0,
-        signupCount: 0
-      })
-    }
-
-    const item = grouped.get(key)
-    item.bookingCount += 1
-    item.participantCount += safeNumber(booking.participantCount ?? booking.participantNum ?? 1)
-    if (booking.paymentStatus === 'paid' || safeNumber(booking.payStatus) === 1) {
-      item.revenue += safeNumber(booking.payAmount ?? booking.totalAmount)
-    }
-  })
-
-  return [...grouped.values()]
-    .sort((left, right) => {
-      if (right.revenue !== left.revenue) return right.revenue - left.revenue
-      if (right.bookingCount !== left.bookingCount) return right.bookingCount - left.bookingCount
-      if (right.signupCount !== left.signupCount) return right.signupCount - left.signupCount
-      if (right.viewCount !== left.viewCount) return right.viewCount - left.viewCount
-      if (right.collectCount !== left.collectCount) return right.collectCount - left.collectCount
-      return right.participantCount - left.participantCount
-    })
-    .slice(0, 5)
-}
-
-function buildFallbackRecentReviews(bookings = []) {
-  return sortByCreateTimeDesc(
-    bookings
-      .filter(item => item.reviewScore !== undefined && item.reviewScore !== null)
-      .map(item => ({
-        id: item.id,
-        score: item.reviewScore,
-        content: item.reviewContent,
-        createTime: item.reviewTime || item.updateTime || item.createTime,
-        userName: item.customerName || item.participantName || `User ${item.userId}`,
-        userAvatar: item.customerAvatar || '/default-avatar.svg',
-        targetName: item.activityTitle || 'Activity Review'
-      }))
-  ).slice(0, 5)
-}
-
-function buildStatsFromCollections(activities = [], bookings = [], apiStats = {}) {
-  const base = normalizeStatsPayload(apiStats)
-  const stats = createEmptyMerchantStats()
-
-  const uniqueCustomers = new Set()
-  let bookingRevenue = 0
-  let reviewTotal = 0
-  let reviewCount = 0
-
-  bookings.forEach((booking) => {
-    const status = normalizeBookingStatus(booking.status || booking.reserveStatus)
-    stats.summary.bookingCount += 1
-    if (status === 'registered') stats.summary.pendingCheckinCount += 1
-    if (status === 'checked_in') stats.summary.checkedInCount += 1
-    if (status === 'rejected') stats.summary.rejectedCount += 1
-    if (status === 'cancelled') stats.summary.cancelledCount += 1
-    if (booking.userId) uniqueCustomers.add(String(booking.userId))
-
-    if (booking.paymentStatus === 'paid' || safeNumber(booking.payStatus) === 1) {
-      bookingRevenue += safeNumber(booking.payAmount ?? booking.totalAmount)
-    }
-
-    if (booking.reviewScore !== undefined && booking.reviewScore !== null) {
-      reviewTotal += safeNumber(booking.reviewScore)
-      reviewCount += 1
-    }
-  })
-
-  stats.summary.activityCount = activities.length
-  stats.summary.reviewCount = reviewCount
-  stats.summary.totalRevenue = bookingRevenue
-  stats.summary.bookingRevenue = bookingRevenue
-  stats.summary.uniqueCustomerCount = uniqueCustomers.size
-  stats.summary.averageScore = reviewCount ? Number((reviewTotal / reviewCount).toFixed(1)) : 0
-
-  stats.bookingStatus = [
-    { key: 'registered', label: 'Active', color: '#1661ab', count: stats.summary.pendingCheckinCount },
-    { key: 'checked_in', label: 'Checked In', color: '#1f8a70', count: stats.summary.checkedInCount },
-    { key: 'rejected', label: 'Rejected', color: '#c04851', count: stats.summary.rejectedCount },
-    { key: 'cancelled', label: 'Cancelled', color: '#6b7280', count: stats.summary.cancelledCount }
-  ]
-  stats.salesTrend = buildFallbackSalesTrend(bookings)
-  stats.topActivities = buildFallbackTopActivities(activities, bookings)
-  stats.recentReviews = buildFallbackRecentReviews(bookings)
-
-  return {
-    summary: {
-      ...base.summary,
-      ...stats.summary,
-      activityCount: stats.summary.activityCount || base.summary.activityCount,
-      bookingCount: stats.summary.bookingCount || base.summary.bookingCount,
-      pendingCheckinCount: stats.summary.pendingCheckinCount || base.summary.pendingCheckinCount,
-      checkedInCount: stats.summary.checkedInCount || base.summary.checkedInCount,
-      rejectedCount: stats.summary.rejectedCount || base.summary.rejectedCount,
-      cancelledCount: stats.summary.cancelledCount || base.summary.cancelledCount,
-      reviewCount: stats.summary.reviewCount || base.summary.reviewCount,
-      totalRevenue: stats.summary.totalRevenue || base.summary.totalRevenue,
-      bookingRevenue: stats.summary.bookingRevenue || base.summary.bookingRevenue,
-      averageScore: stats.summary.averageScore || base.summary.averageScore,
-      uniqueCustomerCount: stats.summary.uniqueCustomerCount || base.summary.uniqueCustomerCount
-    },
-    bookingStatus: stats.bookingStatus.some(item => item.count > 0) ? stats.bookingStatus : base.bookingStatus,
-    salesTrend: stats.salesTrend.length ? stats.salesTrend : base.salesTrend,
-    topActivities: stats.topActivities.length ? stats.topActivities : base.topActivities,
-    recentReviews: stats.recentReviews.length ? stats.recentReviews : base.recentReviews
-  }
-}
-
-
 function clearProofImages() {
   form.proofImages = []
 }
@@ -821,33 +500,6 @@ async function loadApplication() {
   }
 }
 
-async function loadMerchantStats() {
-  if (!canShowStats.value) {
-    merchantStats.value = createEmptyMerchantStats()
-    return
-  }
-
-  merchantStatsLoading.value = true
-  try {
-    const [statsResponse, activitiesResponse, bookingsResponse] = await Promise.all([
-      getMerchantStats().catch(() => null),
-      getMerchantActivities().catch(() => null),
-      getMerchantBookings({ status: 'all' }).catch(() => null)
-    ])
-
-    const apiStats = statsResponse?.code === 200 ? statsResponse.data || {} : {}
-    const activities = activitiesResponse?.code === 200 && Array.isArray(activitiesResponse.data) ? activitiesResponse.data : []
-    const bookings = bookingsResponse?.code === 200 && Array.isArray(bookingsResponse.data?.items) ? bookingsResponse.data.items : []
-
-    merchantStats.value = buildStatsFromCollections(activities, bookings, apiStats)
-  } catch (error) {
-    merchantStats.value = createEmptyMerchantStats()
-    notify('error', error.message || 'Failed to load merchant analytics')
-  } finally {
-    merchantStatsLoading.value = false
-  }
-}
-
 function validateForm() {
   if (!form.realName || !form.phone || !form.heritageType || !form.shopName || !form.heritageDescription) {
     notify('warning', 'Please complete all required fields first.')
@@ -892,7 +544,6 @@ async function submitApplication() {
       shopStatus: 'pending'
     })
     await loadApplication()
-    await loadMerchantStats()
   } catch (error) {
     notify('error', error.message || 'Failed to submit merchant information')
   } finally {
@@ -900,44 +551,9 @@ async function submitApplication() {
   }
 }
 
-function handleStatsNavigate(target) {
-  if (!target?.type) {
-    return
-  }
-
-  if (target.type === 'activities') {
-    router.push('/merchant/activities')
-    return
-  }
-
-  if (target.type === 'bookings') {
-    router.push({
-      path: '/merchant/bookings',
-      query: {
-        ...(target.status ? { status: target.status } : {}),
-        backTo: route.fullPath
-      }
-    })
-    return
-  }
-
-  if (target.type === 'activity' && target.activityId) {
-    router.push({
-      path: '/merchant/bookings',
-      query: {
-        activityId: String(target.activityId),
-        ...(target.title ? { title: target.title } : {}),
-        status: 'all',
-        backTo: route.fullPath
-      }
-    })
-  }
-}
-
 onMounted(async () => {
   currentUser.value = readStoredUser()
   await loadApplication()
-  await loadMerchantStats()
 })
 </script>
 
@@ -1118,9 +734,7 @@ button:disabled {
   margin-bottom: 20px;
 }
 
-.stats-card-shell {
-  overflow: hidden;
-}
+
 
 .status-card.approved {
   border-color: rgba(34, 197, 94, 0.28);

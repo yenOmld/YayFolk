@@ -8,6 +8,7 @@ import com.yayfolk.backend.repository.ExploreConversationRepository;
 import com.yayfolk.backend.repository.ExploreMessageRepository;
 
 import com.yayfolk.backend.service.AIResourceService;
+import com.yayfolk.backend.service.DoubaoHeritagePosterService;
 import com.yayfolk.backend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,15 +24,18 @@ public class AIController {
     private final ExploreConversationRepository exploreConversationRepository;
     private final ExploreMessageRepository exploreMessageRepository;
     private final UserService userService;
+    private final DoubaoHeritagePosterService doubaoHeritagePosterService;
 
     public AIController(AIResourceService aiResourceService,
                         ExploreConversationRepository exploreConversationRepository,
                         ExploreMessageRepository exploreMessageRepository,
-                        UserService userService) {
+                        UserService userService,
+                        DoubaoHeritagePosterService doubaoHeritagePosterService) {
         this.aiResourceService = aiResourceService;
         this.exploreConversationRepository = exploreConversationRepository;
         this.exploreMessageRepository = exploreMessageRepository;
         this.userService = userService;
+        this.doubaoHeritagePosterService = doubaoHeritagePosterService;
     }
 
 
@@ -178,6 +182,16 @@ public class AIController {
         try {
             aiResourceService.buildVectorIndex();
             return ResponseDto.success("向量索引重建成功");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/heritage-poster")
+    public ResponseDto generateAiHeritagePoster(@RequestBody Map<String, Object> request) {
+        try {
+            Map<String, Object> result = doubaoHeritagePosterService.generatePoster(request);
+            return ResponseDto.success(result);
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

@@ -219,6 +219,39 @@ public class DiscoverController {
         }
     }
 
+    @PostMapping("/review-posts")
+    public ResponseDto createReviewPost(@RequestBody Map<String, Object> payload, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(discoverService.createReviewPost(username, payload));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/review-posts/{id}")
+    public ResponseDto updateReviewPost(@PathVariable("id") Long postId,
+                                       @RequestBody Map<String, Object> payload,
+                                       HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            return ResponseDto.success(discoverService.updateReviewPost(username, postId, payload));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/review-posts/{id}")
+    public ResponseDto deleteReviewPost(@PathVariable("id") Long postId, HttpServletRequest request) {
+        try {
+            String username = requireUsername(request);
+            discoverService.deleteReviewPost(username, postId);
+            return ResponseDto.success("Deleted successfully");
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     private String requireUsername(HttpServletRequest request) {
         Object usernameObj = request.getAttribute("username");
         if (usernameObj == null) {

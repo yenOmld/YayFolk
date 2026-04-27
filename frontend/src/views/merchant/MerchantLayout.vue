@@ -109,6 +109,13 @@ const navItems = computed(() => {
   return [
     ...baseItems,
     {
+      key: 'analysis',
+      to: '/merchant/analysis',
+      label: '数据分析',
+      desc: '查看活动、报名和收入数据',
+      icon: 'bx-line-chart'
+    },
+    {
       key: 'activities',
       to: '/merchant/activities',
       label: '活动管理',
@@ -121,14 +128,23 @@ const navItems = computed(() => {
       label: '报名管理',
       desc: '处理报名和核销记录',
       icon: 'bx-clipboard'
+    },
+    {
+      key: 'reviews',
+      to: '/merchant/activity-reviews',
+      label: '活动评价',
+      desc: '查看和管理活动评价',
+      icon: 'bx-star'
     }
   ]
 })
 
 const navBadgeCountMap = computed(() => ({
   apply: workbenchBadgeState.merchant.applicationCount,
+  analysis: 0,
   activities: workbenchBadgeState.merchant.activitiesCount,
-  bookings: 0
+  bookings: 0,
+  reviews: 0
 }))
 
 const getNavBadgeCount = key => Number(navBadgeCountMap.value[key] || 0)

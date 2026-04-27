@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 成就徽章</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .profile-info p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .badge-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .badge-card.locked {
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+
+        .badge-card.gift {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-color: #fda085;
+            animation: giftShake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes giftShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        .badge-card.gift:hover {
+            animation: none;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(253, 160, 133, 0.4);
+        }
+
+        .badge-card.gift .badge-icon {
+            background: white;
+            font-size: 45px;
+            animation: giftBounce 1s ease-in-out infinite;
+        }
+
+        @keyframes giftBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .badge-card.gift .badge-name {
+            color: #d63384;
+        }
+
+        .new-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            animation: newTagPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes newTagPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .badge-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 5px 20px rgba(246, 211, 101, 0.4);
+        }
+
+        .badge-card:nth-child(2) .badge-icon {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            box-shadow: 0 5px 20px rgba(168, 237, 234, 0.4);
+        }
+
+        .badge-card:nth-child(3) .badge-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .badge-card:nth-child(4) .badge-icon {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            box-shadow: 0 5px 20px rgba(252, 182, 159, 0.4);
+        }
+
+        .badge-card:nth-child(5) .badge-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 5px 20px rgba(240, 147, 251, 0.4);
+        }
+
+        .badge-card:nth-child(6) .badge-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .badge-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .badge-desc {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.5;
+        }
+
+        .badge-date {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .progress-section {
+            margin-top: 30px;
+        }
+
+        .progress-item {
+            margin-bottom: 25px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-name {
+            font-size: 15px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .progress-percent {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            padding: 0;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-cover {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .modal-bottom {
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .modal-text-section {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .modal-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .modal-hint {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .modal-qr-section {
+            text-align: center;
+        }
+
+        .modal-qr-image {
+            width: 110px;
+            height: 110px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            margin-bottom: 8px;
+        }
+
+        .modal-qr-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stats {
+                justify-content: center;
+            }
+
+            .badges-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-header">
+            <div class="avatar">👤</div>
+            <div class="profile-info">
+                <h1>探索者</h1>
+                <p>加入时间：2024年1月</p>
+                <p>个人签名：每一步都是新的开始</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">9</div>
+                        <div class="stat-label">已获得</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">进行中</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">45%</div>
+                        <div class="stat-label">完成度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">已获得的徽章</h2>
+            <div class="badges-grid">
+                <div class="badge-card" data-index="1">
+                    <div class="badge-icon">🏆</div>
+                    <div class="badge-name">新手入门</div>
+                    <div class="badge-desc">完成首次登录</div>
+                    <div class="badge-date">2024.01.15</div>
+                </div>
+                <div class="badge-card" data-index="2">
+                    <div class="badge-icon">⭐</div>
+                    <div class="badge-name">连续打卡</div>
+                    <div class="badge-desc">连续7天签到</div>
+                    <div class="badge-date">2024.01.22</div>
+                </div>
+                <div class="badge-card" data-index="3">
+                    <div class="badge-icon">🎯</div>
+                    <div class="badge-name">任务达人</div>
+                    <div class="badge-desc">完成10个任务</div>
+                    <div class="badge-date">2024.02.05</div>
+                </div>
+                <div class="badge-card" data-index="4">
+                    <div class="badge-icon">🔥</div>
+                    <div class="badge-name">热情似火</div>
+                    <div class="badge-desc">连续30天活跃</div>
+                    <div class="badge-date">2024.02.15</div>
+                </div>
+                <div class="badge-card gift" data-original-icon="💎" data-icon-index="5" data-index="5">
+                    <div class="new-tag">NEW</div>
+                    <div class="badge-icon">🎁</div>
+                    <div class="badge-name">高级会员</div>
+                    <div class="badge-desc">升级为VIP用户</div>
+                    <div class="badge-date">2024.03.01</div>
+                </div>
+                <div class="badge-card gift" data-original-icon="🚀" data-icon-index="6" data-index="6">
+                    <div class="new-tag">NEW</div>
+                    <div class="badge-icon">🎁</div>
+                    <div class="badge-name">效率大师</div>
+                    <div class="badge-desc">提前完成所有任务</div>
+                    <div class="badge-date">2024.03.10</div>
+                </div>
+                <div class="badge-card" data-index="7">
+                    <div class="badge-icon">💡</div>
+                    <div class="badge-name">创意达人</div>
+                    <div class="badge-desc">发布5个创意内容</div>
+                    <div class="badge-date">2024.03.18</div>
+                </div>
+                <div class="badge-card gift" data-original-icon="🌈" data-icon-index="8" data-index="8">
+                    <div class="new-tag">NEW</div>
+                    <div class="badge-icon">🎁</div>
+                    <div class="badge-name">七彩人生</div>
+                    <div class="badge-desc">解锁所有主题</div>
+                    <div class="badge-date">2024.03.25</div>
+                </div>
+                <div class="badge-card" data-index="9">
+                    <div class="badge-icon">🎊</div>
+                    <div class="badge-name">派对之星</div>
+                    <div class="badge-desc">参与10次活动</div>
+                    <div class="badge-date">2024.04.01</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">进行中的成就</h2>
+            <div class="progress-section">
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-name">百日签到</span>
+                        <span class="progress-percent">45%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-name">任务百个</span>
+                        <span class="progress-percent">35%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-name">分享达人</span>
+                        <span class="progress-percent">60%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-name">社区之星</span>
+                        <span class="progress-percent">20%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">即将解锁</h2>
+            <div class="badges-grid">
+                <div class="badge-card locked">
+                    <div class="badge-icon">👑</div>
+                    <div class="badge-name">王者之巅</div>
+                    <div class="badge-desc">连续100天签到</div>
+                </div>
+                <div class="badge-card locked">
+                    <div class="badge-icon">🌟</div>
+                    <div class="badge-name">传奇用户</div>
+                    <div class="badge-desc">完成500个任务</div>
+                </div>
+                <div class="badge-card locked">
+                    <div class="badge-icon">🎖️</div>
+                    <div class="badge-name">荣誉勋章</div>
+                    <div class="badge-desc">获得100个赞</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="arModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <img src="ar-cover-1.png" alt="AR封面" class="modal-cover" id="modalCover">
+            <div class="modal-bottom">
+                <div class="modal-text-section">
+                    <h2 class="modal-title" id="modalTitle">恭喜获得徽章！</h2>
+                    <p class="modal-description">扫描二维码，体验AR互动，解锁更多惊喜！</p>
+                </div>
+                <div class="modal-qr-section">
+                    <img src="ar-qr-1.png" alt="AR二维码" class="modal-qr-image" id="modalQr">
+                    <div class="modal-qr-label">AR二维码</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const badgeCards = document.querySelectorAll('.badge-card:not(.locked)');
+        const modal = document.getElementById('arModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCover = document.getElementById('modalCover');
+        const modalQr = document.getElementById('modalQr');
+
+        badgeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const badgeName = card.querySelector('.badge-name').textContent;
+                const badgeIndex = card.getAttribute('data-index');
+                modalTitle.textContent = `恭喜获得「${badgeName}」徽章！`;
+                modalCover.src = `ar-cover-${badgeIndex}.png`;
+                modalQr.src = `ar-qr-${badgeIndex}.png`;
+                modal.classList.add('active');
+                
+                if (card.classList.contains('gift')) {
+                    openGift(card);
+                }
+            });
+        });
+
+        function openGift(card) {
+            const newTag = card.querySelector('.new-tag');
+            const badgeIcon = card.querySelector('.badge-icon');
+            const originalIcon = card.getAttribute('data-original-icon');
+            const iconIndex = card.getAttribute('data-icon-index');
+            
+            card.style.transition = 'all 0.5s ease';
+            card.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                if (newTag) {
+                    newTag.remove();
+                }
+                
+                if (originalIcon) {
+                    badgeIcon.textContent = originalIcon;
+                }
+                
+                card.classList.remove('gift');
+                card.style.transform = '';
+                
+                if (iconIndex === '5' || iconIndex === '6' || iconIndex === '8') {
+                    const gradients = [
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                        'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                    ];
+                    const index = parseInt(iconIndex) - 1;
+                    badgeIcon.style.background = gradients[index];
+                }
+            }, 300);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
