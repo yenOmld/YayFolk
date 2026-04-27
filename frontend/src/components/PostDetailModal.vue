@@ -71,6 +71,38 @@
                 <div class="hashtags" v-if="post?.hashtags">
                   <span v-for="(tag, index) in post.hashtags" :key="index" class="hashtag" @click="handleTagClick(tag)">#{{ tag }}</span>
                 </div>
+                
+                <!-- 关联活动信息 -->
+                <div
+                  v-if="post?.activity && post?.activity.id != null"
+                  class="activity-info-card"
+                  role="button"
+                  tabindex="0"
+                  @click="goToActivityDetail(post.activity.id)"
+                  @keydown.enter.prevent="goToActivityDetail(post.activity.id)"
+                >
+                  <div class="activity-info-header">
+                    <i class='bx bx-calendar-event'></i>
+                    <span>相关活动</span>
+                  </div>
+                  <div class="activity-info-content">
+                    <h5>{{ post.activity.title }}</h5>
+                    <p class="activity-time">
+                      <i class='bx bx-time'></i>
+                      {{ formatActivityTime(post.activity.startTime, post.activity.endTime) }}
+                    </p>
+                    <p class="activity-location" v-if="post.activity.locationProvince || post.activity.locationCity || post.activity.locationDetail">
+                      <i class='bx bx-map'></i>
+                      {{ post.activity.locationProvince }}{{ post.activity.locationCity }}{{ post.activity.locationDetail }}
+                    </p>
+                  </div>
+                  <div class="review-score" v-if="post.score">
+                    <span class="rating-number">{{ Number(post.score).toFixed(1) }}</span>
+                    <div class="rating-stars-compact">
+                      <i v-for="star in 5" :key="star" class="bx" :class="star <= Math.round(Number(post.score)) ? 'bxs-star' : 'bx-star'"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div class="modal-comments">
@@ -709,6 +741,21 @@ const goToUserHomepage = (userId) => {
   router.push(`/user-homepage/${userId}`)
 }
 
+const goToActivityDetail = (activityId) => {
+  if (!activityId) return
+  emit('close')
+  router.push(`/activity/${activityId}`)
+}
+
+const formatActivityTime = (startTime, endTime) => {
+  if (!startTime) return ''
+  const start = new Date(startTime)
+  const end = endTime ? new Date(endTime) : null
+  const startStr = start.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  const endStr = end ? end.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''
+  return endStr && endStr !== startStr ? `${startStr} 至 ${endStr}` : startStr
+}
+
 const toggleFollow = async () => {
   if (!props.post || !props.post.author) return
   const authorId = props.post.author.id
@@ -1063,6 +1110,74 @@ const copyLink = async () => {
 
 .hashtag:hover {
   background: #ffe0e0;
+}
+
+.activity-info-card {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #4CAF50;
+  cursor: pointer;
+}
+
+.activity-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.activity-info-header i {
+  font-size: 18px;
+}
+
+.activity-info-content h5 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.activity-info-content p {
+  font-size: 12px;
+  margin: 4px 0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.activity-info-content i {
+  font-size: 14px;
+}
+
+.review-score {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #b65c38;
+  min-width: 32px;
+}
+
+.rating-stars-compact {
+  display: flex;
+  gap: 1px;
+}
+
+.rating-stars-compact i {
+  font-size: 14px;
+  color: #ffc107;
 }
 
 .modal-comments {

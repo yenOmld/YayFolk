@@ -1,7 +1,8 @@
 <template>
   <div class="activity-detail-route">
     <ActivityDetailModal
-      :visible="true"
+      v-if="isVisible"
+      :visible="isVisible"
       :activity-id="route.params.id"
       @close="handleClose"
     />
@@ -9,11 +10,17 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import ActivityDetailModal from '@/components/ActivityDetailModal.vue'
 
 const route = useRoute()
 const router = useRouter()
+const isVisible = ref(true)
+
+onBeforeRouteLeave(() => {
+  isVisible.value = false
+})
 
 function handleClose() {
   if (typeof route.query.backTo === 'string' && route.query.backTo) {

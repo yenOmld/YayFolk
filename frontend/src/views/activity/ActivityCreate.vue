@@ -1,20 +1,12 @@
 <template>
   <div class="activity-editor-page">
-    <div class="header-nav">
-      <button class="back-button" @click="goBack">
-        <i class="bx bx-arrow-back"></i>
-        <span>返回活动管理</span>
-      </button>
-    </div>
+
 
     <div class="editor-shell">
       <div class="editor-header">
         <div>
           <h1>{{ isEdit ? '编辑活动' : '创建活动' }}</h1>
           <p>保存的活动内容将同步到公共活动列表并重新提交审核。</p>
-        </div>
-        <div v-if="isEdit && activityMeta" class="audit-chip" :class="activityMeta.auditStatus">
-          {{ auditLabel(activityMeta.auditStatus) }}
         </div>
       </div>
 
@@ -24,152 +16,178 @@
       </div>
 
       <template v-else>
-        <section class="form-section">
-          <h2>基本信息</h2>
-          <div class="form-grid">
-            <label class="field full">
-              <span>活动标题</span>
-              <input v-model.trim="form.title" type="text" maxlength="200" placeholder="例如：缫丝织品体验课" />
-            </label>
+        <div class="editor-main">
+          <section class="form-section form-section-basic">
+            <h2>基本信息</h2>
+            <div class="form-grid">
+              <label class="field full">
+                <span>活动标题</span>
+                <input v-model.trim="form.title" type="text" maxlength="200" placeholder="例如：缫丝织品体验课" />
+              </label>
 
-            <label class="field full">
-              <span>副标题</span>
-              <input v-model.trim="form.subtitle" type="text" maxlength="100" placeholder="用一句话概括活动亮点" />
-            </label>
+              <label class="field full">
+                <span>副标题</span>
+                <input v-model.trim="form.subtitle" type="text" maxlength="100" placeholder="用一句话概括活动亮点" />
+              </label>
 
-            <label class="field">
-              <span>非遗类别</span>
-              <select v-model="form.heritageType">
-                <option value="">请选择</option>
-                <option v-for="item in heritageTypes" :key="item" :value="item">{{ item }}</option>
-              </select>
-            </label>
+              <label class="field">
+                <span>非遗类别</span>
+                <select v-model="form.heritageType">
+                  <option value="">请选择</option>
+                  <option v-for="item in heritageTypes" :key="item" :value="item">{{ item }}</option>
+                </select>
+              </label>
 
-            <label class="field">
-              <span>活动形式</span>
-              <select v-model="form.activityType">
-                <option value="offline">线下体验</option>
-                <option value="online">线上课程</option>
-                <option value="exhibition">展览</option>
-              </select>
-            </label>
+              <label class="field">
+                <span>活动形式</span>
+                <select v-model="form.activityType">
+                  <option value="offline">线下体验</option>
+                  <option value="online">线上课程</option>
+                  <option value="exhibition">展览</option>
+                </select>
+              </label>
 
-            <label class="field">
-              <span>开始时间</span>
-              <input v-model="form.startTime" type="datetime-local" :min="minStartTime" />
-            </label>
+              <label class="field">
+                <span>开始时间</span>
+                <input v-model="form.startTime" type="datetime-local" :min="minStartTime" />
+              </label>
 
-            <label class="field">
-              <span>结束时间</span>
-              <input v-model="form.endTime" type="datetime-local" :min="minEndTime" />
-            </label>
+              <label class="field">
+                <span>结束时间</span>
+                <input v-model="form.endTime" type="datetime-local" :min="minEndTime" />
+              </label>
 
-            <label class="field">
-              <span>价格 (CNY)</span>
-              <input v-model.number="form.priceYuan" type="number" min="0" step="0.01" placeholder="0 表示免费" />
-            </label>
+              <label class="field">
+                <span>价格 (CNY)</span>
+                <input v-model.number="form.priceYuan" type="number" min="0" step="0.01" placeholder="0 表示免费" />
+              </label>
 
-            <label class="field">
-              <span>人数上限</span>
-              <input v-model.number="form.maxParticipants" type="number" min="1" placeholder="留空表示不限" />
-            </label>
+              <label class="field">
+                <span>人数上限</span>
+                <input v-model.number="form.maxParticipants" type="number" min="1" placeholder="留空表示不限" />
+              </label>
 
-            <label class="field">
-              <span>省份</span>
-              <input v-model.trim="form.locationProvince" type="text" placeholder="例如：广东省" />
-            </label>
+              <label class="field">
+                <span>省份</span>
+                <input v-model.trim="form.locationProvince" type="text" placeholder="例如：广东省" />
+              </label>
 
-            <label class="field">
-              <span>城市</span>
-              <input v-model.trim="form.locationCity" type="text" placeholder="例如：深圳市" />
-            </label>
+              <label class="field">
+                <span>城市</span>
+                <input v-model.trim="form.locationCity" type="text" placeholder="例如：深圳市" />
+              </label>
 
-            <label class="field full">
-              <span>详细地址</span>
-              <input v-model.trim="form.locationDetail" type="text" maxlength="200" placeholder="请输入活动的详细地址" />
-            </label>
-          </div>
-        </section>
-
-        <section class="form-section">
-          <div class="section-head">
-            <div>
-              <h2>活动图片</h2>
-              <p class="hint">最多上传9张图片，第一张将作为封面。</p>
+              <label class="field full">
+                <span>详细地址</span>
+                <input v-model.trim="form.locationDetail" type="text" maxlength="200" placeholder="请输入活动的详细地址" />
+              </label>
             </div>
-            <button class="ghost-btn" type="button" @click="triggerImageUpload" :disabled="uploadingImages || form.images.length >= 9">
-              {{ uploadingImages ? '上传中...' : '上传图片' }}
-            </button>
-            <input ref="imageInput" type="file" accept="image/*" multiple hidden @change="handleImageUpload" />
-          </div>
+          </section>
 
-          <div class="image-grid">
-            <div v-for="(image, index) in form.images" :key="`${image}-${index}`" class="image-card">
-              <img :src="image" :alt="`活动图片${index + 1}`" />
-              <div class="image-mask">
-                <span v-if="index === 0" class="cover-tag">封面</span>
-                <button type="button" class="icon-btn" @click="removeImage(index)">删除</button>
+          <section class="form-section form-section-content">
+            <h2>活动介绍</h2>
+            <label class="field full">
+              <span>详细内容</span>
+              <textarea
+                v-model.trim="form.content"
+                rows="10"
+                placeholder="请填写活动亮点、流程、适合人群、注意事项等"
+              ></textarea>
+            </label>
+          </section>
+        </div>
+
+        <aside class="editor-rail">
+          <section class="form-section form-section-media">
+            <div class="section-head">
+              <div>
+                <h2>媒体素材</h2>
+                <p class="hint">图片和视频在同一列表中展示，可以重新排序。封面默认为第一张图片，也可以手动设置。</p>
+              </div>
+              <div class="section-actions">
+                <button class="ghost-btn" type="button" @click="triggerImageUpload" :disabled="uploadingImages || mediaItems.length >= MAX_MEDIA_ITEMS">
+                  {{ uploadingImages ? '上传中...' : '上传图片' }}
+                </button>
+                <button class="ghost-btn" type="button" @click="triggerVideoUpload" :disabled="uploadingVideo || hasVideo">
+                  {{ uploadingVideo ? '上传中...' : (hasVideo ? '已上传视频' : '上传视频') }}
+                </button>
+              </div>
+              <input ref="imageInput" type="file" accept="image/*" multiple hidden @change="handleImageUpload" />
+              <input ref="videoInput" type="file" accept="video/*" hidden @change="handleVideoUpload" />
+            </div>
+
+            <div v-if="mediaItems.length" class="media-grid">
+              <article
+                v-for="(item, index) in mediaItems"
+                :key="item.id"
+                class="media-card"
+                :class="{ cover: isCoverMedia(item.id) }"
+              >
+                <div class="media-frame">
+                  <template v-if="item.type === 'video'">
+                    <video class="media-preview" :src="item.previewUrl" controls preload="metadata" playsinline :poster="coverPreviewUrl || ''"></video>
+                  </template>
+                  <template v-else>
+                    <img class="media-preview" :src="item.previewUrl" :alt="`活动媒体${index + 1}`" />
+                  </template>
+                </div>
+
+                <div class="media-badges">
+                  <span class="type-badge" :class="item.type">{{ item.type === 'video' ? '视频' : '图片' }}</span>
+                  <span v-if="isCoverMedia(item.id)" class="cover-badge">封面</span>
+                </div>
+
+                <div class="media-actions">
+                  <button type="button" class="icon-btn" :disabled="index === 0" @click="moveMedia(index, -1)">
+                    <i class="bx bx-chevron-up"></i>
+                  </button>
+                  <button type="button" class="icon-btn" :disabled="index === mediaItems.length - 1" @click="moveMedia(index, 1)">
+                    <i class="bx bx-chevron-down"></i>
+                  </button>
+                  <button v-if="item.type === 'image'" type="button" class="text-btn" @click="setCoverByIndex(index)">设为封面</button>
+                  <button type="button" class="danger-text-btn" @click="removeMedia(index)">删除</button>
+                </div>
+              </article>
+            </div>
+
+            <div v-else class="media-empty">
+              <i class="bx bx-image-add"></i>
+              <p>点击上方按钮上传图片或视频</p>
+            </div>
+          </section>
+
+          <section class="form-section form-section-model">
+            <div class="section-head">
+              <div>
+                <h2>VR模型 / 3D视图</h2>
+                <p class="hint">仅支持 .glb 或 .gltf 格式。上传后可在活动详情页进行360°预览。</p>
+              </div>
+              <div class="section-actions">
+                <button class="ghost-btn" type="button" @click="triggerModelUpload" :disabled="uploadingModel">
+                  {{ uploadingModel ? '上传中...' : (hasModel ? '替换模型' : '上传模型') }}
+                </button>
+              </div>
+              <input ref="modelInput" type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json" hidden @change="handleModelUpload" />
+            </div>
+
+            <div class="model-card">
+              <div class="model-art">
+                <i class="bx bx-cube-alt"></i>
+              </div>
+              <div class="model-copy">
+                <strong>{{ vrModelName || '暂未上传模型' }}</strong>
+                <p>{{ vrModelUrl || '上传轻量化3D模型后将自动同步到活动详情页。' }}</p>
               </div>
             </div>
-            <button v-if="form.images.length < 9" type="button" class="upload-card" @click="triggerImageUpload">
-              <i class="bx bx-image-add"></i>
-              <span>添加图片</span>
+          </section>
+
+          <div class="action-row">
+            <button class="secondary-btn" type="button" @click="goBack">取消</button>
+            <button class="primary-btn" type="button" :disabled="saving" @click="submitForm">
+              {{ saving ? '保存中...' : (isEdit ? '保存并重新提交' : '创建并提交') }}
             </button>
           </div>
-        </section>
-
-        <section class="form-section">
-          <div class="section-head">
-            <div>
-              <h2>活动视频</h2>
-              <p class="hint">可选。上传后视频URL将存储在视频字段中并显示在详情页。</p>
-            </div>
-            <button class="ghost-btn" type="button" @click="triggerVideoUpload" :disabled="uploadingVideo">
-              {{ uploadingVideo ? '上传中...' : (form.videoUrl ? '替换视频' : '上传视频') }}
-            </button>
-            <input ref="videoInput" type="file" accept="video/*" hidden @change="handleVideoUpload" />
-          </div>
-
-          <div v-if="form.videoUrl" class="video-preview-card">
-            <video
-              class="video-preview"
-              controls
-              preload="metadata"
-              playsinline
-              :poster="form.videoCoverUrl || form.images[0] || ''"
-            >
-              <source :src="form.videoUrl" />
-            </video>
-            <div class="video-preview-actions">
-              <span class="video-url">{{ form.videoUrl }}</span>
-              <button type="button" class="danger-text-btn" @click="removeVideo">删除视频</button>
-            </div>
-          </div>
-
-          <div v-else class="video-empty">
-            <i class="bx bx-video-plus"></i>
-            <span>暂无活动视频上传。</span>
-          </div>
-        </section>
-
-        <section class="form-section">
-          <h2>活动介绍</h2>
-          <label class="field full">
-            <span>详细内容</span>
-            <textarea
-              v-model.trim="form.content"
-              rows="10"
-              placeholder="请填写活动亮点、流程、适合人群、注意事项等"
-            ></textarea>
-          </label>
-        </section>
-
-        <div class="action-row">
-          <button class="secondary-btn" type="button" @click="goBack">取消</button>
-          <button class="primary-btn" type="button" :disabled="saving" @click="submitForm">
-            {{ saving ? '保存中...' : (isEdit ? '保存并重新提交' : '创建并提交') }}
-          </button>
-        </div>
+        </aside>
       </template>
     </div>
   </div>
@@ -183,25 +201,32 @@ import {
   getMerchantActivities,
   updateMerchantActivity,
   uploadActivityImage,
-  uploadActivityVideo
+  uploadActivityVideo,
+  uploadModel
 } from '../../api/app'
 import { getRequestErrorMessage } from '../../utils/requestError'
+import { isVideoUrl, normalizeMediaList } from '../../utils/media'
 
 const route = useRoute()
 const router = useRouter()
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
-const heritageTypes = ['工艺', '刺绣', '雕塑', '器具', '编织', '纺织', '绘画', '剪纸', '陶瓷', '中医', '编织', '其他']
+const heritageTypes = ['工艺', '刺绣', '雕塑', '器具', '编织', '纺织', '绘画', '剪纸', '陶瓷', '中医', '服饰', '其他']
+const MAX_MEDIA_ITEMS = 10
 
 const imageInput = ref(null)
 const videoInput = ref(null)
+const modelInput = ref(null)
 const loading = ref(false)
 const uploadingImages = ref(false)
 const uploadingVideo = ref(false)
+const uploadingModel = ref(false)
 const saving = ref(false)
-const activityMeta = ref(null)
-const IMAGE_UPLOAD_BATCH_SIZE = 3
+const mediaItems = ref([])
+const selectedCoverId = ref('')
+const vrModelUrl = ref('')
+const vrModelName = ref('')
 
 const form = ref({
   title: '',
@@ -215,22 +240,21 @@ const form = ref({
   priceYuan: 0,
   maxParticipants: null,
   startTime: '',
-  endTime: '',
-  images: [],
-  videoUrl: '',
-  videoCoverUrl: ''
+  endTime: ''
 })
 
 const isEdit = computed(() => Boolean(route.params.id))
 const currentDateTimeInput = () => {
   const now = new Date()
   now.setSeconds(0, 0)
-  const timezoneOffset = now.getTimezoneOffset()
-  const local = new Date(now.getTime() - timezoneOffset * 60000)
-  return local.toISOString().slice(0, 16)
+  const offset = now.getTimezoneOffset()
+  return new Date(now.getTime() - offset * 60000).toISOString().slice(0, 16)
 }
 const minStartTime = computed(() => currentDateTimeInput())
 const minEndTime = computed(() => form.value.startTime || minStartTime.value)
+const hasVideo = computed(() => mediaItems.value.some(item => item.type === 'video'))
+const coverPreviewUrl = computed(() => mediaItems.value.find(item => item.id === selectedCoverId.value)?.previewUrl || '')
+const hasModel = computed(() => Boolean(vrModelUrl.value))
 
 const showError = (message) => notify?.error?.(message)
 const showSuccess = (message) => notify?.success?.(message)
@@ -250,22 +274,8 @@ const readStoredUser = () => {
 }
 
 const parseImages = (value, coverImage) => {
-  if (Array.isArray(value)) {
-    return value.filter(Boolean)
-  }
-
-  if (typeof value === 'string' && value) {
-    try {
-      const parsed = JSON.parse(value)
-      if (Array.isArray(parsed)) {
-        return parsed.filter(Boolean)
-      }
-    } catch (error) {
-      return coverImage ? [coverImage] : []
-    }
-  }
-
-  return coverImage ? [coverImage] : []
+  const list = normalizeMediaList(value)
+  return list.length ? list : (coverImage ? [coverImage] : [])
 }
 
 const toInputDateTime = (value) => {
@@ -277,22 +287,71 @@ const toInputDateTime = (value) => {
   return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16)
 }
 
-const auditLabel = (status) => ({
-  pending: '待审核',
-  approved: '已通过',
-  rejected: '已拒绝'
-}[status] || '草稿')
-
 const goBack = () => {
   router.push('/merchant/activities')
 }
 
-const triggerImageUpload = () => {
-  imageInput.value?.click()
+const triggerImageUpload = () => imageInput.value?.click()
+const triggerVideoUpload = () => videoInput.value?.click()
+const triggerModelUpload = () => modelInput.value?.click()
+
+const createMediaItem = ({ type, previewUrl, file = null, uploadedUrl = '' }) => ({
+  id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  type,
+  previewUrl,
+  file,
+  uploadedUrl
+})
+
+const isCoverMedia = (mediaId) => selectedCoverId.value === mediaId
+
+const pickDefaultCover = () => {
+  selectedCoverId.value = mediaItems.value.find(item => item.type === 'image')?.id || ''
 }
 
-const triggerVideoUpload = () => {
-  videoInput.value?.click()
+const setCoverByIndex = (index) => {
+  const item = mediaItems.value[index]
+  if (item?.type === 'image') {
+    selectedCoverId.value = item.id
+  }
+}
+
+const moveMedia = (index, direction) => {
+  const target = index + direction
+  if (target < 0 || target >= mediaItems.value.length) return
+  const items = [...mediaItems.value]
+  const [moved] = items.splice(index, 1)
+  items.splice(target, 0, moved)
+  mediaItems.value = items
+}
+
+const removeMedia = (index) => {
+  const item = mediaItems.value[index]
+  if (!item) return
+  if (item.previewUrl?.startsWith('blob:')) {
+    URL.revokeObjectURL(item.previewUrl)
+  }
+  mediaItems.value.splice(index, 1)
+  if (item.id === selectedCoverId.value) {
+    pickDefaultCover()
+  }
+}
+
+const rebuildMediaFromCurrent = (current) => {
+  const combined = parseImages(current.images, current.coverImage)
+  if (current.videoUrl && !combined.some(url => String(url) === String(current.videoUrl))) {
+    combined.push(current.videoUrl)
+  }
+  mediaItems.value = combined.map(url => createMediaItem({
+    type: isVideoUrl(url) ? 'video' : 'image',
+    previewUrl: url,
+    uploadedUrl: url
+  }))
+  selectedCoverId.value = mediaItems.value.find(item => item.type === 'image' && item.previewUrl === current.coverImage)?.id
+    || mediaItems.value.find(item => item.type === 'image')?.id
+    || ''
+  vrModelUrl.value = current.vrModelUrl || ''
+  vrModelName.value = current.vrModelUrl ? String(current.vrModelUrl).split('/').pop() : ''
 }
 
 const loadActivity = async () => {
@@ -312,7 +371,7 @@ const loadActivity = async () => {
       throw new Error('未找到该活动')
     }
 
-    activityMeta.value = current
+    rebuildMediaFromCurrent(current)
     form.value = {
       title: current.title || '',
       subtitle: current.subtitle || '',
@@ -325,10 +384,7 @@ const loadActivity = async () => {
       priceYuan: current.price ? Number(current.price) / 100 : 0,
       maxParticipants: current.maxParticipants ?? null,
       startTime: toInputDateTime(current.startTime),
-      endTime: toInputDateTime(current.endTime),
-      images: parseImages(current.images, current.coverImage),
-      videoUrl: current.videoUrl || '',
-      videoCoverUrl: current.videoCoverUrl || ''
+      endTime: toInputDateTime(current.endTime)
     }
   } catch (error) {
     showError(error.message || '加载活动失败')
@@ -338,13 +394,48 @@ const loadActivity = async () => {
   }
 }
 
-const handleImageUpload = async (event) => {
-  const files = Array.from(event.target.files || [])
-  if (!files.length) {
+const handleModelUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  const name = String(file.name || '').toLowerCase()
+  if (!name.endsWith('.glb') && !name.endsWith('.gltf')) {
+    showWarning('请上传 .glb 或 .gltf 格式的3D模型')
+    event.target.value = ''
+    return
+  }
+  if (file.size > 100 * 1024 * 1024) {
+    showWarning('3D模型大小不能超过 100 MB')
+    event.target.value = ''
     return
   }
 
-  const remaining = Math.max(0, 9 - form.value.images.length)
+  uploadingModel.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const rawId = route.params.id
+    const activityId = (isEdit.value && rawId) ? rawId : Date.now()
+    console.log('VR上传 - isEdit:', isEdit.value, ', route.params.id:', rawId, ', activityId:', activityId)
+    const response = await uploadModel(formData, activityId)
+    if (response.code !== 200 || !response.data?.url) {
+      throw new Error(response.message || '3D模型上传失败')
+    }
+    vrModelUrl.value = response.data.url
+    vrModelName.value = file.name
+    showSuccess('3D模型上传成功')
+  } catch (error) {
+    showError(error.message || '3D模型上传失败')
+  } finally {
+    uploadingModel.value = false
+    event.target.value = ''
+  }
+}
+
+const handleImageUpload = (event) => {
+  const files = Array.from(event.target.files || [])
+  if (!files.length) return
+
+  const remaining = Math.max(0, MAX_MEDIA_ITEMS - mediaItems.value.length)
   const selected = files.slice(0, remaining)
   if (!selected.length) {
     event.target.value = ''
@@ -353,138 +444,99 @@ const handleImageUpload = async (event) => {
 
   uploadingImages.value = true
   try {
-    const uploadedUrls = []
-    const failures = []
-    for (let i = 0; i < selected.length; i += IMAGE_UPLOAD_BATCH_SIZE) {
-      const batch = selected.slice(i, i + IMAGE_UPLOAD_BATCH_SIZE)
-      const results = await Promise.allSettled(batch.map(async (file, batchIndex) => {
-        const formData = new FormData()
-        formData.append('file', file)
-        
-        // 计算图片的实际索引
-        const actualIndex = form.value.images.length + i + batchIndex + 1
-        
-        let response
-        if (isEdit.value && route.params.id) {
-          // 编辑模式：使用活动ID
-          response = await uploadActivityImage(formData, route.params.id, actualIndex)
-        } else {
-          // 创建模式：暂时使用临时ID，后续会在保存时更新
-          // 这里使用时间戳作为临时ID
-          const tempActivityId = Date.now()
-          response = await uploadActivityImage(formData, tempActivityId, actualIndex)
-        }
-        
-        if (response.code !== 200 || !response.data?.url) {
-          throw new Error(response.message || '图片上传失败')
-        }
-        return response.data.url
+    selected.forEach(file => {
+      const previewUrl = URL.createObjectURL(file)
+      mediaItems.value.push(createMediaItem({
+        type: 'image',
+        previewUrl,
+        file
       }))
-
-      results.forEach((result) => {
-        if (result.status === 'fulfilled') {
-          uploadedUrls.push(result.value)
-          return
-        }
-
-        failures.push(getRequestErrorMessage(result.reason, {
-          timeoutMessage: '图片上传时间过长，请稍后重试。',
-          fallbackMessage: '图片上传失败'
-        }))
-      })
+    })
+    if (!selectedCoverId.value) {
+      pickDefaultCover()
     }
-
-    if (uploadedUrls.length) {
-      form.value.images.push(...uploadedUrls)
-    }
-
-    if (!failures.length) {
-      showSuccess(uploadedUrls.length > 1
-          ? `成功上传 ${uploadedUrls.length} 张图片。`
-          : '图片上传成功。')
-      return
-    }
-
-    if (uploadedUrls.length) {
-      showWarning(`成功上传 ${uploadedUrls.length} 张图片，但 ${failures.length} 张上传失败：${failures[0]}`)
-      return
-    }
-
-    showError(failures[0] || '图片上传失败')
-  } catch (error) {
-    showError(getRequestErrorMessage(error, {
-      timeoutMessage: '图片上传时间过长，请稍后重试。',
-      fallbackMessage: '图片上传失败'
-    }))
+    showSuccess(selected.length > 1 ? `成功添加 ${selected.length} 张图片。` : '图片添加成功。')
   } finally {
     uploadingImages.value = false
     event.target.value = ''
   }
 }
 
-const handleVideoUpload = async (event) => {
+const handleVideoUpload = (event) => {
   const file = event.target.files?.[0]
-  if (!file) {
+  if (!file) return
+  if (!file.type.startsWith('video/')) {
+    showWarning('请选择视频文件')
+    event.target.value = ''
     return
   }
-
   if (file.size > 100 * 1024 * 1024) {
-    showWarning('视频大小不能超过 100MB')
+    showWarning('视频大小不能超过 100 MB')
     event.target.value = ''
     return
   }
 
   uploadingVideo.value = true
   try {
-    const uploadFormData = new FormData()
-    uploadFormData.append('file', file)
-
-    let uploadResponse
-    try {
-      // 视频索引固定为1
-      const videoIndex = 1
-      
-      if (isEdit.value && route.params.id) {
-        // 编辑模式：使用活动ID
-        uploadResponse = await uploadActivityVideo(uploadFormData, route.params.id, videoIndex)
-      } else {
-        // 创建模式：暂时使用临时ID，后续会在保存时更新
-        // 这里使用时间戳作为临时ID
-        const tempActivityId = Date.now()
-        uploadResponse = await uploadActivityVideo(uploadFormData, tempActivityId, videoIndex)
+    const previewUrl = URL.createObjectURL(file)
+    const existingIndex = mediaItems.value.findIndex(item => item.type === 'video')
+    if (existingIndex >= 0) {
+      const oldItem = mediaItems.value[existingIndex]
+      if (oldItem.previewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(oldItem.previewUrl)
       }
-    } catch (error) {
-      showError(getRequestErrorMessage(error, {
-        timeoutMessage: '视频上传时间过长，请稍后重试。',
-        fallbackMessage: '视频上传失败'
+      mediaItems.value[existingIndex] = createMediaItem({
+        type: 'video',
+        previewUrl,
+        file
+      })
+    } else {
+      mediaItems.value.push(createMediaItem({
+        type: 'video',
+        previewUrl,
+        file
       }))
-      return
     }
-
-    if (uploadResponse.code !== 200 || !uploadResponse.data?.url) {
-      throw new Error(uploadResponse.message || '视频上传失败')
-    }
-
-    form.value.videoUrl = uploadResponse.data.url
-    showSuccess('视频上传成功')
-  } catch (error) {
-    showError(getRequestErrorMessage(error, {
-      timeoutMessage: '视频上传时间过长，请稍后重试。',
-      fallbackMessage: '视频上传失败'
-    }))
+    showSuccess('视频添加成功')
   } finally {
     uploadingVideo.value = false
     event.target.value = ''
   }
 }
 
-const removeImage = (index) => {
-  form.value.images.splice(index, 1)
-}
+const uploadMediaFiles = async (activityId) => {
+  const uploadedImages = []
+  let uploadedVideo = null
 
-const removeVideo = () => {
-  form.value.videoUrl = ''
-  form.value.videoCoverUrl = ''
+  for (const item of mediaItems.value) {
+    if (!item.file) {
+      if (item.type === 'image') {
+        uploadedImages.push(item.previewUrl)
+      } else if (item.type === 'video') {
+        uploadedVideo = item.previewUrl
+      }
+      continue
+    }
+
+    const formData = new FormData()
+    formData.append('file', item.file)
+    const uploadFn = item.type === 'video' ? uploadActivityVideo : uploadActivityImage
+
+    const response = await uploadFn(formData, activityId, uploadedImages.length + 1)
+    if (response.code !== 200 || !response.data?.url) {
+      throw new Error(response.message || `${item.type === 'video' ? '视频' : '图片'}上传失败`)
+    }
+
+    if (item.type === 'image') {
+      uploadedImages.push(response.data.url)
+    } else {
+      uploadedVideo = response.data.url
+    }
+
+    URL.revokeObjectURL(item.previewUrl)
+  }
+
+  return { uploadedImages, uploadedVideo }
 }
 
 const submitForm = async () => {
@@ -496,10 +548,12 @@ const submitForm = async () => {
     showWarning('请填写活动描述')
     return
   }
-  if (!form.value.images.length) {
+  const imageItems = mediaItems.value.filter(item => item.type === 'image')
+  if (!imageItems.length) {
     showWarning('请至少上传一张活动图片')
     return
   }
+
   const startTime = new Date(form.value.startTime)
   const endTime = new Date(form.value.endTime)
   const now = new Date(currentDateTimeInput())
@@ -515,14 +569,23 @@ const submitForm = async () => {
 
   saving.value = true
   try {
+    const activityId = isEdit.value ? route.params.id : Date.now()
+    const { uploadedImages, uploadedVideo } = await uploadMediaFiles(activityId)
+    
+    const coverImage = uploadedImages.find((url, index) => {
+      const mediaIndex = mediaItems.value.findIndex(item => item.type === 'image' && item.previewUrl === url)
+      return mediaItems.value[mediaIndex]?.id === selectedCoverId.value
+    }) || uploadedImages[0]
+
     const payload = {
       title: form.value.title,
       subtitle: form.value.subtitle || '',
       content: form.value.content,
-      coverImage: form.value.images[0],
-      images: JSON.stringify(form.value.images),
-      videoUrl: form.value.videoUrl || null,
-      videoCoverUrl: form.value.videoCoverUrl || null,
+      coverImage,
+      images: JSON.stringify(uploadedImages),
+      videoUrl: uploadedVideo || null,
+      videoCoverUrl: coverImage || null,
+      vrModelUrl: vrModelUrl.value || null,
       heritageType: form.value.heritageType || '',
       activityType: form.value.activityType,
       locationProvince: form.value.locationProvince || '',
@@ -564,108 +627,66 @@ onMounted(() => {
 
 <style scoped>
 .activity-editor-page {
-  max-width: 1080px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(248, 244, 238, 0.3), rgba(255, 255, 255, 0.95));
+  padding: 18px 0 100px;
 }
 
-.header-nav {
-  margin-bottom: 18px;
-}
 
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border: 1px solid #d8dee9;
-  border-radius: 12px;
-  background: #fff;
-  color: #334155;
-  cursor: pointer;
-}
 
 .editor-shell {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.editor-header,
-.form-section,
-.state-card,
-.action-row {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.05);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  gap: 16px;
+  align-items: start;
 }
 
 .editor-header,
 .form-section,
 .state-card {
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #eadfd4;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  padding: 22px;
 }
 
-.editor-header {
+.editor-header,
+.state-card {
+  grid-column: 1 / -1;
+}
+
+.editor-main,
+.editor-rail {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 16px;
+}
+
+.editor-rail {
+  position: sticky;
+  top: 92px;
 }
 
 .editor-header h1,
 .form-section h2 {
   margin: 0;
-  color: #0f172a;
+  color: #2f241d;
 }
 
 .editor-header p,
 .hint {
   margin: 8px 0 0;
-  color: #64748b;
-}
-
-.audit-chip {
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.audit-chip.pending {
-  background: #fff7ed;
-  color: #c2410c;
-}
-
-.audit-chip.approved {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.audit-chip.rejected {
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-.state-card {
-  text-align: center;
-  color: #64748b;
-}
-
-.state-card i {
-  font-size: 36px;
-}
-
-.section-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  color: #7b6a59;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin-top: 18px;
 }
 
@@ -679,216 +700,290 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-.field span {
-  color: #334155;
+label span {
   font-weight: 600;
+  color: #2f241d;
 }
 
-.field input,
-.field select,
-.field textarea {
+input,
+select,
+textarea {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
+  border: 1px solid #e7ddd3;
+  border-radius: 14px;
+  padding: 13px 15px;
+  font-size: 15px;
   background: #fff;
-  font-size: 14px;
-  outline: none;
+  color: #2f241d;
+  box-sizing: border-box;
 }
 
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: #2563eb;
+textarea {
+  min-height: 150px;
+  resize: vertical;
 }
 
-.image-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.image-card,
-.upload-card {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.image-card {
-  border: 1px solid #e5e7eb;
-}
-
-.image-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.image-mask {
-  position: absolute;
-  inset: auto 0 0 0;
+.section-head {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
-  padding: 12px;
-  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.76));
 }
 
-.cover-tag {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-size: 12px;
+.section-actions {
+  display: flex;
+  gap: 10px;
 }
 
-.icon-btn,
+.model-card {
+  margin-top: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(182, 92, 56, 0.08), rgba(233, 205, 170, 0.16));
+}
+
+.model-art {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.85);
+  color: #b65c38;
+  font-size: 28px;
+}
+
+.model-copy {
+  min-width: 0;
+}
+
+.model-copy strong,
+.model-copy p {
+  display: block;
+  margin: 0;
+}
+
+.model-copy strong {
+  color: #2f241d;
+}
+
+.model-copy p {
+  margin-top: 6px;
+  color: #7b6a59;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
 .ghost-btn,
 .secondary-btn,
 .primary-btn,
-.danger-text-btn {
+.danger-text-btn,
+.text-btn,
+.icon-btn {
   border: none;
   cursor: pointer;
-  font-weight: 600;
-}
-
-.icon-btn {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
 }
 
 .ghost-btn {
   padding: 10px 14px;
-  border-radius: 12px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-radius: 999px;
+  background: rgba(157, 41, 41, 0.08);
+  color: #9d2929;
 }
 
-.ghost-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.media-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
 }
 
-.upload-card {
+.media-card {
+  position: relative;
+  border: 1px solid #eadfd4;
+  border-radius: 18px;
+  padding: 10px;
+  background: #fff;
+}
+
+.media-card.cover {
+  border-color: #9d2929;
+  box-shadow: 0 0 0 2px rgba(157, 41, 41, 0.1);
+}
+
+.media-frame {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.media-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  display: block;
+}
+
+.media-badges {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.type-badge,
+.cover-badge {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border: 2px dashed #bfdbfe;
-  background: #f8fbff;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.type-badge.image {
+  background: rgba(37, 99, 235, 0.12);
   color: #2563eb;
 }
 
-.upload-card i,
-.video-empty i {
-  font-size: 32px;
+.type-badge.video {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
 }
 
-.video-preview-card,
-.video-empty {
-  margin-top: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #f8fafc;
+.cover-badge {
+  background: rgba(157, 41, 41, 0.12);
+  color: #9d2929;
 }
 
-.video-preview {
-  display: block;
-  width: 100%;
-  max-height: 420px;
-  background: #020617;
-}
-
-.video-preview-actions {
+.media-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.video-url {
-  min-width: 0;
-  color: #475569;
-  font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f7f2e8;
+  color: #2f241d;
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.text-btn,
+.danger-text-btn {
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+
+.text-btn {
+  background: rgba(157, 41, 41, 0.08);
+  color: #9d2929;
 }
 
 .danger-text-btn {
-  flex-shrink: 0;
-  background: transparent;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
 }
 
-.video-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-height: 160px;
-  color: #64748b;
+.media-empty,
+.state-card {
+  text-align: center;
+}
+
+.media-empty {
+  margin-top: 18px;
+  padding: 28px 20px;
+  border: 1px dashed #d7c9bb;
+  border-radius: 18px;
+  color: #7b6a59;
+  background: #fff;
+}
+
+.media-empty i,
+.state-card i {
+  font-size: 28px;
+  color: #b65c38;
 }
 
 .action-row {
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
-  padding: 18px 24px;
 }
 
 .secondary-btn,
 .primary-btn {
-  padding: 12px 18px;
-  border-radius: 12px;
-  min-width: 180px;
+  flex: 1;
+  padding: 14px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .secondary-btn {
-  background: #f1f5f9;
-  color: #334155;
+  background: #fff;
+  color: #2f241d;
+  border: 1px solid #e7ddd3;
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #b65c38 0%, #d28d44 100%);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(182, 92, 56, 0.25);
 }
 
-.primary-btn:disabled {
-  background: #94a3b8;
+.primary-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 720px) {
+  .page-header,
+  .editor-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .editor-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-rail {
+    position: static;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .editor-header,
-  .section-head,
-  .action-row,
-  .video-preview-actions {
+  .section-head {
     flex-direction: column;
-    align-items: stretch;
+  }
+
+  .section-actions,
+  .action-row {
+    width: 100%;
   }
 
   .secondary-btn,
   .primary-btn {
     width: 100%;
-  }
-
-  .video-url {
-    white-space: normal;
-    word-break: break-all;
   }
 }
 </style>

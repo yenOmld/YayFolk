@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -272,6 +272,7 @@ export const deleteKnowledgeConversation = (conversationId) => {
 
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
+export const getActivityReviews = (activityId) => request.get(`/public/activities/${activityId}/reviews`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
 export const getHomepageOfficialContents = () => request.get('/public/official/homepage')
 export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
@@ -400,6 +401,17 @@ export const uploadActivityVideo = (formData, activityId, index) => request.post
     'Content-Type': 'multipart/form-data'
   }
 })
+
+export const uploadModel = (formData, activityId = null) => {
+  if (activityId) {
+    formData.append('activityId', activityId)
+  }
+  return request.post('/upload/model', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
 
 export const uploadHomepageImage = (formData) => request.post('/upload/homepage/image', formData, {
   headers: {

@@ -1686,12 +1686,20 @@ const loadPersonalCenterData = async () => {
       }
 
       if (merchantStatsRes?.code === 200 && merchantStatsRes.data) {
+        const summary = merchantStatsRes.data.summary || {}
         merchantStats.value = {
           ...merchantStats.value,
-          weeklySales: merchantStatsRes.data.weeklySales || '0',
-          growthRate: merchantStatsRes.data.growthRate || '+0.0%',
-          averageScore: merchantStatsRes.data.averageScore || 0,
-          reviewCount: merchantStatsRes.data.reviewCount || 0
+          averageScore: summary.averageScore || 0,
+          reviewCount: summary.reviewCount || 0,
+          followerCount: summary.followerCount || 0,
+          totalRevenue: summary.totalRevenue || 0
+        }
+        if (isMerchantRole.value) {
+          stats.value = {
+            ...stats.value,
+            activityBookingCount: summary.activityCount || summary.bookingCount || 0,
+            checkedInCount: summary.checkedInCount || 0
+          }
         }
       }
 
