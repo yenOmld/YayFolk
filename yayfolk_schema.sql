@@ -57,12 +57,15 @@ CREATE TABLE `activities` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `merchant_profile_id` bigint DEFAULT NULL COMMENT 'normalized merchant id, merchant_profiles.id',
+  `avg_score` double DEFAULT '0',
+  `review_count` int DEFAULT '0',
+  `vr_model_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'VR模型URL',
   PRIMARY KEY (`id`),
   KEY `fk_activities_merchant` (`merchant_id`),
   KEY `idx_activities_merchant_profile` (`merchant_profile_id`),
   CONSTRAINT `fk_activities_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_activities_merchant_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -137,8 +140,8 @@ DROP TABLE IF EXISTS `activity_reserve_participants`;
 CREATE TABLE `activity_reserve_participants` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `reserve_id` bigint NOT NULL COMMENT '预订ID，关联activity_reserves表',
-  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者姓名',
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者电话',
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者姓名',
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者电话',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -156,21 +159,21 @@ DROP TABLE IF EXISTS `activity_reserves`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `activity_reserves` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `reserve_no` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reserve_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint NOT NULL,
   `merchant_id` bigint NOT NULL,
   `activity_id` bigint NOT NULL,
-  `activity_title` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `activity_time` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact_name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact_phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `activity_title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `activity_time` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `participant_num` int NOT NULL,
   `total_amount` int NOT NULL,
   `pay_amount` int NOT NULL,
   `pay_status` tinyint DEFAULT '0',
-  `reserve_status` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT 'registered',
-  `remark` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `payment_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reserve_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'registered',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `payment_time` datetime DEFAULT NULL,
   `cancel_time` datetime DEFAULT NULL,
   `verify_time` datetime DEFAULT NULL,
@@ -197,17 +200,17 @@ DROP TABLE IF EXISTS `conversations`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `conversations` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '会话ID',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'chat' COMMENT '会话类型: chat-聊天, comment-评论通知, collection-收藏通知',
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'chat' COMMENT '会话类型: chat-聊天, comment-评论通知, collection-收藏通知',
   `user1_id` bigint DEFAULT NULL COMMENT '用户1ID（聊天类型）',
   `user2_id` bigint DEFAULT NULL COMMENT '用户2ID（聊天类型）',
-  `last_message` text COLLATE utf8mb4_unicode_ci,
+  `last_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `last_message_time` datetime DEFAULT NULL COMMENT '最后消息时间',
   `unread_count_user1` int DEFAULT '0' COMMENT '用户1未读数',
   `unread_count_user2` int DEFAULT '0' COMMENT '用户2未读数',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ai_service',
-  `service_mode` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ai',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ai_service',
+  `service_mode` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ai',
   `last_human_reply_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_conv_user1` (`user1_id`),
@@ -226,14 +229,14 @@ DROP TABLE IF EXISTS `explore_conversations`;
 CREATE TABLE `explore_conversations` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
-  `title` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `last_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_message_time` datetime DEFAULT NULL,
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_explore_conv_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='探索资源对话表';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='探索资源对话表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -246,14 +249,14 @@ DROP TABLE IF EXISTS `explore_messages`;
 CREATE TABLE `explore_messages` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `conversation_id` bigint NOT NULL,
-  `role` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci,
-  `intent` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `resources_json` text COLLATE utf8mb4_unicode_ci,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `intent` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `resources_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_explore_msg_conv` (`conversation_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='探索资源消息表';
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='探索资源消息表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -265,18 +268,18 @@ DROP TABLE IF EXISTS `intangible_cultural_heritage`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `intangible_cultural_heritage` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '非遗项目名称',
-  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '类别：传统美术/传统技艺/传统戏剧等',
-  `subcategory` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '子类别',
-  `dynasty` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '相关朝代',
-  `region` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '地域',
-  `level` enum('national','provincial','municipal') COLLATE utf8mb4_unicode_ci DEFAULT 'national' COMMENT '级别：national-国家级，provincial-省级，municipal-市级',
-  `introduction` text COLLATE utf8mb4_unicode_ci COMMENT '介绍',
-  `history` text COLLATE utf8mb4_unicode_ci COMMENT '历史故事',
-  `inheritance_value` text COLLATE utf8mb4_unicode_ci COMMENT '传承价值',
-  `representative_inheritor` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '代表性传承人',
+  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '非遗项目名称',
+  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '类别：传统美术/传统技艺/传统戏剧等',
+  `subcategory` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '子类别',
+  `dynasty` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '相关朝代',
+  `region` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '地域',
+  `level` enum('national','provincial','municipal') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'national' COMMENT '级别：national-国家级，provincial-省级，municipal-市级',
+  `introduction` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '介绍',
+  `history` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '历史故事',
+  `inheritance_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '传承价值',
+  `representative_inheritor` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '代表性传承人',
   `images` json DEFAULT NULL COMMENT '图片数组',
-  `video_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '视频 URL',
+  `video_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '视频 URL',
   `related_poems` json DEFAULT NULL COMMENT '相关诗词',
   `related_solar_terms` json DEFAULT NULL COMMENT '相关节气',
   `latitude` decimal(10,6) DEFAULT NULL COMMENT '纬度',
@@ -304,8 +307,8 @@ DROP TABLE IF EXISTS `knowledge_conversations`;
 CREATE TABLE `knowledge_conversations` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_id` bigint NOT NULL COMMENT '用户ID',
-  `title` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '会话标题',
-  `last_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '最后一条消息',
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '会话标题',
+  `last_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '最后一条消息',
   `last_message_time` datetime DEFAULT NULL COMMENT '最后消息时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -325,7 +328,7 @@ DROP TABLE IF EXISTS `knowledge_messages`;
 CREATE TABLE `knowledge_messages` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `conversation_id` bigint NOT NULL COMMENT '会话ID',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息内容',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息内容',
   `is_self` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否用户发送: 1(用户), 0(AI助手)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
@@ -498,12 +501,14 @@ CREATE TABLE `merchant_profiles` (
   `latest_application_id` bigint DEFAULT NULL,
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `avg_score` double DEFAULT '0',
+  `review_count` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_merchant_profiles_user` (`user_id`),
   KEY `idx_merchant_profiles_status` (`business_status`),
   KEY `idx_merchant_profiles_shop_name` (`shop_name`),
   CONSTRAINT `fk_merchant_profiles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='canonical merchant profile table';
+) ENGINE=InnoDB AUTO_INCREMENT=195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='canonical merchant profile table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -519,9 +524,9 @@ CREATE TABLE `merchant_reviews` (
   `user_id` bigint NOT NULL,
   `order_id` bigint DEFAULT NULL,
   `reserve_id` bigint DEFAULT NULL,
-  `review_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activity',
+  `review_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activity',
   `score` decimal(2,1) NOT NULL,
-  `content` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -530,7 +535,7 @@ CREATE TABLE `merchant_reviews` (
   KEY `idx_merchant_reviews_reserve` (`reserve_id`),
   CONSTRAINT `fk_merchant_reviews_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_merchant_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -545,14 +550,14 @@ CREATE TABLE `messages` (
   `conversation_id` bigint NOT NULL COMMENT '会话ID',
   `sender_id` bigint NOT NULL COMMENT '发送者ID',
   `receiver_id` bigint NOT NULL COMMENT '接收者ID',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'text' COMMENT '消息类型: text-文本',
-  `source_lang` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '消息源语言代码: en, zh, ja等',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'text' COMMENT '消息类型: text-文本',
+  `source_lang` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '消息源语言代码: en, zh, ja等',
   `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读: 0-未读, 1-已读',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
   `deleted_by_receiver` bit(1) DEFAULT NULL,
   `deleted_by_sender` bit(1) DEFAULT NULL,
-  `source` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user',
+  `source` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'user',
   PRIMARY KEY (`id`),
   KEY `idx_msg_conv` (`conversation_id`),
   KEY `idx_msg_sender` (`sender_id`),
@@ -570,11 +575,11 @@ DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '通知ID',
   `user_id` bigint NOT NULL COMMENT '接收通知的用户ID',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '通知类型: comment-评论, collection-收藏',
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '通知类型: comment-评论, collection-收藏',
   `from_user_id` bigint DEFAULT NULL COMMENT '触发通知的用户ID',
   `post_id` bigint DEFAULT NULL COMMENT '相关帖子ID',
   `comment_id` bigint DEFAULT NULL COMMENT '相关评论ID',
-  `content` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '通知内容',
+  `content` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '通知内容',
   `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读: 0-未读, 1-已读',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
@@ -584,7 +589,7 @@ CREATE TABLE `notifications` (
   KEY `fk_notif_from_user` (`from_user_id`),
   KEY `fk_notif_post` (`post_id`),
   KEY `fk_notif_comment` (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知表';
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -611,7 +616,7 @@ CREATE TABLE `official_contents` (
   PRIMARY KEY (`id`),
   KEY `fk_official_admin` (`admin_id`),
   CONSTRAINT `fk_official_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -731,8 +736,8 @@ CREATE TABLE `post_reports` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `post_id` bigint NOT NULL,
   `reporter_id` bigint NOT NULL,
-  `reason` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `handler_id` bigint DEFAULT NULL,
   `handle_time` datetime DEFAULT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -752,11 +757,11 @@ DROP TABLE IF EXISTS `reserve_status_logs`;
 CREATE TABLE `reserve_status_logs` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `reserve_id` bigint NOT NULL,
-  `old_status` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `new_status` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `old_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `new_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `operator_id` bigint NOT NULL,
-  `operator_type` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `operator_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_reserve_status_logs_reserve_id` (`reserve_id`),
@@ -765,8 +770,6 @@ CREATE TABLE `reserve_status_logs` (
   CONSTRAINT `fk_reserve_status_logs_reserve` FOREIGN KEY (`reserve_id`) REFERENCES `activity_reserves` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-
 
 --
 -- Table structure for table `travel_post_collections`
@@ -784,7 +787,7 @@ CREATE TABLE `travel_post_collections` (
   UNIQUE KEY `uk_collection_user_post` (`user_id`,`post_id`),
   KEY `idx_collection_post` (`post_id`),
   KEY `idx_collection_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='帖子收藏记录';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='帖子收藏记录';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -819,10 +822,10 @@ CREATE TABLE `travel_post_comments` (
   `user_id` bigint NOT NULL COMMENT '评论用户ID',
   `parent_id` bigint DEFAULT NULL COMMENT '父评论ID，用于回复功能',
   `reply_to_user_id` bigint DEFAULT NULL COMMENT '回复目标用户ID',
-  `content` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '评论内容',
+  `content` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '评论内容',
   `like_count` int DEFAULT '0' COMMENT '评论点赞数',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
-  `source_lang` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_lang` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_comment_post` (`post_id`),
   KEY `idx_comment_user` (`user_id`),
@@ -848,7 +851,7 @@ CREATE TABLE `travel_post_history` (
   UNIQUE KEY `uk_history_user_post` (`user_id`,`post_id`),
   KEY `idx_history_user_time` (`user_id`,`last_view_time`),
   KEY `fk_history_post` (`post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='帖子浏览历史';
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='帖子浏览历史';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -861,14 +864,15 @@ DROP TABLE IF EXISTS `travel_posts`;
 CREATE TABLE `travel_posts` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '帖子ID',
   `user_id` bigint NOT NULL COMMENT '发布用户ID',
-  `title` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子标题',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子内容',
-  `category` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT 'travel' COMMENT '帖子分类',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子标题',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子内容',
+  `post_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal' COMMENT 'normal/review/ai_video',
+  `category` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'travel' COMMENT '帖子分类',
   `audit_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
-  `audit_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
-  `images` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '图片URL或Base64数组(JSON)',
-  `tags` text COLLATE utf8mb4_unicode_ci COMMENT '标签数组(JSON)',
-  `visibility` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
+  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
+  `images` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '图片URL或Base64数组(JSON)',
+  `tags` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '标签数组(JSON)',
+  `visibility` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
   `status` tinyint(1) DEFAULT '1' COMMENT '帖子状态：1-正常，0-删除',
   `view_count` int DEFAULT '0' COMMENT '浏览次数',
   `comment_count` int DEFAULT '0' COMMENT '评论数',
@@ -876,13 +880,22 @@ CREATE TABLE `travel_posts` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `collection_count` int DEFAULT NULL,
   `collect_count` int DEFAULT NULL,
-  `source_lang` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_lang` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'normal' COMMENT '????????ormal-????????review-??????',
+  `activity_id` bigint DEFAULT NULL,
+  `score` int DEFAULT NULL,
+  `is_anonymous` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_post_user` (`user_id`),
   KEY `idx_post_category` (`category`),
   KEY `idx_post_status` (`status`),
-  KEY `idx_post_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='发现页帖子';
+  KEY `idx_post_create_time` (`create_time`),
+  KEY `idx_post_activity` (`activity_id`),
+  KEY `idx_travel_posts_activity_id` (`activity_id`),
+  KEY `idx_travel_posts_post_type` (`post_type`),
+  KEY `idx_travel_posts_user_type_status` (`user_id`,`post_type`,`status`),
+  CONSTRAINT `fk_post_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='发现页帖子';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -935,10 +948,10 @@ DROP TABLE IF EXISTS `user_unban_applications`;
 CREATE TABLE `user_unban_applications` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
-  `apply_reason` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `apply_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `admin_id` bigint DEFAULT NULL,
-  `admin_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `admin_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `handle_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -957,36 +970,36 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'China' COMMENT '国家/地区',
-  `location` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `language` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'zh',
-  `shop_status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'none',
-  `shop_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_cover` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cover_photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shop_intro` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `collection_visibility` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
-  `lang_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `region_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `nickname` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bio` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `signature` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'China' COMMENT '国家/地区',
+  `location` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `language` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'zh',
+  `shop_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'none',
+  `shop_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shop_cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cover_photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shop_intro` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `collection_visibility` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
+  `lang_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `region_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bio` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `signature` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `follower_count` int DEFAULT '0',
   `following_count` int DEFAULT '0',
-  `avatar` text COLLATE utf8mb4_unicode_ci,
-  `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user',
+  `avatar` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'user',
   `status` tinyint(1) DEFAULT '1',
   `last_login_time` datetime DEFAULT NULL,
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `github_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `github_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_super_admin` tinyint(1) NOT NULL DEFAULT '0',
   `is_merchant` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'effective merchant account flag',
-  `ban_reason` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ban_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ban_admin_id` bigint DEFAULT NULL,
   `ban_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -994,7 +1007,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `uk_phone` (`phone`),
   UNIQUE KEY `uk_email` (`email`),
   UNIQUE KEY `UK_g9s8emobrgjmob2ty2va0l354` (`github_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10050 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1011,25 +1024,6 @@ DELIMITER ;;
         WHEN COALESCE(NEW.shop_status, 'none') IN ('approved', 'active') THEN 1
         ELSE COALESCE(NEW.is_merchant, 0)
     END;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_ai_sync_merchant_profile` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-    IF NEW.role = 'merchant' OR COALESCE(NEW.shop_status, 'none') <> 'none' THEN
-        CALL sp_upsert_merchant_profile_from_user(NEW.id);
-    END IF;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1063,25 +1057,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_users_au_sync_merchant_profile` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
-    IF NEW.role = 'merchant' OR COALESCE(NEW.shop_status, 'none') <> 'none' THEN
-        CALL sp_upsert_merchant_profile_from_user(NEW.id);
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -1092,4 +1067,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-26 20:28:10
+-- Dump completed on 2026-04-28 12:43:31

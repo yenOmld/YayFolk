@@ -212,7 +212,7 @@ const router = useRouter()
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
-const heritageTypes = ['工艺', '刺绣', '雕塑', '器具', '编织', '纺织', '绘画', '剪纸', '陶瓷', '中医', '服饰', '其他']
+const heritageTypes = ['传统戏曲', '民俗生活', '陶瓷陶艺', '织绣服饰', '民间美术', '金工器物', '木竹雕艺', '文房工艺', '其他']
 const MAX_MEDIA_ITEMS = 10
 
 const imageInput = ref(null)

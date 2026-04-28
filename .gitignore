@@ -93,7 +93,8 @@ backend/src/main/resources/application.yml
 backend/src/main/resources/application-*.yml
 
 
-docs/
+yayfolk-docs/
+YayFolk_Deployment/
 
 *.txt
 *.md
