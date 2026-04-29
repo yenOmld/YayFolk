@@ -41,7 +41,7 @@ public class QiniuOssUtil {
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
 
         // 2. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
         UploadManager uploadManager = new UploadManager(cfg);
 
@@ -176,7 +176,7 @@ public class QiniuOssUtil {
         String fileName = "avatars/" + userId + suffix;
 
         // 3. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
         UploadManager uploadManager = new UploadManager(cfg);
 
@@ -242,9 +242,9 @@ public class QiniuOssUtil {
 
         String fileName = folder + "/" + UUID.randomUUID().toString() + extension;
 
-        // 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
-        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
+        // 3. 构造一个带指定 Region 对象的配置类
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 
         try {
@@ -286,7 +286,7 @@ public class QiniuOssUtil {
             }
 
             Auth auth = Auth.create(qiniuOssProperties.getAccessKey(), qiniuOssProperties.getSecretKey());
-            com.qiniu.storage.BucketManager bucketManager = new com.qiniu.storage.BucketManager(auth, new Configuration(Region.autoRegion()));
+            com.qiniu.storage.BucketManager bucketManager = new com.qiniu.storage.BucketManager(auth, new Configuration(Region.region2()));  // 使用华东-浙江2区
             bucketManager.delete(qiniuOssProperties.getBucketName(), fileName);
         } catch (Exception e) {
             log.error("File deletion failed: {}", fileUrl, e);
@@ -308,8 +308,8 @@ public class QiniuOssUtil {
         String fileName = "posts/" + postId + "/" + index + suffix;
 
         // 2. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
-        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 
         // 3. 生成上传凭证，然后准备上传
@@ -352,8 +352,8 @@ public class QiniuOssUtil {
         String fileName = "activities/" + activityId + "/images/" + index + suffix;
 
         // 2. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
-        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 
         // 3. 生成上传凭证，然后准备上传
@@ -396,8 +396,8 @@ public class QiniuOssUtil {
         String fileName = "activities/" + activityId + "/video/" + index + suffix;
 
         // 2. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
-        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 
         // 3. 生成上传凭证，然后准备上传
@@ -442,8 +442,8 @@ public class QiniuOssUtil {
         String fileName = "homepage/" + userId + (type != null ? "/" + type : "") + suffix;
 
         // 3. 构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(Region.autoRegion());
-        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;  //指定分片上传版本
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
+        cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 
         // 4. 生成上传凭证，然后准备上传
@@ -484,7 +484,7 @@ public class QiniuOssUtil {
         String suffix = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
         String fileName = "activities/" + activityId + "/VR/vr" + suffix;
 
-        Configuration cfg = new Configuration(Region.autoRegion());
+        Configuration cfg = new Configuration(Region.region2());  // 使用华东-浙江2区，与 yayfolk bucket 同区域
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         UploadManager uploadManager = new UploadManager(cfg);
 

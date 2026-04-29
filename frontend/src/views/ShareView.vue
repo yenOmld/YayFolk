@@ -168,7 +168,7 @@ import { getSharePostDetail } from '../api/app'
 const route = useRoute()
 const router = useRouter()
 
-const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user'
+const defaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 const post = ref(null)
 const loading = ref(true)
 const errorMessage = ref('')

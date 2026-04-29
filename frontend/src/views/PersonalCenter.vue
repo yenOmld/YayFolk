@@ -8,7 +8,7 @@
 
     <!-- 设置按钮 -->
     <div class="top-right-settings">
-      <button class="settings-trigger" @click="showSettingsDrawer = true">
+      <button class="settings-trigger" @click="navigateToEditProfile">
         <i class='bx bx-cog'></i>
       </button>
     </div>
@@ -20,8 +20,8 @@
           <div class="avatar-wrapper">
             <div class="avatar-container">
               <img :src="userInfo.avatar" alt="Avatar" class="avatar">
-              <div class="edit-avatar-btn" @click="navigateToEditProfile">
-                <i class='bx bxs-camera'></i>
+              <div class="edit-avatar-btn" @click="showAccountManagerModal = true">
+                <i class='bx bx-plus'></i>
               </div>
             </div>
           </div>
@@ -394,60 +394,6 @@
 
     </div>
 
-    <!-- 设置侧边栏弹窗 -->
-    <div class="modal settings-drawer" v-if="showSettingsDrawer" @click.self="showSettingsDrawer = false">
-      <div class="drawer-content">
-        <div class="drawer-header">
-          <h3>设置</h3>
-          <i class='bx bx-x close-btn' @click="showSettingsDrawer = false"></i>
-        </div>
-        
-        <div class="menu-group">
-          <div class="menu-item" @click="openAccountManager">
-            <i class='bx bx-id-card'></i>
-            <span>账号管理</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          <div class="menu-item" @click="navigateToEditProfile">
-            <i class='bx bxs-user'></i>
-            <span>编辑个人资料</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          <div class="menu-item" @click="showChangePassword">
-            <i class='bx bxs-lock-alt'></i>
-            <span>修改密码</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          <div class="menu-item" @click="openCustomerService">
-            <i class='bx bxs-info-circle'></i>
-            <span>联系客服</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          
-          <!-- 商家相关设置 -->
-          <div class="menu-item" v-if="!isMerchantRole" @click="navigateToMerchantApply">
-            <i class='bx bxs-store'></i>
-            <span>注册为商家</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-          <div class="menu-item menu-item--with-alert" v-else @click="openPrimaryPanel" :data-alert="hasWorkbenchAlert ? workbenchAlertText : ''">
-            <i class='bx bxs-dashboard'></i>
-            <span>{{ userInfo.role === 'admin' ? '进入管理后台' : '进入商家工作台' }}</span>
-            <i class='bx bx-chevron-right'></i>
-          </div>
-        </div>
-        
-        <div class="logout-section">
-          <button class="logout-btn" @click="showLogoutConfirm">
-            <i class='bx bx-log-out'></i> 退出登录
-          </button>
-          <button class="delete-account-btn" @click="showDeleteConfirm">
-            <i class='bx bx-user-x'></i> 注销账号
-          </button>
-        </div>
-      </div>
-    </div>
-
     <div class="modal" v-if="showAccountManagerModal" @click.self="closeAccountManager">
       <div class="modal-content account-manager-modal">
         <div class="modal-header account-manager-header">
@@ -459,79 +405,93 @@
         </div>
 
         <div class="account-manager-body">
-          <div class="saved-account-section">
-            <div class="saved-account-head">
-              <strong>已保存账号</strong>
-              <span>{{ savedAccounts.length }} 个</span>
+          <div class="account-manager-main">
+            <div class="saved-account-section">
+              <div class="saved-account-head">
+                <strong>已保存账号</strong>
+                <span>{{ savedAccounts.length }} 个</span>
+              </div>
+
+              <div v-if="savedAccounts.length > 0" class="saved-account-list">
+                <div
+                  v-for="account in savedAccounts"
+                  :key="account.account"
+                  class="saved-account-item"
+                  :class="{
+                    active: currentAccountId && account.userId === currentAccountId,
+                    switching: switchingAccount === account.account
+                  }"
+                  @click="switchManagedAccount(account)"
+                  @keydown.enter.prevent="switchManagedAccount(account)"
+                  tabindex="0"
+                >
+                  <img :src="account.avatar || userInfo.avatar" alt="avatar" class="saved-account-avatar" />
+                  <div class="saved-account-copy">
+                    <div class="saved-account-row">
+                      <strong>{{ account.nickname || account.username || account.account }}</strong>
+                      <span v-if="currentAccountId && account.userId === currentAccountId" class="account-badge">当前账号</span>
+                    </div>
+                    <span class="saved-account-meta">{{ account.account }}</span>
+                  </div>
+                  <span v-if="switchingAccount === account.account" class="account-switching-text">切换中...</span>
+                  <button
+                    class="remove-account-btn"
+                    type="button"
+                    @click.stop="removeManagedAccount(account.account)"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+              <div v-else class="account-empty-state">
+                <i class='bx bx-user-plus'></i>
+                <p>还没有保存账号</p>
+              </div>
             </div>
 
-            <div v-if="savedAccounts.length > 0" class="saved-account-list">
-              <div
-                v-for="account in savedAccounts"
-                :key="account.account"
-                class="saved-account-item"
-                :class="{
-                  active: currentAccountId && account.userId === currentAccountId,
-                  switching: switchingAccount === account.account
-                }"
-                @click="switchManagedAccount(account)"
-                @keydown.enter.prevent="switchManagedAccount(account)"
-                tabindex="0"
-              >
-                <img :src="account.avatar || userInfo.avatar" alt="avatar" class="saved-account-avatar" />
-                <div class="saved-account-copy">
-                  <div class="saved-account-row">
-                    <strong>{{ account.nickname || account.username || account.account }}</strong>
-                    <span v-if="currentAccountId && account.userId === currentAccountId" class="account-badge">当前账号</span>
-                  </div>
-                  <span class="saved-account-meta">{{ account.account }}</span>
-                </div>
-                <span v-if="switchingAccount === account.account" class="account-switching-text">切换中...</span>
-                <button
-                  class="remove-account-btn"
-                  type="button"
-                  @click.stop="removeManagedAccount(account.account)"
-                >
-                  删除
+            <div class="account-form-section">
+              <div class="saved-account-head">
+                <strong>添加账号</strong>
+                <span>会先校验账号密码</span>
+              </div>
+
+              <div class="form-group">
+                <label>账号</label>
+                <input
+                  v-model.trim="accountForm.username"
+                  type="text"
+                  placeholder="请输入用户名 / 手机号 / 邮箱"
+                />
+              </div>
+              <div class="form-group">
+                <label>密码</label>
+                <input
+                  v-model="accountForm.password"
+                  type="password"
+                  placeholder="请输入密码"
+                />
+              </div>
+              <p class="account-note">仅保存在当前设备浏览器，用于一键切换账号。</p>
+
+              <div class="modal-buttons account-manager-actions">
+                <button class="btn secondary" @click="closeAccountManager">取消</button>
+                <button class="btn primary" :disabled="addingAccount" @click="addManagedAccount">
+                  {{ addingAccount ? '添加中...' : '添加账号' }}
                 </button>
               </div>
             </div>
-            <div v-else class="account-empty-state">
-              <i class='bx bx-user-plus'></i>
-              <p>还没有保存账号</p>
-            </div>
           </div>
 
-          <div class="account-form-section">
-            <div class="saved-account-head">
-              <strong>添加账号</strong>
-              <span>会先校验账号密码</span>
-            </div>
-
-            <div class="form-group">
-              <label>账号</label>
-              <input
-                v-model.trim="accountForm.username"
-                type="text"
-                placeholder="请输入用户名 / 手机号 / 邮箱"
-              />
-            </div>
-            <div class="form-group">
-              <label>密码</label>
-              <input
-                v-model="accountForm.password"
-                type="password"
-                placeholder="请输入密码"
-              />
-            </div>
-            <p class="account-note">仅保存在当前设备浏览器，用于一键切换账号。</p>
-
-            <div class="modal-buttons account-manager-actions">
-              <button class="btn secondary" @click="closeAccountManager">取消</button>
-              <button class="btn primary" :disabled="addingAccount" @click="addManagedAccount">
-                {{ addingAccount ? '添加中...' : '添加账号' }}
-              </button>
-            </div>
+          <div class="account-manager-footer">
+            <button class="account-manager-btn change-password-btn" @click="closeAccountManager(); showChangePassword()">
+              <i class='bx bx-key'></i> 修改当前账户密码
+            </button>
+            <button class="account-manager-btn logout-btn" @click="closeAccountManager(); showLogoutConfirm()">
+              <i class='bx bx-log-out'></i> 退出登录
+            </button>
+            <button class="account-manager-btn delete-account-btn" @click="closeAccountManager(); showDeleteConfirm()">
+              <i class='bx bx-user-x'></i> 注销当前账号
+            </button>
           </div>
         </div>
       </div>
@@ -770,7 +730,6 @@ const notify = appContext.config.globalProperties.$notify
 
 const router = useRouter()
 const showLogoutModal = ref(false)
-const showSettingsDrawer = ref(false)
 const showAccountManagerModal = ref(false)
 const showCustomerServiceModal = ref(false)
 let badgeTimer = null
@@ -970,7 +929,6 @@ const submitMerchantCert = async () => {
     if (data.code === 200) {
       notify.success('商家认证成功！')
       showMerchantCertModal.value = false
-      showSettingsDrawer.value = false
       // 更新本地用户信息
       const userStr = localStorage.getItem('user')
       if (userStr) {
@@ -1001,7 +959,6 @@ const handleUnregisterMerchant = async () => {
     if (data.code === 200) {
       notify.success('已成功注销商家身份')
       showUnregisterMerchantModal.value = false
-      showSettingsDrawer.value = false
       
       const userStr = localStorage.getItem('user')
       if (userStr) {
@@ -1019,8 +976,7 @@ const handleUnregisterMerchant = async () => {
   }
 }
 
-// 本地默认头像（用于网络不可用时的回退）
-const localDefaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzc0OTRlYyIvPgogIDxjaXJjbGUgY3g9IjUwIiBjeT0iMzAiIHI9IjIwIiBmaWxsPSIjNzQ5NGVjIi8+CiAgPGNpcmNsZSBjeD0iNTUiIGN5PSI0NSIgcj0iNSIgZmlsbD0iI2ZmZiIvPgogIDxjaXJjbGUgY3g9IjQ1IiBjeT0iNDUiIHI9IjUiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjYwIiByPSIyIiBmaWxsPSIjNzQ5NGVjIi8+CiAgPHRleHQgeD0iNTAiIHk9Ijc1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiMzMzMiIG5hbWU9ImNvbnRlbnQiPldyb3lhbC4uLjwvdGV4dD4KPC9zdmc+'
+const localDefaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 
 const SAVED_ACCOUNT_STORAGE_KEY = 'yayfolk_saved_accounts'
 
@@ -1115,14 +1071,14 @@ const upsertSavedAccount = (entry) => {
 }
 
 const openAccountManager = () => {
-  closeSettingsDrawer()
+  
   loadSavedAccounts()
   resetAccountForm()
   showAccountManagerModal.value = true
 }
 
 const openCustomerService = () => {
-  closeSettingsDrawer()
+  
   showCustomerServiceModal.value = true
 }
 
@@ -1232,18 +1188,13 @@ const switchManagedAccount = async (account) => {
   }
 }
 
-const closeSettingsDrawer = () => {
-  showSettingsDrawer.value = false
-}
-
 // 导航到编辑个人资料
 const navigateToEditProfile = () => {
-  closeSettingsDrawer()
   router.push('/personal/edit-profile')
 }
 
 const navigateToEditHomepage = () => {
-  closeSettingsDrawer()
+  
   if (userInfo.value.id) {
     router.push(`/user-homepage/${userInfo.value.id}`)
     return
@@ -1253,29 +1204,29 @@ const navigateToEditHomepage = () => {
 
 // 导航到我的发布
 const navigateToMyPosts = () => {
-  closeSettingsDrawer()
+  
   router.push('/personal/my-posts')
 }
 
 // 导航到我的收藏
 const navigateToMyCollections = () => {
-  closeSettingsDrawer()
+  
   router.push('/personal/my-collections')
 }
 
 // 导航到浏览历史
 const navigateToHistory = () => {
-  closeSettingsDrawer()
+  
   router.push('/personal/history')
 }
 
 const navigateToMyReviews = () => {
-  closeSettingsDrawer()
+  
   router.push('/personal/my-reviews')
 }
 
 const navigateToMyAchievements = () => {
-  closeSettingsDrawer()
+  
   if (userInfo.value.id) {
     router.push({
       path: `/user-homepage/${userInfo.value.id}`,
@@ -1287,52 +1238,52 @@ const navigateToMyAchievements = () => {
 }
 
 const navigateToAiLarge = () => {
-  closeSettingsDrawer()
+  
   router.push({ name: 'create-ai-heritage-post' })
 }
 
 const navigateToMyReservations = () => {
-  closeSettingsDrawer()
+  
   router.push('/personal/activities')
 }
 
 const navigateToMerchantApply = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/apply')
 }
 
 const navigateToMerchantActivities = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/activities')
 }
 
 const navigateToMerchantReservations = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/bookings')
 }
 
 const navigateToMerchantAnalysis = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/analysis')
 }
 
 const navigateToMerchantReviews = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/activity-reviews')
 }
 
 const navigateToMerchantProducts = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/activities')
 }
 
 const navigateToMerchantOrders = () => {
-  closeSettingsDrawer()
+  
   router.push('/merchant/bookings')
 }
 
 const openHomepage = () => {
-  closeSettingsDrawer()
+  
   if (userInfo.value.id) {
     router.push(`/user-homepage/${userInfo.value.id}`)
     return
@@ -1349,7 +1300,7 @@ const handleSecondaryAction = () => {
 }
 
 const openPrimaryPanel = () => {
-  closeSettingsDrawer()
+  
   if (userInfo.value.role === 'admin') {
     const storedUser = parseStoredUser()
     const isSuperAdmin = Number(storedUser?.isSuperAdmin || 0) === 1
@@ -1365,7 +1316,7 @@ const openPrimaryPanel = () => {
 
 // 显示修改密码
 const showChangePassword = () => {
-  closeSettingsDrawer()
+  
   showPasswordModal.value = true
   resetPasswordForm()
 }
@@ -1470,19 +1421,19 @@ const submitPasswordChange = async () => {
 
 // 显示关于我们
 const openAboutUs = async () => {
-  closeSettingsDrawer()
+  
   notify.info('请使用右下角的悬浮小人进行客服咨询')
 }
 
 // 显示退出登录确认
 const showLogoutConfirm = () => {
-  closeSettingsDrawer()
+  
   showLogoutModal.value = true
 }
 
 const showDeleteModal = ref(false)
 const showDeleteConfirm = () => {
-  closeSettingsDrawer()
+  
   showDeleteModal.value = true
 }
 
@@ -2377,149 +2328,6 @@ onBeforeUnmount(() => {
 .icon-orange { color: #fa709a; }
 .icon-red { color: #ff0844; }
 
-/* 侧边抽屉 */
-.settings-drawer .drawer-content {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 280px;
-  max-width: 80%;
-  background: white;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-  border-radius: 16px 0 0 16px;
-  display: flex;
-  flex-direction: column;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.drawer-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.close-btn {
-  font-size: 24px;
-  color: #999;
-  cursor: pointer;
-}
-
-.settings-drawer .menu-group {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 0;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.menu-item:hover {
-  background-color: #f5f5f5;
-}
-
-.menu-item--with-alert {
-  position: relative;
-}
-
-.menu-item--with-alert[data-alert]:not([data-alert=''])::after {
-  content: attr(data-alert);
-  margin-left: 12px;
-  padding: 0 8px;
-  min-width: 28px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid rgba(201, 145, 63, 0.28);
-  background: linear-gradient(180deg, #fff8ea, #f7edd7);
-  color: #8a5a16;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.menu-item i:first-child {
-  font-size: 20px;
-  color: #7494ec;
-  margin-right: 15px;
-  width: 24px;
-  text-align: center;
-}
-
-.menu-item span {
-  flex: 1;
-  color: #333;
-  font-size: 15px;
-}
-
-.menu-item .bx-chevron-right {
-  color: #ccc;
-  font-size: 20px;
-}
-
-.menu-item.text-danger span,
-.menu-item.text-danger i:first-child {
-  color: #ff4757;
-}
-
-.logout-section {
-  padding: 20px;
-  border-top: 1px solid #eee;
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 12px;
-  background: #f0f0f0;
-  color: #333;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.delete-account-btn {
-  width: 100%;
-  padding: 12px;
-  background: white;
-  color: #ff4757;
-  border: 1px solid #ff4757;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
 .modal {
   position: fixed;
   top: 0;
@@ -2559,6 +2367,7 @@ onBeforeUnmount(() => {
   padding: 0;
   text-align: left;
   overflow: hidden;
+  margin-top: -70px;
 }
 
 .account-manager-header {
@@ -2577,9 +2386,65 @@ onBeforeUnmount(() => {
 }
 
 .account-manager-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-manager-main {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.9fr);
   gap: 0;
+}
+
+.account-manager-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid #eef2f7;
+  background: #fff;
+}
+
+.account-manager-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 200px;
+  height: 44px;
+}
+
+.account-manager-btn.change-password-btn {
+  color: #1890ff;
+  background: #e6f7ff;
+}
+
+.account-manager-btn.change-password-btn:hover {
+  background: #bae7ff;
+}
+
+.account-manager-btn.logout-btn {
+  color: #6b7a90;
+  background: #f5f7fa;
+}
+
+.account-manager-btn.logout-btn:hover {
+  background: #eef2f7;
+}
+
+.account-manager-btn.delete-account-btn {
+  color: #ff4d4f;
+  background: #fff2f0;
+}
+
+.account-manager-btn.delete-account-btn:hover {
+  background: #ffccc7;
 }
 
 .saved-account-section,

@@ -255,7 +255,7 @@ const notify = appContext.config.globalProperties.$notify
 const confirm = appContext.config.globalProperties.$confirm
 const route = useRoute()
 const router = useRouter()
-const defaultAvatar = '/default-avatar.svg'
+const defaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 const loading = ref(false)
 const coverUploading = ref(false)
 const avatarUploading = ref(false)
@@ -355,15 +355,15 @@ const formatTime = (value) => {
 }
 const time = (value) => { const d = value ? new Date(value) : null; return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('zh-CN') : '时间待定' }
 const badgeImage = (code) => ({
-  'first-booking': '/medal/m1.png',     // 初次体验
-  'check-in': '/medal/m2.png',          // 签到达人
-  'deep-explorer': '/medal/m3.png',     // 深度探索者
-  'storyteller': '/medal/m4.png',       // 故事讲述者
-  'collector': '/medal/m5.png',         // 收藏家
-  'wanderer': '/medal/m6.png',          // 漫游者
-  'social-butterfly': '/medal/m7.png',  // 社交达人
-  'influencer': '/medal/m8.png'         // 影响力者
-}[code] || '/medal/m9.png')
+  'first-booking': 'https://yayfolk.bhyy.online/static/medal/m1.png',     // 初次体验
+  'check-in': 'https://yayfolk.bhyy.online/static/medal/m2.png',          // 签到达人
+  'deep-explorer': 'https://yayfolk.bhyy.online/static/medal/m3.png',     // 深度探索者
+  'storyteller': 'https://yayfolk.bhyy.online/static/medal/m4.png',       // 故事讲述者
+  'collector': 'https://yayfolk.bhyy.online/static/medal/m5.png',         // 收藏家
+  'wanderer': 'https://yayfolk.bhyy.online/static/medal/m6.png',          // 漫游者
+  'social-butterfly': 'https://yayfolk.bhyy.online/static/medal/m7.png',  // 社交达人
+  'influencer': 'https://yayfolk.bhyy.online/static/medal/m8.png'         // 影响力者
+}[code] || 'https://yayfolk.bhyy.online/static/medal/m9.png')
 const badgeProgress = (badge) => badge?.unlocked ? '已解锁' : `进度 ${badge?.progress || 0}/${badge?.target || 1}`
 const switchTab = (key) => { if (visibleTabs.value.some(item => item.key === key)) { activeTab.value = key; router.replace({ path: route.path, query: { ...route.query, tab: key } }) } }
 const syncTab = () => { const tab = String(route.query.tab || ''); activeTab.value = visibleTabs.value.some(item => item.key === tab) ? tab : visibleTabs.value[0]?.key || 'posts' }

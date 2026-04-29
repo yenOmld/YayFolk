@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// AI辅助生成：豆包，2026-03-26
 @Service
 public class AlipayPaymentService {
 

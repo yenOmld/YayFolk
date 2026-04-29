@@ -11,7 +11,7 @@
         poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%238B0000' width='1920' height='1080'/%3E%3C/svg%3E"
         ref="videoRef"
       >
-        <source src="/backgroung.mp4" type="video/mp4">
+        <source src="https://yayfolk.bhyy.online/static/backgroung.mp4" type="video/mp4">
         您的浏览器不支持视频标签
       </video>
       <div class="video-overlay"></div>
@@ -262,7 +262,7 @@ const isCloudLifting = ref(false)
 
 const subtitleRef = ref(null)
 const subtitleWidth = ref(0)
-const cloudImg = '/cloud.png'
+const cloudImg = 'https://yayfolk.bhyy.online/static/cloud.png'
 const line1Chars = computed(() => Array.from('以非遗为媒，连接世界'))
 const line2Chars = computed(() => Array.from('yayfolk—体验无界'))
 

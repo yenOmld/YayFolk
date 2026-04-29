@@ -44,7 +44,7 @@
             </div>
           </div>
           <div class="about-image animate-right">
-            <img :src="'/heritage/about-img.png'" alt="关于我们" />
+            <img :src="'https://yayfolk.bhyy.online/static/about-img.png'" alt="关于我们" />
           </div>
         </div>
       </div>
@@ -381,7 +381,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: -20%;
-  background: url('/heritage/love_forbidden_city.jpg') center/cover no-repeat;
+  background: url('https://yayfolk.bhyy.online/static/love_forbidden_city.jpg') center/cover no-repeat;
   will-change: transform;
 }
 

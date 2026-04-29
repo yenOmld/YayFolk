@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.dto.ResponseDto;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
+import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.service.UserCenterService;
 import com.yayfolk.backend.service.UserService;
 import com.yayfolk.backend.utils.QiniuOssUtil;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,17 +33,20 @@ public class UserController {
     private final QiniuOssUtil ossUtil;
     private final DiscoverPostRepository postRepository;
     private final ObjectMapper objectMapper;
+    private final UserFollowRepository userFollowRepository;
 
     public UserController(UserService userService,
                           UserCenterService userCenterService,
                           QiniuOssUtil ossUtil,
                           DiscoverPostRepository postRepository,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          UserFollowRepository userFollowRepository) {
         this.userService = userService;
         this.userCenterService = userCenterService;
         this.ossUtil = ossUtil;
         this.postRepository = postRepository;
         this.objectMapper = objectMapper;
+        this.userFollowRepository = userFollowRepository;
     }
 
     @GetMapping("/profile")
@@ -49,6 +54,11 @@ public class UserController {
         try {
             String username = requireUsername(request);
             User user = userService.findByUsername(username);
+            // 实时计算关注数和粉丝数，避免冗余字段数据不一致问题
+            long followerCount = userFollowRepository.countByFollowingId(user.getId());
+            long followingCount = userFollowRepository.countByFollowerId(user.getId());
+            user.setFollowerCount((int) followerCount);
+            user.setFollowingCount((int) followingCount);
             return ResponseDto.success(user);
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());

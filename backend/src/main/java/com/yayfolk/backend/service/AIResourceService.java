@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// AI辅助生成：DeepSeek API（deepseek-v4-flash），2025-04-26
 @Service
 public class AIResourceService {
 

@@ -273,6 +273,7 @@ export const deleteKnowledgeConversation = (conversationId) => {
 export const getPublicActivities = (params) => request.get('/public/activities', { params })
 export const getPublicActivityDetail = (id) => request.get(`/public/activities/${id}`)
 export const getActivityReviews = (activityId) => request.get(`/public/activities/${activityId}/reviews`)
+export const getPublicHeritageDetail = (id) => request.get(`/public/heritages/${id}`)
 export const getOfficialContents = (category) => request.get('/public/official', { params: { category } })
 export const getHomepageOfficialContents = () => request.get('/public/official/homepage')
 export const submitUnbanApplication = (account, reason) => request.post('/public/unban-applications', { account, reason })
@@ -421,6 +422,12 @@ export const uploadHomepageImage = (formData) => request.post('/upload/homepage/
 
 export const generateAiHeritagePoster = (data) => request.post('/ai/heritage-poster', data, {
   timeout: 300000 // 5分钟超时
+})
+
+// 代理下载AI生成的图片，解决跨域问题
+export const proxyAiImage = (imageUrl) => request.get('/ai/proxy-image', {
+  params: { url: imageUrl },
+  responseType: 'arraybuffer'
 })
 
 export const createDiscoverReviewPost = (data) => request.post('/discover/review-posts', data)

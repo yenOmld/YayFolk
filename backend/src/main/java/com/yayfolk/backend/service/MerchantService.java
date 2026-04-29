@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.ActivityReserve;
 import com.yayfolk.backend.entity.ActivityReserveParticipant;
+import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.MerchantApplication;
 import com.yayfolk.backend.entity.MerchantProfile;
 import com.yayfolk.backend.entity.MerchantReview;
@@ -15,7 +16,7 @@ import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.OfficialContent;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.ActivityReserveParticipantRepository;
-import com.yayfolk.backend.repository.ActivityReserveRepository;
+import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
 import com.yayfolk.backend.repository.MerchantProfileRepository;
 import com.yayfolk.backend.repository.MerchantReviewRepository;
@@ -54,12 +55,13 @@ public class MerchantService {
     private final MerchantProfileRepository merchantProfileRepository;
     private final MerchantApplicationRepository applicationRepository;
     private final ActivityRepository activityRepository;
-    private final ActivityReserveRepository activityReserveRepository;
+    private final com.yayfolk.backend.repository.ActivityReserveRepository activityReserveRepository;
     private final ActivityReserveParticipantRepository activityReserveParticipantRepository;
     private final ReserveStatusLogRepository reserveStatusLogRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final MerchantReviewRepository merchantReviewRepository;
+    private final DiscoverPostRepository discoverPostRepository;
     private final ObjectMapper objectMapper;
     private final OfficialContentRepository officialContentRepository;
 
@@ -67,14 +69,16 @@ public class MerchantService {
                            MerchantProfileRepository merchantProfileRepository,
                            MerchantApplicationRepository applicationRepository,
                            ActivityRepository activityRepository,
-                           ActivityReserveRepository activityReserveRepository,
+                           com.yayfolk.backend.repository.ActivityReserveRepository activityReserveRepository,
                            ActivityReserveParticipantRepository activityReserveParticipantRepository,
                            ReserveStatusLogRepository reserveStatusLogRepository,
                            ProductRepository productRepository,
                            OrderRepository orderRepository,
                            MerchantReviewRepository merchantReviewRepository,
+                           DiscoverPostRepository discoverPostRepository,
                            OfficialContentRepository officialContentRepository,
                            ObjectMapper objectMapper) {
+        this.discoverPostRepository = discoverPostRepository;
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.applicationRepository = applicationRepository;
@@ -796,18 +800,98 @@ public class MerchantService {
 
     public List<Map<String, Object>> getMerchantReviews(String username) {
         User user = getUser(username);
-        List<MerchantReview> reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
-        List<ActivityReserve> bookings = activityReserveRepository.findByMerchantIdOrderByUpdateTimeDesc(user.getId());
         List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
-
-        Map<Long, ActivityReserve> bookingMap = new HashMap<Long, ActivityReserve>();
-        for (ActivityReserve booking : bookings) {
-            bookingMap.put(booking.getId(), booking);
+        
+        // 获取商家所有活动的ID
+        List<Long> activityIds = new ArrayList<Long>();
+        Map<Long, Activity> activityMap = new HashMap<Long, Activity>();
+        for (Activity activity : activities) {
+            activityIds.add(activity.getId());
+            activityMap.put(activity.getId(), activity);
         }
 
-        Map<Long, Activity> activityMap = buildActivityMap(activities);
+        // 从 DiscoverPost 表获取真实的用户评价帖子（score > 0 表示是评价）
+        List<DiscoverPost> reviewPosts = new ArrayList<DiscoverPost>();
+        if (!activityIds.isEmpty()) {
+            reviewPosts = discoverPostRepository.findByActivityIdInAndStatusAndAuditStatusOrderByCreateTimeDesc(activityIds, 1, "passed");
+        }
 
-        return buildMerchantReviews(reviews, bookingMap, activityMap);
+        return buildMerchantReviewPosts(reviewPosts, activityMap);
+    }
+
+    private List<Map<String, Object>> buildMerchantReviewPosts(List<DiscoverPost> posts, Map<Long, Activity> activityMap) {
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        for (DiscoverPost post : posts) {
+            Map<String, Object> item = new LinkedHashMap<String, Object>();
+            item.put("id", post.getId());
+            item.put("postId", post.getId());
+            item.put("reviewPostId", post.getId());
+            item.put("score", post.getScore());
+            item.put("content", post.getContent());
+            item.put("title", post.getTitle());
+            item.put("reviewType", post.getType());
+            item.put("createTime", post.getCreateTime());
+            item.put("activityId", post.getActivityId());
+            item.put("images", parseImageList(post.getImages()));
+            item.put("viewCount", post.getViewCount());
+            item.put("commentCount", post.getCommentCount());
+            item.put("collectCount", post.getCollectCount());
+            
+            // 获取活动信息
+            Activity activity = activityMap.get(post.getActivityId());
+            if (activity != null) {
+                item.put("targetName", activity.getTitle());
+                item.put("activityTitle", activity.getTitle());
+                item.put("activityCoverImage", activity.getCoverImage());
+                item.put("activityImages", parseImageList(activity.getImages()));
+                item.put("activityTime", formatActivityTime(activity));
+                item.put("activityLocation", buildActivityLocation(activity));
+            }
+            
+            // 获取用户信息
+            userRepository.findById(post.getUserId()).ifPresent(user -> {
+                item.put("userId", user.getId());
+                item.put("authorName", displayName(user));
+                item.put("authorAvatar", resolveUserAvatar(user));
+                item.put("nickname", user.getNickname());
+                item.put("avatar", user.getAvatar());
+            });
+            
+            result.add(item);
+        }
+        return result;
+    }
+    
+    private String formatActivityTime(Activity activity) {
+        if (activity.getStartTime() == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String startTime = sdf.format(activity.getStartTime());
+        if (activity.getEndTime() != null) {
+            return startTime + " - " + sdf.format(activity.getEndTime());
+        }
+        return startTime;
+    }
+    
+    private String buildActivityLocation(Activity activity) {
+        StringBuilder location = new StringBuilder();
+        if (StringUtils.hasText(activity.getLocationProvince())) {
+            location.append(activity.getLocationProvince());
+        }
+        if (StringUtils.hasText(activity.getLocationCity())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationCity());
+        }
+        if (StringUtils.hasText(activity.getLocationDistrict())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationDistrict());
+        }
+        if (StringUtils.hasText(activity.getLocationDetail())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationDetail());
+        }
+        return location.toString();
     }
 
     private void fillProduct(Product product, Map<String, Object> data) {
@@ -2110,7 +2194,7 @@ public class MerchantService {
     }
     private String resolveUserAvatar(User user) {
         if (user == null || !StringUtils.hasText(user.getAvatar())) {
-            return "/default-avatar.svg";
+            return "https://yayfolk.bhyy.online/avatars/default.png";
         }
         return user.getAvatar();
     }

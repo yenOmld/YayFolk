@@ -125,7 +125,7 @@ import { getConversations, getMessages, markAsRead, sendMessage, closeHumanServi
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 
-const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user'
+const defaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 const keyword = ref('')
 const loadingList = ref(false)
 const sending = ref(false)

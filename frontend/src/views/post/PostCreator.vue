@@ -142,7 +142,8 @@ import {
   createDiscoverPost,
   uploadPostImage,
   updateDiscoverPost,
-  classifyDiscoverImage
+  classifyDiscoverImage,
+  proxyAiImage
 } from '../../api/app'
 
 const { appContext } = getCurrentInstance()
@@ -458,6 +459,33 @@ const addCustomTags = () => {
   customTagsInput.value = ''
 }
 
+// 将远程图片URL转换为File对象
+const urlToFile = async (url, filename) => {
+  try {
+    // 对于豆包API的图片，使用后端代理接口避免跨域
+    if (url.includes('volces.com') || url.includes('doubao')) {
+      const response = await proxyAiImage(url)
+      if (response) {
+        // 后端返回的是二进制图片数据(ArrayBuffer)
+        const blob = new Blob([response], { type: 'image/png' })
+        return new File([blob], filename, { type: 'image/png' })
+      }
+      throw new Error('代理下载图片失败')
+    }
+    
+    // 其他图片直接下载
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error('图片下载失败')
+    }
+    const blob = await response.blob()
+    return new File([blob], filename, { type: blob.type || 'image/png' })
+  } catch (error) {
+    console.error('转换图片URL为File失败:', error)
+    throw error
+  }
+}
+
 const submitPost = async () => {
   if (!postForm.value.title.trim()) {
     notify.warning('请输入标题')
@@ -491,7 +519,19 @@ const submitPost = async () => {
     const ossUrls = []
     let index = 1
     for (const previewUrl of postForm.value.images) {
-      const file = pendingFilesMap.value.get(previewUrl)
+      let file = pendingFilesMap.value.get(previewUrl)
+      
+      // 如果不是本地文件，可能是远程URL（如AI生成的图片），需要下载转换
+      if (!file && previewUrl.startsWith('http')) {
+        try {
+          file = await urlToFile(previewUrl, `image_${index}.png`)
+        } catch (error) {
+          console.error('下载远程图片失败:', previewUrl, error)
+          notify.warning('部分图片下载失败，请重试')
+          continue
+        }
+      }
+      
       if (file) {
         const formData = new FormData()
         formData.append('file', file)

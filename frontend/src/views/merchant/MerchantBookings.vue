@@ -69,7 +69,7 @@
 
           <div class="booking-card__body">
             <div class="booking-user">
-              <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="用户头像" class="avatar">
+              <img :src="booking.customerAvatar || 'https://yayfolk.bhyy.online/avatars/default.png'" alt="用户头像" class="avatar">
               <div>
                 <strong>{{ booking.customerName || booking.participantName || `用户 ${booking.userId}` }}</strong>
                 <span>{{ booking.participantPhone || '-' }}</span>

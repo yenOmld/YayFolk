@@ -247,7 +247,16 @@ const openDetail = (booking, extraQuery = {}) => {
   })
 }
 
-const openReview = (booking) => openDetail(booking, { focus: 'review' })
+const openReview = (booking) => {
+  router.push({
+    name: 'create-review-post',
+    query: {
+      activityId: booking.activityId,
+      bookingId: booking.id,
+      backTo: route.fullPath
+    }
+  })
+}
 
 const openPayment = (booking) => {
   router.push({

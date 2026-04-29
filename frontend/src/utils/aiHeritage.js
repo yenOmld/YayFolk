@@ -1,3 +1,4 @@
+// AI辅助生成：豆包API（Doubao-Seedream-5.0-lite），2025-04-24
 export const AI_HERITAGE_DRAFT_KEY = 'yayfolk-ai-heritage-draft'
 export const AI_HERITAGE_RETURN_KEY = 'yayfolk-ai-heritage-return-to'
 export const AI_HERITAGE_SOURCE_FOLDER = 'ai-heritage/source'

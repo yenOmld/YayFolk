@@ -259,7 +259,7 @@
 
 <script>
 import { useRoute } from 'vue-router'
-import { exploreResources, getExploreConversations, getExploreMessages, deleteExploreConversation, getDiscoverPostDetail, getKnowledgeConversations, createKnowledgeConversation, getKnowledgeMessages, sendKnowledgeMessage, deleteKnowledgeConversation, createCustomerServiceConversation, getMessages, sendMessage, getServiceMode, closeHumanService } from '../api/app'
+import { exploreResources, getExploreConversations, getExploreMessages, deleteExploreConversation, getDiscoverPostDetail, getPublicHeritageDetail, getKnowledgeConversations, createKnowledgeConversation, getKnowledgeMessages, sendKnowledgeMessage, deleteKnowledgeConversation, createCustomerServiceConversation, getMessages, sendMessage, getServiceMode, closeHumanService } from '../api/app'
 import ConfirmModal from './ConfirmModal.vue'
 import PostDetailModal from './PostDetailModal.vue'
 import ActivityDetailModal from './ActivityDetailModal.vue'
@@ -707,6 +707,12 @@ export default {
             this.messages[tempIndex].isSending = false;
           }
 
+          // 流结束时才将 isThinking 设为 false
+          const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
+          if (thinkingIndex !== -1) {
+            this.messages[thinkingIndex].isThinking = false;
+          }
+
           const convIndex = this.knowledgeConversations.findIndex(c => c.id === conversationId);
           if (convIndex !== -1) {
             this.knowledgeConversations[convIndex].lastMessage = messageContent;
@@ -721,15 +727,10 @@ export default {
         if (data && data.trim() !== '') {
           aiMessageContent += data;
 
+          // 始终使用 isThinking 属性查找 AI 消息，直到流结束才设为 false
           const thinkingIndex = this.messages.findIndex(msg => msg.isThinking);
           if (thinkingIndex !== -1) {
             this.messages[thinkingIndex].content = aiMessageContent;
-            this.messages[thinkingIndex].isThinking = false;
-          } else {
-            const existingAIMessageIndex = this.messages.findIndex(msg => msg.id === aiMessageId && msg.type === 'bot');
-            if (existingAIMessageIndex !== -1) {
-              this.messages[existingAIMessageIndex].content = aiMessageContent;
-            }
           }
           this.scrollToBottom();
         }
@@ -988,6 +989,7 @@ export default {
         }
       }, 100);
     },
+    // AI辅助生成：豆包，2026-04-22
     dragStart(e) {
       e.preventDefault();
       
@@ -1077,8 +1079,16 @@ export default {
             });
           break;
         case 'heritage':
-          this.selectedHeritage = { id };
-          this.showHeritageModal = true;
+          getPublicHeritageDetail(id)
+            .then(response => {
+              if (response.code === 200 && response.data) {
+                this.selectedHeritage = response.data;
+                this.showHeritageModal = true;
+              }
+            })
+            .catch(err => {
+              console.error('获取非遗详情失败:', err);
+            });
           break;
         default:
           console.warn('未知资源类型:', type);
@@ -1110,7 +1120,7 @@ export default {
         author: {
           id: data.userId,
           name: data.authorName || data.username || '匿名用户',
-          avatar: data.authorAvatar || '/src/assets/default-avatar.png',
+          avatar: data.authorAvatar || 'https://yayfolk.bhyy.online/avatars/default.png',
           location: data.authorLocation || '未知'
         },
         hashtags: hashtags,

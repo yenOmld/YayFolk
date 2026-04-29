@@ -69,8 +69,8 @@ const getBadgeIndex = () => {
   return num ? num[0] : '1'
 }
 
-const arCoverUrl = computed(() => `/uploads/demo/AR/ar-cover-${getBadgeIndex()}.png`)
-const arQrUrl = computed(() => `/uploads/demo/AR/ar-qr-${getBadgeIndex()}.png`)
+const arCoverUrl = computed(() => `https://yayfolk.bhyy.online/static/demo/AR/ar-cover-${getBadgeIndex()}.png`)
+const arQrUrl = computed(() => `https://yayfolk.bhyy.online/static/demo/AR/ar-qr-${getBadgeIndex()}.png`)
 
 watch(() => props.visible, (newVal) => {
   if (newVal && scrollContentRef.value) {
@@ -237,7 +237,7 @@ const handleOverlayClick = (e) => {
   top: 0;
   width: 100%;
   height: 200%;
-  background: url("/uploads/demo/texture.webp") 50% 0/auto 50%;
+  background: url("https://yayfolk.bhyy.online/static/demo/texture.webp") 50% 0/auto 50%;
   mix-blend-mode: multiply;
   opacity: 0.3;
   animation: scrollBg 8s linear infinite;

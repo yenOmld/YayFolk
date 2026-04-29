@@ -109,7 +109,7 @@ import { useRouter } from 'vue-router'
 import { getHomepageSettings, getUserProfile, updateHomepageSettings, updateUserProfile } from '../api/app'
 import request from '../utils/request'
 
-const defaultAvatar = '/default-avatar.svg'
+const defaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify

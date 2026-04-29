@@ -564,8 +564,20 @@ const statusLabel = (status) => ({
   full: '已满员'
 }[status] || '待开始')
 
-onMounted(() => {
-  loadActivities()
+onMounted(async () => {
+  await loadActivities()
+  
+  // 检查是否需要自动打开活动详情
+  const routeQuery = router.currentRoute.value.query
+  if (routeQuery.openActivity) {
+    const activityId = String(routeQuery.openActivity)
+    const activity = allActivities.value.find(item => String(item.id) === activityId)
+    if (activity) {
+      openDetail(activity)
+      // 清除查询参数
+      router.replace({ query: {} })
+    }
+  }
 })
 </script>
 

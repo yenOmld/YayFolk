@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.concurrent.TimeUnit;
 
+// AI辅助生成：豆包API（Doubao-Seedream-5.0-lite），2025-04-24
 @Service
 public class DoubaoHeritagePosterService {
 

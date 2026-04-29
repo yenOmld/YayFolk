@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+// AI辅助生成：DeepSeek API（deepseek-v4-flash），2025-04-26
 @Service
 public class AICustomerService {
 
@@ -134,7 +135,7 @@ public class AICustomerService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         headers.set("Authorization", "Bearer " + apiKey);
-        headers.set("Accept", "text/event-stream"); // 明确要求 SSE
+        headers.set("Accept", "text/event-stream");
 
         return webClient.post()
                 .uri(apiUrl)
@@ -142,21 +143,28 @@ public class AICustomerService {
                 .bodyValue(requestBody)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().is2xxSuccessful()) {
-                        // 获取原始响应体，直接解析JSON数据块（DeepSeek API返回的是纯JSON，不是SSE格式）
+                        // DeepSeek API 返回标准 SSE 格式，每个数据块以 "data:" 开头
                         return response.bodyToFlux(String.class)
                                 .filter(chunk -> chunk != null && !chunk.trim().isEmpty())
                                 .flatMap(chunk -> {
                                     System.out.println("收到原始数据块: " + chunk);
                                     
+                                    String trimmedChunk = chunk.trim();
+                                    
+                                    // SSE 格式以 "data:" 开头，需要去除
+                                    if (trimmedChunk.startsWith("data:")) {
+                                        trimmedChunk = trimmedChunk.substring(5).trim();
+                                    }
+                                    
                                     // 检查是否为结束标记
-                                    if (chunk.trim().equals("[DONE]")) {
+                                    if (trimmedChunk.equals("[DONE]")) {
                                         System.out.println("收到结束标记");
                                         return Flux.empty();
                                     }
                                     
                                     try {
-                                        // 直接解析JSON数据块
-                                        Map<String, Object> data = objectMapper.readValue(chunk, Map.class);
+                                        // 解析去除 data: 前缀后的 JSON 数据块
+                                        Map<String, Object> data = objectMapper.readValue(trimmedChunk, Map.class);
                                         System.out.println("解析 JSON 数据: " + data);
                                         String content = extractContentFromChunk(data);
                                         if (content != null && !content.isEmpty()) {
@@ -170,10 +178,8 @@ public class AICustomerService {
                                     }
                                     
                                     return Flux.empty();
-                                })
-                                .delayElements(java.time.Duration.ofMillis(50)); // 添加微小延迟，确保数据能实时发送
+                                });
                     } else {
-                        // 非 2xx 响应，返回错误信息
                         System.err.println("DeepSeek API 响应状态: " + response.statusCode());
                         return Flux.just("抱歉，AI客服暂时无法回复，请稍后再试。");
                     }

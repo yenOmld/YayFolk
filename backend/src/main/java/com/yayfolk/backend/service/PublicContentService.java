@@ -144,6 +144,12 @@ public class PublicContentService {
         return result;
     }
 
+    public Map<String, Object> getPublicHeritageDetail(Long id) {
+        IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Heritage does not exist"));
+        return heritageToMap(heritage);
+    }
+
     public Map<String, Object> getPublicProductDetail(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product does not exist"));

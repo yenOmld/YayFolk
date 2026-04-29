@@ -1,22 +1,24 @@
 <template>
-  <div v-if="visible" class="confirm-modal-overlay" @click.self="handleCancel">
-    <div class="confirm-modal">
-      <div class="confirm-header">
-        <h3 class="confirm-title">{{ title }}</h3>
-      </div>
-      <div class="confirm-body">
-        <p class="confirm-message">{{ message }}</p>
-      </div>
-      <div class="confirm-footer">
-        <button class="btn-cancel" @click="handleCancel">
-          {{ cancelText }}
-        </button>
-        <button class="btn-confirm" @click="handleConfirm">
-          {{ confirmText }}
-        </button>
+  <Teleport to="body">
+    <div v-if="visible" class="confirm-modal-overlay" @click.self="handleCancel">
+      <div class="confirm-modal">
+        <div class="confirm-header">
+          <h3 class="confirm-title">{{ title }}</h3>
+        </div>
+        <div class="confirm-body">
+          <p class="confirm-message">{{ message }}</p>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-cancel" @click="handleCancel">
+            {{ cancelText }}
+          </button>
+          <button class="btn-confirm" @click="handleConfirm">
+            {{ confirmText }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -70,7 +72,7 @@ export default {
   bottom: 0;
   background-color: rgba(44, 22, 11, 0.45);
   backdrop-filter: blur(6px);
-  z-index: 10001;
+  z-index: 10003;
   display: flex;
   align-items: center;
   justify-content: center;

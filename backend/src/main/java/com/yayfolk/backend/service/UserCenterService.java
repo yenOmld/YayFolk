@@ -460,7 +460,7 @@ public class UserCenterService {
     }
 
     private String avatarOf(User user) {
-        if (user == null || !StringUtils.hasText(user.getAvatar())) return "/default-avatar.svg";
+        if (user == null || !StringUtils.hasText(user.getAvatar())) return "https://yayfolk.bhyy.online/avatars/default.png";
         return user.getAvatar();
     }
 

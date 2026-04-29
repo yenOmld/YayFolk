@@ -270,19 +270,19 @@
     </div>
   </Teleport>
 
-  <PostDetailModal
-    :visible="showReviewPostModal"
-    :post="reviewPostDetail"
-    :z-index="zIndex + 100"
-    @close="closeReviewPostModal"
-    @open-activity="handleReviewActivityClick"
-  />
-
   <VRViewerModal
     :visible="showVRModal"
     :activity-id="detail?.id"
     :z-index="zIndex + 100"
     @close="showVRModal = false"
+  />
+
+  <PostDetailModal
+    :visible="showReviewPostModal"
+    :post="reviewPostDetail"
+    :z-index="zIndex + 200"
+    @close="closeReviewPostModal"
+    @open-activity="handleReviewActivityClick"
   />
 </template>
 

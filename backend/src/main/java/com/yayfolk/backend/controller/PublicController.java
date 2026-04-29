@@ -63,6 +63,15 @@ public class PublicController {
         }
     }
 
+    @GetMapping("/heritages/{id}")
+    public ResponseDto getHeritageDetail(@PathVariable Long id) {
+        try {
+            return ResponseDto.success(publicContentService.getPublicHeritageDetail(id));
+        } catch (Exception e) {
+            return ResponseDto.error(400, e.getMessage());
+        }
+    }
+
     @GetMapping("/official")
     public ResponseDto getOfficialContents(@RequestParam(required = false) String category) {
         try {

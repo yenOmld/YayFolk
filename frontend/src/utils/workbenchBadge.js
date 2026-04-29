@@ -177,7 +177,7 @@ const buildActivityFingerprintMap = (activities) => {
 
 const sumServiceUnreadCount = (conversations) => {
   return (Array.isArray(conversations) ? conversations : [])
-    .filter(item => item?.type === 'service')
+    .filter(item => item?.type === 'service' && item?.serviceMode === 'human')
     .reduce((total, item) => total + Number(item?.unreadCount || 0), 0)
 }
 

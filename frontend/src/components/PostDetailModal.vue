@@ -1,6 +1,7 @@
 <template>
-  <div>
-    <div class="post-modal" v-if="visible">
+  <Teleport to="body">
+    <div>
+      <div class="post-modal" v-if="visible" :style="{ zIndex: zIndex }">
       <div class="modal-overlay" @click="$emit('close')"></div>
       <div class="modal-content">
         <div class="modal-left">
@@ -230,47 +231,50 @@
       </div>
     </div>
 
-    <div v-if="showShareModal" class="share-modal">
-      <div class="share-overlay" @click="closeShareModal"></div>
-      <div class="share-content">
-        <div class="share-header">
-          <h3>分享到</h3>
-          <button class="share-close" @click="closeShareModal">
-            <i class='bx bx-x'></i>
-          </button>
-        </div>
-        <div class="share-options">
-          <div class="share-option" @click="shareToWechat">
-            <div class="share-icon wechat">
-              <i class='bx bxl-wechat'></i>
-            </div>
-            <span>微信</span>
+    <Teleport to="body">
+      <div v-if="showShareModal" class="share-modal">
+        <div class="share-overlay" @click="closeShareModal"></div>
+        <div class="share-content">
+          <div class="share-header">
+            <h3>分享到</h3>
+            <button class="share-close" @click="closeShareModal">
+              <i class='bx bx-x'></i>
+            </button>
           </div>
-          <div class="share-option" @click="shareToQQ">
-            <div class="share-icon qq">
-              <i class='bx bxl-qq'></i>
+          <div class="share-options">
+            <div class="share-option" @click="shareToWechat">
+              <div class="share-icon wechat">
+                <i class='bx bxl-wechat'></i>
+              </div>
+              <span>微信</span>
             </div>
-            <span>QQ</span>
-          </div>
-          <div class="share-option" @click="shareToWeibo">
-            <div class="share-icon weibo">
-              <i class='bx bxl-weibo'></i>
+            <div class="share-option" @click="shareToQQ">
+              <div class="share-icon qq">
+                <i class='bx bxl-qq'></i>
+              </div>
+              <span>QQ</span>
             </div>
-            <span>微博</span>
-          </div>
-          <div class="share-option" @click="copyLink">
-            <div class="share-icon link">
-              <i class='bx bx-link'></i>
+            <div class="share-option" @click="shareToWeibo">
+              <div class="share-icon weibo">
+                <i class='bx bxl-weibo'></i>
+              </div>
+              <span>微博</span>
             </div>
-            <span>复制链接</span>
+            <div class="share-option" @click="copyLink">
+              <div class="share-icon link">
+                <i class='bx bx-link'></i>
+              </div>
+              <span>复制链接</span>
+            </div>
           </div>
-        </div>
-        <div class="share-link-preview">
-          <p>{{ shareUrl }}</p>
+          <div class="share-link-preview">
+            <p>{{ shareUrl }}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -302,6 +306,10 @@ const props = defineProps({
   post: {
     type: Object,
     default: null
+  },
+  zIndex: {
+    type: Number,
+    default: 10002
   }
 })
 
@@ -744,7 +752,10 @@ const goToUserHomepage = (userId) => {
 const goToActivityDetail = (activityId) => {
   if (!activityId) return
   emit('close')
-  router.push(`/activity/${activityId}`)
+  router.push({
+    path: '/home/activity',
+    query: { openActivity: activityId }
+  })
 }
 
 const formatActivityTime = (startTime, endTime) => {
@@ -835,7 +846,6 @@ const copyLink = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 10002;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1379,7 +1389,7 @@ const copyLink = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 2000;
+  z-index: 10003;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1527,7 +1537,7 @@ const copyLink = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1100;
+  z-index: 20000;
   display: flex;
   align-items: center;
   justify-content: center;

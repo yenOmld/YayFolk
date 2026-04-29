@@ -115,129 +115,19 @@
       </button>
     </div>
 
-    <div v-if="showReviewDetail" class="detail-mask" @click.self="closeReviewDetail">
-      <div class="detail-modal">
-        <div class="detail-head">
-          <div>
-            <p class="eyebrow">评价详情</p>
-            <h3>{{ reviewDetailTitle }}</h3>
-          </div>
-          <button class="close-btn" type="button" @click="closeReviewDetail">
-            <i class="bx bx-x"></i>
-          </button>
-        </div>
-
-        <div class="detail-grid">
-          <div class="detail-media">
-            <template v-if="detailMediaItems.length > 0">
-              <img
-                v-if="detailActiveMedia?.type !== 'video'"
-                class="detail-media-main"
-                :src="detailActiveMedia?.url || detailMediaItems[0]"
-                :alt="reviewDetailTitle"
-              >
-              <video
-                v-else
-                class="detail-media-main"
-                controls
-                playsinline
-                preload="metadata"
-                :poster="detailActiveMedia?.poster || detailMediaItems[0]"
-              >
-                <source :src="detailActiveMedia?.url">
-              </video>
-
-              <button
-                v-if="detailMediaItems.length > 1"
-                class="detail-nav prev"
-                type="button"
-                @click="prevDetailMedia"
-              >
-                <i class="bx bx-chevron-left"></i>
-              </button>
-              <button
-                v-if="detailMediaItems.length > 1"
-                class="detail-nav next"
-                type="button"
-                @click="nextDetailMedia"
-              >
-                <i class="bx bx-chevron-right"></i>
-              </button>
-
-              <div v-if="detailMediaItems.length > 1" class="detail-dots">
-                <button
-                  v-for="(media, index) in detailMediaItems"
-                  :key="media.id"
-                  type="button"
-                  class="detail-dot"
-                  :class="{ active: detailMediaIndex === index }"
-                  @click="detailMediaIndex = index"
-                ></button>
-              </div>
-            </template>
-
-            <div v-else class="detail-empty">
-              <i class="bx bx-image-alt"></i>
-              <span>无评价媒体</span>
-            </div>
-          </div>
-
-          <div class="detail-body">
-            <div class="detail-author">
-              <img
-                class="avatar"
-                :src="reviewDetailAuthorAvatar"
-                :alt="reviewDetailAuthorName"
-              >
-              <div>
-                <strong>{{ reviewDetailAuthorName }}</strong>
-                <p>{{ formatTime(reviewDetail?.createTime || reviewDetail?.time) }}</p>
-              </div>
-            </div>
-
-            <div class="detail-score">
-              <span class="score large">{{ Number(reviewDetail?.score || 0).toFixed(1) }}</span>
-              <div class="stars">
-                <i
-                  v-for="star in 5"
-                  :key="star"
-                  class="bx"
-                  :class="star <= Math.round(Number(reviewDetail?.score || 0)) ? 'bxs-star' : 'bx-star'"
-                ></i>
-              </div>
-            </div>
-
-            <p class="detail-text">
-              {{ reviewDetail?.content || '暂无评价内容。' }}
-            </p>
-
-            <div
-              v-if="detailActivityId || detailActivityTitle"
-              class="activity-card"
-              role="button"
-              tabindex="0"
-              @click="openActivityFromReview"
-              @keydown.enter.prevent="openActivityFromReview"
-            >
-              <div class="activity-card-head">
-                <i class="bx bx-calendar-event"></i>
-                <span>关联活动</span>
-              </div>
-              <h4>{{ detailActivityTitle || '未命名活动' }}</h4>
-              <p v-if="detailActivityTime">{{ detailActivityTime }}</p>
-              <p v-if="detailActivityLocation">{{ detailActivityLocation }}</p>
-              <span class="activity-link-hint">查看活动详情</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PostDetailModal
+      :visible="showReviewDetail"
+      :post="reviewPostForModal"
+      :z-index="1500"
+      @close="closeReviewDetail"
+    />
   </section>
 </template>
 
 <script setup>
 import { computed, getCurrentInstance, ref, watch } from 'vue'
 import { getDiscoverPostDetail } from '@/api/app'
+import PostDetailModal from '@/components/PostDetailModal.vue'
 
 const props = defineProps({
   reviews: {
@@ -283,7 +173,7 @@ const reviewDetail = ref(null)
 const reviewDetailFallback = ref(null)
 const detailMediaIndex = ref(0)
 
-const defaultAvatar = '/default-avatar.svg'
+const defaultAvatar = 'https://yayfolk.bhyy.online/avatars/default.png'
 const defaultMedia = 'https://api.dicebear.com/7.x/shapes/svg?seed=merchant-review'
 
 const activityOptions = computed(() => {
@@ -383,6 +273,36 @@ const detailActivityId = computed(() => Number(reviewDetail.value?.activityId ||
 const detailActivityTitle = computed(() => reviewDetail.value?.activityInfo?.title || reviewDetailFallback.value?.targetName || reviewDetailFallback.value?.activityTitle || '')
 const detailActivityTime = computed(() => reviewDetail.value?.activityInfo?.time || reviewDetailFallback.value?.activityTime || '')
 const detailActivityLocation = computed(() => reviewDetail.value?.activityInfo?.location || reviewDetailFallback.value?.activityLocation || '')
+
+const reviewPostForModal = computed(() => {
+  const data = reviewDetail.value || reviewDetailFallback.value
+  if (!data) return null
+  
+  const images = normalizeMediaList(data?.images)
+  const authorId = data?.userId || data?.author?.id || 0
+  const authorAvatar = data?.authorAvatar || data?.author?.avatar || defaultAvatar
+  const authorName = data?.authorName || data?.author?.name || data?.nickname || data?.author?.nickname || '匿名用户'
+  
+  return {
+    id: data?.id || data?.postId || data?.reviewPostId || 0,
+    images: images.length > 0 ? images : normalizeMediaList(data?.activityImages),
+    author: {
+      id: authorId,
+      avatar: authorAvatar,
+      name: authorName,
+      nickname: data?.nickname || data?.author?.nickname || authorName
+    },
+    title: data?.title || '',
+    content: data?.content || '',
+    score: data?.score || 0,
+    createTime: data?.createTime || data?.time || '',
+    activityId: data?.activityId || 0,
+    viewCount: data?.viewCount || 0,
+    commentCount: data?.commentCount || 0,
+    collectCount: data?.collectCount || 0,
+    type: data?.reviewType || data?.type || 'review'
+  }
+})
 
 const detailMediaItems = computed(() => {
   const detailImages = normalizeMediaList(reviewDetail.value?.images)
@@ -533,12 +453,13 @@ function previewMediaCount(review) {
 }
 
 function openReview(review) {
-  const postId = Number(review?.postId || review?.reviewPostId || 0)
+  const postId = Number(review?.postId || review?.reviewPostId || review?.id || 0)
   if (!postId) {
     notify.warning('评价帖子尚未可用。')
     return
   }
-  loadReviewDetail(review, postId)
+  reviewDetailFallback.value = review
+  showReviewDetail.value = true
 }
 
 async function loadReviewDetail(review, postId) {
@@ -553,7 +474,6 @@ async function loadReviewDetail(review, postId) {
     detailMediaIndex.value = 0
   } catch (error) {
     reviewDetail.value = null
-    reviewDetailFallback.value = null
     notify.error(error.message || '加载评价帖子失败')
   }
 }
@@ -562,7 +482,6 @@ function closeReviewDetail() {
   showReviewDetail.value = false
   reviewDetail.value = null
   reviewDetailFallback.value = null
-  detailMediaIndex.value = 0
 }
 
 function prevDetailMedia() {

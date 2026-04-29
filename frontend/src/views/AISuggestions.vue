@@ -283,7 +283,7 @@ const fetchMerchantData = async () => {
     throw err
   }
 }
-
+// AI辅助生成：DeepSeek API（deepseek-v4-flash），2025-04-26
 const generateSuggestions = async () => {
   loading.value = true
   error.value = ''

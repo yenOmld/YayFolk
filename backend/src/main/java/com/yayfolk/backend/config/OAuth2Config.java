@@ -34,7 +34,16 @@ public class OAuth2Config {
             .cors(cors -> cors
                 .configurationSource(request -> {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(java.util.Arrays.asList("http://localhost:5173", "http://localhost:5174", "http://u3d6a23b.natappfree.cc", "https://8.162.0.246", "http://8.162.0.246"));
+                    config.setAllowedOrigins(java.util.Arrays.asList(
+                        "http://localhost:5173", 
+                        "http://localhost:5174", 
+                        "https://8.162.0.246", 
+                        "http://8.162.0.246",
+                        "http://yayfolk.bhyy.online",
+                        "https://yayfolk.bhyy.online",
+                        "http://10.21.195.196:5173",
+                        "http://mf946e63.natappfree.cc"
+                    ));
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(java.util.Arrays.asList("*"));
                     config.setAllowCredentials(true);

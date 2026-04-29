@@ -9,16 +9,21 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Notification from './components/Notification.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
 import FloatingDoll from './components/FloatingDoll.vue'
 
 const router = useRouter()
+const route = useRoute()
 const notificationRef = ref(null)
 const confirmModalRef = ref(null)
 
 const showFloatingDoll = computed(() => {
+  // 管理员页面不显示AI小人
+  if (route.path.startsWith('/admin')) {
+    return false
+  }
   const raw = localStorage.getItem('user') || localStorage.getItem('userInfo')
   if (!raw) return true
   try {

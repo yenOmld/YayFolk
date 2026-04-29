@@ -65,7 +65,7 @@
         <article class="info-card">
           <h2>用户信息</h2>
           <div class="customer-card">
-            <img :src="booking.customerAvatar || '/default-avatar.svg'" alt="用户头像" class="avatar">
+            <img :src="booking.customerAvatar || 'https://yayfolk.bhyy.online/avatars/default.png'" alt="用户头像" class="avatar">
             <div class="customer-copy">
               <strong>{{ booking.customerName || booking.participantName || `用户 ${booking.userId}` }}</strong>
               <span>用户名：{{ booking.customerUsername || '-' }}</span>
