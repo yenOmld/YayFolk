@@ -6,7 +6,6 @@
       <div class="hero-copy">
         <p class="eyebrow">商家后台</p>
         <h1>活动评价</h1>
-        <p>本页面复用了共享评价面板，因此评分卡、活动筛选、关键词搜索、排序和预览功能都以相同方式运行。</p>
       </div>
       <div class="hero-actions">
         <button class="refresh-btn" :disabled="pageLoading" @click="loadData">

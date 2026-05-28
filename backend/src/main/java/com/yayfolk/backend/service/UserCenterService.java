@@ -2,6 +2,7 @@ package com.yayfolk.backend.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.ActivityReserve;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.DiscoverPostCollection;
@@ -11,10 +12,12 @@ import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.UserFollow;
 import com.yayfolk.backend.entity.UserProfileVisit;
+import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.ActivityReserveRepository;
 import com.yayfolk.backend.repository.DiscoverPostCollectionRepository;
 import com.yayfolk.backend.repository.DiscoverPostHistoryRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
+import com.yayfolk.backend.repository.MerchantReviewRepository;
 import com.yayfolk.backend.repository.OrderRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserProfileVisitRepository;
@@ -40,6 +43,7 @@ public class UserCenterService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ActivityReserveRepository activityReserveRepository;
+    private final ActivityRepository activityRepository;
     private final DiscoverPostRepository discoverPostRepository;
     private final DiscoverPostCollectionRepository discoverPostCollectionRepository;
     private final DiscoverPostHistoryRepository historyRepository;
@@ -51,6 +55,7 @@ public class UserCenterService {
     public UserCenterService(UserRepository userRepository,
                              OrderRepository orderRepository,
                              ActivityReserveRepository activityReserveRepository,
+                             ActivityRepository activityRepository,
                              DiscoverPostRepository discoverPostRepository,
                              DiscoverPostCollectionRepository discoverPostCollectionRepository,
                              DiscoverPostHistoryRepository historyRepository,
@@ -61,6 +66,7 @@ public class UserCenterService {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.activityReserveRepository = activityReserveRepository;
+        this.activityRepository = activityRepository;
         this.discoverPostRepository = discoverPostRepository;
         this.discoverPostCollectionRepository = discoverPostCollectionRepository;
         this.historyRepository = historyRepository;
@@ -161,16 +167,34 @@ public class UserCenterService {
         long totalComments = posts.stream().map(DiscoverPost::getCommentCount).filter(Objects::nonNull).mapToLong(Integer::longValue).sum();
 
         // 获取评价数据
-        List<MerchantReview> reviews = Collections.emptyList();
+        List<DiscoverPost> reviewPosts = Collections.emptyList();
         double averageScore = 0;
         long reviewCount = 0;
         
         if (isMerchant(profileUser)) {
-            reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(profileUser.getId());
-            reviewCount = reviews.size();
+            // 从DiscoverPost表获取真实的用户评价帖子（score > 0 表示是评价）
+            List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(profileUser.getId());
+            List<Long> activityIds = new ArrayList<>();
+            Map<Long, Activity> activityMap = new HashMap<>();
+            for (Activity activity : activities) {
+                activityIds.add(activity.getId());
+                activityMap.put(activity.getId(), activity);
+            }
+            
+            if (!activityIds.isEmpty()) {
+                reviewPosts = discoverPostRepository.findByActivityIdInAndStatusAndAuditStatusOrderByCreateTimeDesc(activityIds, 1, "passed");
+            }
+            
+            // 只使用DiscoverPost中的真实评价
+            reviewCount = reviewPosts.stream()
+                    .filter(post -> post.getScore() != null && post.getScore() > 0)
+                    .count();
+            
+            // 计算平均分（只使用DiscoverPost中的评分）
             if (reviewCount > 0) {
-                averageScore = reviews.stream()
-                        .mapToDouble(review -> review.getScore() != null ? review.getScore().doubleValue() : 0)
+                averageScore = reviewPosts.stream()
+                        .filter(post -> post.getScore() != null && post.getScore() > 0)
+                        .mapToDouble(DiscoverPost::getScore)
                         .average()
                         .orElse(0);
             }
@@ -193,24 +217,48 @@ public class UserCenterService {
         reviewSummary.put("averageScore", reviewCount > 0 ? averageScore : null);
         reviewSummary.put("reviewCount", reviewCount);
 
-        // 构建评价列表
+        // 构建评价列表（只使用DiscoverPost中的真实评价帖子）
         List<Map<String, Object>> reviewList = new ArrayList<>();
-        for (MerchantReview review : reviews) {
-            Map<String, Object> reviewMap = new LinkedHashMap<>();
-            reviewMap.put("id", review.getId());
-            reviewMap.put("score", review.getScore());
-            reviewMap.put("content", review.getContent());
-            reviewMap.put("createTime", formatDate(review.getCreateTime()));
-            // 获取用户信息
-            if (review.getUserId() != null) {
-                User reviewer = userRepository.findById(review.getUserId()).orElse(null);
-                if (reviewer != null) {
-                    reviewMap.put("username", reviewer.getUsername());
-                    reviewMap.put("nickname", displayName(reviewer));
-                    reviewMap.put("avatar", reviewer.getAvatar());
+        
+        // 添加DiscoverPost中的真实评价
+        for (DiscoverPost post : reviewPosts) {
+            if (post.getScore() != null && post.getScore() > 0) { // score > 0 表示是评价
+                Map<String, Object> reviewMap = new LinkedHashMap<>();
+                reviewMap.put("id", post.getId());
+                reviewMap.put("postId", post.getId());
+                reviewMap.put("reviewPostId", post.getId());
+                reviewMap.put("score", post.getScore());
+                reviewMap.put("content", post.getContent());
+                reviewMap.put("title", post.getTitle());
+                reviewMap.put("reviewType", post.getType());
+                reviewMap.put("createTime", formatDate(post.getCreateTime()));
+                reviewMap.put("activityId", post.getActivityId());
+                reviewMap.put("images", parseImageList(post.getImages()));
+                reviewMap.put("viewCount", post.getViewCount());
+                reviewMap.put("commentCount", post.getCommentCount());
+                reviewMap.put("collectCount", post.getCollectCount());
+                
+                // 获取活动信息
+                Activity activity = activityRepository.findById(post.getActivityId()).orElse(null);
+                if (activity != null) {
+                    reviewMap.put("targetName", activity.getTitle());
+                    reviewMap.put("activityTitle", activity.getTitle());
+                    reviewMap.put("activityCoverImage", activity.getCoverImage());
+                    reviewMap.put("activityImages", parseImageList(activity.getImages()));
+                    reviewMap.put("activityTime", formatActivityTime(activity));
+                    reviewMap.put("activityLocation", buildActivityLocation(activity));
                 }
+                
+                // 获取用户信息
+                userRepository.findById(post.getUserId()).ifPresent(user -> {
+                    reviewMap.put("userId", user.getId());
+                    reviewMap.put("username", user.getUsername());
+                    reviewMap.put("nickname", displayName(user));
+                    reviewMap.put("avatar", user.getAvatar());
+                });
+                
+                reviewList.add(reviewMap);
             }
-            reviewList.add(reviewMap);
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -575,5 +623,48 @@ public class UserCenterService {
 
     private String formatDateTime(java.util.Date date) {
         return date == null ? "" : new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date);
+    }
+
+    private List<String> parseImageList(String raw) {
+        if (!StringUtils.hasText(raw)) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(raw, new TypeReference<List<String>>() { });
+        } catch (Exception ignored) {
+            return Collections.singletonList(raw);
+        }
+    }
+
+    private String formatActivityTime(Activity activity) {
+        if (activity.getStartTime() == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String startTime = sdf.format(activity.getStartTime());
+        if (activity.getEndTime() != null) {
+            return startTime + " - " + sdf.format(activity.getEndTime());
+        }
+        return startTime;
+    }
+
+    private String buildActivityLocation(Activity activity) {
+        StringBuilder location = new StringBuilder();
+        if (StringUtils.hasText(activity.getLocationProvince())) {
+            location.append(activity.getLocationProvince());
+        }
+        if (StringUtils.hasText(activity.getLocationCity())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationCity());
+        }
+        if (StringUtils.hasText(activity.getLocationDistrict())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationDistrict());
+        }
+        if (StringUtils.hasText(activity.getLocationDetail())) {
+            if (location.length() > 0) location.append(" ");
+            location.append(activity.getLocationDetail());
+        }
+        return location.toString();
     }
 }

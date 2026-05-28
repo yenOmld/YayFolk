@@ -52,17 +52,20 @@
 
 <script setup>
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import {
   getAiHeritageSourceFile,
   getPosterStyleById,
   readAiHeritageDraft,
-  writeAiHeritageDraft
+  writeAiHeritageDraft,
+  getAiHeritageReturnPath,
+  clearAiHeritageReturnPath
 } from '../../../utils/aiHeritage'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const router = useRouter()
+const route = useRoute()
 
 const draft = ref(readAiHeritageDraft())
 const savingLocal = ref(false)
@@ -72,7 +75,17 @@ const generatedImageUrl = computed(() => draft.value.generatedImageUrl || draft.
 const selectedStyle = computed(() => getPosterStyleById(draft.value.posterStyle))
 
 function goBack() {
-  router.push({ name: 'create-ai-heritage-style' })
+  if (typeof route.query.backTo === 'string' && route.query.backTo) {
+    router.push(route.query.backTo)
+    return
+  }
+  const returnPath = getAiHeritageReturnPath()
+  if (returnPath) {
+    clearAiHeritageReturnPath()
+    router.push(returnPath)
+    return
+  }
+  router.back()
 }
 
 function downloadImage(url, filename) {

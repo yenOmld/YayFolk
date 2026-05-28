@@ -28,9 +28,10 @@ public class PublicController {
 
     @GetMapping("/activities")
     public ResponseDto getActivities(@RequestParam(required = false) String keyword,
-                                     @RequestParam(required = false) String city) {
+                                     @RequestParam(required = false) String city,
+                                     @RequestParam(required = false) Long merchantId) {
         try {
-            return ResponseDto.success(publicContentService.getPublicActivities(keyword, city));
+            return ResponseDto.success(publicContentService.getPublicActivities(keyword, city, merchantId));
         } catch (Exception e) {
             return ResponseDto.error(400, e.getMessage());
         }

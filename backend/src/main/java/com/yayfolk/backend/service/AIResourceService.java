@@ -235,18 +235,39 @@ public class AIResourceService {
     }
 
     private Map<String, Object> handleStructuredQuery(String userInput) {
-        Map<String, Object> queryParams = extractQueryParams(userInput);
-        String sql = buildSafeSQL(queryParams);
-        List<Activity> activities = executeSafeSQLQuery(sql);
+        // 使用向量搜索进行活动推荐
+        List<InMemoryVectorStore.SearchResult> activityResults = vectorStore.search(userInput, "activity", 5);
+        
+        List<Activity> matchedActivities = new ArrayList<>();
+        List<Long> matchedActivityIds = new ArrayList<>();
+        for (InMemoryVectorStore.SearchResult sr : activityResults) {
+            Long entityId = sr.getEntry().getEntityId();
+            if (!matchedActivityIds.contains(entityId)) {
+                matchedActivityIds.add(entityId);
+                activityRepository.findById(entityId).ifPresent(matchedActivities::add);
+            }
+        }
+        
+        // 如果向量搜索无结果，使用传统SQL查询作为降级方案
+        if (matchedActivities.isEmpty()) {
+            Map<String, Object> queryParams = extractQueryParams(userInput);
+            String sql = buildSafeSQL(queryParams);
+            matchedActivities = executeSafeSQLQuery(sql);
+        }
+        
+        // 如果仍然无结果，返回热门活动
+        if (matchedActivities.isEmpty()) {
+            matchedActivities = activityRepository.findByStatusNotOrderByStartTimeAsc("ended");
+            matchedActivities = matchedActivities.stream().limit(5).collect(Collectors.toList());
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("intent", "STRUCTURED_QUERY");
         result.put("query", userInput);
-        result.put("sql", sql);
-        result.put("activities", buildActivityCards(activities));
-        result.put("total", activities.size());
+        result.put("activities", buildActivityCards(matchedActivities));
+        result.put("total", matchedActivities.size());
 
-        if (activities.isEmpty()) {
+        if (matchedActivities.isEmpty()) {
             result.put("message", generateEmptyResultMessage(userInput));
         }
 
@@ -504,10 +525,15 @@ public class AIResourceService {
                 context.append("- 标题：").append(post.getTitle());
                 if (post.getContent() != null) {
                     String content = post.getContent();
-                    if (content.length() > 300) {
-                        content = content.substring(0, 300) + "...";
+                    // 清理内容，移除可能包含的元数据和时间戳
+                    content = content.replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+\\d{2}:\\d{2}", "");
+                    content = content.replaceAll("普通动态也能显示在我的帖子里", "");
+                    content = content.trim();
+                    
+                    if (!content.isEmpty() && content.length() > 100) {
+                        content = content.substring(0, 100) + "...";
+                        context.append("\n  内容：").append(content);
                     }
-                    context.append("\n  内容：").append(content);
                 }
                 context.append("\n");
             }

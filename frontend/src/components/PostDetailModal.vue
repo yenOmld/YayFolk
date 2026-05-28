@@ -275,6 +275,8 @@
     </Teleport>
   </div>
   </Teleport>
+
+  <ReportModal ref="reportModal" />
 </template>
 
 <script setup>
@@ -292,6 +294,7 @@ import {
   unfollowUser,
   getFollowStatus
 } from '../api/app'
+import ReportModal from './ReportModal.vue'
 
 // 获取通知实例
 const { appContext } = getCurrentInstance()
@@ -474,31 +477,39 @@ const toggleCollect = async () => {
   }
 }
 
+const reportModal = ref(null)
+
 const reportPost = async () => {
   if (!props.post?.id) return
-  const confirmed = window.confirm('确认举报该内容吗？')
-  if (!confirmed) return
-
-  const reasonInput = window.prompt('请输入举报原因（选填）', '')
-  if (reasonInput === null) return
-  const reason = reasonInput.trim()
-
-  try {
-    const response = await reportDiscoverPost(props.post.id, reason)
-    if (response.code !== 200) {
-      notify.error(response.message || '举报提交失败')
-      return
+  
+  reportModal.value.show({
+    title: '举报内容',
+    message: '请选择举报原因并填写详细信息',
+    onConfirm: async (reason, done) => {
+      try {
+        const response = await reportDiscoverPost(props.post.id, reason)
+        if (response.code !== 200) {
+          notify.error(response.message || '举报提交失败')
+          done()
+          return
+        }
+        emit('update', {
+          ...props.post,
+          auditStatus: response.data?.auditStatus || props.post.auditStatus,
+          auditRemark: response.data?.auditRemark || props.post.auditRemark
+        })
+        notify.success('举报已提交，管理员将优先复核')
+        emit('close')
+        done()
+      } catch (error) {
+        notify.error('举报提交失败，请稍后重试')
+        done()
+      }
+    },
+    onCancel: () => {
+      // 用户取消举报
     }
-    emit('update', {
-      ...props.post,
-      auditStatus: response.data?.auditStatus || props.post.auditStatus,
-      auditRemark: response.data?.auditRemark || props.post.auditRemark
-    })
-    notify.success('举报已提交，管理员将优先复核')
-    emit('close')
-  } catch (error) {
-    notify.error('举报提交失败，请稍后重试')
-  }
+  })
 }
 
 const getPreferredLanguage = () => {
@@ -849,6 +860,7 @@ const copyLink = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9999;
 }
 
 .modal-overlay {
@@ -857,29 +869,45 @@ const copyLink = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(47, 36, 29, 0.85);
+  backdrop-filter: blur(8px);
 }
 
 .modal-content {
   position: relative;
   display: flex;
-  width: 90vw;
-  height: 85vh;
-  top: -45px;
-  max-width: 1200px;
-  background: white;
-  border-radius: 12px;
+  width: 92vw;
+  height: 88vh;
+  max-width: 1280px;
+  background: var(--yf-paper-strong);
+  border-radius: var(--yf-radius-xl);
+  box-shadow: var(--yf-shadow);
+  border: 1px solid var(--yf-border);
   z-index: 1001;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-left {
   flex: 1;
   position: relative;
-  background: #f0f0f0;
+  background: linear-gradient(135deg, var(--yf-bg-deep) 0%, var(--yf-bg) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px 0px 0px 12px;
+  border-radius: var(--yf-radius-xl) 0 0 var(--yf-radius-xl);
+  overflow: hidden;
 }
 
 .image-slider {
@@ -889,49 +917,61 @@ const copyLink = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px;
 }
 
 .modal-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: var(--yf-radius-md);
+  box-shadow: 0 12px 40px rgba(47, 36, 29, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.modal-image:hover {
+  transform: scale(1.02);
 }
 
 .slider-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
+  width: 48px;
+  height: 48px;
+  background: var(--yf-paper-strong);
+  color: var(--yf-ink);
+  border: 1px solid var(--yf-border);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  transition: all 0.3s;
+  font-size: 20px;
+  transition: all 0.3s ease;
   z-index: 10;
+  box-shadow: 0 4px 12px rgba(47, 36, 29, 0.1);
 }
 
 .slider-btn:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--yf-accent);
+  color: white;
+  border-color: var(--yf-accent);
   transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(157, 41, 41, 0.3);
 }
 
 .prev-btn {
-  left: 20px;
+  left: 30px;
 }
 
 .next-btn {
-  right: 20px;
+  right: 30px;
 }
 
 .image-indicators {
   position: absolute;
-  bottom: 20px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -940,56 +980,70 @@ const copyLink = async () => {
 }
 
 .indicator-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  width: 10px;
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .indicator-dot.active {
-  background: white;
-  width: 20px;
-  border-radius: 4px;
+  background: var(--yf-accent);
+  width: 24px;
+  border-radius: 6px;
+  border-color: var(--yf-accent);
 }
 
 .indicator-dot:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.2);
 }
 
 .image-counter {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  top: 30px;
+  right: 30px;
+  background: var(--yf-paper-strong);
+  color: var(--yf-ink);
+  padding: 8px 16px;
+  border-radius: var(--yf-radius-md);
+  font-size: 13px;
+  font-weight: 600;
   z-index: 10;
+  border: 1px solid var(--yf-border);
+  box-shadow: 0 2px 8px rgba(47, 36, 29, 0.08);
 }
 
 .modal-right {
-  width: 400px;
+  width: 420px;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--yf-paper-strong);
+  border-left: 1px solid var(--yf-border);
 }
 
 .modal-header {
   display: flex;
   align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--yf-border);
+  gap: 12px;
+  background: var(--yf-paper);
 }
 
 .modal-author-avatar {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--yf-border);
+  transition: transform 0.3s ease;
+}
+
+.modal-author-avatar:hover {
+  transform: scale(1.05);
 }
 
 .modal-author-info {
@@ -998,107 +1052,123 @@ const copyLink = async () => {
 
 .modal-author-info h4 {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
+  color: var(--yf-ink);
 }
 
 .modal-author-info p {
-  margin: 3px 0 0 0;
-  font-size: 12px;
-  color: #999;
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--yf-muted);
 }
 
 .clickable-user {
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.clickable-user:hover {
+  color: var(--yf-accent);
 }
 
 .contact-btn {
-  padding: 6px 14px;
-  background: #ff2442;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--yf-accent) 0%, var(--yf-accent-deep) 100%);
   color: white;
   border: none;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 500;
+  border-radius: var(--yf-radius-md);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(255, 36, 66, 0.3);
+  box-shadow: 0 2px 8px rgba(157, 41, 41, 0.2);
+  letter-spacing: 0.5px;
 }
 
 .contact-btn:hover {
-  background: #ff3a56;
-  box-shadow: 0 4px 8px rgba(255, 36, 66, 0.4);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(157, 41, 41, 0.3);
 }
 
 .contact-btn.active {
-  background: #2f6bff;
-  box-shadow: 0 2px 4px rgba(47, 107, 255, 0.3);
+  background: linear-gradient(135deg, var(--yf-gold) 0%, #b3893a 100%);
+  box-shadow: 0 2px 8px rgba(200, 154, 75, 0.2);
 }
 
 .contact-btn.active:hover {
-  background: #2454ce;
-  box-shadow: 0 4px 8px rgba(47, 107, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(200, 154, 75, 0.3);
 }
 
 .modal-post-view{
   overflow-y: auto;
+  flex: 1;
 }
 
 .modal-post-content {
-  padding: 15px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--yf-border);
+  background: var(--yf-paper);
 }
 
 .modal-post-content h3 {
   margin: 0 0 10px 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--yf-ink);
+  line-height: 1.4;
 }
 
 .modal-post-content p {
   margin: 0 0 10px 0;
   font-size: 14px;
-  line-height: 1.5;
-  color: #333;
+  line-height: 1.7;
+  color: var(--yf-ink-soft);
   white-space: pre-line;
 }
 
 .translated-text {
-  margin: 0 0 10px 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #888;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--yf-muted);
   white-space: pre-line;
+  font-style: italic;
+  border-left: 3px solid var(--yf-gold);
+  padding-left: 12px;
 }
 
 .translate-toggle-btn {
   border: none;
-  background: #f1f5ff;
-  color: #2f6bff;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--yf-gold) 0%, #b3893a 100%);
+  color: white;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--yf-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(200, 154, 75, 0.2);
 }
 
 .translate-toggle-btn:hover {
-  background: #dce8ff;
-  color: #2454ce;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(200, 154, 75, 0.3);
 }
 
 .translate-toggle-btn.active {
-  background: #f0f0f0;
-  color: #666;
+  background: var(--yf-border);
+  color: var(--yf-muted);
+  box-shadow: 0 1px 4px rgba(47, 36, 29, 0.1);
 }
 
 .translate-toggle-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .hashtags {
@@ -1109,36 +1179,48 @@ const copyLink = async () => {
 }
 
 .hashtag {
-  font-size: 12px;
-  color: #ff2442;
+  font-size: 13px;
+  color: var(--yf-accent);
   cursor: pointer;
-  padding: 4px 10px;
-  background: #fff5f5;
-  border-radius: 12px;
-  transition: all 0.3s;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(157, 41, 41, 0.1) 0%, rgba(111, 28, 28, 0.05) 100%);
+  border-radius: var(--yf-radius-md);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(157, 41, 41, 0.1);
+  font-weight: 600;
 }
 
 .hashtag:hover {
-  background: #ffe0e0;
+  background: var(--yf-accent);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(157, 41, 41, 0.2);
 }
 
 .activity-info-card {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 3px solid #4CAF50;
+  margin-top: 15px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(200, 154, 75, 0.08) 0%, rgba(179, 137, 58, 0.04) 100%);
+  border-radius: var(--yf-radius-md);
+  border-left: 4px solid var(--yf-gold);
   cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(200, 154, 75, 0.1);
+}
+
+.activity-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(200, 154, 75, 0.15);
 }
 
 .activity-info-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #4CAF50;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--yf-gold);
 }
 
 .activity-info-header i {
@@ -1146,22 +1228,24 @@ const copyLink = async () => {
 }
 
 .activity-info-content h5 {
-  font-size: 14px;
-  margin: 0 0 8px 0;
-  color: #333;
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  color: var(--yf-ink);
+  line-height: 1.4;
 }
 
 .activity-info-content p {
-  font-size: 12px;
-  margin: 4px 0;
-  color: #666;
+  font-size: 13px;
+  margin: 6px 0;
+  color: var(--yf-ink-soft);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .activity-info-content i {
   font-size: 14px;
+  color: var(--yf-gold);
 }
 
 .review-score {
@@ -1358,10 +1442,17 @@ const copyLink = async () => {
 .comment-input {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 20px;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--yf-paper);
+  border-radius: var(--yf-radius-xl);
+  border: 1px solid var(--yf-border);
+  transition: all 0.3s ease;
+}
+
+.comment-input:focus-within {
+  border-color: var(--yf-accent);
+  box-shadow: 0 0 0 2px rgba(157, 41, 41, 0.1);
 }
 
 .comment-input input {
@@ -1370,17 +1461,39 @@ const copyLink = async () => {
   background: transparent;
   outline: none;
   font-size: 14px;
-  color: #333;
+  color: var(--yf-ink);
+  font-weight: 500;
+}
+
+.comment-input input::placeholder {
+  color: var(--yf-muted);
 }
 
 .send-btn {
-  padding: 6px 12px;
-  background: #ff2442;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, var(--yf-accent) 0%, var(--yf-accent-deep) 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--yf-radius-md);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(157, 41, 41, 0.2);
+  letter-spacing: 0.5px;
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 41, 41, 0.3);
+}
+
+.send-btn:disabled {
+  background: var(--yf-border);
+  color: var(--yf-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .image-preview-modal {
@@ -1792,7 +1905,8 @@ const copyLink = async () => {
   }
   
   .comment-input {
-    padding: 8px;
+    padding: 10px 12px;
+    gap: 8px;
   }
   
   .comment-input input {
@@ -1800,8 +1914,8 @@ const copyLink = async () => {
   }
   
   .send-btn {
-    padding: 5px 10px;
-    font-size: 11px;
+    padding: 6px 16px;
+    font-size: 12px;
   }
   
   .slider-btn {

@@ -246,6 +246,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deleteMyDiscoverPost, followUser, getCollectedBy, getDiscoverPostDetail, getFollowers, getFollowing, getUserHomepage, unfollowUser, updateDiscoverPostVisibility, updateHomepageSettings, updateUserProfile, uploadAvatar, uploadImage, getMerchantActivities } from '../api/app'
+import request from '../utils/request'
 import PostDetailModal from '../components/PostDetailModal.vue'
 import GiftBoxModal from '../components/GiftBoxModal.vue'
 import MerchantReviewPanel from '../components/merchant/MerchantReviewPanel.vue'
@@ -448,16 +449,14 @@ const loadPage = async () => {
     reviewSummary.value = res.data.reviewSummary || {}
     isFollowingUser.value = Boolean(res.data.user?.isFollowing)
     
-    // 如果是商家主页，额外获取商家发布的活动
-    if (isMerchantProfile.value) {
-      const merchantActivitiesRes = await getMerchantActivities()
-      if (merchantActivitiesRes.code === 200 && Array.isArray(merchantActivitiesRes.data)) {
-        activities.value = merchantActivitiesRes.data
-      } else {
-        activities.value = []
-      }
+    // 使用公开接口获取指定用户的活动（无论是否为商家）
+      const publicActivitiesRes = await request.get('/public/activities', { 
+        params: { merchantId: profileUserId.value } 
+      })
+    if (publicActivitiesRes.code === 200 && Array.isArray(publicActivitiesRes.data)) {
+      activities.value = publicActivitiesRes.data
     } else {
-      activities.value = Array.isArray(res.data.activities) ? res.data.activities : []
+      activities.value = []
     }
     
     syncTab()

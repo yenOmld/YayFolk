@@ -120,6 +120,9 @@
             </div>
 
             <div class="action-row">
+              <button class="primary-btn" type="button" @click="goBack">
+                上一步
+              </button>
               <button class="primary-btn" type="button" :disabled="!hasSource || generating" @click="goNext">
                 <i v-if="generating" class="bx bx-loader-alt bx-spin"></i>
                 {{ generating ? '生成中' : '生成并下一步' }}
@@ -134,7 +137,7 @@
 
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { generateAiHeritagePoster } from '../../../api/app'
 import {
   buildHeritagePrompt,
@@ -147,12 +150,15 @@ import {
   posterStylePresets,
   readAiHeritageDraft,
   scenePresets,
-  writeAiHeritageDraft
+  writeAiHeritageDraft,
+  getAiHeritageReturnPath,
+  clearAiHeritageReturnPath
 } from '../../../utils/aiHeritage'
 
 const { appContext } = getCurrentInstance()
 const notify = appContext.config.globalProperties.$notify
 const router = useRouter()
+const route = useRoute()
 const draft = ref(readAiHeritageDraft())
 
 const generating = ref(false)
@@ -175,7 +181,17 @@ const progressStages = [
 ]
 
 function goBack() {
-  router.push({ name: 'create-ai-heritage-upload' })
+  if (typeof route.query.backTo === 'string' && route.query.backTo) {
+    router.push(route.query.backTo)
+    return
+  }
+  const returnPath = getAiHeritageReturnPath()
+  if (returnPath) {
+    clearAiHeritageReturnPath()
+    router.push(returnPath)
+    return
+  }
+  router.back()
 }
 
 function selectStyle(style) {
@@ -644,6 +660,7 @@ onBeforeUnmount(() => {
 .action-row {
   display: flex;
   justify-content: flex-end;
+  gap: 16px;
 }
 
 .primary-btn {

@@ -204,6 +204,21 @@
           </template>
         </div>
 
+        <!-- 引导提示词 -->
+        <div v-if="showSuggestions" class="suggestion-chips">
+          <div class="suggestion-label">你可以这样问我：</div>
+          <div class="suggestion-list">
+            <div
+              v-for="(suggestion, idx) in currentSuggestions"
+              :key="idx"
+              class="suggestion-chip"
+              @click="sendSuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </div>
+          </div>
+        </div>
+
         <div class="input-area">
           <input
             type="text"
@@ -329,6 +344,26 @@ export default {
         loadConversationsFailed: '加载会话失败',
         sendFailed: '发送失败',
         aiThinking: 'AI正在思考...'
+      },
+      // 是否已发送过消息（用于控制引导提示词显隐）
+      hasSentMessage: false,
+      // 各模式引导提示词
+      promptSuggestions: {
+        knowledge: [
+          '什么是国家级非物质文化遗产？',
+          '介绍一下京剧的历史和特点',
+          '中国有哪些世界级非遗项目？'
+        ],
+        explore: [
+          '帮我推荐北京的非遗活动',
+          '我想了解苏州刺绣相关的内容',
+          '帮我规划一个3天的非遗之旅'
+        ],
+        service: [
+          '如何发布帖子？',
+          '怎么报名参加活动？',
+          '账号相关问题怎么处理？'
+        ]
       }
     }
   },
@@ -364,6 +399,13 @@ export default {
     },
     isLoginPage() {
       return this.route.path === '/login' || this.route.path === '/register'
+    },
+    showSuggestions() {
+      // 新对话且用户尚未发送过消息时显示引导提示词
+      return !this.hasSentMessage && this.messages.length <= 1
+    },
+    currentSuggestions() {
+      return this.promptSuggestions[this.currentMode] || []
     }
   },
   mounted() {
@@ -394,6 +436,7 @@ export default {
     },
     switchMode(mode) {
       this.currentMode = mode;
+      this.hasSentMessage = false;
       this.messages = [
         {
           type: 'bot',
@@ -449,6 +492,7 @@ export default {
     newKnowledgeChat() {
       this.knowledgeConversationId = null;
       this.currentKnowledgeConversation = null;
+      this.hasSentMessage = false;
       this.messages = [
         {
           type: 'bot',
@@ -512,6 +556,7 @@ export default {
     },
     newExploreChat() {
       this.exploreConversationId = null;
+      this.hasSentMessage = false;
       this.messages = [
         {
           type: 'bot',
@@ -539,23 +584,39 @@ export default {
         }
       });
     },
-    // 创建客服会话
+    // 创建/复用客服会话，并加载已有消息
     createServiceConversation() {
       createCustomerServiceConversation()
         .then(response => {
           if (response.code === 200) {
             this.serviceConversationId = response.data.id;
-            this.loadServiceMessages(response.data.id);
             this.getServiceModeStatus(response.data.id);
+            // 加载已有消息，判断是否为新用户
+            getMessages(response.data.id)
+              .then(msgResponse => {
+                if (msgResponse.code === 200 && msgResponse.data && msgResponse.data.length > 0) {
+                  // 有历史消息，显示历史对话
+                  this.messages = msgResponse.data.map(msg => {
+                    if (msg.isSelf) {
+                      return { type: 'user', content: msg.content, source: 'user' };
+                    } else {
+                      return {
+                        type: 'bot',
+                        content: msg.content,
+                        source: msg.source || 'ai'
+                      };
+                    }
+                  });
+                  this.hasSentMessage = true;
+                  this.scrollToBottom();
+                }
+                // 无消息则保持欢迎消息 + 引导提示词
+              })
+              .catch(() => {});
           }
         })
         .catch(error => {
           console.error('创建客服会话失败:', error);
-          this.messages.push({
-            type: 'bot',
-            content: '抱歉，创建客服会话失败，请稍后再试。'
-          });
-          this.scrollToBottom();
         });
     },
     // 加载客服消息
@@ -605,12 +666,17 @@ export default {
           return '你好！我是智能助手Yaya，很高兴为你服务。';
       }
     },
+    sendSuggestion(suggestion) {
+      this.userInput = suggestion;
+      this.sendMessage();
+    },
     sendMessage() {
       if (!this.userInput.trim()) return;
 
       // 清空输入框
       const messageContent = this.userInput.trim();
       this.userInput = '';
+      this.hasSentMessage = true;
 
       // 根据模式处理消息
       if (this.currentMode === 'knowledge') {
@@ -890,53 +956,82 @@ export default {
       });
       this.scrollToBottom();
 
-      if (!this.serviceConversationId) {
-        this.createServiceConversation();
-        this.sending = false;
-        return;
-      }
+      const doSend = () => {
+        // 发送消息
+        sendMessage(this.serviceConversationId, { content: messageContent })
+          .then(response => {
+            if (response.code === 200) {
+              // 清除加载状态
+              const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+              if (loadingIndex !== -1) {
+                this.messages.splice(loadingIndex, 1);
+              }
 
-      // 发送消息
-      sendMessage(this.serviceConversationId, { content: messageContent })
-        .then(response => {
-          if (response.code === 200) {
-            // 清除加载状态
-            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
-            if (loadingIndex !== -1) {
-              this.messages.splice(loadingIndex, 1);
+              // 等待 AI 回复或人工回复
+              setTimeout(() => {
+                this.loadServiceMessages(this.serviceConversationId);
+                this.getServiceModeStatus(this.serviceConversationId);
+              }, 500);
+
+              // 启动轮询（如果是人工模式）
+              this.startServicePolling();
+            } else {
+              const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+              if (loadingIndex !== -1) {
+                this.messages[loadingIndex] = {
+                  type: 'bot',
+                  content: `发送失败：${response.message || '未知错误'}`
+                };
+              }
             }
-
-            // 等待 AI 回复或人工回复
-            setTimeout(() => {
-              this.loadServiceMessages(this.serviceConversationId);
-              this.getServiceModeStatus(this.serviceConversationId);
-            }, 500);
-
-            // 启动轮询（如果是人工模式）
-            this.startServicePolling();
-          } else {
+          })
+          .catch(error => {
             const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
             if (loadingIndex !== -1) {
               this.messages[loadingIndex] = {
                 type: 'bot',
-                content: `发送失败：${response.message || '未知错误'}`
+                content: `发送失败：${error.message || '网络错误'}`
               };
             }
-          }
-        })
-        .catch(error => {
-          const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
-          if (loadingIndex !== -1) {
-            this.messages[loadingIndex] = {
-              type: 'bot',
-              content: `发送失败：${error.message || '网络错误'}`
-            };
-          }
-        })
-        .finally(() => {
-          this.sending = false;
-          this.scrollToBottom();
-        });
+          })
+          .finally(() => {
+            this.sending = false;
+            this.scrollToBottom();
+          });
+      };
+
+      if (!this.serviceConversationId) {
+        createCustomerServiceConversation()
+          .then(response => {
+            if (response.code === 200) {
+              this.serviceConversationId = response.data.id;
+              this.getServiceModeStatus(response.data.id);
+              doSend();
+            } else {
+              const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+              if (loadingIndex !== -1) {
+                this.messages[loadingIndex] = {
+                  type: 'bot',
+                  content: '创建客服会话失败，请稍后再试。'
+                };
+              }
+              this.sending = false;
+            }
+          })
+          .catch(error => {
+            console.error('创建客服会话失败:', error);
+            const loadingIndex = this.messages.findIndex(msg => msg.isLoading);
+            if (loadingIndex !== -1) {
+              this.messages[loadingIndex] = {
+                type: 'bot',
+                content: '创建客服会话失败，请稍后再试。'
+              };
+            }
+            this.sending = false;
+          });
+      } else {
+        doSend();
+      }
     },
     // 启动客服消息轮询
     startServicePolling() {
@@ -1521,6 +1616,47 @@ export default {
   font-size: 10px;
   color: #666;
   margin-left: 10px;
+}
+
+/* 引导提示词 */
+.suggestion-chips {
+  padding: 0 0 15px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.suggestion-label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 10px;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggestion-chip {
+  display: inline-block;
+  padding: 10px 14px;
+  background: #faf5ef;
+  border: 1px solid #e0d5c5;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #8B4513;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.suggestion-chip:hover {
+  background: #f0e8dc;
+  border-color: #8B4513;
+  transform: translateX(4px);
+}
+
+.suggestion-chip:active {
+  transform: translateX(4px) scale(0.98);
 }
 
 /* 响应式设计 */

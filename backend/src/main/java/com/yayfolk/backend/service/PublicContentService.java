@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PublicContentService {
@@ -65,7 +66,7 @@ public class PublicContentService {
         this.objectMapper = objectMapper;
     }
 
-    public List<Map<String, Object>> getPublicActivities(String keyword, String city) {
+    public List<Map<String, Object>> getPublicActivities(String keyword, String city, Long merchantId) {
         List<Activity> activities = activityRepository.findByAuditStatusOrderByCreateTimeDesc("approved");
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
         for (Activity a : activities) {
@@ -79,6 +80,11 @@ public class PublicContentService {
             }
             if (city != null && !city.isEmpty()) {
                 if (a.getLocationCity() == null || !a.getLocationCity().contains(city)) {
+                    continue;
+                }
+            }
+            if (merchantId != null) {
+                if (!merchantId.equals(a.getMerchantId())) {
                     continue;
                 }
             }
@@ -111,10 +117,29 @@ public class PublicContentService {
             result.put("merchantIntro", u.getShopIntro());
             result.put("merchantCover", u.getShopCover());
         });
-        Double avgScore = merchantReviewRepository.getAverageScoreByMerchantId(activity.getMerchantId());
-        Long reviewCount = merchantReviewRepository.countByMerchantId(activity.getMerchantId());
-        result.put("avgScore", avgScore != null ? avgScore : 0.0);
-        result.put("reviewCount", reviewCount != null ? reviewCount : 0);
+        // 实时计算该活动的评分（从DiscoverPost表中获取该活动的真实评价）
+        List<DiscoverPost> reviewPosts = discoverPostRepository.findByActivityIdAndStatusAndAuditStatusOrderByCreateTimeDesc(
+            id, 1, "passed");
+        
+        // 过滤出有评分的帖子（score > 0 表示是评价）
+        List<DiscoverPost> validReviews = reviewPosts.stream()
+            .filter(post -> post.getScore() != null && post.getScore() > 0)
+            .collect(Collectors.toList());
+        
+        // 计算平均分和评价数量
+        double avgScore = 0.0;
+        long reviewCount = validReviews.size();
+        
+        if (reviewCount > 0) {
+            avgScore = validReviews.stream()
+                .mapToDouble(DiscoverPost::getScore)
+                .average()
+                .orElse(0.0);
+        }
+        
+        // 只有有评价时才显示评分
+        result.put("avgScore", avgScore);
+        result.put("reviewCount", reviewCount);
         return result;
     }
 
@@ -203,7 +228,7 @@ public class PublicContentService {
 
     private Map<String, Object> buildHomepageStats() {
         Map<String, Object> stats = new HashMap<String, Object>();
-        stats.put("activities", getPublicActivities(null, null).size());
+        stats.put("activities", getPublicActivities(null, null, null).size());
         stats.put("heritages", intangibleCulturalHeritageRepository.findAllByOrderByIsFeaturedDescViewCountDescIdAsc().size());
 
         List<DiscoverPost> posts = discoverPostRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
@@ -220,7 +245,7 @@ public class PublicContentService {
     }
 
     private List<Map<String, Object>> buildHomepageActivities() {
-        List<Map<String, Object>> candidates = getPublicActivities(null, null);
+        List<Map<String, Object>> candidates = getPublicActivities(null, null, null);
         List<Long> selectedIds = readSelectionIds(HOMEPAGE_ACTIVITY_CATEGORY);
         return pickByIds(selectedIds, candidates, HOMEPAGE_ACTIVITY_LIMIT);
     }

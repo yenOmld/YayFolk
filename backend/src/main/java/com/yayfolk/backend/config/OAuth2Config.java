@@ -35,14 +35,10 @@ public class OAuth2Config {
                 .configurationSource(request -> {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
                     config.setAllowedOrigins(java.util.Arrays.asList(
-                        "http://localhost:5173", 
-                        "http://localhost:5174", 
-                        "https://8.162.0.246", 
-                        "http://8.162.0.246",
-                        "http://yayfolk.bhyy.online",
-                        "https://yayfolk.bhyy.online",
-                        "http://10.21.195.196:5173",
-                        "http://mf946e63.natappfree.cc"
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "https://www.bhyy.online",
+                        "http://www.bhyy.online"
                     ));
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(java.util.Arrays.asList("*"));
@@ -64,7 +60,7 @@ public class OAuth2Config {
                 if (enabled) {
                     oauth2Login
                         .loginPage("/api/oauth/github/login")
-                        .defaultSuccessUrl("http://localhost:5173", true);
+                        .defaultSuccessUrl("https://www.bhyy.online", true);
                 }
             })
             .anonymous().and()

@@ -69,7 +69,7 @@
             <button class="action-btn edit-btn" @click.stop="openEditModal(post)" title="编辑">
               <i class='bx bxs-edit'></i>
             </button>
-            <button class="action-btn delete-btn" @click="deletePost(post.id)" title="删除">
+            <button class="action-btn delete-btn" @click.stop="deletePost(post.id)" title="删除">
               <i class='bx bxs-trash'></i>
             </button>
           </div>
