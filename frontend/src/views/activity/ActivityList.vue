@@ -219,7 +219,10 @@
               </div>
 
               <div class="activity-bottom">
-                <span class="activity-category">{{ item.heritageType || '其他' }}</span>
+                <div class="activity-bottom-left">
+                  <span class="activity-category">{{ item.heritageType || '其他' }}</span>
+                  <span v-if="item.vrModelUrl" class="vr-tag">VR预览</span>
+                </div>
                 <span class="activity-price" :class="{ free: !item.price }">
                   {{ item.price ? `¥${(item.price / 100).toFixed(2)}` : '免费' }}
                 </span>
@@ -1407,6 +1410,12 @@ onMounted(async () => {
   border-top: 1px solid rgba(217, 207, 193, 0.6);
 }
 
+.activity-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .activity-category {
   font-size: 12px;
   color: #9d2929;
@@ -1414,6 +1423,59 @@ onMounted(async () => {
   padding: 6px 14px;
   border-radius: 10px;
   font-weight: 500;
+}
+
+.vr-tag {
+  font-size: 11px;
+  color: #b8860b;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.18), rgba(255, 152, 0, 0.14));
+  border: 1px solid rgba(255, 152, 0, 0.35);
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  perspective: 200px;
+  animation: vrFloat 3s ease-in-out infinite;
+}
+
+.vr-tag::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: vrShine 2.5s ease-in-out infinite;
+}
+
+@keyframes vrFloat {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg);
+    box-shadow: 0 2px 6px rgba(255, 152, 0, 0.15);
+  }
+  50% {
+    transform: translateY(-2px) rotateX(3deg);
+    box-shadow: 0 6px 16px rgba(255, 152, 0, 0.25);
+  }
+}
+
+@keyframes vrShine {
+  0% {
+    left: -75%;
+  }
+  40%, 100% {
+    left: 125%;
+  }
 }
 
 .activity-price {

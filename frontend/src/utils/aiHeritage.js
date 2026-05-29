@@ -140,6 +140,103 @@ export const posterSizePresets = [
   }
 ]
 
+export const merchTypePresets = [
+  {
+    id: 't-shirt',
+    name: 'T恤',
+    brief: '纯棉圆领短袖',
+    icon: 'bx bx-tshirt',
+    gradient: 'linear-gradient(145deg, #ff8a65, #ffcf6f)',
+    prompt: '把参考图里的图案设计印制在纯棉圆领T恤的胸口位置，真实模拟T恤的布料质感和光影效果。'
+  },
+  {
+    id: 'hoodie',
+    name: '卫衣',
+    brief: '连帽休闲套头',
+    icon: 'bx bx-wind',
+    gradient: 'linear-gradient(145deg, #7c8cff, #b58cff)',
+    prompt: '把参考图里的图案设计印制在连帽卫衣的背面或胸口，真实模拟卫衣的柔软布料和帽兜垂坠感。'
+  },
+  {
+    id: 'tote-bag',
+    name: '帆布袋',
+    brief: '简约托特包',
+    icon: 'bx bx-shopping-bag',
+    gradient: 'linear-gradient(145deg, #9dd6c6, #f3c8a2)',
+    prompt: '把参考图里的图案设计印制在帆布托特包的正面，真实模拟帆布袋的纹理质感。'
+  },
+  {
+    id: 'tumbler',
+    name: '水杯',
+    brief: '不锈钢保温杯',
+    icon: 'bx bx-drink',
+    gradient: 'linear-gradient(145deg, #6b7280, #d1d5db)',
+    prompt: '把参考图里的图案设计印制在不锈钢保温杯的杯身，真实模拟金属杯身的反光质感。'
+  },
+  {
+    id: 'phone-case',
+    name: '手机壳',
+    brief: '磨砂软壳',
+    icon: 'bx bx-device-mobile',
+    gradient: 'linear-gradient(145deg, #7a5cff, #ff6aa6)',
+    prompt: '把参考图里的图案设计印制在透明磨砂手机壳的背面，真实模拟手机壳的磨砂质感和弧面效果。'
+  },
+  {
+    id: 'pencil-case',
+    name: '笔袋',
+    brief: '复古文具袋',
+    icon: 'bx bx-pencil',
+    gradient: 'linear-gradient(145deg, #b0894f, #f4d58d)',
+    prompt: '把参考图里的图案设计印制在布艺笔袋的正面，真实模拟布艺材料的纹理感。'
+  },
+  {
+    id: 'mouse-pad',
+    name: '鼠标垫',
+    brief: '加厚游戏垫',
+    icon: 'bx bx-mouse',
+    gradient: 'linear-gradient(145deg, #f472b6, #c084fc)',
+    prompt: '把参考图里的图案设计印制在加大鼠标垫的表面，真实模拟织布鼠标垫的细腻纹理。'
+  },
+  {
+    id: 'sticker',
+    name: '贴纸',
+    brief: '透明覆膜贴',
+    icon: 'bx bx-sticker',
+    gradient: 'linear-gradient(145deg, #34d399, #6ee7b7)',
+    prompt: '把参考图里的图案做成透明覆膜的贴纸效果，边缘留有出血，真实模拟贴纸的视觉效果。'
+  }
+]
+
+export const merchColorPresets = [
+  { id: 'white', name: '纯白', hex: '#ffffff' },
+  { id: 'black', name: '纯黑', hex: '#1f2937' },
+  { id: 'gray', name: '浅灰', hex: '#9ca3af' },
+  { id: 'navy', name: '藏蓝', hex: '#1e3a5f' },
+  { id: 'red', name: '中国红', hex: '#dc2626' },
+  { id: 'beige', name: '米白', hex: '#f5f5dc' },
+  { id: 'pink', name: '粉色', hex: '#ec4899' },
+  { id: 'green', name: '墨绿', hex: '#065f46' }
+]
+
+export function getMerchTypeById(typeId) {
+  return merchTypePresets.find(item => item.id === typeId) || merchTypePresets[0]
+}
+
+export function getMerchColorById(colorId) {
+  return merchColorPresets.find(item => item.id === colorId) || merchColorPresets[0]
+}
+
+export function buildMerchPrompt(merchTypeId, merchColorId, merchType, merchColor) {
+  const basePrompt = merchType?.prompt || '将参考图中的图案设计印制在指定商品上。'
+  let colorContext = ''
+  if (merchColorId === 'custom') {
+    colorContext = `商品主体颜色为${merchColor?.hex || '#FFFFFF'}，`
+  } else if (merchColorId !== 'white') {
+    colorContext = `商品主体颜色为${merchColor?.name || '白色'}，`
+  }
+  return `${colorContext}${basePrompt}保持图案细节清晰，颜色饱和度适中，整体效果真实自然。`
+}
+
 export const presetTags = ['AI非遗大片', '非遗国风', '横版海报', '电影感', '传统美学', '项目主题']
 
 export const defaultAiHeritageDraft = () => ({
@@ -151,7 +248,11 @@ export const defaultAiHeritageDraft = () => ({
   title: '',
   content: '',
   tags: ['AI非遗大片', '非遗国风'],
-  generatedImageUrl: ''
+  generatedImageUrl: '',
+  merchType: '',
+  merchColor: '',
+  merchCustomColor: '',
+  merchGeneratedImageUrl: ''
 })
 
 export function readAiHeritageDraft() {

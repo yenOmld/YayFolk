@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import request from '../utils/request'
 
 export const login = (data) => {
   return request.post('/login', data)
@@ -297,6 +297,7 @@ export const refundMerchantBooking = (id, data = {}) => request.post(`/merchant/
 export const rejectBooking = (id, data = {}) => request.post(`/merchant/bookings/${id}/reject`, data)
 export const getMerchantStats = () => request.get('/merchant/stats')
 export const getMerchantReviewPosts = () => request.get('/merchant/reviews')
+export const generateMerchantSuggestions = (data) => request.post('/ai/merchant-suggestions', data)
 
 
 
@@ -428,6 +429,11 @@ export const generateAiHeritagePoster = (data) => request.post('/ai/heritage-pos
 export const proxyAiImage = (imageUrl) => request.get('/ai/proxy-image', {
   params: { url: imageUrl },
   responseType: 'arraybuffer'
+})
+
+// 图生3D：调用腾讯混元3D API
+export const generate3DFromImage = (data) => request.post('/ai/image-to-3d', data, {
+  timeout: 600000 // 10分钟超时，3D生成较慢
 })
 
 export const createDiscoverReviewPost = (data) => request.post('/discover/review-posts', data)

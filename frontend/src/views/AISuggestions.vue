@@ -159,7 +159,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMerchantActivities, getMerchantBookings, getMerchantStats, getMerchantReviewPosts } from '@/api/app'
+import { getMerchantActivities, getMerchantBookings, getMerchantStats, getMerchantReviewPosts, generateMerchantSuggestions } from '@/api/app'
 
 const router = useRouter()
 const loading = ref(false)
@@ -283,7 +283,7 @@ const fetchMerchantData = async () => {
     throw err
   }
 }
-// AI辅助生成：DeepSeek API（deepseek-v4-flash），2025-04-26
+
 const generateSuggestions = async () => {
   loading.value = true
   error.value = ''
@@ -291,87 +291,19 @@ const generateSuggestions = async () => {
   try {
     const merchantData = await fetchMerchantData()
 
-    const systemPrompt = `你是一名专业的商业顾问，擅长分析商家运营数据并提供优化建议。
-请基于用户提供的真实数据，返回JSON格式的分析和建议。
-JSON必须包含analysis和suggestions字段，不要返回其他内容。
-请使用中文返回所有内容。`
-
-    const userPrompt = `请分析以下商家的真实数据并返回JSON格式的建议：
-
-商家数据：
-- 活动总数：${merchantData.activityCount}
-- 订单总数：${merchantData.orderCount}
-- 评价总数：${merchantData.reviewCount}
-- 平均评分：${merchantData.averageRating}
-- 总收入：${merchantData.totalRevenue}
-
-热门活动：
-${merchantData.activities.length > 0 ? merchantData.activities.slice(0, 5).map((a, i) => `${i + 1}. ${a.title} (${a.participantCount} 参与人数, 评分 ${a.averageRating}, 收入 ¥${a.revenue})`).join('\n') : '无活动数据'}
-
-最近评价：
-${merchantData.reviews.length > 0 ? merchantData.reviews.map(r => `- ${r.score} 星：${r.content}`).join('\n') : '无评价数据'}
-
-请返回以下JSON格式（不要包含markdown代码块，直接返回纯JSON）：
-{
-  "analysis": {
-    "operationStatus": "运营状态评估",
-    "customerSatisfaction": "客户满意度评估",
-    "revenueTrend": "收入趋势评估"
-  },
-  "suggestions": [
-    {
-      "title": "建议标题",
-      "description": "详细描述",
-      "tips": ["步骤1", "步骤2"],
-      "priority": "high或medium或low",
-      "icon": "bx图标类名",
-      "color": {"bg": "#背景颜色", "text": "#文本颜色"}
-    }
-  ]
-}`
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer sk-cddd84f4be02447ca29735575dbe6aad'
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.5,
-        max_tokens: 2500
-      })
+    const response = await generateMerchantSuggestions({
+      activityCount: merchantData.activityCount,
+      orderCount: merchantData.orderCount,
+      reviewCount: merchantData.reviewCount,
+      averageRating: merchantData.averageRating,
+      totalRevenue: merchantData.totalRevenue,
+      activities: merchantData.activities,
+      reviews: merchantData.reviews
     })
 
-    if (!response.ok) {
-      const errText = await response.text()
-      console.error('DeepSeek API Error:', response.status, errText)
-      throw new Error(`API request failed: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const aiContent = data.choices?.[0]?.message?.content || ''
-
-    let result = null
-    try {
-      let jsonStr = aiContent.trim()
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        jsonStr = jsonMatch[0]
-      }
-      result = JSON.parse(jsonStr)
-    } catch (parseErr) {
-      console.error('JSON parse failed:', parseErr, 'Raw content:', aiContent)
-      result = null
-    }
-
-    if (result && result.analysis && result.suggestions) {
-      analysis.value = result.analysis
-      suggestions.value = result.suggestions
+    if (response.code === 200 && response.data) {
+      analysis.value = response.data.analysis || generateDefaultAnalysis(merchantData)
+      suggestions.value = response.data.suggestions || generateDefaultSuggestions(merchantData)
     } else {
       analysis.value = generateDefaultAnalysis(merchantData)
       suggestions.value = generateDefaultSuggestions(merchantData)

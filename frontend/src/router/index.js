@@ -266,6 +266,12 @@ const routes = [
     meta: { title: 'Create AI Heritage Post - Choose Style', requiresAuth: true }
   },
   {
+    path: '/post/create/ai-heritage/merch',
+    name: 'create-ai-heritage-merch',
+    component: () => import('../views/post/ai-heritage/AIHeritageMerchStep.vue'),
+    meta: { title: 'Create AI Heritage Post - Choose Merch', requiresAuth: true }
+  },
+  {
     path: '/post/create/ai-heritage/publish',
     name: 'create-ai-heritage-publish',
     component: () => import('../views/post/ai-heritage/AIHeritagePublishStep.vue'),

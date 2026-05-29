@@ -51,7 +51,28 @@
         </div>
 
         <div class="action-row">
-          <button class="primary-btn" type="button" :disabled="!canContinue" @click="goNext">下一步</button>
+          <div class="option-group">
+            <button 
+              class="option-btn style-btn" 
+              type="button" 
+              :class="{ primary: canContinue }"
+              :disabled="!canContinue"
+              @click="goToStyle"
+            >
+              <i class="bx bx-palette"></i>
+              AI 非遗大片
+            </button>
+            <button 
+              class="option-btn merch-btn" 
+              type="button" 
+              :class="{ primary: canContinue }"
+              :disabled="!canContinue"
+              @click="goToMerch"
+            >
+              <i class="bx bx-store"></i>
+              个性化文创
+            </button>
+          </div>
         </div>
       </article>
     </section>
@@ -62,6 +83,7 @@
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  defaultAiHeritageDraft,
   getAiHeritageSourceFile,
   getAiHeritageSourcePreviewUrl,
   getAiHeritageReturnPath,
@@ -118,15 +140,23 @@ function handleFiles(files) {
   file.value = nextFile
   const preview = setAiHeritageSourceFile(nextFile)
   localPreviewUrl.value = preview || ''
-  draft.value = writeAiHeritageDraft({ sourceImageUrl: '', generatedImageUrl: '' })
+  draft.value = writeAiHeritageDraft(defaultAiHeritageDraft())
 }
 
-async function goNext() {
+function goToStyle() {
   if (!canContinue.value) {
     notify.warning('请先上传原图')
     return
   }
   router.push({ name: 'create-ai-heritage-style' })
+}
+
+function goToMerch() {
+  if (!canContinue.value) {
+    notify.warning('请先上传原图')
+    return
+  }
+  router.push({ name: 'create-ai-heritage-merch' })
 }
 
 function goBack() {
@@ -360,9 +390,53 @@ onMounted(() => {
 
 .action-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 12px;
   margin-top: 16px;
+}
+
+.option-group {
+  display: flex;
+  gap: 120px;
+}
+
+.option-btn {
+  min-width: 200px;
+  border: 2px solid rgba(182, 143, 106, 0.4);
+  border-radius: 18px;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d2118;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.22s ease;
+}
+
+.option-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.option-btn.primary {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #8d2323 0%, #c2410c 100%);
+  box-shadow: 0 14px 28px rgba(141, 35, 35, 0.24);
+}
+
+.option-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(141, 35, 35, 0.3);
+}
+
+.option-btn i {
+  font-size: 18px;
 }
 
 .primary-btn {
@@ -394,7 +468,11 @@ onMounted(() => {
     flex-direction: column;
   }
 
-  .primary-btn {
+  .option-group {
+    flex-direction: column;
+  }
+
+  .option-btn {
     width: 100%;
   }
 }

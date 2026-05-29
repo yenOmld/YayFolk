@@ -156,7 +156,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 7.5px 12px calc(7.5px + env(safe-area-inset-bottom, 0px));
   border: 1px solid rgba(204, 175, 145, 0.85);
   border-radius: 28px;
   background:

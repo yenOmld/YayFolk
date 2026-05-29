@@ -1,4 +1,4 @@
-# Java缂栬瘧杈撳嚭
+# Java
 target/
 *.class
 *.jar
@@ -35,11 +35,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# 鏃ュ織鏂囦欢
+
 *.log
 logs/
 
-# IDE閰嶇疆
 .idea/
 .vscode/
 *.iml
@@ -48,40 +47,36 @@ logs/
 .DS_Store
 Thumbs.db
 
-# 涓存椂鏂囦欢
 *.tmp
 *.temp
 *.swp
 *.swo
 *~
 
-# 鐜鍙橀噺鍜屾晱鎰熶俊鎭?.env
+# 环境变量文件
 .env.local
 .env.*.local
 *.pem
 *.key
 *.crt
 
-# 鏁版嵁搴?*.db
 *.sqlite
 *.sqlite3
 
-# 鎿嶄綔绯荤粺
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# 鍥剧墖鍜屾暟鎹泦鏂囦欢澶?tr_scenicSpotGuide/
+# 封面文件
 cover/
 
 # Spring Boot
 spring-boot-devtools.properties
 
-# 娴嬭瘯瑕嗙洊鐜?coverage/
+
 *.lcov
 .nyc_output/
 
-# 鎵撳寘鏂囦欢
 *.zip
 *.tar
 *.tar.gz
@@ -91,8 +86,10 @@ spring-boot-devtools.properties
 # Sensitive runtime config
 backend/src/main/resources/application.yml
 backend/src/main/resources/application-*.yml
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
 
-
+temp/
 yayfolk-docs/
 YayFolk_Deployment/
 

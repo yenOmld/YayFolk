@@ -5,52 +5,35 @@
       <div class="banner-content">
         <div class="banner-subtitle">传承千年文化</div>
         <h1 class="banner-title">非遗文化</h1>
-        <p class="banner-desc">守护中华文明瑰宝，弘扬传统匠心精神</p>
+        <p class="banner-desc">非遗触手可及，传承焕发新生</p>
         <div class="banner-btns">
-          <button class="btn-primary" @click="scrollToSection('about')">了解更多</button>
-          <button class="btn-secondary" @click="scrollToSection('events')">查看活动</button>
+          <button class="btn-primary" @click="scrollToSection('timeline')">中国非遗</button>
+          <button class="btn-secondary" @click="scrollToSection('features')">探索有戏</button>
         </div>
       </div>
       <div class="scroll-hint">
         <span>向下滚动</span>
         <i class='bx bx-chevron-down'></i>
       </div>
-    </div>
-
-    <div class="about-section animate-section" id="about">
-      <div class="parallax-bg parallax-bg-1"></div>
-      <div class="container">
-        <div class="section-header">
-          <span class="section-label">关于我们</span>
-          <h2 class="section-title">传承非遗，守护文明</h2>
-        </div>
-        <div class="about-content">
-          <div class="about-text animate-left">
-            <p>我们致力于保护和传承非物质文化遗产，通过展览、教育、研究等多种方式，让更多人了解和热爱非遗文化。</p>
-            <p>我们汇集了来自全国各地的非遗技艺，包括传统工艺、戏曲、音乐、舞蹈等多个门类，为您呈现一场文化盛宴。</p>
-            <div class="about-stats">
-              <div class="stat-item animate-item" style="animation-delay: 0.1s">
-                <div class="stat-number">{{ homepageStats.activities }}</div>
-                <div class="stat-label">活动数量</div>
-              </div>
-              <div class="stat-item animate-item" style="animation-delay: 0.2s">
-                <div class="stat-number">{{ homepageStats.heritages }}</div>
-                <div class="stat-label">非遗数量</div>
-              </div>
-              <div class="stat-item animate-item" style="animation-delay: 0.3s">
-                <div class="stat-number">{{ homepageStats.works }}</div>
-                <div class="stat-label">作品数量</div>
-              </div>
-            </div>
-          </div>
-          <div class="about-image animate-right">
-            <img :src="'https://yayfolk.bhyy.online/static/about-img.png'" alt="关于我们" />
-          </div>
-        </div>
+      <div class="tech-badge">
+        <span class="tech-item">
+          <span>AI</span>
+        </span>
+        <span class="tech-item">
+          <i class='bx bx-vr'></i>
+          <span>AR</span>
+        </span>
+        <span class="tech-item">
+          <i class='bx bx-virtual-reality'></i>
+          <span>VR</span>
+        </span>
+        <span class="tech-label">数字化非遗体验</span>
       </div>
     </div>
 
-    <div class="features-section animate-section">
+    <Heritage3DTimeline :timelineData="timelineData" id="timeline" />
+
+    <div class="features-section animate-section" id="features">
       <div class="parallax-bg parallax-bg-2"></div>
       <div class="container">
         <div class="section-header centered animate-up">
@@ -168,21 +151,108 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getDiscoverPostDetail } from '@/api/app.js'
 import PostDetailModal from '@/components/PostDetailModal.vue'
 import HeritageDetailModal from '@/components/HeritageDetailModal.vue'
+import Heritage3DTimeline from '@/components/Heritage3DTimeline.vue'
 import { getHomepageOfficialContents } from '@/api/app.js'
 
 const router = useRouter()
 const fallbackCover = 'https://picsum.photos/seed/heritage-home/800/600'
 const heritageIcons = ['bx bx-cut', 'bx bx-palette', 'bx bx-paint', 'bx bx-music', 'bx bx-coffee', 'bx bx-book']
 
+const timelineData = ref([
+  { year: 2025, expanded: false, items: [
+    { name: '赫哲族伊玛堪', en: 'Hezhen Yimakan storytelling', listType: 'representative', listLabel: '代表作名录（由急需保护转入）' },
+    { name: '"赫哲族伊玛堪"保护计划', en: 'Hezhen Yimakan safeguarding programme', listType: 'safeguarding', listLabel: '优秀实践名册' }
+  ]},
+  { year: 2024, expanded: false, items: [
+    { name: '春节——中国人庆祝传统新年的社会实践', en: 'Spring Festival', listType: 'representative', listLabel: '代表作名录' },
+    { name: '黎族传统纺染织绣技艺', en: 'Li textile techniques', listType: 'representative', listLabel: '代表作名录（由急需保护转入）' },
+    { name: '羌年', en: 'Qiang New Year festival', listType: 'representative', listLabel: '代表作名录（由急需保护转入）' },
+    { name: '中国木拱桥传统营造技艺', en: 'Wooden arch bridges', listType: 'representative', listLabel: '代表作名录（由急需保护转入）' }
+  ]},
+  { year: 2022, expanded: false, items: [
+    { name: '中国传统制茶技艺及其相关习俗', en: 'Traditional tea processing', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2020, expanded: false, items: [
+    { name: '太极拳', en: 'Taijiquan', listType: 'representative', listLabel: '代表作名录' },
+    { name: '送王船——有关人与海洋可持续联系的仪式及相关实践', en: 'Ong Chun ceremony (with Malaysia)', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2018, expanded: false, items: [
+    { name: '藏医药浴法——中国藏族有关生命健康和疾病防治的知识与实践', en: 'Lum medicinal bathing of Sowa Rigpa', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2016, expanded: false, items: [
+    { name: '二十四节气——中国人通过观察太阳周年运动而形成的时间知识体系及其实践', en: 'The Twenty-Four Solar Terms', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2013, expanded: false, items: [
+    { name: '中国珠算——运用算盘进行数学计算的知识与实践', en: 'Chinese Zhusuan', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2012, expanded: false, items: [
+    { name: '福建木偶戏后继人才培养计划', en: 'Fujian puppetry practitioners training', listType: 'safeguarding', listLabel: '优秀实践名册' }
+  ]},
+  { year: 2011, expanded: false, items: [
+    { name: '中国皮影戏', en: 'Chinese shadow puppetry', listType: 'representative', listLabel: '代表作名录' },
+    { name: '赫哲族伊玛堪', en: 'Hezhen Yimakan storytelling', listType: 'urgent', listLabel: '急需保护名录（2025年转入代表作名录）' }
+  ]},
+  { year: 2010, expanded: false, items: [
+    { name: '京剧', en: 'Peking opera', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中医针灸', en: 'Acupuncture and moxibustion', listType: 'representative', listLabel: '代表作名录' },
+    { name: '麦西热甫', en: 'Meshrep', listType: 'urgent', listLabel: '急需保护名录' },
+    { name: '中国水密隔舱福船制造技艺', en: 'Watertight-bulkhead technology', listType: 'urgent', listLabel: '急需保护名录' },
+    { name: '中国活字印刷术', en: 'Wooden movable-type printing', listType: 'urgent', listLabel: '急需保护名录' }
+  ]},
+  { year: 2009, expanded: false, items: [
+    { name: '中国蚕桑丝织技艺', en: 'Sericulture and silk craftsmanship', listType: 'representative', listLabel: '代表作名录' },
+    { name: '南音', en: 'Nanyin', listType: 'representative', listLabel: '代表作名录' },
+    { name: '南京云锦织造技艺', en: 'Nanjing Yunjin brocade', listType: 'representative', listLabel: '代表作名录' },
+    { name: '宣纸传统制作技艺', en: 'Xuan paper', listType: 'representative', listLabel: '代表作名录' },
+    { name: '侗族大歌', en: 'Grand song of the Dong', listType: 'representative', listLabel: '代表作名录' },
+    { name: '粤剧', en: 'Yueju opera', listType: 'representative', listLabel: '代表作名录' },
+    { name: '格萨（斯）尔', en: 'Gesar epic tradition', listType: 'representative', listLabel: '代表作名录' },
+    { name: '龙泉青瓷传统烧制技艺', en: 'Longquan celadon', listType: 'representative', listLabel: '代表作名录' },
+    { name: '热贡艺术', en: 'Regong arts', listType: 'representative', listLabel: '代表作名录' },
+    { name: '藏戏', en: 'Tibetan opera', listType: 'representative', listLabel: '代表作名录' },
+    { name: '玛纳斯', en: 'Manas', listType: 'representative', listLabel: '代表作名录' },
+    { name: '蒙古族呼麦歌唱艺术', en: 'Khoomei', listType: 'representative', listLabel: '代表作名录' },
+    { name: '花儿', en: 'Hua\'er', listType: 'representative', listLabel: '代表作名录' },
+    { name: '西安鼓乐', en: 'Xi\'an wind and percussion', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国朝鲜族农乐舞', en: 'Farmers\' dance', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国书法', en: 'Chinese calligraphy', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国篆刻', en: 'Seal engraving', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国剪纸', en: 'Paper-cut', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国传统木结构建筑营造技艺', en: 'Timber-framed structures', listType: 'representative', listLabel: '代表作名录' },
+    { name: '端午节', en: 'Dragon Boat Festival', listType: 'representative', listLabel: '代表作名录' },
+    { name: '妈祖信俗', en: 'Mazu belief and customs', listType: 'representative', listLabel: '代表作名录' },
+    { name: '中国雕版印刷技艺', en: 'Engraved block printing', listType: 'representative', listLabel: '代表作名录' }
+  ]},
+  { year: 2008, expanded: false, items: [
+    { name: '昆曲', en: 'Kun Qu opera', listType: 'representative', listLabel: '代表作名录' },
+    { name: '古琴艺术', en: 'Guqin and its music', listType: 'representative', listLabel: '代表作名录' },
+    { name: '新疆维吾尔木卡姆艺术', en: 'Uyghur Muqam of Xinjiang', listType: 'representative', listLabel: '代表作名录' },
+    { name: '蒙古族长调民歌', en: 'Urtiin Duu (with Mongolia)', listType: 'representative', listLabel: '代表作名录' }
+  ]}
+])
+
+onMounted(async () => {
+  await loadHomepageData()
+  initObserver()
+  window.addEventListener('scroll', handleParallax, { passive: true })
+  handleParallax()
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+  window.removeEventListener('scroll', handleParallax)
+  document.body.style.overflow = ''
+})
+
 const events = ref([])
 const knowledgeData = ref([])
 const galleryWorks = ref([])
-const homepageStats = ref({ activities: 0, heritages: 0, works: 0 })
+
 const showKnowledgeModal = ref(false)
 const selectedKnowledge = ref({})
 const showPostDetail = ref(false)
@@ -208,7 +278,7 @@ const closePostDetail = () => {
   detailPost.value = null
 }
 
-const aboutImage = computed(() => knowledgeData.value[0]?.image || '/videos/202601-鍏诲績娈?鍐-.png')
+
 
 const mapEventStatus = (status) => {
   const statusMap = {
@@ -232,12 +302,6 @@ const loadHomepageData = async () => {
   try {
     const res = await getHomepageOfficialContents()
     const data = res.data || {}
-    homepageStats.value = {
-      activities: Number(data.stats?.activities || 0),
-      heritages: Number(data.stats?.heritages || 0),
-      works: Number(data.stats?.works || 0)
-    }
-    
     events.value = (data.activities || []).slice(0, 3).map((item) => ({
       ...item,
       title: item.title || '未命名活动',
@@ -337,18 +401,6 @@ const initObserver = () => {
   })
 }
 
-onMounted(async () => {
-  await loadHomepageData()
-  initObserver()
-  window.addEventListener('scroll', handleParallax, { passive: true })
-  handleParallax()
-})
-
-onUnmounted(() => {
-  if (observer) observer.disconnect()
-  window.removeEventListener('scroll', handleParallax)
-  document.body.style.overflow = ''
-})
 </script>
 
 <style scoped>
@@ -425,10 +477,12 @@ onUnmounted(() => {
 }
 
 .banner-desc {
-  font-size: 20px;
+  font-size: 28px;
+  font-weight: 700;
   color: #daa520;
   margin-bottom: 40px;
-  line-height: 1.8;
+  line-height: 1.6;
+  font-family: 'FangSong', '仿宋', 'STFangsong', '华文仿宋', 'Noto Serif SC', serif;
 }
 
 .banner-btns {
@@ -495,6 +549,52 @@ onUnmounted(() => {
   50% { transform: translateX(-50%) translateY(10px); }
 }
 
+.tech-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 0px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(79, 9, 21, 0.85), rgba(52, 16, 23, 0.9));
+  backdrop-filter: blur(12px);
+  border-radius: 0px 999px 999px 0px;
+  border: 2px solid rgba(218, 165, 32, 0.6);
+  box-shadow: 0 8px 32px rgba(79, 9, 21, 0.4), 0 0 20px rgba(218, 165, 32, 0.15);
+  z-index: 2;
+  animation: techGlow 3s ease-in-out infinite;
+}
+
+@keyframes techGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(79, 9, 21, 0.4), 0 0 20px rgba(218, 165, 32, 0.15); }
+  50% { box-shadow: 0 8px 32px rgba(79, 9, 21, 0.5), 0 0 30px rgba(218, 165, 32, 0.25); }
+}
+
+.tech-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #daa520;
+  font-size: 16px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(218, 165, 32, 0.3);
+}
+
+.tech-item i {
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(218, 165, 32, 0.4));
+}
+
+.tech-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 16px;
+  border-left: 2px solid rgba(218, 165, 32, 0.5);
+  letter-spacing: 0.05em;
+}
+
 .section-header {
   margin-bottom: 60px;
 }
@@ -517,13 +617,6 @@ onUnmounted(() => {
   font-weight: 700;
   color: #333;
   margin-bottom: 16px;
-}
-
-.about-section {
-  position: relative;
-  padding: 120px 0;
-  background: #fdf5e6;
-  overflow: hidden;
 }
 
 .features-section {
@@ -557,9 +650,7 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.parallax-bg-1 {
-  background: radial-gradient(circle at 20% 50%, rgba(79, 9, 21, 0.05) 0%, transparent 50%);
-}
+
 
 .parallax-bg-2 {
   background: radial-gradient(circle at 80% 30%, rgba(218, 165, 32, 0.08) 0%, transparent 50%);
@@ -577,56 +668,10 @@ onUnmounted(() => {
   background: radial-gradient(circle at 50% 20%, rgba(79, 9, 21, 0.05) 0%, transparent 50%);
 }
 
-.about-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-
-.about-text p {
-  font-size: 16px;
-  color: #666;
-  line-height: 1.8;
-  margin-bottom: 20px;
-}
-
-.about-stats {
-  display: flex;
-  gap: 60px;
-  margin-top: 40px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 48px;
-  font-weight: 700;
-  color: #4f0915;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-
-.about-image {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(139, 0, 0, 0.15);
-}
-
-.about-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
 .features-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
   padding: 120px 0;
   background: #fff;
 }
@@ -1088,7 +1133,6 @@ onUnmounted(() => {
   color: #2f241d;
 }
 
-.about-section,
 .events-section,
 .gallery-section {
   background:
@@ -1101,7 +1145,6 @@ onUnmounted(() => {
     linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(250, 246, 239, 0.9));
 }
 
-.about-image,
 .feature-item,
 .event-item,
 .knowledge-card,
@@ -1110,26 +1153,6 @@ onUnmounted(() => {
   box-shadow:
     0 22px 46px rgba(74, 46, 23, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.68);
-}
-
-.about-image {
-  border-radius: 26px;
-}
-
-.about-image img {
-  border-radius: 26px;
-}
-
-.about-text p {
-  color: #695647;
-}
-
-.stat-item {
-  min-width: 124px;
-  padding: 14px 18px;
-  border-radius: 18px;
-  background: rgba(255, 251, 246, 0.76);
-  border: 1px solid rgba(190, 157, 124, 0.18);
 }
 
 .feature-item {
@@ -1220,7 +1243,6 @@ onUnmounted(() => {
     letter-spacing: 12px;
   }
 
-  .about-content,
   .event-item {
     grid-template-columns: 1fr;
     gap: 28px;
@@ -1265,7 +1287,6 @@ onUnmounted(() => {
     padding: 88px 0;
   }
 
-  .about-stats,
   .event-meta {
     flex-direction: column;
     gap: 12px;

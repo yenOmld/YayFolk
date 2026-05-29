@@ -94,7 +94,7 @@
                   :class="{ active: draft.scene === scene.id }"
                   @click="draft.scene = scene.id"
                 >
-                  <strong>{{ scene.name }}</strong>
+                  <strong>{{ scene.name }}</strong><br>
                   <span>{{ scene.brief }}</span>
                 </button>
               </div>
@@ -113,7 +113,7 @@
                   :class="{ active: draft.imageSize === size.id }"
                   @click="draft.imageSize = size.id"
                 >
-                  <strong>{{ size.aspect }}</strong>
+                  <strong>{{ size.aspect }}</strong><br>
                   <span>{{ size.shortDesc }}</span>
                 </button>
               </div>
@@ -278,7 +278,11 @@ async function goNext() {
       imageSize: draft.value.imageSize,
       title: draft.value.title || `${selectedStyle.value.name} 成品展示`,
       content: draft.value.content || `${selectedStyle.value.name} · ${scenePresets.find(item => item.id === draft.value.scene)?.name || '构图场景'}`,
-      generatedImageUrl: response.data.url
+      generatedImageUrl: response.data.url,
+      merchType: '',
+      merchColor: '',
+      merchCustomColor: '',
+      merchGeneratedImageUrl: ''
     })
 
     await new Promise(resolve => setTimeout(resolve, 350))
