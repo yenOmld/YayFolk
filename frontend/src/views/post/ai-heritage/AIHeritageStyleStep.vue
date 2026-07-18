@@ -71,9 +71,7 @@
                   :class="{ active: draft.posterStyle === style.id }"
                   @click="selectStyle(style)"
                 >
-                  <span class="option-icon" :style="{ background: style.gradient }">
-                    <i :class="style.icon"></i>
-                  </span>
+                  <span class="option-icon" v-html="style.icon"></span>
                   <strong>{{ style.name }}</strong>
                   <span>{{ style.shortDesc }}</span>
                 </button>
@@ -643,7 +641,8 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  background: rgba(157, 41, 41, 0.08);
+  color: #9d2929;
   font-size: 22px;
 }
 

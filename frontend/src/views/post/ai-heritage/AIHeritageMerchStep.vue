@@ -71,8 +71,9 @@
                   :class="{ active: draft.merchType === type.id }"
                   @click="selectMerchType(type)"
                 >
-                  <span class="merch-icon" :style="{ background: type.gradient }">
-                    <i :class="type.icon"></i>
+                  <span class="merch-icon" style="background: rgba(157, 41, 41, 0.1)">
+                    <i v-if="type.icon.startsWith('bx')" :class="type.icon"></i>
+                    <span v-else v-html="type.icon" class="custom-icon"></span>
                   </span>
                   <strong>{{ type.name }}</strong>
                   <span>{{ type.brief }}</span>

@@ -86,9 +86,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 const props = defineProps({
-  modelUrl: { type: String, default: 'https://yayfolk.bhyy.online/static/China-Dragon.glb' },
+  modelUrl: { type: String, default: '/China-Dragon-compressed.glb' },
   timelineData: { type: Array, required: true },
   subtitle: {
     type: String,
@@ -108,6 +109,36 @@ const cardRefs = ref({})
 const reversedTimelineData = computed(() => [...props.timelineData].reverse())
 const totalEntries = computed(() => reversedTimelineData.value.length)
 const activeEntry = computed(() => reversedTimelineData.value[activeIndex.value] || null)
+
+// ── Preload: start fetching model immediately (not waiting for mount) ──
+let preloadPromise = null
+let preloadGLTF = null
+function preloadModel(url) {
+  if (preloadPromise) return preloadPromise
+  const loader = new GLTFLoader()
+  const dracoLoader = new DRACOLoader()
+  dracoLoader.setDecoderPath('/draco/')
+  dracoLoader.setDecoderConfig({ type: 'js' })
+  loader.setDRACOLoader(dracoLoader)
+  preloadPromise = loader.loadAsync(url).then(gltf => {
+    preloadGLTF = gltf
+    return gltf
+  }).catch(err => {
+    console.warn('Model preload failed, will retry on mount:', err.message)
+    preloadPromise = null
+    return null
+  })
+  // Inject <link rel="preload"> for HTTP/2 early fetch
+  if (typeof document !== 'undefined') {
+    const link = document.createElement('link')
+    link.rel = 'preload'
+    link.href = url
+    link.as = 'fetch'
+    link.crossOrigin = 'anonymous'
+    document.head.appendChild(link)
+  }
+  return preloadPromise
+}
 
 let renderer, scene, camera, model
 let scrollTrigger
@@ -154,9 +185,17 @@ function initThree() {
 }
 
 async function loadModel() {
-  const loader = new GLTFLoader()
   try {
-    const gltf = await loader.loadAsync(props.modelUrl)
+    // Use preloaded model if already fetched, otherwise load now
+    let gltf = preloadGLTF
+    if (!gltf) {
+      const loader = new GLTFLoader()
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('/draco/')
+      dracoLoader.setDecoderConfig({ type: 'js' })
+      loader.setDRACOLoader(dracoLoader)
+      gltf = await loader.loadAsync(props.modelUrl)
+    }
     model = gltf.scene
 
     const box = new THREE.Box3().setFromObject(model)
@@ -303,6 +342,8 @@ function disposeModel() {
 
 onMounted(() => {
   initThree()
+  // Start preloading immediately — loadModel will reuse cached result
+  preloadModel(props.modelUrl)
   loadModel()
   setTimeout(() => setupScrollTrigger(), 300)
   animate()

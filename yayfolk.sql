@@ -1,0 +1,1308 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : mysql_腾讯云服务器
+ Source Server Type    : MySQL
+ Source Server Version : 80044
+ Source Host           : 124.220.227.205:3306
+ Source Schema         : yayfolk
+
+ Target Server Type    : MySQL
+ Target Server Version : 80044
+ File Encoding         : 65001
+
+ Date: 30/04/2026 11:40:44
+*/
+DROP DATABASE IF EXISTS `yayfolk`;
+CREATE DATABASE `yayfolk` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `yayfolk`;
+
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for activities
+-- ----------------------------
+DROP TABLE IF EXISTS `activities`;
+CREATE TABLE `activities`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `merchant_id` bigint(0) NOT NULL,
+  `category_id` int(0) NULL DEFAULT NULL,
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `subtitle` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `images` json NULL,
+  `video_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `video_cover_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `activity_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `heritage_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `start_time` datetime(0) NOT NULL,
+  `end_time` datetime(0) NOT NULL,
+  `signup_start_time` datetime(0) NULL DEFAULT NULL,
+  `signup_end_time` datetime(0) NULL DEFAULT NULL,
+  `max_participants` int(0) NULL DEFAULT NULL,
+  `current_participants` int(0) NULL DEFAULT 0,
+  `price` int(0) NULL DEFAULT 0,
+  `original_price` int(0) NULL DEFAULT NULL,
+  `location_province` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `location_city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `location_district` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `location_detail` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'signup',
+  `audit_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending',
+  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `is_recommend` tinyint(1) NULL DEFAULT 0,
+  `view_count` int(0) NULL DEFAULT 0,
+  `signup_count` int(0) NULL DEFAULT 0,
+  `collect_count` int(0) NULL DEFAULT 0,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
+  `merchant_profile_id` bigint(0) NULL DEFAULT NULL COMMENT 'normalized merchant id, merchant_profiles.id',
+  `avg_score` double NULL DEFAULT 0,
+  `review_count` int(0) NULL DEFAULT 0,
+  `vr_model_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT 'VR模型URL',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `fk_activities_merchant`(`merchant_id`) USING BTREE,
+  INDEX `idx_activities_merchant_profile`(`merchant_profile_id`) USING BTREE,
+  CONSTRAINT `fk_activities_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_activities_merchant_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 90 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of activities
+-- ----------------------------
+INSERT INTO `activities` VALUES (4, 10025, NULL, '京剧脸谱沉浸体验', '京剧脸谱沉浸体验，沉浸感更足', 'https://yayfolk.bhyy.online/activities/4/images/1.png', '[\"https://yayfolk.bhyy.online/activities/4/images/1.png\", \"https://yayfolk.bhyy.online/activities/4/images/2.png\", \"https://yayfolk.bhyy.online/activities/4/images/3.png\", \"https://yayfolk.bhyy.online/activities/4/images/4.png\"]', NULL, NULL, '围绕“京剧脸谱沉浸体验”设计的活动，参与者会先了解相关剧种与表演背景，再完成核心体验步骤。活动以现场讲解和动手体验为主，适合喜欢戏曲文化的人。', NULL, '传统戏曲', '2026-03-15 09:30:00', '2026-03-15 12:30:00', '2026-03-01 09:30:00', '2026-03-14 09:30:00', 40, 2, 8800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'ended', 'approved', '', 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4.5, 2, NULL);
+INSERT INTO `activities` VALUES (5, 10025, NULL, '景泰蓝掐丝点蓝工坊', '景泰蓝掐丝点蓝工坊，把器物做得更精巧', 'https://yayfolk.bhyy.online/activities/5/images/1.png', '[\"https://yayfolk.bhyy.online/activities/5/images/1.png\", \"https://yayfolk.bhyy.online/activities/5/images/2.png\"]', NULL, NULL, '围绕“景泰蓝掐丝点蓝工坊”设计的活动，参与者会先了解金属或镶嵌工艺，再完成一个小型成品或半成品。适合喜欢精细手作的人。', 'offline', '金工器物', '2026-04-29 09:30:00', '2026-04-29 12:30:00', '2026-04-15 09:30:00', '2026-04-28 09:30:00', 12, 1, 12800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'ended', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-29 13:14:16', 2, 5, 1, NULL);
+INSERT INTO `activities` VALUES (6, 10025, NULL, '庙会面塑亲子课程', '庙会面塑亲子课程，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/6/images/1.png', '[\"https://yayfolk.bhyy.online/activities/6/images/1.png\", \"https://yayfolk.bhyy.online/activities/6/images/2.png\", \"https://yayfolk.bhyy.online/activities/6/images/3.png\"]', NULL, NULL, '围绕“庙会面塑亲子课程”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-04-30 09:30:00', '2026-04-30 12:30:00', '2026-04-16 09:30:00', '2026-04-29 09:30:00', 20, 0, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'ongoing', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-30 11:02:16', 2, 4, 1, NULL);
+INSERT INTO `activities` VALUES (7, 10025, NULL, '中轴灯彩夜游手作课', '中轴灯彩夜游手作课，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/7/images/1.png', '[\"https://yayfolk.bhyy.online/activities/7/images/1.png\", \"https://yayfolk.bhyy.online/activities/7/images/2.png\", \"https://yayfolk.bhyy.online/activities/7/images/3.png\"]', NULL, NULL, '围绕“中轴灯彩夜游手作课”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-01 09:30:00', '2026-05-01 12:30:00', '2026-04-17 09:30:00', '2026-04-30 09:30:00', 20, 0, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (8, 10025, NULL, '清明风筝彩绘体验', '清明风筝彩绘体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/8/images/1.png', '[\"https://yayfolk.bhyy.online/activities/8/images/1.png\", \"https://yayfolk.bhyy.online/activities/8/images/2.png\", \"https://yayfolk.bhyy.online/activities/8/images/3.png\"]', NULL, NULL, '围绕“清明风筝彩绘体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-02 09:30:00', '2026-05-02 12:30:00', '2026-04-18 09:30:00', '2026-05-01 09:30:00', 20, 0, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (9, 10025, NULL, '京绣节庆纹样体验', '京绣节庆纹样体验，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/9/images/1.png', '[\"https://yayfolk.bhyy.online/activities/9/images/1.png\", \"https://yayfolk.bhyy.online/activities/9/images/2.png\", \"https://yayfolk.bhyy.online/activities/9/images/3.png\"]', NULL, NULL, '围绕“京绣节庆纹样体验”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-03 09:30:00', '2026-05-03 12:30:00', '2026-04-19 09:30:00', '2026-05-02 09:30:00', 16, 0, 9800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4, 1, NULL);
+INSERT INTO `activities` VALUES (10, 10025, NULL, '兔儿爷彩塑手作课', '兔儿爷彩塑手作课，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/10/images/1.png', '[\"https://yayfolk.bhyy.online/activities/10/images/1.png\", \"https://yayfolk.bhyy.online/activities/10/images/2.png\", \"https://yayfolk.bhyy.online/activities/10/images/3.png\"]', NULL, NULL, '围绕“兔儿爷彩塑手作课”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-04 09:30:00', '2026-05-04 12:30:00', '2026-04-20 09:30:00', '2026-05-03 09:30:00', 20, 0, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 5, 1, NULL);
+INSERT INTO `activities` VALUES (11, 10025, NULL, '京作剪纸窗花体验', '京作剪纸窗花体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/11/images/1.png', '[\"https://yayfolk.bhyy.online/activities/11/images/1.png\", \"https://yayfolk.bhyy.online/activities/11/images/2.png\"]', NULL, NULL, '围绕“京作剪纸窗花体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-05 09:30:00', '2026-05-05 12:30:00', '2026-04-21 09:30:00', '2026-05-04 09:30:00', 20, 1, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (12, 10025, NULL, '毛猴造景手作课', '毛猴造景手作课，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/12/images/1.png', '[\"https://yayfolk.bhyy.online/activities/12/images/1.png\", \"https://yayfolk.bhyy.online/activities/12/images/2.png\"]', NULL, NULL, '围绕“毛猴造景手作课”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-06 09:30:00', '2026-05-06 12:30:00', '2026-04-22 09:30:00', '2026-05-05 09:30:00', 20, 0, 6800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 4, 1, NULL);
+INSERT INTO `activities` VALUES (13, 10025, NULL, '冰糖葫芦熬糖体验', '冰糖葫芦熬糖体验，把节气和生活感做出来', 'https://yayfolk.bhyy.online/activities/13/images/1.png', '[\"https://yayfolk.bhyy.online/activities/13/images/1.png\"]', NULL, NULL, '围绕“冰糖葫芦熬糖体验”设计的活动，参与者会从节俗、饮食或生活手作切入，再完成轻松的现场体验。氛围偏亲子和入门向，比较容易上手。', NULL, '民俗生活', '2026-05-07 09:30:00', '2026-05-07 12:30:00', '2026-04-23 09:30:00', '2026-05-06 09:30:00', 30, 0, 5800, NULL, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 2, 5, 1, NULL);
+INSERT INTO `activities` VALUES (14, 10026, NULL, '苏绣针法体验课', '苏绣针法体验课，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/14/images/1.png', '[\"https://yayfolk.bhyy.online/activities/14/images/1.png\"]', NULL, NULL, '围绕“苏绣针法体验课”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-02 14:00:00', '2026-05-02 17:00:00', '2026-04-18 14:00:00', '2026-05-01 14:00:00', 16, 0, 9800, NULL, '江苏', '苏州', '姑苏区', '苏州市姑苏区苏作匠心馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 3, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (15, 10026, NULL, '昆山腔身段体验', '昆山腔身段体验，沉浸感更足', 'https://yayfolk.bhyy.online/activities/15/images/1.png', '[\"https://yayfolk.bhyy.online/activities/15/images/1.png\"]', NULL, NULL, '围绕“昆山腔身段体验”设计的活动，参与者会先了解相关剧种与表演背景，再完成核心体验步骤。活动以现场讲解和动手体验为主，适合喜欢戏曲文化的人。', NULL, '传统戏曲', '2026-03-20 14:00:00', '2026-03-20 17:00:00', '2026-03-06 14:00:00', '2026-03-19 14:00:00', 40, 2, 8800, NULL, '江苏', '苏州', '姑苏区', '苏州市姑苏区苏作匠心馆', 'ended', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:29', 3, 4, 2, NULL);
+INSERT INTO `activities` VALUES (16, 10026, NULL, '苏扇绘制与装裱课', '苏扇绘制与装裱课，感受木竹手作的纹理', 'https://yayfolk.bhyy.online/activities/16/images/1.png', '[\"https://yayfolk.bhyy.online/activities/16/images/1.png\", \"https://yayfolk.bhyy.online/activities/16/images/2.png\", \"https://yayfolk.bhyy.online/activities/16/images/3.png\"]', NULL, NULL, '围绕“苏扇绘制与装裱课”设计的活动，参与者会先了解材料特性和基本技法，再完成雕刻、编织或装裱相关体验。成品兼具实用感和手作感。', NULL, '木竹雕艺', '2026-05-04 14:00:00', '2026-05-04 17:00:00', '2026-04-20 14:00:00', '2026-05-03 14:00:00', 18, 0, 8800, NULL, '江苏', '苏州', '姑苏区', '苏州市姑苏区苏作匠心馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 3, 5, 1, NULL);
+INSERT INTO `activities` VALUES (17, 10026, NULL, '缂丝经纬体验课', '缂丝经纬体验课，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/17/images/1.png', '[\"https://yayfolk.bhyy.online/activities/17/images/1.png\", \"https://yayfolk.bhyy.online/activities/17/images/2.png\"]', NULL, NULL, '围绕“缂丝经纬体验课”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-05 14:00:00', '2026-05-05 17:00:00', '2026-04-21 14:00:00', '2026-05-04 14:00:00', 16, 0, 9800, NULL, '江苏', '苏州', '姑苏区', '苏州市姑苏区苏作匠心馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 3, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (18, 10027, NULL, '云锦织机观摩与纹样设计', '云锦织机观摩与纹样设计，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/18/images/1.png', '[\"https://yayfolk.bhyy.online/activities/18/images/1.png\"]', NULL, NULL, '围绕“云锦织机观摩与纹样设计”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-06 09:30:00', '2026-05-06 12:30:00', '2026-04-22 09:30:00', '2026-05-05 09:30:00', 16, 0, 9800, NULL, '江苏', '南京', '秦淮区', '南京市秦淮区金陵雅集馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 4, 4, 1, NULL);
+INSERT INTO `activities` VALUES (19, 10027, NULL, '木版年画印制课', '木版年画印制课，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/19/images/1.png', '[\"https://yayfolk.bhyy.online/activities/19/images/1.png\"]', NULL, NULL, '围绕“木版年画印制课”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-07 09:30:00', '2026-05-07 12:30:00', '2026-04-23 09:30:00', '2026-05-06 09:30:00', 20, 0, 6800, NULL, '江苏', '南京', '秦淮区', '南京市秦淮区金陵雅集馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 4, 2.5, 1, NULL);
+INSERT INTO `activities` VALUES (20, 10027, NULL, '秦淮灯彩夜游体验', '秦淮灯彩夜游体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/20/images/1.png', '[\"https://yayfolk.bhyy.online/activities/20/images/1.png\"]', NULL, NULL, '围绕“秦淮灯彩夜游体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-08 09:30:00', '2026-05-08 12:30:00', '2026-04-24 09:30:00', '2026-05-07 09:30:00', 20, 0, 6800, NULL, '江苏', '南京', '秦淮区', '南京市秦淮区金陵雅集馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 4, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (21, 10027, NULL, '宋锦织造纹样体验', '宋锦织造纹样体验，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/21/images/1.png', '[\"https://yayfolk.bhyy.online/activities/21/images/1.png\", \"https://yayfolk.bhyy.online/activities/21/images/2.png\"]', NULL, NULL, '围绕“宋锦织造纹样体验”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-09 09:30:00', '2026-05-09 12:30:00', '2026-04-25 09:30:00', '2026-05-08 09:30:00', 16, 0, 9800, NULL, '江苏', '南京', '秦淮区', '南京市秦淮区金陵雅集馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 4, 4, 1, NULL);
+INSERT INTO `activities` VALUES (22, 10027, NULL, '清明踏青习俗导览', '清明踏青习俗导览，把节气和生活感做出来', 'https://yayfolk.bhyy.online/activities/22/images/1.png', '[\"https://yayfolk.bhyy.online/activities/22/images/1.png\", \"https://yayfolk.bhyy.online/activities/22/images/2.png\"]', NULL, NULL, '围绕“清明踏青习俗导览”设计的活动，参与者会从节俗、饮食或生活手作切入，再完成轻松的现场体验。氛围偏亲子和入门向，比较容易上手。', NULL, '民俗生活', '2026-05-10 09:30:00', '2026-05-10 12:30:00', '2026-04-26 09:30:00', '2026-05-09 09:30:00', 30, 0, 5800, NULL, '江苏', '南京', '秦淮区', '南京市秦淮区金陵雅集馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 4, 5, 1, NULL);
+INSERT INTO `activities` VALUES (23, 10028, NULL, '宣纸抄纸体验营', '宣纸抄纸体验营，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/23/images/1.png', '[\"https://yayfolk.bhyy.online/activities/23/images/1.png\"]', NULL, NULL, '围绕“宣纸抄纸体验营”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-05-11 09:30:00', '2026-05-11 12:30:00', '2026-04-27 09:30:00', '2026-05-10 09:30:00', 16, 0, 8800, NULL, '安徽', '黄山', '屯溪区', '黄山市屯溪区徽州四宝体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 5, 4, 1, NULL);
+INSERT INTO `activities` VALUES (24, 10028, NULL, '歙砚雕刻体验', '歙砚雕刻体验，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/24/images/1.png', '[\"https://yayfolk.bhyy.online/activities/24/images/1.png\", \"https://yayfolk.bhyy.online/activities/24/images/2.png\"]', NULL, NULL, '围绕“歙砚雕刻体验”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-05-12 09:30:00', '2026-05-12 12:30:00', '2026-04-28 09:30:00', '2026-05-11 09:30:00', 16, 0, 8800, NULL, '安徽', '黄山', '屯溪区', '黄山市屯溪区徽州四宝体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 5, 3, 1, NULL);
+INSERT INTO `activities` VALUES (25, 10028, NULL, '徽墨制墨闻香课', '徽墨制墨闻香课，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/25/images/1.png', '[\"https://yayfolk.bhyy.online/activities/25/images/1.png\"]', NULL, NULL, '围绕“徽墨制墨闻香课”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-05-13 09:30:00', '2026-05-13 12:30:00', '2026-04-29 09:30:00', '2026-05-12 09:30:00', 16, 0, 8800, NULL, '安徽', '黄山', '屯溪区', '黄山市屯溪区徽州四宝体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 5, 5, 1, NULL);
+INSERT INTO `activities` VALUES (26, 10028, NULL, '端午香包佩饰手作', '端午香包佩饰手作，把节气和生活感做出来', 'https://yayfolk.bhyy.online/activities/26/images/1.png', '[\"https://yayfolk.bhyy.online/activities/26/images/1.png\"]', NULL, NULL, '围绕“端午香包佩饰手作”设计的活动，参与者会从节俗、饮食或生活手作切入，再完成轻松的现场体验。氛围偏亲子和入门向，比较容易上手。', NULL, '民俗生活', '2026-05-14 09:30:00', '2026-05-14 12:30:00', '2026-04-30 09:30:00', '2026-05-13 09:30:00', 30, 0, 5800, NULL, '安徽', '黄山', '屯溪区', '黄山市屯溪区徽州四宝体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 5, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (27, 10029, NULL, '成都糖画庙会体验', '成都糖画庙会体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/27/images/1.png', '[\"https://yayfolk.bhyy.online/activities/27/images/1.png\", \"https://yayfolk.bhyy.online/activities/27/images/2.png\"]', NULL, NULL, '围绕“成都糖画庙会体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-15 14:00:00', '2026-05-15 17:00:00', '2026-05-01 14:00:00', '2026-05-14 14:00:00', 20, 0, 6800, NULL, '四川', '成都', '锦江区', '成都市锦江区蜀风非遗街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:30', 6, 4, 1, NULL);
+INSERT INTO `activities` VALUES (28, 10029, NULL, '川剧变脸夜场互动', '川剧变脸夜场互动，沉浸感更足', 'https://yayfolk.bhyy.online/activities/28/images/1.png', '[\"https://yayfolk.bhyy.online/activities/28/images/1.png\"]', NULL, NULL, '围绕“川剧变脸夜场互动”设计的活动，参与者会先了解相关剧种与表演背景，再完成核心体验步骤。活动以现场讲解和动手体验为主，适合喜欢戏曲文化的人。', NULL, '传统戏曲', '2026-04-12 19:00:00', '2026-04-12 21:00:00', '2026-03-29 19:00:00', '2026-04-11 19:00:00', 40, 3, 8800, NULL, '四川', '成都', '锦江区', '成都市锦江区蜀风非遗街区', 'ended', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 6, 4.3, 3, NULL);
+INSERT INTO `activities` VALUES (29, 10029, NULL, '蜀绣针法体验课', '蜀绣针法体验课，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/29/images/1.png', '[\"https://yayfolk.bhyy.online/activities/29/images/1.png\", \"https://yayfolk.bhyy.online/activities/29/images/2.png\", \"https://yayfolk.bhyy.online/activities/29/images/3.png\"]', NULL, NULL, '围绕“蜀绣针法体验课”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-16 19:00:00', '2026-05-16 22:00:00', '2026-05-02 19:00:00', '2026-05-15 19:00:00', 16, 0, 9800, NULL, '四川', '成都', '锦江区', '成都市锦江区蜀风非遗街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 6, 5, 1, NULL);
+INSERT INTO `activities` VALUES (30, 10029, NULL, '竹编手作半日课', '竹编手作半日课，感受木竹手作的纹理', 'https://yayfolk.bhyy.online/activities/30/images/1.png', '[\"https://yayfolk.bhyy.online/activities/30/images/1.png\", \"https://yayfolk.bhyy.online/activities/30/images/2.png\", \"https://yayfolk.bhyy.online/activities/30/images/3.png\"]', NULL, NULL, '围绕“竹编手作半日课”设计的活动，参与者会先了解材料特性和基本技法，再完成雕刻、编织或装裱相关体验。成品兼具实用感和手作感。', NULL, '木竹雕艺', '2026-05-17 09:30:00', '2026-05-17 12:30:00', '2026-05-03 09:30:00', '2026-05-16 09:30:00', 18, 0, 8800, NULL, '四川', '成都', '锦江区', '成都市锦江区蜀风非遗街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 6, 3, 1, NULL);
+INSERT INTO `activities` VALUES (31, 10030, NULL, '唐风壁画临摹课', '唐风壁画临摹课，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/31/images/1.png', '[\"https://yayfolk.bhyy.online/activities/31/images/1.png\"]', NULL, NULL, '围绕“唐风壁画临摹课”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-18 09:30:00', '2026-05-18 12:30:00', '2026-05-04 09:30:00', '2026-05-17 09:30:00', 20, 0, 6800, NULL, '陕西', '西安', '长安区', '西安市长安区长安艺脉体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 7, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (32, 10030, NULL, '碑刻传拓体验', '碑刻传拓体验，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/32/images/1.png', '[\"https://yayfolk.bhyy.online/activities/32/images/1.png\"]', NULL, NULL, '围绕“碑刻传拓体验”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-05-19 09:30:00', '2026-05-19 12:30:00', '2026-05-05 09:30:00', '2026-05-18 09:30:00', 16, 0, 8800, NULL, '陕西', '西安', '长安区', '西安市长安区长安艺脉体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 7, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (33, 10030, NULL, '长安宫灯彩绘夜游', '长安宫灯彩绘夜游，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/33/images/1.png', '[\"https://yayfolk.bhyy.online/activities/33/images/1.png\"]', NULL, NULL, '围绕“长安宫灯彩绘夜游”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-20 09:30:00', '2026-05-20 12:30:00', '2026-05-06 09:30:00', '2026-05-19 09:30:00', 20, 0, 6800, NULL, '陕西', '西安', '长安区', '西安市长安区长安艺脉体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 7, 4, 1, NULL);
+INSERT INTO `activities` VALUES (34, 10031, NULL, '苗绣纹样体验', '苗绣纹样体验，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/34/images/1.png', '[\"https://yayfolk.bhyy.online/activities/34/images/1.png\"]', NULL, NULL, '围绕“苗绣纹样体验”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-21 09:30:00', '2026-05-21 12:30:00', '2026-05-07 09:30:00', '2026-05-20 09:30:00', 16, 0, 9800, NULL, '贵州', '黔东南', '凯里市', '凯里市苗岭锦绣体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 8, 5, 1, NULL);
+INSERT INTO `activities` VALUES (35, 10031, NULL, '银饰锻制体验', '银饰锻制体验，把器物做得更精巧', 'https://yayfolk.bhyy.online/activities/35/images/1.png', '[\"https://yayfolk.bhyy.online/activities/35/images/1.png\", \"https://yayfolk.bhyy.online/activities/35/images/2.png\", \"https://yayfolk.bhyy.online/activities/35/images/3.png\"]', NULL, NULL, '围绕“银饰锻制体验”设计的活动，参与者会先了解金属或镶嵌工艺，再完成一个小型成品或半成品。适合喜欢精细手作的人。', NULL, '金工器物', '2026-05-22 09:30:00', '2026-05-22 12:30:00', '2026-05-08 09:30:00', '2026-05-21 09:30:00', 12, 0, 12800, NULL, '贵州', '黔东南', '凯里市', '凯里市苗岭锦绣体验馆', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 8, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (36, 10032, NULL, '壮锦织机体验', '壮锦织机体验，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/36/images/1.png', '[\"https://yayfolk.bhyy.online/activities/36/images/1.png\"]', NULL, NULL, '围绕“壮锦织机体验”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-23 09:30:00', '2026-05-23 12:30:00', '2026-05-09 09:30:00', '2026-05-22 09:30:00', 16, 0, 9800, NULL, '广西', '南宁', '青秀区', '南宁市青秀区壮锦体验街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 9, 4, 1, NULL);
+INSERT INTO `activities` VALUES (37, 10032, NULL, '铜鼓民俗展演', '铜鼓民俗展演，把节气和生活感做出来', 'https://yayfolk.bhyy.online/activities/37/images/1.png', '[\"https://yayfolk.bhyy.online/activities/37/images/1.png\"]', NULL, NULL, '围绕“铜鼓民俗展演”设计的活动，参与者会从节俗、饮食或生活手作切入，再完成轻松的现场体验。氛围偏亲子和入门向，比较容易上手。', NULL, '民俗生活', '2026-05-24 09:30:00', '2026-05-24 12:30:00', '2026-05-10 09:30:00', '2026-05-23 09:30:00', 30, 0, 5800, NULL, '广西', '南宁', '青秀区', '南宁市青秀区壮锦体验街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 9, 2.5, 1, NULL);
+INSERT INTO `activities` VALUES (38, 10033, NULL, '杨柳青年画木版印刷', '杨柳青年画木版印刷，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/38/images/1.png', '[\"https://yayfolk.bhyy.online/activities/38/images/1.png\"]', NULL, NULL, '围绕“杨柳青年画木版印刷”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-25 09:30:00', '2026-05-25 12:30:00', '2026-05-11 09:30:00', '2026-05-24 09:30:00', 20, 0, 6800, NULL, '天津', '天津', '西青区', '天津市西青区津门年艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 10, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (39, 10033, NULL, '泥人张彩塑体验', '泥人张彩塑体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/39/images/1.png', '[\"https://yayfolk.bhyy.online/activities/39/images/1.png\"]', NULL, NULL, '围绕“泥人张彩塑体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-26 09:30:00', '2026-05-26 12:30:00', '2026-05-12 09:30:00', '2026-05-25 09:30:00', 20, 0, 6800, NULL, '天津', '天津', '西青区', '天津市西青区津门年艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:31', 10, 4, 1, NULL);
+INSERT INTO `activities` VALUES (40, 10033, NULL, '绒花头饰制作课', '绒花头饰制作课，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/40/images/1.png', '[\"https://yayfolk.bhyy.online/activities/40/images/1.png\"]', NULL, NULL, '围绕“绒花头饰制作课”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-27 09:30:00', '2026-05-27 12:30:00', '2026-05-13 09:30:00', '2026-05-26 09:30:00', 16, 0, 9800, NULL, '天津', '天津', '西青区', '天津市西青区津门年艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 10, 5, 1, NULL);
+INSERT INTO `activities` VALUES (41, 10034, NULL, '潍坊风筝扎制体验', '潍坊风筝扎制体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/41/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/41/images/1.webp\"]', NULL, NULL, '围绕“潍坊风筝扎制体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-28 09:30:00', '2026-05-28 12:30:00', '2026-05-14 09:30:00', '2026-05-27 09:30:00', 20, 0, 6800, NULL, '山东', '潍坊', '潍城区', '潍坊市潍城区齐鲁巧艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 11, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (42, 10034, NULL, '鲁派剪纸窗花工坊', '鲁派剪纸窗花工坊，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/42/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/42/images/1.webp\"]', NULL, NULL, '围绕“鲁派剪纸窗花工坊”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-29 09:30:00', '2026-05-29 12:30:00', '2026-05-15 09:30:00', '2026-05-28 09:30:00', 20, 0, 6800, NULL, '山东', '潍坊', '潍城区', '潍坊市潍城区齐鲁巧艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 11, 4, 1, NULL);
+INSERT INTO `activities` VALUES (43, 10034, NULL, '花灯扎制夜游体验', '花灯扎制夜游体验，把纹样和年味做出来', 'https://yayfolk.bhyy.online/activities/43/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/43/images/1.webp\"]', NULL, NULL, '围绕“花灯扎制夜游体验”设计的活动，参与者会先认识纹样、造型或印制方法，再完成一件可带走的小作品。整体节奏轻松，适合手作入门。', NULL, '民间美术', '2026-05-30 09:30:00', '2026-05-30 12:30:00', '2026-05-16 09:30:00', '2026-05-29 09:30:00', 20, 0, 6800, NULL, '山东', '潍坊', '潍城区', '潍坊市潍城区齐鲁巧艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 11, 5, 1, NULL);
+INSERT INTO `activities` VALUES (44, 10034, NULL, '鲁绣针法体验营', '鲁绣针法体验营，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/44/images/1.jpg', '[\"https://yayfolk.bhyy.online/activities/44/images/1.jpg\"]', NULL, NULL, '围绕“鲁绣针法体验营”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-05-31 09:30:00', '2026-05-31 12:30:00', '2026-05-17 09:30:00', '2026-05-30 09:30:00', 16, 0, 9800, NULL, '山东', '潍坊', '潍城区', '潍坊市潍城区齐鲁巧艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 11, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (45, 10035, NULL, '唐三彩器形彩绘课', '唐三彩器形彩绘课，把泥和火做成器物', 'https://yayfolk.bhyy.online/activities/45/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/45/images/1.webp\"]', NULL, NULL, '围绕“唐三彩器形彩绘课”设计的活动，参与者会先认识陶土、釉色或烧制流程，再完成拉坯、彩绘或器形体验。适合喜欢器物和慢工细作的人。', NULL, '陶瓷陶艺', '2026-04-20 14:00:00', '2026-04-20 17:00:00', '2026-04-06 14:00:00', '2026-04-19 14:00:00', 14, 2, 12800, NULL, '河南', '洛阳', '老城区', '洛阳市老城区唐艺体验馆', 'ended', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 12, 5, 2, NULL);
+INSERT INTO `activities` VALUES (46, 10036, NULL, '青瓷拉坯烧制课', '青瓷拉坯烧制课，把泥和火做成器物', 'https://yayfolk.bhyy.online/activities/46/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/46/images/1.webp\", \"https://yayfolk.bhyy.online/activities/46/images/2.webp\"]', NULL, NULL, '围绕“青瓷拉坯烧制课”设计的活动，参与者会先认识陶土、釉色或烧制流程，再完成拉坯、彩绘或器形体验。适合喜欢器物和慢工细作的人。', NULL, '陶瓷陶艺', '2026-06-01 09:30:00', '2026-06-01 12:30:00', '2026-05-18 09:30:00', '2026-05-31 09:30:00', 14, 0, 12800, NULL, '浙江', '丽水', '龙泉市', '龙泉市青瓷体验中心', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 13, 5, 1, NULL);
+INSERT INTO `activities` VALUES (47, 10036, NULL, '制扇题字雅集', '制扇题字雅集，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/47/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/47/images/1.webp\"]', NULL, NULL, '围绕“制扇题字雅集”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-06-02 09:30:00', '2026-06-02 12:30:00', '2026-05-19 09:30:00', '2026-06-01 09:30:00', 16, 0, 8800, NULL, '浙江', '丽水', '龙泉市', '龙泉市青瓷体验中心', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 13, 2.5, 1, NULL);
+INSERT INTO `activities` VALUES (48, 10037, NULL, '广绣纹样针法体验', '广绣纹样针法体验，一针一线做出花样', 'https://yayfolk.bhyy.online/activities/48/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/48/images/1.webp\"]', NULL, NULL, '围绕“广绣纹样针法体验”设计的活动，参与者会先了解针法、纹样或织造结构，再完成基础制作体验。适合喜欢布料、花样和手工细活的人。', NULL, '织绣服饰', '2026-06-03 09:30:00', '2026-06-03 12:30:00', '2026-05-20 09:30:00', '2026-06-02 09:30:00', 16, 0, 9800, NULL, '广东', '广州', '越秀区', '广州市越秀区岭南手工艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 14, 4, 1, NULL);
+INSERT INTO `activities` VALUES (49, 10037, NULL, '潮州木雕刻花课', '潮州木雕刻花课，感受木竹手作的纹理', 'https://yayfolk.bhyy.online/activities/49/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/49/images/1.webp\"]', NULL, NULL, '围绕“潮州木雕刻花课”设计的活动，参与者会先了解材料特性和基本技法，再完成雕刻、编织或装裱相关体验。成品兼具实用感和手作感。', NULL, '木竹雕艺', '2026-06-04 09:30:00', '2026-06-04 12:30:00', '2026-05-21 09:30:00', '2026-06-03 09:30:00', 18, 0, 8800, NULL, '广东', '广州', '越秀区', '广州市越秀区岭南手工艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 14, 5, 1, NULL);
+INSERT INTO `activities` VALUES (50, 10037, NULL, '端砚开砚与制砚体验', '端砚开砚与制砚体验，体验文房手作的细致感', 'https://yayfolk.bhyy.online/activities/50/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/50/images/1.webp\"]', NULL, NULL, '围绕“端砚开砚与制砚体验”设计的活动，参与者会先认识纸、墨、砚或拓印相关工序，再完成基础体验。过程讲究耐心和手感，很适合慢慢做。', NULL, '文房工艺', '2026-06-05 09:30:00', '2026-06-05 12:30:00', '2026-05-22 09:30:00', '2026-06-04 09:30:00', 16, 0, 8800, NULL, '广东', '广州', '越秀区', '广州市越秀区岭南手工艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 14, 4.5, 1, NULL);
+INSERT INTO `activities` VALUES (51, 10037, NULL, '龙舟民俗展演', '龙舟民俗展演，把节气和生活感做出来', 'https://yayfolk.bhyy.online/activities/51/images/1.webp', '[\"https://yayfolk.bhyy.online/activities/51/images/1.webp\"]', NULL, NULL, '围绕“龙舟民俗展演”设计的活动，参与者会从节俗、饮食或生活手作切入，再完成轻松的现场体验。氛围偏亲子和入门向，比较容易上手。', NULL, '民俗生活', '2026-06-06 09:30:00', '2026-06-06 12:30:00', '2026-05-23 09:30:00', '2026-06-05 09:30:00', 30, 0, 5800, NULL, '广东', '广州', '越秀区', '广州市越秀区岭南手工艺街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-03-28 09:52:40', '2026-04-28 21:56:32', 14, 4, 1, NULL);
+INSERT INTO `activities` VALUES (70, 10011, NULL, '苏绣针法体验课', '从配线、运针到纹样收口，体验苏绣的细密和耐心。', 'https://yayfolk.bhyy.online/activities/70/images/1.png', '[\"https://yayfolk.bhyy.online/activities/70/images/1.png\", \"https://yayfolk.bhyy.online/activities/70/images/2.png\", \"https://yayfolk.bhyy.online/activities/70/images/3.png\", \"https://yayfolk.bhyy.online/activities/70/images/4.png\", \"https://yayfolk.bhyy.online/activities/70/images/5.png\"]', NULL, NULL, '活动流程\n0:00-0:20 认识苏绣工具与常用绣线\n0:20-0:50 学习穿针、起针和基本针法\n0:50-2:10 选择纹样并完成主体刺绣\n2:10-2:40 收边、装框与作品讲解\n2:40-3:00 合影留念，带走成品\n\n所需材料\n- 绣线\n- 绣布\n- 绣针\n- 绣绷\n- 基础纹样卡\n\n注意事项\n- 建议穿着便于活动的衣物\n- 刺绣过程需要耐心和细致\n- 成品可现场装框或带回家继续完成', 'offline', '织绣服饰', '2026-04-22 09:30:00', '2026-04-22 13:30:00', '2026-04-08 09:30:00', '2026-04-21 09:30:00', 14, 3, 12800, NULL, '江苏', '苏州', '姑苏区', '苏州市姑苏区隽绣刺绣体验馆', 'ended', 'approved', NULL, 0, 0, 0, 0, '2026-03-31 07:45:52', '2026-04-28 21:56:33', 1, 4.3, 3, NULL);
+INSERT INTO `activities` VALUES (77, 10025, NULL, '布头拼接灯与织带手作体验', '把零碎布头做成会发光的家居小物', 'https://yayfolk.bhyy.online/activities/77/images/1.png', '[\"https://yayfolk.bhyy.online/activities/77/images/1.png\"]', NULL, NULL, '这是一场把碎布、织带和灯罩拼成生活小物的体验课。参与者会先挑选底布和拼片，再经过排版、压线、缝合和装灯，完成一盏属于自己的桌灯。点亮后能看到布纹和透光层次，很适合拍照，也能直接带回家使用。', 'offline', '民俗生活', '2026-04-20 10:00:00', '2026-04-20 18:00:00', '2026-04-10 10:00:00', '2026-04-24 23:59:59', 30, 8, 5800, 12800, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'ended', 'approved', NULL, 1, 96, 18, 24, '2026-04-24 10:00:00', '2026-04-28 21:56:33', 2, 4.8, 8, NULL);
+INSERT INTO `activities` VALUES (78, 10025, NULL, '毛线编织手链体验', '从配色、排线到完成一条专属手链', 'https://yayfolk.bhyy.online/activities/78/images/1.png', '[\"https://yayfolk.bhyy.online/activities/78/images/1.png\", \"https://yayfolk.bhyy.online/activities/78/images/2.png\"]', NULL, NULL, '这是一场围绕毛线编织、简单织机和手绳结构展开的体验课。先选颜色，再学习排线和收尾，最后完成一条可以直接佩戴的手链。课程节奏轻松，特别适合第一次体验手作的人。', 'offline', '民俗生活', '2026-04-18 10:00:00', '2026-04-18 13:00:00', '2026-04-20 10:00:00', '2026-05-11 23:59:59', 30, 5, 5800, 9800, '北京', '北京', '东城区', '北京市东城区京华非遗工坊', 'ended', 'approved', NULL, 1, 64, 12, 18, '2026-04-24 10:00:00', '2026-04-28 21:56:33', 2, 4.8, 4, NULL);
+INSERT INTO `activities` VALUES (79, 10048, NULL, '木刻拓印入门课', '从上墨到揭纸，体验一张版画的诞生', 'https://yayfolk.bhyy.online/activities/79/images/1.png', '[\"https://yayfolk.bhyy.online/activities/79/images/1.png\"]', NULL, NULL, '从木刻底版到拓印成图，先认识纸张、墨色和压印力度，再完成一张属于自己的版画小作品。活动节奏轻松，适合第一次接触版画的人。', 'offline', '民间美术', '2026-04-25 09:00:00', '2026-05-02 18:00:00', '2026-04-11 09:00:00', '2026-04-24 23:59:59', 20, 0, 6800, 12800, '浙江', '杭州', '上城区', '杭州市上城区版画手作街区', 'ongoing', 'approved', NULL, 1, 0, 0, 0, '2026-04-24 21:15:00', '2026-04-28 21:56:33', 17, 0, 0, NULL);
+INSERT INTO `activities` VALUES (80, 10048, NULL, '套色版画体验课', '把两种颜色叠出层次', 'https://yayfolk.bhyy.online/activities/80/images/1.png', '[\"https://yayfolk.bhyy.online/activities/80/images/1.png\"]', NULL, NULL, '把不同颜色层层叠在同一张纸上，最有趣的就是揭开那一瞬间的惊喜。你会看到色块、纹样和压印痕迹慢慢变成一张完整作品。', 'offline', '民间美术', '2026-04-26 10:00:00', '2026-05-03 12:30:00', '2026-04-12 10:00:00', '2026-04-25 23:59:59', 20, 0, 6800, 15800, '浙江', '杭州', '上城区', '杭州市上城区版画手作街区', 'ongoing', 'approved', NULL, 0, 0, 0, 0, '2026-04-24 21:15:00', '2026-04-28 21:56:33', 17, 0, 0, NULL);
+INSERT INTO `activities` VALUES (81, 10048, NULL, '手作拓印纹样课', '把喜欢的图案印成随身作品', 'https://yayfolk.bhyy.online/activities/81/images/1.png', '[\"https://yayfolk.bhyy.online/activities/81/images/1.png\"]', NULL, NULL, '从纹样排版到手工压印，再到最后修边装框，整套流程很适合慢慢做。做完以后不仅能带走成品，还能学会一套可重复使用的拓印方法。', 'offline', '民间美术', '2026-05-14 14:00:00', '2026-05-14 17:00:00', '2026-04-19 10:00:00', '2026-05-13 23:59:59', 20, 0, 6800, 9800, '浙江', '杭州', '上城区', '杭州市上城区版画手作街区', 'signup', 'approved', NULL, 0, 0, 0, 0, '2026-04-24 21:15:00', '2026-04-28 21:56:33', 17, 0, 0, NULL);
+INSERT INTO `activities` VALUES (82, 10101, NULL, '傩戏面具雕刻与彩绘体验', '把仪式感和神秘感带回家', 'https://yayfolk.bhyy.online/activities/82/images/1.png', '[\"https://yayfolk.bhyy.online/activities/82/images/1.png\", \"https://yayfolk.bhyy.online/activities/82/images/2.png\", \"https://yayfolk.bhyy.online/activities/82/images/3.png\"]', 'https://yayfolk.bhyy.online/activities/82/video/1.mp4', 'https://yayfolk.bhyy.online/activities/82/images/1.png', '从傩戏面具的纹样讲起，完成面具打磨、上色和细节勾勒。活动会结合民俗故事和现场讲解，适合第一次接触傩文化的参与者。', 'offline', '传统戏曲', '2026-04-19 09:00:00', '2026-04-19 12:00:00', '2026-04-26 09:00:00', '2026-05-11 23:59:59', 12, 4, 18800, 22800, '贵州', '黔东南', '凯里市', '凯里市傩面非遗体验馆', 'ended', 'approved', NULL, 1, 128, 12, 5, '2026-04-26 10:00:00', '2026-04-28 21:56:33', 18, 4.5, 4, 'https://yayfolk.bhyy.online/activities/82/VR/vr.glb');
+INSERT INTO `activities` VALUES (83, 10102, NULL, '布老虎缝制彩绘体验', '一针一线缝出吉祥', 'https://yayfolk.bhyy.online/activities/83/images/1.png', '[\"https://yayfolk.bhyy.online/activities/83/images/1.png\", \"https://yayfolk.bhyy.online/activities/83/images/2.png\", \"https://yayfolk.bhyy.online/activities/83/images/3.png\", \"https://yayfolk.bhyy.online/activities/83/images/4.png\", \"https://yayfolk.bhyy.online/activities/83/images/5.png\", \"https://yayfolk.bhyy.online/activities/83/images/6.png\", \"https://yayfolk.bhyy.online/activities/83/images/7.png\"]', NULL, NULL, '体验布老虎的裁剪、缝制、填充和彩绘流程，完成一只可以抱在手里的手作小老虎。课程节奏轻松，适合亲子和零基础用户。', 'offline', '民间美术', '2026-05-13 14:00:00', '2026-05-13 17:00:00', '2026-04-26 09:00:00', '2026-05-12 23:59:59', 16, 0, 3800, 5800, '陕西', '西安', '碑林区', '西安市碑林区布艺手作街区', 'signup', 'approved', NULL, 1, 96, 10, 8, '2026-04-26 10:00:00', '2026-04-28 21:56:33', 19, 0, 0, 'https://yayfolk.bhyy.online/activities/83/VR/vr.glb');
+INSERT INTO `activities` VALUES (84, 10103, NULL, '点翠发饰工艺体验课', '把宫廷审美做成一枚发饰', 'https://yayfolk.bhyy.online/activities/84/images/1.png', '[\"https://yayfolk.bhyy.online/activities/84/images/1.png\", \"https://yayfolk.bhyy.online/activities/84/images/2.png\", \"https://yayfolk.bhyy.online/activities/84/images/3.png\", \"https://yayfolk.bhyy.online/activities/84/images/4.png\", \"https://yayfolk.bhyy.online/activities/84/images/5.png\", \"https://yayfolk.bhyy.online/activities/84/images/6.png\", \"https://yayfolk.bhyy.online/activities/84/images/7.png\", \"https://yayfolk.bhyy.online/activities/84/images/8.png\"]', NULL, NULL, '从金属底座、羽毛挑选到拼贴镶嵌，完整体验点翠工艺的核心步骤。课程会讲解点翠的历史和现代替代材料，让大家真正理解这门工艺的难点。', 'offline', '金工器物', '2026-05-14 10:00:00', '2026-05-14 12:30:00', '2026-04-26 09:00:00', '2026-05-13 23:59:59', 10, 0, 28000, 32800, '北京', '北京', '东城区', '北京市东城区点翠非遗工坊', 'signup', 'approved', NULL, 1, 150, 18, 11, '2026-04-26 10:00:00', '2026-04-28 21:56:33', 10103, 0, 0, 'https://yayfolk.bhyy.online/activities/84/VR/vr.glb');
+INSERT INTO `activities` VALUES (85, 10104, NULL, '琉璃簪花手作体验课', '通透花片和发间光泽一次做出来', 'https://yayfolk.bhyy.online/activities/85/images/1.jpg', '[\"https://yayfolk.bhyy.online/activities/85/images/1.jpg\", \"https://yayfolk.bhyy.online/activities/85/images/2.png\", \"https://yayfolk.bhyy.online/activities/85/images/3.png\", \"https://yayfolk.bhyy.online/activities/85/images/4.png\", \"https://yayfolk.bhyy.online/activities/85/images/5.png\"]', NULL, NULL, '以琉璃花片的塑形、配色和簪花装配为主，做出一枚带有琉璃质感的发饰。活动成品偏精致路线，拍照也很出片。', 'offline', '金工器物', '2026-05-15 14:00:00', '2026-05-15 17:00:00', '2026-04-26 09:00:00', '2026-05-14 23:59:59', 15, 0, 9800, 13800, '山东', '淄博', '博山区', '淄博市博山琉璃手作馆', 'signup', 'approved', NULL, 1, 84, 9, 4, '2026-04-26 10:00:00', '2026-04-28 21:56:33', 10104, 0, 0, 'https://yayfolk.bhyy.online/activities/85/VR/vr.glb');
+INSERT INTO `activities` VALUES (86, 10105, NULL, '螺钿首饰盒镶嵌体验课', '把海的光泽镶进器物', 'https://yayfolk.bhyy.online/activities/86/images/1.png', '[\"https://yayfolk.bhyy.online/activities/86/images/1.png\", \"https://yayfolk.bhyy.online/activities/86/images/2.png\", \"https://yayfolk.bhyy.online/activities/86/images/3.png\", \"https://yayfolk.bhyy.online/activities/86/images/4.png\", \"https://yayfolk.bhyy.online/activities/86/images/5.png\"]', NULL, NULL, '从贝壳切片、打磨到图案排版和镶嵌，体验螺钿工艺的耐心与精细。最后会完成一只可带走的首饰盒或杯垫。', 'offline', '金工器物', '2026-05-16 09:30:00', '2026-05-16 12:30:00', '2026-04-26 09:00:00', '2026-05-15 23:59:59', 12, 0, 22000, 26800, '江苏', '扬州', '广陵区', '扬州市广陵区螺钿手作街区', 'signup', 'approved', NULL, 1, 72, 8, 3, '2026-04-26 10:00:00', '2026-04-28 21:56:33', 10105, 0, 0, 'https://yayfolk.bhyy.online/activities/86/VR/vr.glb');
+INSERT INTO `activities` VALUES (87, 10106, NULL, '绒花发饰制作体验课', '把春风做成发间花', 'https://yayfolk.bhyy.online/activities/87/images/1.png', '[\"https://yayfolk.bhyy.online/activities/87/images/1.png\", \"https://yayfolk.bhyy.online/activities/87/images/2.png\", \"https://yayfolk.bhyy.online/activities/87/images/3.png\", \"https://yayfolk.bhyy.online/activities/87/images/4.png\", \"https://yayfolk.bhyy.online/activities/87/images/5.png\"]', NULL, NULL, '从绒条捻制、塑形到发饰装配，完整体验南京绒花的基础流程。课程会强调手感和造型层次，成品柔软但很有存在感。', 'offline', '织绣服饰', '2026-04-25 14:00:00', '2026-05-01 17:30:00', '2026-04-11 14:00:00', '2026-04-24 23:59:59', 18, 0, 6800, 9800, '江苏', '南京', '秦淮区', '南京市秦淮区绒花体验馆', 'ongoing', 'approved', NULL, 1, 110, 14, 7, '2026-04-26 10:00:00', '2026-04-28 21:56:34', 10106, 0, 0, 'https://yayfolk.bhyy.online/activities/87/VR/vr.glb');
+INSERT INTO `activities` VALUES (88, 10107, NULL, '青花瓷彩绘体验课', '把瓷上的蓝做得更温柔', 'https://yayfolk.bhyy.online/activities/88/images/1.png', '[\"https://yayfolk.bhyy.online/activities/88/images/1.png\", \"https://yayfolk.bhyy.online/activities/88/images/2.png\", \"https://yayfolk.bhyy.online/activities/88/images/3.png\", \"https://yayfolk.bhyy.online/activities/88/images/4.png\", \"https://yayfolk.bhyy.online/activities/88/images/5.png\"]', 'https://yayfolk.bhyy.online/activities/88/video/1.mp4', 'https://yayfolk.bhyy.online/activities/88/images/1.png', '从青花纹样勾线、分层上色到釉下彩绘，体验瓷器成形背后的细致工艺。课程会让参与者完成一件带有青花纹样的小作品。', 'offline', '陶瓷陶艺', '2026-04-22 09:00:00', '2026-04-22 12:00:00', '2026-04-26 09:00:00', '2026-05-17 23:59:59', 14, 4, 25000, 29800, '江西', '景德镇', '珠山区', '景德镇珠山区青花彩绘工坊', 'ended', 'approved', NULL, 1, 136, 16, 9, '2026-04-26 10:00:00', '2026-04-28 21:56:34', 10107, 4.3, 4, 'https://yayfolk.bhyy.online/activities/88/VR/vr.glb');
+INSERT INTO `activities` VALUES (89, 10011, NULL, '京剧脸谱体验工坊', '零基础体验国粹艺术之美', 'https://yayfolk.bhyy.online/activities/1777398398239/images/1.jpg', '[\"https://yayfolk.bhyy.online/activities/1777398398239/images/1.jpg\", \"https://yayfolk.bhyy.online/activities/1777398398239/images/2.jpg\"]', NULL, 'https://yayfolk.bhyy.online/activities/1777398398239/images/1.jpg', '【活动简介】\n京剧作为中国五大戏曲剧种之一，被列入联合国教科文组织非物质文化遗产名录。本次工坊特别邀请国家级京剧传承人亲临指导，带领学员从认识京剧历史开始，深入了解生、旦、净、丑四大行当的脸谱艺术。\n\n【体验内容】\n1. 京剧基础知识讲解（30分钟）\n2. 脸谱绘制技法教学（60分钟）\n3. 脸谱佩戴与造型体验（30分钟）\n4. 作品展示与合影留念（30分钟）\n\n【成品规格】\n每位学员可完成一幅40x50cm京剧脸谱作品，作品完成后可带走收藏。\n\n【适宜人群】\n8-65周岁传统文化爱好者，无需绘画基础。\n\n【注意事项】\n请勿穿白色或浅色衣物，以免沾染色料。', 'offline', '传统戏曲', '2026-04-30 07:00:00', '2026-04-30 12:00:00', NULL, NULL, 20, 0, 1, NULL, '', '', NULL, '', 'signup', 'pending', NULL, 0, 0, 0, 0, '2026-04-29 01:46:43', '2026-04-30 11:04:11', 1, 0, 0, NULL);
+
+-- ----------------------------
+-- Table structure for activity_reserve_participants
+-- ----------------------------
+DROP TABLE IF EXISTS `activity_reserve_participants`;
+CREATE TABLE `activity_reserve_participants`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `reserve_id` bigint(0) NOT NULL COMMENT '预订ID，关联activity_reserves表',
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者姓名',
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参与者电话',
+  `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  `update_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_reserve_id`(`reserve_id`) USING BTREE,
+  CONSTRAINT `fk_reserve_participants_reserve` FOREIGN KEY (`reserve_id`) REFERENCES `activity_reserves` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '活动预订参与者信息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of activity_reserve_participants
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for activity_reserves
+-- ----------------------------
+DROP TABLE IF EXISTS `activity_reserves`;
+CREATE TABLE `activity_reserves`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `reserve_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint(0) NOT NULL,
+  `merchant_id` bigint(0) NOT NULL,
+  `activity_id` bigint(0) NOT NULL,
+  `activity_title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `activity_time` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `participant_num` int(0) NOT NULL,
+  `total_amount` int(0) NOT NULL,
+  `pay_amount` int(0) NOT NULL,
+  `pay_status` tinyint(0) NULL DEFAULT 0,
+  `reserve_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'registered',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `payment_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `payment_time` datetime(0) NULL DEFAULT NULL,
+  `cancel_time` datetime(0) NULL DEFAULT NULL,
+  `verify_time` datetime(0) NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT NULL,
+  `update_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_activity_reserves_reserve_no`(`reserve_no`) USING BTREE,
+  INDEX `idx_activity_reserves_user_id`(`user_id`) USING BTREE,
+  INDEX `idx_activity_reserves_merchant_id`(`merchant_id`) USING BTREE,
+  INDEX `idx_activity_reserves_activity_id`(`activity_id`) USING BTREE,
+  INDEX `idx_activity_reserves_status`(`reserve_status`) USING BTREE,
+  CONSTRAINT `fk_activity_reserves_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_activity_reserves_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_activity_reserves_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of activity_reserves
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for conversations
+-- ----------------------------
+DROP TABLE IF EXISTS `conversations`;
+CREATE TABLE `conversations`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '会话ID',
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'chat' COMMENT '会话类型: chat-聊天, comment-评论通知, collection-收藏通知',
+  `user1_id` bigint(0) NULL DEFAULT NULL COMMENT '用户1ID（聊天类型）',
+  `user2_id` bigint(0) NULL DEFAULT NULL COMMENT '用户2ID（聊天类型）',
+  `last_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `last_message_time` datetime(0) NULL DEFAULT NULL COMMENT '最后消息时间',
+  `unread_count_user1` int(0) NULL DEFAULT 0 COMMENT '用户1未读数',
+  `unread_count_user2` int(0) NULL DEFAULT 0 COMMENT '用户2未读数',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ai_service',
+  `service_mode` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'ai',
+  `last_human_reply_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_conv_user1`(`user1_id`) USING BTREE,
+  INDEX `idx_conv_user2`(`user2_id`) USING BTREE,
+  INDEX `idx_conv_type`(`type`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会话表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of conversations
+-- ----------------------------
+INSERT INTO `conversations` VALUES (13, 'service', 10011, 10047, NULL, NULL, 0, 0, '2026-04-29 00:42:47', '2026-04-29 00:42:47', 'ai_service', 'ai', NULL);
+
+-- ----------------------------
+-- Table structure for explore_conversations
+-- ----------------------------
+DROP TABLE IF EXISTS `explore_conversations`;
+CREATE TABLE `explore_conversations`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(0) NOT NULL,
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `last_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `last_message_time` datetime(0) NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_explore_conv_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '探索资源对话表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of explore_conversations
+-- ----------------------------
+INSERT INTO `explore_conversations` VALUES (7, 10000, '帮我推荐3个活动项目', '帮我推荐3个活动项目', '2026-04-28 05:16:10', '2026-04-28 05:16:07', '2026-04-28 05:16:10');
+
+-- ----------------------------
+-- Table structure for explore_messages
+-- ----------------------------
+DROP TABLE IF EXISTS `explore_messages`;
+CREATE TABLE `explore_messages`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `conversation_id` bigint(0) NOT NULL,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `intent` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `resources_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_explore_msg_conv`(`conversation_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 39 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '探索资源消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of explore_messages
+-- ----------------------------
+INSERT INTO `explore_messages` VALUES (37, 7, 'user', '帮我推荐3个活动项目', NULL, NULL, '2026-04-28 05:16:07');
+INSERT INTO `explore_messages` VALUES (38, 7, 'assistant', '为您找到相关知识内容', 'KNOWLEDGE_QA', '{\"totalPosts\":3,\"heritages\":[],\"answer\":\"根据参考资料，为您推荐3个非遗活动项目：\\n\\n1. 唐代彩绘体验：亲手为唐代器型上色，听讲解背后的历史故事，感受唐代审美。\\n\\n2. 川剧变脸表演：近距离观看变脸，了解脸谱与节奏的关系，体验后对川剧有更深的认知。\\n\\n3. 脸谱彩绘活动：学习红蓝金等颜色在脸谱中的含义，不仅是涂色，更像在读一张戏曲名片。\",\"query\":\"帮我推荐3个活动项目\",\"totalHeritages\":0,\"intent\":\"KNOWLEDGE_QA\",\"posts\":[{\"createTime\":\"2026-04-27T03:55:00.000+00:00\",\"id\":62,\"title\":\"上手以后更有历史感\",\"userId\":10045,\"content\":\"一边上色一边听器型故事，感觉不是在做普通手工，而是在碰一段很具体的唐代审美。\"},{\"createTime\":\"2026-04-27T03:35:00.000+00:00\",\"id\":58,\"title\":\"川剧变脸现场感很强\",\"userId\":10007,\"content\":\"近距离看变脸真的很震撼，动作一气呵成。老师讲了脸谱和节奏的关系，体验完对川剧一下子就有概念了。\"},{\"createTime\":\"2026-04-27T03:20:00.000+00:00\",\"id\":55,\"title\":\"颜色对比很抓眼\",\"userId\":10044,\"content\":\"红蓝金的搭配特别出效果，老师会解释不同颜色在脸谱里的含义。不是单纯涂色，更像在读一张戏曲名片。\"}]}', '2026-04-28 05:16:10');
+
+-- ----------------------------
+-- Table structure for intangible_cultural_heritage
+-- ----------------------------
+DROP TABLE IF EXISTS `intangible_cultural_heritage`;
+CREATE TABLE `intangible_cultural_heritage`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '非遗项目名称',
+  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '类别：传统美术/传统技艺/传统戏剧等',
+  `subcategory` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '子类别',
+  `dynasty` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '相关朝代',
+  `region` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '地域',
+  `level` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'national' COMMENT '级别：national-国家级，provincial-省级，municipal-市级',
+  `introduction` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '介绍',
+  `history` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '历史故事',
+  `inheritance_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '传承价值',
+  `representative_inheritor` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '代表性传承人',
+  `images` json NULL COMMENT '图片数组',
+  `video_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '视频 URL',
+  `related_poems` json NULL COMMENT '相关诗词',
+  `related_solar_terms` json NULL COMMENT '相关节气',
+  `latitude` decimal(10, 6) NULL DEFAULT NULL COMMENT '纬度',
+  `longitude` decimal(11, 6) NULL DEFAULT NULL COMMENT '经度',
+  `is_featured` tinyint(1) NULL DEFAULT 0 COMMENT '是否推荐',
+  `view_count` int(0) NULL DEFAULT 0 COMMENT '浏览数',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_category`(`category`) USING BTREE,
+  INDEX `idx_dynasty`(`dynasty`) USING BTREE,
+  INDEX `idx_region`(`region`) USING BTREE,
+  INDEX `idx_level`(`level`) USING BTREE,
+  INDEX `idx_featured`(`is_featured`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 181 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '非遗项目库' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of intangible_cultural_heritage
+-- ----------------------------
+INSERT INTO `intangible_cultural_heritage` VALUES (113, '京剧', '传统戏曲', '京剧艺术', '清代', '北京', '', '适合沉浸式感受京味戏曲表演与脸谱文化。', '京剧起源于清代，1790年（乾隆五十五年）为给乾隆皇帝祝寿，扬州盐商组织徽班进京演出。此后，其他徽班相继入京，形成四大徽班。道光年间，汉调艺人加入，形成徽汉合流，京剧由此诞生。历经200多年发展，成为中国戏曲的集大成者。', '京剧作为中国文化的瑰宝，对构建中华民族精神家园有不可替代的作用。京剧的传承延续着科班体系、家族血脉、师徒门户的活态传承网络。京剧的唱腔、表演、脸谱、服饰具有独特艺术价值，是中华民族艺术殿堂里的璀璨明珠。', '梅兰芳（梅派）、程砚秋（程派）、荀慧生（荀派）、尚小云（尚派）、谭富英（谭派）、马连良（马派）等国家级传承人', NULL, NULL, '[\"《京剧》清·爱新觉罗·弘历 徽调汉调聚京城，梨园子弟竞纷呈。 生旦净丑皆成戏，唱念做打见真情。\"]', '[\"立春\", \"雨水\", \"惊蛰\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (114, '景泰蓝制作技艺', '传统手工艺', '金属珐琅工艺', '清代', '北京', '', '适合体验掐丝点蓝的宫廷器物制作。', '景泰蓝又称\"铜胎掐丝珐琅\"，因在明代景泰年间制作技艺最为成熟，且多用蓝色釉料而得名。其起源可追溯到元代，由阿拉伯地区传入中国。明清时期，景泰蓝成为宫廷御用工艺品，景泰年间达到鼎盛。', '景泰蓝体现了中国传统工艺美术的最高水平，是金属胎珐琅器制作技艺的杰出代表。其制作过程融合了青铜工艺、绘画、雕刻等多种艺术形式，具有极高的历史、艺术和科学价值。景泰蓝的传承对于研究中国古代工艺美术具有重要意义。', '钱美华（特国家级）、钟连盛（国家级）、李静（国家级）等景泰蓝制作技艺传承人', NULL, NULL, '[\"《景泰蓝》明·佚名 嵌丝点蓝出宫墙，铜胎金骨韵悠长。 景泰年间臻至美，千秋万代永流芳。\"]', '[\"立秋\", \"白露\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (115, '北京面塑', '传统手工艺', '面塑艺术', '清代', '北京', '', '适合亲手制作节庆面塑与民俗造型。', '北京面塑历史悠久，起源于古代祭祀活动中用面粉捏制的供品。清代中后期，面塑艺术在京城民间广泛流传，成为节庆民俗活动的重要组成部分。民间艺人用面粉、糯米粉等原料，捏制各种人物、动物造型，色彩鲜艳，形象生动。', '北京面塑是北方民间艺术的代表，体现了老北京人的生活智慧和审美情趣。面塑作品题材广泛，包括戏曲人物、神话传说、花鸟虫鱼等，具有重要的民俗学研究价值。面塑技艺的传承延续着师徒口传心授的方式。', '曹珩（面塑艺术家）、张宝琳（面塑艺术家）、冯海瑞（面塑艺术家）等北京面塑传承人', NULL, NULL, '[\"《面塑》清·民间 巧手捏出万象生，五彩纷呈庆太平。 传承百年今犹在，非遗技艺永流芳。\"]', '[\"春节\", \"元宵节\", \"清明\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (116, '宫灯制作技艺', '传统手工艺', '灯彩扎制', '明代', '北京', '', '适合节庆夜游场景与灯彩手作体验。', '宫灯起源于东汉时期，盛行于明清两代。因专为宫廷使用而得名，造型华贵，制作精良。主要有四方灯、六方灯、八方灯、圆灯等造型，以红木、紫檀、花梨等名贵木材为框架，配以丝绢、玻璃等材料制作灯罩，内燃蜡烛，光彩夺目。', '宫灯是中国传统照明艺术与建筑艺术的完美结合，体现了中国传统工艺美术的最高水平。其制作涉及木工、雕刻、绘画、刺绣等多个工艺门类，具有重要的历史、艺术和文化价值。宫灯文化承载着中华民族的审美追求和精神寄托。', '梁俊生（宫灯传承人）、翟文德（宫灯传承人）等宫灯制作技艺传承人', NULL, NULL, '[\"《宫灯》明·高启 宫灯高悬照华堂，红烛摇光夜未央。 千年技艺今犹在，万盏灯火映辉煌。\"]', '[\"元宵节\", \"春节\", \"中秋\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (117, '风筝制作技艺', '传统手工艺', '风筝扎制', '清代', '北京', '', '适合春日户外体验和传统彩绘工艺。', '风筝古称\"纸鸢\"或\"鹞子\"，起源于春秋战国时期，相传为墨子所创。汉代发明纸张后，纸鸢逐渐流行。唐宋时期，风筝制作技艺日趋成熟，造型多样，放飞技巧不断完善。清代达到鼎盛，各地形成不同风格的风筝流派。', '风筝是中国古代四大发明之一——造纸术的延伸应用，体现了中国古代人民的智慧创造力。风筝制作涉及材料学、空气动力学等多个学科，具有重要的科学研究价值。风筝文化承载着人们对美好生活的向往，具有重要的民俗学价值。', '哈亦琦（国家级）、王赤丹（国家级）、赵伟强（国家级）等风筝制作技艺传承人', NULL, NULL, '[\"《纸鸢》宋·寇准 碧落秋方静，腾空力尚微。 如何清风夕，拈弄得游依。\"]', '[\"清明\", \"春分\", \"谷雨\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (118, '苏绣', '传统手工艺', '刺绣艺术', '宋代', '江苏', '', '适合感受宋韵针法与江南审美。', '苏绣发源于苏州地区，距今已有四千多年历史。早在春秋时期，吴地已有刺绣活动。明清时期，苏绣达到鼎盛，形成了图案秀丽、色彩典雅、针法活泼、绣工精细的艺术风格，与湘绣、蜀绣、粤绣并称中国四大名绣。', '苏绣是江南文化的杰出代表，体现了中国传统刺绣艺术的最高水平。苏绣针法丰富多样，有齐针、套针、戗针、乱针等四十多种针法。苏绣作品题材广泛，包括人物、山水、花鸟等，具有重要的艺术研究价值和收藏价值。', '姚建萍（国家级）、王丽华（省级）、林怡（省级）等苏绣传承人', NULL, NULL, '[\"《绣》明·唐寅 荷开并蒂艳，莲结同心双。 针下生花处，人间第一香。\"]', '[\"春分\", \"清明\", \"谷雨\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (119, '南戏昆山腔', '传统戏曲', '昆曲表演', '宋代', '江苏', '', '适合体验宋韵戏曲声腔与舞台身段。', '南戏昆山腔简称昆腔，又称昆曲、昆剧，起源于元末明初的江苏昆山地区。明嘉靖年间，戏曲音乐家魏良辅改革昆山腔，吸收海盐腔、余姚腔的优点，创立委婉细腻的\"水磨腔\"。昆曲以其优美的唱腔和文雅的剧词被誉为\"百戏之祖\"。', '昆曲是中国现存最古老的剧种之一，被誉为\"活化石\"。昆曲的唱腔婉转悠扬，行腔优美，水磨调细腻柔和。昆曲文学价值极高，《牡丹亭》《长生殿》等剧作成为中国文学史上的经典。昆曲对京剧及各地方剧种的形成产生了深远影响。', '梁辰（昆曲传承人）、王芳（昆曲传承人）、张军（昆曲传承人）、沈昳丽（昆曲传承人）等昆曲传承人', NULL, NULL, '[\"《昆曲》明·汤显祖 情不知所起，一往而深，生者可以死，死可以生。\"]', '[\"春分\", \"清明\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (120, '南京云锦', '传统手工艺', '丝织工艺', '宋代', '江苏', '', '适合了解古代织造工艺与纹样设计。', '南京云锦始于元代，盛于明清，因其色泽灿烂如天际云霞而得名。南京云锦是皇家御用贡品，专为宫廷织造。龙袍、官服、宫廷装饰等均用云锦制作。云锦织造工艺复杂，需由拽花工和织手两人配合，一天只能织造五六厘米。', '南京云锦是中国丝织工艺的巅峰之作，代表了中国织锦技艺的最高水平。云锦图案丰富多彩，有龙凤、花鸟、祥云、福寿等纹样，色彩艳丽和谐。云锦织造技艺无法用现代机器完全替代，其传承对于研究中国古代丝织技术具有重要意义。', '周双喜（国家级）、朱枫（省级）、郭俊（省级）等南京云锦传承人', NULL, NULL, '[\"《云锦》清·曹雪芹 缂织金缕织云霞，锦绣文章耀中华。 非遗技艺传千载，匠心独运绽奇葩。\"]', '[\"立秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (121, '桃花坞木版年画', '传统美术', '木版年画', '明代', '江苏', '', '适合春节主题路线和木版印制体验。', '桃花坞木版年画始于明代，起源于苏州桃花坞地区，因地得名。清代康乾年间达到鼎盛，成为中国木版年画的代表之一。桃花坞年画风格独特，构图丰满，色彩鲜艳，题材多为门神、仕女、娃娃、山水、花鸟等，具有浓郁江南水乡特色。', '桃花坞木版年画是江南民间艺术的杰出代表，体现了中国农耕社会的审美观念和民俗信仰。年画寄托了人们对美好生活的向往，具有重要的民俗学研究价值。其雕版和印刷技艺对于研究中国传统印刷术具有重要的参考价值。', '王文瑛（国家级）、房志达（国家级）、叶小芬（省级）等桃花坞木版年画传承人', NULL, NULL, '[\"《年画》清·民间 桃红柳绿映春光，年画贴在门楣上。 驱邪纳福保平安，吉祥如意福满堂。\"]', '[\"春节\", \"立春\", \"元宵节\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (122, '秦淮灯彩', '传统美术', '灯彩艺术', '宋代', '江苏', '', '适合节庆夜游和灯彩制作路线。', '秦淮灯彩历史悠久，起源于六朝时期，盛行于明代。朱元璋定都南京后，秦淮河畔每年元宵节举办灯会，灯火辉煌，蔚为壮观。秦淮灯彩以扎工精巧、色彩绚丽、品种繁多而闻名，有宫灯、纱灯、花灯、动物灯等数千个品种。', '秦淮灯彩是南京历史文化的重要组成部分，体现了江南水乡的民俗风情和审美情趣。灯彩制作涉及扎作、裱糊、绘画、剪纸等多种工艺，具有重要的艺术价值。秦淮灯会已成为国家级非物质文化遗产，是元宵节最重要的民俗活动之一。', '郑峰（省级）、徐水保（省级）、王庆喜（省级）等秦淮灯彩传承人', NULL, NULL, '[\"《秦淮灯影》明·朱元璋 秦淮河畔月华明，万盏灯火照古城。 疑是银河落人间，疑是繁星落金陵。\"]', '[\"元宵节\", \"春节\", \"中秋\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (123, '宣纸制作技艺', '传统手工艺', '造纸工艺', '唐代', '安徽', '', '适合深度体验文房四宝的材料工艺。', '宣纸产于安徽宣城地区，因唐代时属宣州府而得名。宣纸始创于唐代，宋代达到鼎盛，被指定为宫廷用纸。宣纸以青檀皮和沙田稻草为原料，经浸泡、蒸煮、捣浆、抄纸等十八道工序，需一年以上时间才能制成。', '宣纸是中国文房四宝之首，具有\"纸寿千年\"的美誉。宣纸质地绵韧、纹理清晰、不蛀不腐，是书画创作的最佳载体。宣纸制作技艺是中国传统造纸术的杰出代表，对中国书法绘画艺术的传承具有不可替代的作用。', '邢春荣（国家级）、张建平（省级）、戴曦（省级）等宣纸制作技艺传承人', NULL, NULL, '[\"《宣纸》唐·韩愈 宣城出佳纸，质地柔且坚。 落笔惊风雨，书画永流传。\"]', '[\"立秋\", \"白露\", \"寒露\", \"霜降\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (124, '歙砚制作技艺', '传统手工艺', '砚石雕刻', '宋代', '安徽', '', '适合体验砚石选材与雕刻工艺。', '歙砚产于安徽歙县地区，因唐宋时期属歙州而得名。歙砚始于唐代，至今已有一千多年历史。宋代达到鼎盛，与端砚、洮砚、澄泥砚并称中国四大名砚。歙砚石质细腻温润，发墨如油，研出的墨汁不沾不涴。', '歙砚是中国文房四宝之一，具有\"石渠名渊\"的美誉。歙砚制作涉及选石、设计、雕刻、打磨等数十道工序，雕刻题材丰富多样，包括山水、人物、花鸟、瑞兽等。歙砚不仅是实用文具，更是精美的艺术品，具有重要的收藏价值。', '胡震华（国家级）、方建新（省级）、吴振华（省级）等歙砚制作技艺传承人', NULL, NULL, '[\"《歙砚》宋·苏轼 涩不留笔，滑不拒墨。 瓜肤而縠理，金声而玉德。\"]', '[\"立冬\", \"小雪\", \"大雪\", \"冬至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (125, '徽墨制作技艺', '传统手工艺', '徽墨制作', '宋代', '安徽', '', '适合串联笔墨纸砚主题路线。', '徽墨产于安徽徽州地区，因唐宋时期属徽州府而得名。徽墨始于唐代，宋代达到鼎盛，成为文人墨客必备之物。徽墨以松烟、桐油烟为原料，配以麝香、冰片等名贵药材，经炼烟、和料、压模、描金等数十道工序制成。', '徽墨是中国文房四宝之一，具有\"落纸如漆、万载存真\"的美誉。徽墨色泽黑润、香味浓郁、质地细腻，是书法绘画的绝佳用品。徽墨制作技艺融合了制墨、雕刻、书法、绘画等多种艺术形式，具有重要的文化价值。', '项德兴（国家级）、冯良才（省级）、朱建新（省级）等徽墨制作技艺传承人', NULL, NULL, '[\"《徽墨》宋·欧阳修 徽墨落纸云烟起，芳香四溢满书房。 千年传承工艺绝，文化瑰宝永流芳。\"]', '[\"立秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (126, '糖画', '传统手工艺', '糖塑艺术', '清代', '四川', '', '适合亲子与节庆街区体验。', '糖画起源于明代，起源于四川地区，后流传全国。糖画艺人以糖稀为原料，用铜勺舀起糖浆，在石板或大理石上徒手绘制各种图案。糖画题材广泛，有龙凤、花鸟、人物、戏曲等，色彩金黄透明，深受儿童喜爱。', '糖画是中国传统的民间艺术，融合了绘画、雕塑、工艺美术等多种元素。糖画制作讲究\"眼明手快\"，一气呵成，具有独特的艺术魅力。糖画承载着人们对甜蜜美好生活的向往，是春节庙会等民俗活动中不可或缺的组成部分。', '蔡雪静（省级）、陈定兴（省级）等糖画传承人', NULL, NULL, '[\"《糖画》清·民间 金勺舀出万般形，甜蜜蜜中见真情。 童年记忆永难忘，非遗技艺代代传。\"]', '[\"春节\", \"元宵节\", \"清明\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (127, '川剧变脸', '传统戏曲', '戏曲变脸', '清代', '四川', '', '适合夜间剧场和互动表演路线。', '川剧变脸是川剧表演艺术中最具特色的绝技之一，起源于清代中后期。川剧艺人运用抹脸、吹脸、扯脸等技法，在刹那间变换面部色彩和图案，令人叹为观止。变脸技艺经过几代艺人的不断创新和发展，已成为川剧的代表性符号。', '川剧变脸是中国戏曲艺术中最神秘、最精彩的表演技艺之一，体现了川剧艺人高超的表演技巧和深厚的艺术功底。变脸技艺是戏曲艺术与魔术技巧的完美结合，具有极高的观赏价值和艺术研究价值。其传承遵循严格的师徒制度。', '彭登怀（变脸传承人）、肖德美（变脸传承人）、刘谊（变脸传承人）等川剧变脸传承人', NULL, NULL, '[\"《川剧变脸》近现代·佚名 脸谱变幻一瞬间，红蓝白紫任调迁。 川剧绝技惊天下，艺海无涯苦作舟。\"]', '[\"春分\", \"清明\", \"夏至\", \"立秋\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (128, '蜀绣', '传统手工艺', '刺绣艺术', '宋代', '四川', '', '适合体验细腻针法与色彩层次。', '蜀绣又名\"川绣\"，起源于四川地区，距今已有数千年的历史。据记载，西汉时期蜀绣已相当发达，成为宫廷贡品。蜀绣以成都为中心，针法独特，有套针、晕针、斜滚针、旋流针等一百多种针法，形成了自己独特的艺术风格。', '蜀绣是中国四大名绣之一，具有图案秀丽、色彩明快、线条流畅、针法独特的特点。蜀绣绣品题材广泛，包括人物、山水、花鸟、鱼虫等，具有重要的艺术价值。蜀绣技艺的传承对于研究巴蜀文化具有重要意义。', '郝淑萍（国家级）、杨德琼（省级）、孟德芝（省级）等蜀绣传承人', NULL, NULL, '[\"《蜀绣》唐·贾岛 蜀地文章冠四方，绣娘巧手织云裳。 芙蓉锦帐春无限，针下生花万古香。\"]', '[\"春分\", \"清明\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (129, '青神竹编', '传统手工艺', '竹编工艺', '唐代', '四川', '', '适合安排手作课程与山水线路结合。', '青神竹编起源于四川青神县，已有两千多年历史。青神竹编以当地盛产的慈竹为原料，经破竹、刮青、分篾、拉丝等工序，编织成各种生活用品和工艺品。青神竹编造型精美，工艺精湛，兼具实用性和艺术性。', '青神竹编是中国竹编工艺的杰出代表，体现了古代劳动人民的智慧和创造力。竹编制作涉及选竹、破竹、分篾、刮丝、编织等多道工序，每道工序都有严格要求。青神竹编对于研究中国传统竹编工艺具有重要的参考价值。', '陈云华（国家级）、张德明（省级）、吴晓红（省级）等青神竹编传承人', NULL, NULL, '[\"《竹编》唐·杜甫 竹斋闻水声，编竹为篱墙。 此地一为别，孤蓬万里征。\"]', '[\"立夏\", \"小满\", \"芒种\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (130, '唐墓壁画临摹技艺', '传统美术', '壁画临摹', '唐代', '陕西', '', '适合沉浸体验盛唐壁画线描与设色。', '唐墓壁画临摹技艺始于唐代，历代均有传承。唐墓壁画是研究唐代社会生活的重要资料，内容涉及宴饮、出行、乐舞、狩猎等各个层面。临摹技艺通过专业艺人的观察和实践，将原作的笔触、色彩、构图等完美复制，为壁画保护和研究提供了重要手段。', '唐墓壁画临摹技艺是保护和研究古代壁画的重要手段，对于传承中华优秀传统文化具有重要意义。临摹作品不仅保存了壁画的信息，还为壁画的展示和传播提供了可能。临摹技艺要求艺人具备扎实的绘画功底和丰富的历史知识。', '王建平（唐墓壁画临摹传承人）、刘向红（唐墓壁画临摹传承人）等唐墓壁画临摹技艺传承人', NULL, NULL, '[\"《观唐墓壁画》唐·白居易 墓室幽深画满墙，唐风古韵墨犹香。 千年往事今犹在，一壁丹青记盛唐。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (131, '碑刻传拓技艺', '传统美术', '碑刻技艺', '唐代', '陕西', '', '适合文博型游客体验传拓与碑刻艺术。', '碑刻传拓技艺起源于南北朝时期，是中国古代复制石碑文字和图案的传统技法。传拓艺人用宣纸覆盖碑刻，用墨轻轻捶打，使纸面紧贴碑面，呈现碑刻的阴刻效果。传拓作品忠实保留了碑刻的文字和图案，是金石学研究的重要的基础资料。', '碑刻传拓技艺是中华文化遗产保护的重要手段，对于保存和传播古代碑刻艺术具有重要意义。传拓作品可以反复捶制，便于携带和保存，是研究古代书法、篆刻、历史的重要资料。传拓技艺的传承对于金石学的发展具有重要价值。', '李浩（国家级）、程造之（省级）、张建（省级）等碑刻传拓技艺传承人', NULL, NULL, '[\"《传拓》清·翁方纲 金石永年存古意，纸墨相发见精神。 传拓技艺承千载，金石学研究有来人。\"]', '[\"立秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (132, '长安宫灯彩绘', '传统美术', '灯彩彩绘', '唐代', '陕西', '', '适合节庆主题路线和唐风灯彩体验。', '长安宫灯彩绘起源于唐代长安地区，是宫廷灯彩装饰的重要技法。唐代长安是当时的国际大都市，宫廷灯彩华丽精美，彩绘技艺精湛。宫灯彩绘融合了绘画、雕刻、刺绣等多种艺术形式，体现了盛唐时期的审美追求。', '长安宫灯彩绘是唐代工艺美术的杰出代表，体现了盛唐时期的文化繁荣和艺术成就。彩绘图案以祥云、龙凤、花鸟为主，色彩艳丽和谐，具有重要的艺术价值。宫灯彩绘技艺的传承对于研究唐代工艺美术具有重要意义。', '王学文（省级）、曹辛（省级）等长安宫灯彩绘传承人', NULL, NULL, '[\"《长安灯》唐·苏味道 火树银花合，星桥铁锁开。 暗尘随马去，明月逐人来。\"]', '[\"元宵节\", \"春节\", \"中秋\", \"重阳节\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (133, '苗绣', '传统手工艺', '苗族刺绣', '清代', '贵州', '', '适合少数民族主题深度路线。', '苗绣是苗族妇女的传统刺绣技艺，已有数千年的历史。苗族没有文字，苗绣成为记录民族历史和文化的重要载体。苗绣图案题材广泛，有蝴蝶妈妈、龙、鸟、鱼、花等，色彩鲜艳，对比强烈，具有浓郁的民族特色。', '苗绣是苗族文化的\"无字史书\"，承载着苗族的历史传说和审美观念。苗绣图案富有深意，如蝴蝶妈妈是苗族神话中的祖先，苗绣的传承对于研究苗族文化具有重要意义。苗绣技法独特，有平绣、锁绣、绉绣、打籽绣等数十种针法。', '王阿勇（国家级）、吴通贤（省级）、杨阿扭（省级）等苗绣传承人', NULL, NULL, '[\"《苗绣》现代·佚名 蝴蝶妈妈传千年，银线绣出故园天。 针针线线皆情意，苗家儿女代代传。\"]', '[\"春分\", \"清明\", \"谷雨\", \"芒种\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (134, '苗族银饰锻制技艺', '传统手工艺', '银饰锻造', '清代', '贵州', '', '适合与节庆服饰文化一起体验。', '苗族银饰锻制技艺历史悠久，是苗族文化的重要组成部分。苗族银饰包括头饰、颈饰、胸饰、手饰等，造型精美，工艺精湛。苗族银饰不仅是装饰品，更是财富和身份的象征，在苗族传统节日和婚嫁等重要场合不可或缺。', '苗族银饰锻制技艺是苗族工艺美术的杰出代表，体现了苗族人民的审美情趣和工艺水平。银饰制作涉及铸炼、锻打、焊接、雕刻、洗涤等数十道工序，每道工序都有严格要求。苗族银饰承载着苗族的历史传说和文化记忆。', '杨光金（国家级）、龙米谷（省级）、吴通福（省级）等苗族银饰锻制技艺传承人', NULL, NULL, '[\"《苗族银饰》现代·佚名 银花朵朵头上开，叮当作响踏歌来。 苗家姑娘多美丽，银饰辉映百花开。\"]', '[\"春节\", \"清明\", \"端午节\", \"苗年\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (135, '壮锦织造技艺', '传统手工艺', '壮锦织造', '清代', '广西', '', '适合壮乡主题路线和织机体验。', '壮锦是壮族人民的传统手工艺品，起源于宋代，有一千多年的历史。壮锦以棉纱为经、丝线为纬，用腰机手工织造。壮锦图案题材广泛，有几何纹、动物纹、植物纹、人物纹等，色彩鲜艳，对比强烈，具有浓郁的壮族特色。', '壮锦是壮族文化的杰出代表，被誉为\"中国四大名锦\"之一。壮锦织造技艺是壮族妇女世代相传的传统手工艺，体现了壮族人民的审美情趣和创造能力。壮锦图案富有深意，是壮族文化的重要载体。', '谭湘光（国家级）、李村灵（省级）、覃奶卓（省级）等壮锦织造技艺传承人', NULL, NULL, '[\"《壮锦》现代·佚名 壮家儿女心灵巧，织出彩虹满山坡。 经纬交织千年梦，壮锦灿烂耀山河。\"]', '[\"春分\", \"清明\", \"谷雨\", \"芒种\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (136, '铜鼓习俗', '传统民俗', '铜鼓文化', '清代', '广西', '', '适合民俗节庆和少数民族主题串联。', '铜鼓是中国南方和西南地区少数民族的打击乐器，起源于春秋战国时期，距今已有两千多年历史。铜鼓造型庄重，纹饰精美，是权力和财富的象征。铜鼓在壮族、苗族、瑶族、布依族等民族中广泛使用，主要用于祭祀、节庆和丧葬等场合。', '铜鼓是中国南方少数民族文化的重要标志，具有重要的历史、艺术和科学研究价值。铜鼓纹饰内容丰富，有太阳纹、云雷纹、舞蹈纹、竞渡纹等，是研究古代南方民族社会生活的重要资料。铜鼓习俗的传承对于维护民族文化多样性具有重要意义。', '蒙土金（国家级）、韦启军（省级）、莫清辉（省级）等铜鼓习俗传承人', NULL, NULL, '[\"《铜鼓》唐·柳宗元 铜鼓声中岁又除，蛮歌野舞庆有余。 击鼓其镗壮士起，铜鼓习俗代代传。\"]', '[\"春节\", \"清明\", \"端午节\", \"中秋\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (137, '杨柳青年画', '传统美术', '木版年画', '清代', '天津', '', '适合春节主题路线和民艺版画体验。', '杨柳青年画始于明代崇祯年间，产于天津杨柳青镇，因地得名。杨柳青年画以木版印刷与人工彩绘相结合，形成独特的艺术风格。年画题材广泛，有门神、仕女、娃娃、戏曲等，色彩艳丽，形象生动，富有浓郁的民间生活气息。', '杨柳青年画是中国木版年画的杰出代表，与桃花坞年画并称\"南桃北柳\"。杨柳青年画将木版印刷与手工彩绘完美结合，体现了民间艺人的创造智慧。年画寄托了人们对美好生活的向往，具有重要的民俗学研究价值。', '霍庆顺（国家级）、霍庆林（省级）等杨柳青年画传承人', NULL, NULL, '[\"《杨柳青年画》清·民间 年画贴在门楣上，驱邪纳福保平安。 杨柳青青映春色，吉祥如意满人间。\"]', '[\"春节\", \"立春\", \"元宵节\", \"清明\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (138, '泥人张彩塑', '传统美术', '泥塑彩绘', '清代', '天津', '', '适合春节场景和彩塑手作。', '泥人张彩塑起源于清代道光年间，由天津民间艺人张明山创立。张明山技艺精湛，只需与人对坐顷刻，便能将人物形象捏塑出来，形神兼备。泥人张彩塑以戏曲人物、历史人物、民间故事为题材，色彩艳丽，造型生动，富有浓郁的生活气息。', '泥人张彩塑是天津民间艺术的杰出代表，被誉为\"立体的画，无声的戏\"。泥人张彩塑将泥塑与彩绘完美结合，形成独特的艺术风格。泥人张作品题材广泛，形象逼真，具有重要的艺术价值和研究价值。', '张明山（泥人张创始人）、张玉祺（第二代）、张钫（第三代）等泥人张彩塑传承人', NULL, NULL, '[\"《泥人张》清·民间 捏出人间百态形，彩塑泥人最传情。 津门绝技惊天下，栩栩如生见真功。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (139, '潍坊风筝', '传统手工艺', '风筝扎制', '宋代', '山东', '', '适合清明踏青路线和风筝扎制体验。', '潍坊风筝历史悠久，始于明代，盛于清代。潍坊古称\"鸢都\"，是中国风筝的发源地之一。潍坊风筝造型独特，放飞性能优良，有\"放到天上是风景，收在手里是艺术\"的美誉。潍坊风筝种类繁多，有板子风筝、立体风筝、软翅风筝等。', '潍坊风筝是中国风筝的杰出代表，与北京风筝南北呼应。潍坊风筝制作涉及选材、绑扎、绘画、拴线等工序，每道工序都有严格要求。潍坊风筝融合了力学、美学、工艺学等知识，具有重要的科学研究价值。', '郭洪利（国家级）、张效东（省级）、刘志斌（省级）等潍坊风筝传承人', NULL, NULL, '[\"《风筝》清·郑板桥 纸鸢纷纷四月天，东风阵阵放飞鸢。 儿童散学归来早，忙趁东风放纸鸢。\"]', '[\"清明\", \"春分\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (140, '山东剪纸', '传统手工艺', '剪纸艺术', '清代', '山东', '', '适合节庆装饰与手工体验。', '山东剪纸历史悠久，源于山东民间，有一千多年的历史。山东剪纸分为胶东窗花和鲁西北剪纸两大流派。胶东窗花造型简洁，线条粗犷；鲁西北剪纸则细腻精致，构图繁复。山东剪纸题材广泛，有花鸟虫鱼、人物戏曲、吉祥图案等。', '山东剪纸是山东民间艺术的杰出代表，体现了山东人民的审美情趣和精神追求。剪纸作品寄托了人们对美好生活的向往，具有重要的民俗学研究价值。山东剪纸技法独特，有单色剪纸、套色剪纸、分色剪纸等多种形式。', '范祚信（国家级）、赵爱华（省级）、林伟红（省级）等山东剪纸传承人', NULL, NULL, '[\"《剪纸》清·民间 巧手剪出万象生，红纸片片见真情。 剪下生花千万朵，非遗技艺永流芳。\"]', '[\"春节\", \"元宵节\", \"清明\", \"端午节\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (141, '唐三彩', '传统手工艺', '陶俑烧制', '唐代', '河南', '', '适合古都审美与陶艺体验。', '唐三彩是唐代盛行的低温釉陶器，因常用黄、绿、白三种釉色而得名。唐三彩主要用于随葬明器，造型多样，有人物、动物、生活器皿等。唐三彩造型生动，色彩艳丽，反映了唐代社会的繁荣景象和开放包容的文化氛围。', '唐三彩是中国陶瓷史上的瑰宝，被誉为\"唐代社会生活的百科全书\"。唐三彩造型丰富多样，有文臣武士、仕女童子、胡人驼马、镇墓兽等，反映了唐代社会的方方面面。唐三彩对后世陶瓷艺术产生了深远影响。', '刘淑侠（国家级）、张怀义（省级）等唐三彩传承人', NULL, NULL, '[\"《唐三彩》唐·白居易 彩釉斑斓耀盛唐，三彩陶俑韵悠长。 千姿百态人欢笑，丝路风情入画堂。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (142, '龙泉青瓷烧制技艺', '传统手工艺', '青瓷烧制', '宋代', '浙江', '', '适合器物审美和青瓷烧制体验。', '龙泉青瓷始于三国两晋时期，在宋代达到鼎盛。龙泉窑是中国古代五大名窑之一，以烧制青瓷著称。龙泉青瓷釉色青翠温润，有\"梅子青\"、\"粉青\"等名贵釉色。龙泉青瓷造型端庄典雅，釉面光洁如玉，被誉为\"瓷器之花\"。', '龙泉青瓷是中国瓷器史上的巅峰之作，体现了中国传统美学的最高境界。龙泉青瓷烧制技艺涉及选料、成型、上釉、烧制等多道工序，每道工序都有严格要求。龙泉青瓷对韩国、日本等周边国家的瓷器发展产生了深远影响。', '徐朝兴（国家级）、陈爱明（省级）、周华（省级）等龙泉青瓷烧制技艺传承人', NULL, NULL, '[\"《龙泉青瓷》宋·苏轼 夺得千峰翠色来，梅子青时最堪爱。 龙泉古窑烧青瓷，千秋万代永流芳。\"]', '[\"立夏\", \"小满\", \"芒种\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (143, '王星记制扇技艺', '传统手工艺', '制扇工艺', '明代', '浙江', '', '适合文人器物主题路线。', '王星记扇子始创于清光绪年间，由杭州扇艺师王星斋创立。王星记扇子以做工精细、选料考究、品种繁多而闻名，有黑纸扇、檀香扇、白纸扇、绢扇等数十个品种。王星记扇子既是实用品，又是工艺品，被誉为\"东方艺术之花\"。', '王星记制扇技艺是杭州传统手工艺的杰出代表，体现了中国传统扇艺的最高水平。制扇技艺涉及选竹、破扇、制骨、糊面、绘画等多道工序，每道工序都有严格要求。王星记扇子承载着丰富的文化内涵，具有重要的艺术价值。', '孙亚青（国家级）、丁光洪（省级）等王星记制扇技艺传承人', NULL, NULL, '[\"《扇》唐·白居易 银字笙寒调正丝，水纹帘影傍身垂。 轻摇小扇生凉意，一缕清风入梦来。\"]', '[\"立夏\", \"小满\", \"芒种\", \"夏至\", \"大暑\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (144, '广绣', '传统手工艺', '岭南刺绣', '清代', '广东', '', '适合岭南题材刺绣与商都漫游。', '广绣是广州地区的传统刺绣技艺，包括广州刺绣和潮州刺绣两大流派。广绣历史悠久，起源于唐代，鼎盛于明清。广绣针法独特，有套针、戗针、勒针、编针等数十种针法，色彩鲜艳，立体感强，富有岭南特色。', '广绣是中国四大名绣之一，具有图案繁茂、色彩艳丽、立体感强、金银线运用等特点。广绣作品题材广泛，包括花鸟虫鱼、人物山水、吉祥图案等，具有重要的艺术价值。广绣技艺的传承对于研究岭南文化具有重要意义。', '陈少芳（国家级）、谭展鹏（省级）、梁雪珍（省级）等广绣传承人', NULL, NULL, '[\"《广绣》清·屈大均 粤绣精巧天下闻，针飞线舞织春云。 岭南风采入画轴，千红万紫总是春。\"]', '[\"春分\", \"清明\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (145, '潮州木雕', '传统手工艺', '木雕艺术', '明代', '广东', '', '适合工艺细作和古城漫游结合。', '潮州木雕发源于广东潮州地区，起源于唐代，鼎盛于明清。潮州木雕以浮雕、沉雕、圆雕、通雕等技法著称，题材广泛，有人物故事、花鸟虫鱼、祥禽瑞兽、几何纹样等。潮州木雕构图繁密，层次丰富，精细入微，被誉为\"中国木雕艺术的明珠\"。', '潮州木雕是中国木雕艺术的杰出代表，具有重要的艺术价值和历史价值。潮州木雕作品多用于建筑装饰、家具装饰和工艺品制作，体现了潮汕地区的审美情趣和文化传统。潮州木雕的传承对于研究中国传统木雕艺术具有重要意义。', '陈培臣（国家级）、陈锡藩（省级）、林木龙（省级）等潮州木雕传承人', NULL, NULL, '[\"《潮州木雕》清·民间 刀下生花木作纸，雕出万象入画图。 潮州木雕甲天下，精细入微见真功。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (146, '端砚制作技艺', '传统手工艺', '砚石雕刻', '宋代', '广东', '', '适合文房四宝主题深度体验。', '端砚产于广东肇庆，因唐宋时期属端州而得名。端砚始于唐代，有一千多年的历史，与歙砚、洮砚、澄泥砚并称中国四大名砚。端砚石质细腻温润，发墨如油，研出的墨汁细腻均匀，有\"群砚之首\"的美誉。', '端砚是中国文房四宝之首，具有\"温润如玉、细腻发墨\"的特点。端砚石品丰富，有眼、青花、冰纹、金银线等天然纹理，是大自然鬼斧神工的杰作。端砚制作技艺涉及采石、选石、设计、雕刻、打磨等数十道工序，具有重要的工艺价值。', '罗海（国家级）、程文（省级）、李锐文（省级）等端砚制作技艺传承人', NULL, NULL, '[\"《端砚》宋·苏辙 端溪千载韵悠悠，石品天成墨韵稠。 发墨不沾濡纸背，端州砚工第一流。\"]', '[\"立冬\", \"小雪\", \"大雪\", \"冬至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (147, '宋锦织造技艺', '传统手工艺', '宋锦织造', '宋代', '江苏', '', '适合宋代织造美学路线。', '宋锦是中国传统的丝织品，因产于宋代且纹样独特而得名。宋锦色泽典雅，图案多为几何纹和植物纹，构图严谨，富有宋代美学特征。宋锦分为重锦、细锦、匣锦三大类，主要用于宫廷服饰和珍贵书画装裱。', '宋锦是中国丝织工艺的杰出代表，被誉为\"锦绣之冠\"。宋锦织造技艺复杂，需由提花工和织手两人配合操作，织造速度极慢，一寸锦缎往往需要数日的功夫。宋锦的传承对于研究中国传统丝织技艺具有重要意义。', '钱小萍（国家级）、朱艳（省级）等宋锦织造技艺传承人', NULL, NULL, '[\"《宋锦》宋·陆游 织金梭子出霞光，锦上添花韵味长。 宋韵千古传佳话，织女飞梭织梦香。\"]', '[\"立秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (148, '京绣', '传统手工艺', '京派刺绣', '清代', '北京', '', '适合春节场景下体验京派刺绣纹样。', '京绣又称\"宫绣\"或\"宫廷绣\"，是北京地区的传统刺绣技艺。京绣起源于辽代，在明清时期达到鼎盛，专为宫廷御用。京绣针法严谨，配色典雅，图案多为龙凤、祥云、花卉等宫廷纹样，绣品富丽堂皇，体现了皇家气派。', '京绣是中国刺绣艺术中最高水平的代表，被誉为\"宫绣\"。京绣针法丰富多样，有平绣、套绣、乱绣、打籽绣等数十种针法。京绣作品题材庄严，多为龙凤呈祥、百花献瑞等吉祥图案，具有重要的艺术价值和文化价值。', '孙颖（国家级）、刘秀梅（省级）、李静（省级）等京绣传承人', NULL, NULL, '[\"《京绣》清·民间 金丝银线绣龙袍，宫廷技艺领风骚。 京绣华美甲天下，非遗传承在今朝。\"]', '[\"春节\", \"元宵节\", \"清明\", \"谷雨\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (149, '兔儿爷彩塑', '传统手工艺', '彩塑艺术', '清代', '北京', '', '适合老北京节庆民艺路线。', '兔儿爷是北京的传统民间玩具，起源于明代，是北京中秋节令玩具。兔儿爷人身兔面，头戴金盔，身披战袍，威风凛凛。据传兔儿爷是嫦娥奔月后派到人间救苦救难的玉兔，受到人们的敬奉和喜爱。', '兔儿爷是老北京中秋节文化的重要象征，承载着北京人的童年记忆和民俗情感。兔儿爷彩塑造型生动，色彩艳丽，是老北京民间工艺美术的代表作。兔儿爷的传承对于研究老北京民俗文化具有重要意义。', '双起翔（兔儿爷传承人）、林永奎（兔儿爷传承人）等兔儿爷彩塑传承人', NULL, NULL, '[\"《兔儿爷》清·民间 兔儿爷来送吉祥，中秋拜月福满堂。 老北京的记忆，非遗技艺永流芳。\"]', '[\"中秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (150, '京作剪纸', '传统手工艺', '剪纸艺术', '唐代起源，明清鼎盛', '北京市', 'national', '京作剪纸，又称京派剪纸，是剪纸艺术中极具地域辨识度的流派，扎根北京这片兼具皇家气度与市井烟火的土地，历经千年沉淀，融合宫廷雅致与民间质朴，形成了独有的艺术风骨。它是流淌在老北京胡同里、镌刻在百姓生活中的文化基因。', '京作剪纸起源于唐代，盛于明清时期，距今已有千年历史。明朝永乐年间，宫廷剪纸艺术家已达数百人，为宫廷庆典、祭祀活动提供剪纸装饰。清代，《红楼梦》中描述的贾府春节剪窗花场景，展现了剪纸艺术在当时贵族家庭的普及程度。近现代以来，京作剪纸历经沉浮，在战乱与变革中艰难传承，同时也在时代浪潮中不断创新，适应新的生活场景。', '京作剪纸是北京市非物质文化遗产，承载的是一门手艺，是老北京人的生活智慧、审美情趣与家国情怀。它具有重要的历史、艺术和文化价值，为研究北京地区民俗文化、社会生活提供了重要依据。京作剪纸的保护和传承，对于弘扬中华优秀传统文化、增强文化自信具有重要意义。', '张晓林（第三代传承人）、张立君（第四代传承人）', '[\"https://yayfolk.bhyy.online/heritage/images/fa9ef0c3-73ee-419b-b43e-c3b86cfc7a96.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/38d42d93-f554-47f2-a901-926dd1388099.mp4', '[\"《京作剪纸》清·张晓林 金剪飞舞落红纸，京城故事入画图。 千年传承刀下生，非遗技艺永流芳。\"]', '[\"春节\", \"元宵节\", \"清明\", \"端午节\"]', NULL, NULL, 1, 0, '2026-03-28 09:48:21', '2026-04-28 22:11:30');
+INSERT INTO `intangible_cultural_heritage` VALUES (151, '毛猴制作技艺', '传统手工艺', '毛猴制作', '清代', '北京', '', '适合串联京味民俗和手工体验。', '毛猴是老北京的传统手工艺品，起源于清代道光年间。毛猴以蝉蜕和辛夷（玉兰花骨朵）为原料，经巧妙拼粘，塑造出各种人物和动物形象。毛猴制作技艺是北京独有的民间工艺，被誉为\"无言的戏，有声的画\"。', '毛猴制作技艺是老北京民间艺术的独特创造，体现了北京人的智慧和幽默。毛猴作品题材广泛，有戏曲人物、市井生活、历史故事等，造型生动，妙趣横生。毛猴技艺的传承对于研究老北京民俗文化具有重要意义。', '张增财（毛猴传承人）等毛猴制作技艺传承人', NULL, NULL, '[\"《毛猴》清·民间 蝉蜕辛夷巧拼粘，毛猴百态入眼帘。 老北京的记忆，非遗技艺代代传。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (152, '冰糖葫芦制作技艺', '传统手工艺', '糖艺小吃', '清代', '北京', '', '适合春节市集与街区体验。', '冰糖葫芦是北京的传统小吃，起源于南宋时期。冰糖葫芦以山楂为主料，用竹签串成串，裹以糖稀制成。糖稀遇冷凝固，形成晶莹剔透的糖壳，酸甜可口，深受人们喜爱。冰糖葫芦是北京冬季最具代表性的街头小吃。', '冰糖葫芦是老北京饮食文化的重要符号，承载着北京人的童年记忆。冰糖葫芦制作技艺简单却不简单，熬糖火候的掌握是关键。冰糖葫芦的传承对于研究老北京民俗文化具有重要意义。', '张振华（冰糖葫芦传承人）、张全（冰糖葫芦传承人）等冰糖葫芦制作技艺传承人', NULL, NULL, '[\"《冰糖葫芦》清·民间 冰糖葫芦红彤彤，酸酸甜甜味道浓。 老北京的记忆，非遗小吃永流芳。\"]', '[\"小雪\", \"大雪\", \"冬至\", \"立春\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (153, '苏扇制作技艺', '传统手工艺', '制扇工艺', '宋代', '江苏', '', '适合文人器物与手工体验路线。', '苏扇是苏州地区的传统手工艺品，包括折扇、团扇、檀香扇等品种。苏扇以竹木为骨，绢绸为面，绘画题诗，极具江南文人雅趣。苏州制扇技艺精湛，有\"苏州扇子甲天下\"的美誉。', '苏扇是江南文人文化的象征，体现了江南士人的审美情趣。苏扇制作涉及选材、削骨、裱面、绘画、题诗等多道工序，每道工序都有严格要求。苏扇承载着丰富的文化内涵，是研究江南文化的重要载体。', '徐义林（国家级）、王健（省级）等苏扇制作技艺传承人', NULL, NULL, '[\"《苏扇》明·唐寅 苏州扇子世无双，竹骨绢面画端详。 一扇在手清风来，文人雅士共欣赏。\"]', '[\"立夏\", \"小满\", \"芒种\", \"夏至\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (154, '缂丝织造技艺', '传统手工艺', '缂丝织造', '宋代', '江苏', '', '适合高阶织造工艺体验。', '缂丝是中国最古老的丝织品种之一，起源于汉代，盛行于唐代。缂丝又称\"刻丝\"，以生蚕丝为经，彩色熟蚕丝为纬，采用\"通经断纬\"的技法织造。缂丝图案层次分明，色彩丰富，可以织出极其精细的图案，有\"织中之圣\"的美誉。', '缂丝是中国丝织工艺的巅峰之作，被誉为\"织中圣品\"。缂丝织造技艺极其复杂，一件作品往往需要数月甚至数年才能完成。缂丝作品题材广泛，包括人物、山水、花鸟等，具有极高的艺术价值和收藏价值。', '王嘉澍（国家级）、顾建东（省级）等缂丝织造技艺传承人', NULL, NULL, '[\"《缂丝》宋·佚名 通经断纬见精工，织出丹青夺天工。 千年缂丝传佳话，非遗技艺永流芳。\"]', '[\"立秋\", \"白露\", \"秋分\", \"寒露\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (155, '绒花制作技艺', '传统手工艺', '绒花制作', '清代', '天津', '', '适合春节头饰和节庆花艺体验。', '绒花是天津的传统手工艺品，起源于清代。绒花以蚕丝为原料，经染色、勾条、打尖、传花等数十道工序制成。绒花造型逼真，色彩艳丽，有花鸟虫鱼、人物造型等品种。绒花是天津民俗文化的重要组成部分。', '绒花制作技艺是天津传统手工艺的杰出代表，体现了天津人民的审美情趣。绒花制作工序繁琐，每道工序都有严格要求。绒花作品寓意吉祥，有荣华富贵、幸福美满的寓意。绒花的传承对于研究天津民俗文化具有重要意义。', '刘工艺（绒花传承人）等绒花制作技艺传承人', NULL, NULL, '[\"《绒花》清·民间 绒花开在指尖上，千姿百态斗芬芳。 非遗技艺代代传，绒花永伴福满堂。\"]', '[\"春节\", \"元宵节\", \"清明\", \"端午节\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (156, '潍坊花灯制作技艺', '传统手工艺', '花灯扎制', '清代', '山东', '', '适合春节夜游和彩灯制作体验。', '潍坊花灯历史悠久，起源于宋代，盛行于明清。潍坊花灯造型独特，有宫灯、动物灯、花卉灯、人物灯等数千个品种。潍坊花灯以竹木为骨架，丝绸、绢帛为灯罩，内燃蜡烛，色彩艳丽，形态逼真。', '潍坊花灯是山东民俗文化的重要代表，体现了齐鲁人民的审美情趣。潍坊花灯制作涉及扎作、裱糊、彩绘、装饰等多道工序，每道工序都有严格要求。潍坊花灯寄托了人们对美好生活的向往，具有重要的民俗学研究价值。', '张效公（国家级）、胡瑞（省级）等潍坊花灯制作技艺传承人', NULL, NULL, '[\"《花灯》宋·辛弃疾 东风夜放花千树，更吹落、星如雨。 宝马雕车香满路，凤箫声动，玉壶光转，一夜鱼龙舞。\"]', '[\"元宵节\", \"春节\", \"中秋\", \"重阳节\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (157, '鲁绣', '传统手工艺', '齐鲁刺绣', '清代', '山东', '', '适合齐鲁针法与节庆纹样体验。', '鲁绣是山东地区的传统刺绣技艺，起源于春秋时期，有两千多年的历史。鲁绣针法独特，以\"衣线绣\"著称，即用衣服的纱线进行刺绣。鲁绣图案粗犷豪放，色彩浓烈，富有齐鲁大地的质朴风情。', '鲁绣是中国刺绣艺术的重要流派之一，具有图案豪放、色彩浓烈、针法独特的风格。鲁绣作品题材广泛，有花鸟虫鱼、人物山水、吉祥图案等。鲁绣的传承对于研究齐鲁文化和北方刺绣艺术具有重要意义。', '徐秀娟（国家级）、宋爱华（省级）等鲁绣传承人', NULL, NULL, '[\"《鲁绣》清·民间 齐鲁大地绣春风，针线飞舞织彩虹。 鲁绣豪放甲天下，非遗技艺永流芳。\"]', '[\"春分\", \"清明\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (158, '龙舟习俗', '传统民俗', '龙舟竞渡', '宋代', '广东', '', '适合端午主题民俗路线。', '龙舟竞渡起源于春秋战国时期，相传是为纪念爱国诗人屈原。龙舟习俗在南方地区广泛流传，尤以广东、福建、广西等地最为盛行。每年端午节，各地举行龙舟竞渡活动，热闹非凡。龙舟制作工艺精湛，船身细长，饰以龙鳞。', '龙舟习俗是中国传统民俗文化的重要组成部分，承载着中华民族的爱国情怀。龙舟竞渡体现了团结协作、奋勇拼搏的精神。龙舟制作涉及选木、凿船、彩绘等多道工序，具有重要的工艺价值和文化价值。', '苏大广（龙舟习俗传承人）、梁国添（龙舟习俗传承人）等龙舟习俗传承人', NULL, NULL, '[\"《端午竞渡》唐·张建封 鼓声三下红旗开，两龙跃出浮水来。 棹影斡波飞万剑，鼓声劈浪鸣千雷。\"]', '[\"端午节\", \"夏至\", \"小暑\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:22');
+INSERT INTO `intangible_cultural_heritage` VALUES (159, '寒食清明踏青习俗', '传统民俗', '踏青习俗', '宋代', '江苏', '', '适合清明踏青和春日出游路线。', '寒食清明踏青是中国传统的春游习俗，距今已有两千多年的历史。寒食节在清明前一二日，源于介子推的故事。清明时节，春暖花开，人们外出踏青赏春，祭祖扫墓。踏青习俗延续至今，成为中华民族的重要传统。', '寒食清明踏青习俗是中华民族的重要传统，融合了寒食文化、祭祀文化和春游文化。这一习俗体现了中华民族慎终追远、珍惜春光的精神追求。踏青习俗对于研究中国传统民俗文化具有重要意义。', '李更（寒食清明踏青习俗传承人）等寒食清明踏青习俗传承人', NULL, NULL, '[\"《清明》唐·杜牧 清明时节雨纷纷，路上行人欲断魂。 借问酒家何处有，牧童遥指杏花村。\"]', '[\"清明\", \"春分\", \"谷雨\", \"立夏\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (160, '香包佩饰习俗', '传统民俗', '香包佩饰', '清代', '安徽', '', '适合端午主题的民俗体验。', '香包又称香囊、香袋，是中国的传统手工艺品和佩饰。香包以丝绸布料缝制，内装香料，有驱蚊避邪、祈福纳祥的寓意。香包佩饰习俗在端午节最为盛行，人们佩戴香包以祈求平安健康。香包造型精美，色彩艳丽。', '香包佩饰习俗是中国传统民俗文化的重要组成部分，体现了中华民族的审美情趣和对美好生活的向往。香包制作涉及裁剪、缝制、填料、装饰等多道工序，每道工序都有严格要求。香包的传承对于研究中国传统民俗文化具有重要意义。', '张仙红（省级）、李彩红（省级）等香包佩饰习俗传承人', NULL, NULL, '[\"《香包》宋·陆游 端午佩香包，艾草驱邪好。 彩丝系玉腕，福寿永相保。\"]', '[\"端午节\", \"夏至\", \"小暑\"]', NULL, NULL, 0, 0, '2026-03-28 09:48:21', '2026-04-28 10:45:11');
+INSERT INTO `intangible_cultural_heritage` VALUES (176, '汝瓷', '传统技艺', '青瓷烧制技艺', '始于唐代中期，盛于北宋中晚期', '河南省汝州市、宝丰县', 'national', '汝瓷是中国宋代\"五大名窑\"之首，因位于宋代汝州而得名。汝瓷以天青色釉为主，釉色温润如玉，素雅含蓄，体现了宋代清淡优雅的审美追求。汝瓷烧制技艺技术性强，采用一钵一器支钉托烧的叠烧技法，具有配料绝、变色绝、裂纹绝、应光绝四大特色。', '汝瓷烧制技艺始于唐代中叶，北宋中晚期达到鼎盛时期，为北宋宫廷专造。汝官窑存续时间只有20年左右，成品率极低，传世作品不足百件。宋、金对峙时期，汝官窑停烧，烧制技艺传至民间。元、明、清至当代，汝瓷烧制技艺在民间传承、延续、发展。新中国成立后，20世纪80年代天青釉汝瓷复烧成功。2011年5月23日，汝瓷烧制技艺经国务院批准列入第三批国家级非物质文化遗产名录。', '汝瓷烧制技艺具有重要的历史、艺术和科学价值。历史上汝窑所烧精品均为皇家御用品，蕴涵唐宋的文化艺术精神，结晶着唐宋的科技水平与能力。汝瓷独特的釉色对后世瓷器烧造产生了深远影响，至今一直被视作瓷釉的楷模而被仿烧。汝瓷烧制技艺的传承延续着口传心授的方式，为传统工艺的传承提供了重要借鉴价值。', '朱文立、李廷怀、孟玉松、王君子等国家级传承人', '[\"https://yayfolk.bhyy.online/heritage/images/aa2ceab3-f65f-413e-8591-4d97b156f352.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/1ef2941a-ebc8-46c8-8917-c8752849fe57.mp4', '[\"《汝瓷》宋·欧阳修 汝窑出天青，千峰翠色凝。 温润如君子，冰裂纹中情。\"]', '[\"立夏\", \"小满\", \"芒种\", \"夏至\", \"大暑\"]', NULL, NULL, 1, 0, '2026-03-30 11:46:15', '2026-04-28 22:11:30');
+INSERT INTO `intangible_cultural_heritage` VALUES (177, '傩舞', '传统舞蹈', '祭祀舞蹈', '原始社会', '江西、安徽、贵州、云南、广东、广西、四川等省份', 'national', '傩舞又称鬼戏，是中国汉族最古老的一种驱鬼敬神、驱瘟避疫的娱神祭祀舞蹈，起源于汉族先民的自然崇拜、图腾崇拜和巫术意识，在原始社会氏族部落形成初期便诞生。', '傩舞起源于原始社会，周代时纳入国家礼制。先秦文献记载，傩礼是希望调理四时阴阳，以求寒暑相宜，风调雨顺，五谷丰登，人畜平安，国富民生。唐宋以后，儒学地位的提高压制了傩文化的传播，于是傩文化重心开始转移到西南边远等蛮荒之地。时至今日，傩舞已经由娱神的祭祀活动，衍变为娱神与娱人相结合的民俗活动。2006年5月20日，傩舞经国务院批准列入第一批国家级非物质文化遗产名录。', '傩舞是中国舞蹈\"活化石\"，是历史、民俗、民间宗教和原始戏剧的综合体，蕴藏着丰富的文化基因，具有重要的研究价值。傩文化代代相传沿袭至今，是中华民族文化特点鲜明的民俗活动，在经济文化、道德教化、以及社交娱乐等方面发挥着正能量。', '罗会武', '[\"https://yayfolk.bhyy.online/heritage/images/e39addc3-9554-4c77-8339-8dbc5a62f1a2.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/32233442-f934-4b9a-9ea9-6891339d500b.mp4', '[\"《傩舞》宋·苏辙 驱傩逐疫古风存，面具狰狞惊鬼神。 舞步铿锵震天地，祈福纳祥保平安。\"]', '[\"春节\", \"元宵节\", \"清明\", \"重阳节\"]', NULL, NULL, 1, 0, '2026-03-30 14:04:59', '2026-04-28 22:11:30');
+INSERT INTO `intangible_cultural_heritage` VALUES (178, '敦煌壁画', '传统美术', '彩绘壁画', '北魏至元代', '甘肃省敦煌市', 'national', '敦煌壁画是敦煌莫高窟艺术的重要组成部分，是中国古代壁画艺术的巅峰之作。壁画内容丰富，包括佛像画、经变画、故事画、山水画等，展现了1000多年间中国绘画艺术的发展历程和辉煌成就。', '敦煌壁画始于北魏时期，历经西魏、北周、隋、唐、五代、宋、西夏、元等朝代，延续1000多年。唐代是敦煌壁画的鼎盛时期，壁画艺术达到了前所未有的高度。1900年莫高窟藏经洞被发现后，敦煌壁画闻名世界。', '敦煌壁画是丝绸之路上东西方文化交融的结晶，具有极高的历史、艺术和科学价值。壁画中保存了大量珍贵的历史资料，为研究中国古代社会、宗教、艺术、文化提供了重要依据。敦煌壁画的保护和研究，对于传承中华优秀传统文化、促进文化交流具有重要意义。', '樊锦诗', '[\"https://yayfolk.bhyy.online/heritage/images/4cc3e538-b70d-42bc-905a-1b71ba8ba1d0.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/d4da8c10-b2bd-4880-9b26-a6ac96364aa1.mp4', '[\"《敦煌壁画》唐·王维 大漠孤烟直，长河落日圆。 莫高窟中画，千年壁影寒。\"]', '[\"清明\", \"谷雨\", \"立夏\", \"夏至\"]', NULL, NULL, 1, 0, '2026-03-30 14:20:57', '2026-04-28 22:11:30');
+INSERT INTO `intangible_cultural_heritage` VALUES (179, '皮影戏', '传统戏剧', '操纵影偶表演', '起源于汉代，形成于唐末五代，盛于清代', '全国各省份（河北唐山、陕西华县、甘肃环县、山西孝义、浙江海宁、湖北江汉平原、广东陆丰、辽宁凌源等）', 'national', '皮影戏又称\"影子戏\"或\"灯影戏\"，是中华民族最古老的民间艺术形式之一。皮影戏是一种用兽皮或纸板剪制形象并借灯光照射所剪形象而表演故事的戏曲形式，是集绘画、雕刻、音乐、演唱为一体的综合性民间艺术，被誉为\"电影的鼻祖\"\"最早的卡通动画\"。', '皮影戏从有文字记载已经有2000多年的历史。汉代已有\"弄影\"的记载，唐代开始发展，宋代已经成熟并盛行，经过宋、金、元、明四个历史时期的发展，在清代呈现出繁荣局面。元代时期传至西亚和欧洲。2006年5月20日，经国务院批准列入第一批国家级非物质文化遗产名录。2011年，中国皮影戏入选人类非物质文化遗产代表作名录。', '皮影戏是我国重要的民间传统艺术，具有重要的历史、艺术和文化价值。皮影戏的传承延续着口传心授的方式，为文化传承的方式方法提供了重要借鉴价值。皮影戏的唱腔、音乐、表演、造型有着本地域特有的风格，受到国内外同行和观众的赞誉，具有很高的欣赏与研究价值。皮影戏是中华民族艺术殿堂里的一颗璀璨明珠，更是让当代人触摸历史脉搏、留住文化记忆的重要载体。', '许子林（凌源皮影戏）、张国治（唐山皮影戏）、汪天喜（华县皮影戏）等50位国家级传承人', '[\"https://yayfolk.bhyy.online/heritage/images/24b312dc-4f1d-43ce-9474-94a3842084d4.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/11abc521-76b6-4689-89bc-c0b27724e6d2.mp4', '[\"《皮影戏》清·纪晓岚 三尺生绡作戏台，全凭十指逞诙谐。 有时明镜青灯下，一片明霞入梦来。\"]', '[\"春节\", \"元宵节\", \"清明\", \"谷雨\", \"夏至\"]', NULL, NULL, 1, 0, '2026-03-30 14:30:53', '2026-04-28 22:11:30');
+INSERT INTO `intangible_cultural_heritage` VALUES (180, '京剧', '传统戏剧', '中国国剧', '形成于清代（1790年徽班进京）', '北京（全国各省份均有分布）', 'national', '京剧被称为\"国剧\"、誉为\"国粹\"，是中国戏曲的集大成者，蕴含着中华历史文化的深厚底蕴。京剧是在徽汉合流的基础上，融合了徽调二黄与汉调西皮，经过200多年的发展形成的综合性舞台艺术，是中国第一大剧种。', '京剧起源于清代，1790年（乾隆五十五年）为给乾隆皇帝祝寿，扬州盐商组织\"三庆\"徽班进京，徽班进京演出拉开帷幕。此后，其他徽班也相继入京，形成了著名的\"三庆\"\"四喜\"\"春台\"\"和春\"四大徽班。道光年间，汉调艺人进京加入徽班演出，形成了\"徽汉合流\"的局面，京剧由此诞生。2010年11月16日，京剧被联合国教科文组织列入\"人类非物质文化遗产代表作名录\"。', '京剧作为中国文化的瑰宝，对于构建中华民族的精神家园有着不可替代的作用。京剧的传承延续着科班体系、家族血脉、师徒门户的活态传承网络，为文化传承提供了重要借鉴价值。京剧的唱腔、表演、脸谱、服饰等具有独特的艺术价值，受到国内外观众的喜爱，具有很高的欣赏与研究价值。京剧是中华民族艺术殿堂里的一颗璀璨明珠，更是让当代人触摸历史脉搏、留住文化记忆的重要载体。', '梅葆玖（梅派）、谭元寿（谭派）、张火丁（程派）、李胜素（梅派）、孟广禄（裘派）、王珮瑜（余派）等国家级传承人', '[\"https://yayfolk.bhyy.online/heritage/images/af468a89-dc77-4e51-9f62-89365b7dfd7a.png\"]', 'https://yayfolk.bhyy.online/heritage/videos/f86e6205-7f23-453d-9cc0-2eab32e8f223.mp4', '[\"《京剧》清·爱新觉罗·弘历 徽调汉调聚京城，梨园子弟竞纷呈。 生旦净丑皆成戏，唱念做打见真情。\"]', '[\"立春\", \"雨水\", \"惊蛰\", \"春分\", \"清明\"]', NULL, NULL, 1, 0, '2026-03-30 14:38:38', '2026-04-28 22:11:30');
+
+-- ----------------------------
+-- Table structure for knowledge_conversations
+-- ----------------------------
+DROP TABLE IF EXISTS `knowledge_conversations`;
+CREATE TABLE `knowledge_conversations`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(0) NOT NULL COMMENT '用户ID',
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '会话标题',
+  `last_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '最后一条消息',
+  `last_message_time` datetime(0) NULL DEFAULT NULL COMMENT '最后消息时间',
+  `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_user_id`(`user_id`) USING BTREE,
+  INDEX `idx_create_time`(`create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '知识问答会话表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of knowledge_conversations
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for knowledge_messages
+-- ----------------------------
+DROP TABLE IF EXISTS `knowledge_messages`;
+CREATE TABLE `knowledge_messages`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `conversation_id` bigint(0) NOT NULL COMMENT '会话ID',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息内容',
+  `is_self` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否用户发送: 1(用户), 0(AI助手)',
+  `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_conversation_id`(`conversation_id`) USING BTREE,
+  INDEX `idx_create_time`(`create_time`) USING BTREE,
+  CONSTRAINT `fk_knowledge_conversation` FOREIGN KEY (`conversation_id`) REFERENCES `knowledge_conversations` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '知识问答消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of knowledge_messages
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for merchant_applications
+-- ----------------------------
+DROP TABLE IF EXISTS `merchant_applications`;
+CREATE TABLE `merchant_applications`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(0) NOT NULL,
+  `real_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `id_card` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `heritage_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `heritage_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `proof_images` json NULL,
+  `shop_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `shop_address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `province` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '省份',
+  `city` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '城市',
+  `intro` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商家简介',
+  `application_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending',
+  `audit_admin_id` bigint(0) NULL DEFAULT NULL,
+  `audit_time` datetime(0) NULL DEFAULT NULL,
+  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT NULL,
+  `merchant_profile_id` bigint(0) NULL DEFAULT NULL COMMENT 'normalized merchant profile id',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_application`(`user_id`) USING BTREE,
+  INDEX `idx_merchant_applications_profile_id`(`merchant_profile_id`) USING BTREE,
+  CONSTRAINT `fk_merchant_app_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_merchant_applications_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of merchant_applications
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for merchant_profiles
+-- ----------------------------
+DROP TABLE IF EXISTS `merchant_profiles`;
+CREATE TABLE `merchant_profiles`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(0) NOT NULL COMMENT 'merchant owner account, users.id',
+  `shop_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `shop_cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `shop_intro` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `contact_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `contact_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `contact_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `province` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `city` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `district` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `heritage_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `heritage_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `proof_images` json NULL,
+  `business_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'pending' COMMENT 'pending/approved/active/rejected/disabled/closed',
+  `latest_application_id` bigint(0) NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0),
+  `avg_score` double NULL DEFAULT 0,
+  `review_count` int(0) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_merchant_profiles_user`(`user_id`) USING BTREE,
+  INDEX `idx_merchant_profiles_status`(`business_status`) USING BTREE,
+  INDEX `idx_merchant_profiles_shop_name`(`shop_name`) USING BTREE,
+  CONSTRAINT `fk_merchant_profiles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 195 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'canonical merchant profile table' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of merchant_profiles
+-- ----------------------------
+INSERT INTO `merchant_profiles` VALUES (1, 10011, '隽绣', 'https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/homepage/5a0d6698-05fc-4c22-b96d-8efcdc8b7f09.png', '专注刺绣与民艺体验', '秦秀娟', '13986074011', 'qinjiayi_1106@qq.com', '江苏', '苏州', '姑苏区', '姑苏区十全街刺绣工作室', '织绣服饰', '苏绣针法与纹样体验', NULL, 'approved', 1, '2026-03-13 01:57:15', '2026-04-28 01:08:23', 4.8, 5);
+INSERT INTO `merchant_profiles` VALUES (2, 10025, '京华非遗工坊', NULL, '聚焦京味非遗体验与讲解', '张建华', '13800000001', 'jinghua@yayfolk.cn', '北京', '北京', '东城区', '东城区隆福寺街非遗工坊', '传统戏剧', '京味民艺、节令手作与戏曲体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.5, 8);
+INSERT INTO `merchant_profiles` VALUES (3, 10026, '苏作匠心馆', NULL, '以江南手工艺体验为主', '王建华', '13800000002', 'suzuo@yayfolk.cn', '江苏', '苏州', '姑苏区', '姑苏区观前街苏作馆', '织绣服饰', '苏式织绣、昆曲与扇艺体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.6, 6);
+INSERT INTO `merchant_profiles` VALUES (4, 10027, '金陵雅集馆', NULL, '结合传统工艺和节庆活动', '李志强', '13800000003', 'jinling@yayfolk.cn', '江苏', '南京', '秦淮区', '秦淮区夫子庙雅集街', '民间美术', '南京织绣、年画与节俗体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.4, 7);
+INSERT INTO `merchant_profiles` VALUES (5, 10028, '徽州四宝社', NULL, '文房四宝主题体验空间', '杨文房', '13800000004', 'huizhou@yayfolk.cn', '安徽', '黄山', '屯溪区', '屯溪区黎阳巷文房四宝街', '传统技艺', '文房四宝与徽州生活手作', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.7, 4);
+INSERT INTO `merchant_profiles` VALUES (6, 10029, '蜀风非遗坊', NULL, '四川传统技艺和戏曲体验', '刘德明', '13800000005', 'shufeng@yayfolk.cn', '四川', '成都', '武侯区', '武侯区锦里古街蜀风坊', '传统戏剧', '蜀地手作与戏曲体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.3, 9);
+INSERT INTO `merchant_profiles` VALUES (7, 10030, '长安艺脉馆', NULL, '唐风美术主题路线运营', '陈建华', '13800000006', 'changan@yayfolk.cn', '陕西', '西安', '雁塔区', '雁塔区大唐不夜城艺脉馆', '民间美术', '唐风美术与古都体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.6, 5);
+INSERT INTO `merchant_profiles` VALUES (8, 10031, '苗岭锦绣社', NULL, '少数民族非遗深度体验', '张苗绣', '13800000007', 'miaoling@yayfolk.cn', '贵州', '黔东南', '凯里市', '凯里市苗侗风情园锦绣街', '织绣服饰', '苗绣与银饰手作体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.8, 6);
+INSERT INTO `merchant_profiles` VALUES (9, 10032, '壮乡锦艺阁', NULL, '壮族织锦与铜鼓民俗体验', '韦锦织', '13800000008', 'zhuangxiang@yayfolk.cn', '广西', '南宁', '青秀区', '青秀区东盟商务区锦艺阁', '织绣服饰', '壮锦与铜鼓民俗体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.2, 3);
+INSERT INTO `merchant_profiles` VALUES (10, 10033, '津门年艺馆', NULL, '天津春节美术类非遗体验', '刘彩塑', '13800000009', 'jinmen@yayfolk.cn', '天津', '天津', '南开区', '南开区古文化街年艺馆', '民间美术', '津门年俗美术体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.5, 7);
+INSERT INTO `merchant_profiles` VALUES (11, 10034, '齐鲁巧艺坊', NULL, '鲁派手工艺和节令体验', '张鲁绣', '13800000010', 'qilu@yayfolk.cn', '山东', '潍坊', '潍城区', '潍城区十笏园巧艺街', '民间美术', '风筝剪纸与鲁绣体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.6, 5);
+INSERT INTO `merchant_profiles` VALUES (12, 10035, '中原唐艺馆', NULL, '唐风陶艺和古都体验', '王陶艺', '13800000011', 'zhongyuan@yayfolk.cn', '河南', '洛阳', '老城区', '老城区洛邑古城唐艺街', '传统技艺', '唐三彩与古都陶艺', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.4, 6);
+INSERT INTO `merchant_profiles` VALUES (13, 10036, '越地青瓷社', NULL, '宋韵器物与生活美学', '周青瓷', '13800000012', 'yuedi@yayfolk.cn', '浙江', '丽水', '莲都区', '莲都区处州府城青瓷馆', '传统技艺', '青瓷与宋韵器物体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.7, 4);
+INSERT INTO `merchant_profiles` VALUES (14, 10037, '岭南绣作馆', NULL, '岭南传统手工艺体验', '陈广绣', '13800000013', 'lingnan@yayfolk.cn', '广东', '广州', '越秀区', '越秀区荔枝湾涌绣作街', '织绣服饰', '岭南绣作与木雕体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-03-28 11:15:27', 4.5, 6);
+INSERT INTO `merchant_profiles` VALUES (15, 10044, '荆楚非遗工坊', NULL, '以汉绣、皮影、黄鹤楼文创为核心，涵盖楚文化节俗与传统手工艺体验', '杨汉绣', '13800000014', 'jingchu@yayfolk.cn', '湖北', '武汉', '武昌区', '武昌区昙华林非遗广场', '织绣服饰', '汉绣、皮影与楚文化体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-04-28 01:08:23', 4.3, 5);
+INSERT INTO `merchant_profiles` VALUES (16, 10045, '闽南艺韵坊', NULL, '专注漆线雕、提线木偶、闽南剪纸与南音体验，尽显闽南风情', '陈漆雕', '13800000015', 'minnan@yayfolk.cn', '福建', '泉州', '鲤城区', '鲤城区西街闽南艺韵坊', '传统技艺', '漆线雕与木偶体验', NULL, 'active', NULL, '2026-03-28 09:52:05', '2026-04-28 01:08:23', 4.6, 4);
+INSERT INTO `merchant_profiles` VALUES (17, 10048, '拓印版画社', 'http://localhost:8080/uploads/seed/banhua/banhua-1.jpg', '专注木刻版画、拓印与套色印刷的手作体验空间', '陈志明', '13986074012', 'banhua_store@qq.com', '浙江', '杭州', '上城区', '杭州市上城区版画手作街区', '民间美术', '木刻拓印与传统版画体验', NULL, 'active', NULL, '2026-04-24 21:15:00', '2026-04-28 01:08:23', 4.67, 3);
+INSERT INTO `merchant_profiles` VALUES (18, 10101, '黔韵傩面工坊', 'http://localhost:8080/uploads/demo/VR/product-images/傩面面具.png', '专注傩戏面具雕刻、彩绘与民俗讲解的体验工坊', '杨德昌', '13800000101', 'nuoxi_vr@qq.com', '贵州', '黔东南', '凯里市', '凯里市傩面非遗体验馆', '传统戏剧', '傩戏面具雕刻与彩绘体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 4.5, 1);
+INSERT INTO `merchant_profiles` VALUES (19, 10102, '长安布老虎社', 'http://localhost:8080/uploads/demo/VR/product-images/布老虎.jpg', '围绕布老虎缝制、填充和彩绘展开的亲子手作空间', '王淑芬', '13800000102', 'bulaohu_vr@qq.com', '陕西', '西安', '碑林区', '西安市碑林区布艺手作街区', '民间美术', '布老虎缝制与彩绘体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 0, 0);
+INSERT INTO `merchant_profiles` VALUES (20, 10103, '京翠非遗工坊', 'http://localhost:8080/uploads/demo/VR/product-images/点翠.png', '体验点翠工艺的金属底座、羽毛拼贴与饰品装配', '李建华', '13800000103', 'diancui_vr@qq.com', '北京', '北京', '东城区', '北京市东城区点翠非遗工坊', '传统技艺', '点翠发饰工艺体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 0, 0);
+INSERT INTO `merchant_profiles` VALUES (21, 10104, '琉璃簪花工坊', 'http://localhost:8080/uploads/demo/VR/product-images/琉璃簪花.png', '以琉璃花片、金属支架与簪花搭配为核心的手作课程', '赵文博', '13800000104', 'liulizanhua_vr@qq.com', '山东', '淄博', '博山区', '淄博市博山琉璃手作馆', '传统技艺', '琉璃簪花手作体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 0, 0);
+INSERT INTO `merchant_profiles` VALUES (22, 10105, '扬州螺钿作坊', 'http://localhost:8080/uploads/demo/VR/product-images/螺钿.jpg', '聚焦贝壳切片、打磨、镶嵌的螺钿首饰盒体验', '周晓燕', '13800000105', 'ludian_vr@qq.com', '江苏', '扬州', '广陵区', '扬州市广陵区螺钿手作街区', '传统技艺', '螺钿首饰盒镶嵌体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 0, 0);
+INSERT INTO `merchant_profiles` VALUES (23, 10106, '金陵绒花社', 'http://localhost:8080/uploads/demo/VR/product-images/绒花.png', '围绕绒条捻制、塑形和发饰装配展开的南京绒花课程', '张丽华', '13800000106', 'ronghua_vr@qq.com', '江苏', '南京', '秦淮区', '南京市秦淮区绒花体验馆', '民间美术', '绒花发饰制作体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 0, 0);
+INSERT INTO `merchant_profiles` VALUES (24, 10107, '景德青花工坊', 'http://localhost:8080/uploads/demo/VR/product-images/青花瓷.jpg', '提供青花纹样勾线、上色与釉下彩绘的入门体验', '刘志强', '13800000107', 'qinghuaci_vr@qq.com', '江西', '景德镇', '珠山区', '景德镇珠山区青花彩绘工坊', '传统技艺', '青花瓷彩绘体验', NULL, 'active', NULL, '2026-04-26 10:00:00', '2026-04-28 01:08:23', 4.3, 1);
+
+-- ----------------------------
+-- Table structure for merchant_reviews
+-- ----------------------------
+DROP TABLE IF EXISTS `merchant_reviews`;
+CREATE TABLE `merchant_reviews`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `merchant_id` bigint(0) NOT NULL,
+  `user_id` bigint(0) NOT NULL,
+  `order_id` bigint(0) NULL DEFAULT NULL,
+  `reserve_id` bigint(0) NULL DEFAULT NULL,
+  `review_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activity',
+  `score` decimal(2, 1) NOT NULL,
+  `content` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_merchant_reviews_merchant`(`merchant_id`) USING BTREE,
+  INDEX `idx_merchant_reviews_user`(`user_id`) USING BTREE,
+  INDEX `idx_merchant_reviews_reserve`(`reserve_id`) USING BTREE,
+  CONSTRAINT `fk_merchant_reviews_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_merchant_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 67 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of merchant_reviews
+-- ----------------------------
+INSERT INTO `merchant_reviews` VALUES (1, 10011, 10000, NULL, 1, 'activity', 4.0, 'nice', '2026-03-31 08:42:35', '2026-03-31 08:42:35');
+INSERT INTO `merchant_reviews` VALUES (2, 10011, 10000, NULL, 14, 'activity', 5.0, '非常有意义', '2026-04-05 20:12:42', '2026-04-05 20:12:42');
+INSERT INTO `merchant_reviews` VALUES (3, 10048, 10000, NULL, NULL, 'activity', 5.0, '讲解特别细，木刻、上墨和揭纸的步骤都能跟得上，新手也不会慌。', '2026-04-24 21:15:00', '2026-04-24 21:15:00');
+INSERT INTO `merchant_reviews` VALUES (4, 10048, 10020, NULL, NULL, 'activity', 4.5, '活动节奏舒服，材料准备很齐，最后做出来的成品很出片。', '2026-04-24 21:15:00', '2026-04-24 21:15:00');
+INSERT INTO `merchant_reviews` VALUES (5, 10048, 10023, NULL, NULL, 'activity', 4.5, '空间布置很好看，老师也很耐心，适合朋友一起过来体验。', '2026-04-24 21:15:00', '2026-04-24 21:15:00');
+INSERT INTO `merchant_reviews` VALUES (6, 10025, 10007, NULL, 20, 'activity', 4.0, '《京剧脸谱沉浸体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (7, 10025, 10011, NULL, 21, 'activity', 5.0, '《景泰蓝掐丝点蓝工坊》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (8, 10025, 10020, NULL, 22, 'activity', 4.0, '《庙会面塑亲子课程》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (9, 10025, 10023, NULL, 23, 'activity', 4.5, '《中轴灯彩夜游手作课》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (10, 10025, 10025, NULL, 24, 'activity', 4.5, '《清明风筝彩绘体验》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (11, 10025, 10026, NULL, 25, 'activity', 4.0, '《京绣节庆纹样体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (12, 10025, 10027, NULL, 26, 'activity', 5.0, '《兔儿爷彩塑手作课》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (13, 10025, 10028, NULL, 27, 'activity', 4.5, '《京作剪纸窗花体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (14, 10025, 10029, NULL, 28, 'activity', 4.0, '《毛猴造景手作课》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (15, 10025, 10030, NULL, 29, 'activity', 5.0, '《冰糖葫芦熬糖体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (16, 10026, 10031, NULL, 30, 'activity', 4.5, '《苏绣针法体验课》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (17, 10026, 10032, NULL, 31, 'activity', 4.0, '《昆山腔身段体验》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (18, 10026, 10033, NULL, 32, 'activity', 5.0, '《苏扇绘制与装裱课》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (19, 10026, 10034, NULL, 33, 'activity', 4.5, '《缂丝经纬体验课》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (20, 10027, 10035, NULL, 34, 'activity', 4.0, '《云锦织机观摩与纹样设计》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (21, 10027, 10036, NULL, 35, 'activity', 2.5, '《木版年画印制课》上墨和揭纸的环节挺有意思，但老师讲解稍快，第一次做还想多练几次。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (22, 10027, 10037, NULL, 36, 'activity', 4.5, '《秦淮灯彩夜游体验》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (23, 10027, 10044, NULL, 37, 'activity', 4.0, '《宋锦织造纹样体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (24, 10027, 10045, NULL, 38, 'activity', 5.0, '《清明踏青习俗导览》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (25, 10028, 10048, NULL, 39, 'activity', 4.0, '《宣纸抄纸体验营》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (26, 10028, 10104, NULL, 40, 'activity', 3.0, '《歙砚雕刻体验》体验方向很好，不过在细节步骤上还可以给新手更多示范时间。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (27, 10028, 10105, NULL, 41, 'activity', 5.0, '《徽墨制墨闻香课》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (28, 10028, 10106, NULL, 42, 'activity', 4.5, '《端午香包佩饰手作》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (29, 10029, 10107, NULL, 43, 'activity', 4.0, '《成都糖画庙会体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (30, 10029, 10007, NULL, 44, 'activity', 4.0, '《川剧变脸夜场互动》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (31, 10029, 10011, NULL, 45, 'activity', 5.0, '《蜀绣针法体验课》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (32, 10029, 10020, NULL, 46, 'activity', 3.0, '《竹编手作半日课》图案和针脚都很好看，但手上练习时间有点少，后半段节奏偏赶。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (33, 10030, 10023, NULL, 47, 'activity', 4.5, '《唐风壁画临摹课》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (34, 10030, 10025, NULL, 48, 'activity', 4.5, '《碑刻传拓体验》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (35, 10030, 10026, NULL, 49, 'activity', 4.0, '《长安宫灯彩绘夜游》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (36, 10031, 10027, NULL, 50, 'activity', 5.0, '《苗绣纹样体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (37, 10031, 10028, NULL, 51, 'activity', 4.5, '《银饰锻制体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (38, 10032, 10029, NULL, 52, 'activity', 4.0, '《壮锦织机体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (39, 10032, 10030, NULL, 53, 'activity', 2.5, '《铜鼓民俗展演》氛围不错，但互动环节偏短，感觉还没完全过瘾就结束了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (40, 10033, 10031, NULL, 54, 'activity', 4.5, '《杨柳青年画木版印刷》很适合入门，上墨、压印和揭纸一步步跟下来很清楚，成品也很有手作感。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (41, 10033, 10032, NULL, 55, 'activity', 4.0, '《泥人张彩塑体验》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (42, 10033, 10033, NULL, 56, 'activity', 5.0, '《绒花头饰制作课》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (43, 10034, 10034, NULL, 57, 'activity', 4.5, '《潍坊风筝扎制体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (44, 10034, 10035, NULL, 58, 'activity', 4.0, '《鲁派剪纸窗花工坊》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (45, 10034, 10036, NULL, 59, 'activity', 5.0, '《花灯扎制夜游体验》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (46, 10034, 10037, NULL, 60, 'activity', 4.5, '《鲁绣针法体验营》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (47, 10035, 10044, NULL, 61, 'activity', 4.0, '《唐三彩器形彩绘课》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (48, 10036, 10045, NULL, 62, 'activity', 5.0, '《青瓷拉坯烧制课》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (49, 10036, 10048, NULL, 63, 'activity', 2.5, '《制扇题字雅集》主题很完整，但现场材料摆放有点紧，动手时需要多等一会儿。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (50, 10037, 10104, NULL, 64, 'activity', 4.0, '《广绣纹样针法体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (51, 10037, 10105, NULL, 65, 'activity', 5.0, '《潮州木雕刻花课》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (52, 10037, 10106, NULL, 66, 'activity', 4.5, '《端砚开砚与制砚体验》把工艺流程讲得很清楚，动手之后更能理解这门手艺的耐心。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (53, 10037, 10107, NULL, 67, 'activity', 4.0, '《龙舟民俗展演》现场氛围很足，讲解和互动结合得很好，适合边看边体验。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (54, 10011, 10007, NULL, 68, 'activity', 4.0, '《苏绣针法体验课》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (55, 10025, 10025, NULL, 69, 'activity', 4.5, '《布头拼接灯与织带手作体验》体验感很完整，老师讲解清楚，结束后对这门工艺更有兴趣了。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (56, 10025, 10026, NULL, 70, 'activity', 4.0, '《毛线编织手链体验》把针法、纹样和节奏讲得很明白，跟着做很容易进入状态。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (60, 10101, 10027, NULL, 74, 'activity', 5.0, '《傩戏面具雕刻与彩绘体验》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+INSERT INTO `merchant_reviews` VALUES (66, 10107, 10033, NULL, 80, 'activity', 5.0, '《青花瓷彩绘体验课》从勾线到上色都很顺，做完之后成就感很强，也很出片。', '2026-04-27 10:00:00', '2026-04-27 10:00:00');
+
+-- ----------------------------
+-- Table structure for messages
+-- ----------------------------
+DROP TABLE IF EXISTS `messages`;
+CREATE TABLE `messages`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+  `conversation_id` bigint(0) NOT NULL COMMENT '会话ID',
+  `sender_id` bigint(0) NOT NULL COMMENT '发送者ID',
+  `receiver_id` bigint(0) NOT NULL COMMENT '接收者ID',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'text' COMMENT '消息类型: text-文本',
+  `source_lang` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '消息源语言代码: en, zh, ja等',
+  `is_read` tinyint(1) NULL DEFAULT 0 COMMENT '是否已读: 0-未读, 1-已读',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '发送时间',
+  `deleted_by_receiver` bit(1) NULL DEFAULT NULL,
+  `deleted_by_sender` bit(1) NULL DEFAULT NULL,
+  `source` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'user',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_msg_conv`(`conversation_id`) USING BTREE,
+  INDEX `idx_msg_sender`(`sender_id`) USING BTREE,
+  INDEX `idx_msg_receiver`(`receiver_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 208 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of messages
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for notifications
+-- ----------------------------
+DROP TABLE IF EXISTS `notifications`;
+CREATE TABLE `notifications`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '通知ID',
+  `user_id` bigint(0) NOT NULL COMMENT '接收通知的用户ID',
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '通知类型: comment-评论, collection-收藏',
+  `from_user_id` bigint(0) NULL DEFAULT NULL COMMENT '触发通知的用户ID',
+  `post_id` bigint(0) NULL DEFAULT NULL COMMENT '相关帖子ID',
+  `comment_id` bigint(0) NULL DEFAULT NULL COMMENT '相关评论ID',
+  `content` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '通知内容',
+  `is_read` tinyint(1) NULL DEFAULT 0 COMMENT '是否已读: 0-未读, 1-已读',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_notif_user`(`user_id`) USING BTREE,
+  INDEX `idx_notif_type`(`type`) USING BTREE,
+  INDEX `idx_notif_time`(`create_time`) USING BTREE,
+  INDEX `fk_notif_from_user`(`from_user_id`) USING BTREE,
+  INDEX `fk_notif_post`(`post_id`) USING BTREE,
+  INDEX `fk_notif_comment`(`comment_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '通知表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of notifications
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for official_contents
+-- ----------------------------
+DROP TABLE IF EXISTS `official_contents`;
+CREATE TABLE `official_contents`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'introduction',
+  `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `images` json NULL,
+  `tags` json NULL,
+  `is_public` tinyint(1) NULL DEFAULT 1,
+  `view_count` int(0) NULL DEFAULT 0,
+  `admin_id` bigint(0) NOT NULL,
+  `activity_id` bigint(0) NULL DEFAULT NULL COMMENT '关联的活动ID',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `fk_official_admin`(`admin_id`) USING BTREE,
+  CONSTRAINT `fk_official_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of official_contents
+-- ----------------------------
+INSERT INTO `official_contents` VALUES (18, 'homepage_publish_heritage', '[150,176,177,178,179,180]', 'homepage_heritage_selection', NULL, NULL, NULL, 1, 0, 10047, NULL, '2026-04-28 11:12:02', NULL);
+
+-- ----------------------------
+-- Table structure for orders
+-- ----------------------------
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE `orders`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `order_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `user_id` bigint(0) NOT NULL,
+  `merchant_id` bigint(0) NOT NULL,
+  `product_id` bigint(0) NULL DEFAULT NULL,
+  `product_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `quantity` int(0) NULL DEFAULT 1,
+  `total_amount` int(0) NOT NULL,
+  `pay_amount` int(0) NOT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending_payment',
+  `payment_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `payment_time` datetime(0) NULL DEFAULT NULL,
+  `receiver_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `receiver_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `receiver_province` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `receiver_city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `receiver_district` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `receiver_address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `logistics_company` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `logistics_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `delete_status` tinyint(1) NULL DEFAULT 0,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
+  `merchant_profile_id` bigint(0) NULL DEFAULT NULL COMMENT 'normalized merchant id, merchant_profiles.id',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `order_no`(`order_no`) USING BTREE,
+  INDEX `fk_orders_user`(`user_id`) USING BTREE,
+  INDEX `fk_orders_merchant`(`merchant_id`) USING BTREE,
+  INDEX `idx_orders_merchant_profile`(`merchant_profile_id`) USING BTREE,
+  CONSTRAINT `fk_orders_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_orders_merchant_profile` FOREIGN KEY (`merchant_profile_id`) REFERENCES `merchant_profiles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of orders
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for post_reports
+-- ----------------------------
+DROP TABLE IF EXISTS `post_reports`;
+CREATE TABLE `post_reports`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `post_id` bigint(0) NOT NULL,
+  `reporter_id` bigint(0) NOT NULL,
+  `reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `handler_id` bigint(0) NULL DEFAULT NULL,
+  `handle_time` datetime(0) NULL DEFAULT NULL,
+  `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_post_reports_post_status`(`post_id`, `status`) USING BTREE,
+  INDEX `idx_post_reports_reporter_status`(`reporter_id`, `status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of post_reports
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for reserve_status_logs
+-- ----------------------------
+DROP TABLE IF EXISTS `reserve_status_logs`;
+CREATE TABLE `reserve_status_logs`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `reserve_id` bigint(0) NOT NULL,
+  `old_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `new_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `operator_id` bigint(0) NOT NULL,
+  `operator_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_reserve_status_logs_reserve_id`(`reserve_id`) USING BTREE,
+  INDEX `idx_reserve_status_logs_operator_id`(`operator_id`) USING BTREE,
+  CONSTRAINT `fk_reserve_status_logs_operator` FOREIGN KEY (`operator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_reserve_status_logs_reserve` FOREIGN KEY (`reserve_id`) REFERENCES `activity_reserves` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of reserve_status_logs
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for travel_post_collections
+-- ----------------------------
+DROP TABLE IF EXISTS `travel_post_collections`;
+CREATE TABLE `travel_post_collections`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '收藏ID',
+  `post_id` bigint(0) NOT NULL COMMENT '帖子ID',
+  `user_id` bigint(0) NOT NULL COMMENT '用户ID',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '收藏时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_collection_user_post`(`user_id`, `post_id`) USING BTREE,
+  INDEX `idx_collection_post`(`post_id`) USING BTREE,
+  INDEX `idx_collection_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '帖子收藏记录' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of travel_post_collections
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for travel_post_comment_likes
+-- ----------------------------
+DROP TABLE IF EXISTS `travel_post_comment_likes`;
+CREATE TABLE `travel_post_comment_likes`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '点赞ID',
+  `comment_id` bigint(0) NOT NULL COMMENT '评论ID',
+  `user_id` bigint(0) NOT NULL COMMENT '点赞用户ID',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '点赞时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_comment_like_user`(`comment_id`, `user_id`) USING BTREE,
+  INDEX `idx_comment_like_comment`(`comment_id`) USING BTREE,
+  INDEX `idx_comment_like_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '评论点赞记录' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of travel_post_comment_likes
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for travel_post_comments
+-- ----------------------------
+DROP TABLE IF EXISTS `travel_post_comments`;
+CREATE TABLE `travel_post_comments`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '评论ID',
+  `post_id` bigint(0) NOT NULL COMMENT '帖子ID',
+  `user_id` bigint(0) NOT NULL COMMENT '评论用户ID',
+  `parent_id` bigint(0) NULL DEFAULT NULL COMMENT '父评论ID，用于回复功能',
+  `reply_to_user_id` bigint(0) NULL DEFAULT NULL COMMENT '回复目标用户ID',
+  `content` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '评论内容',
+  `like_count` int(0) NULL DEFAULT 0 COMMENT '评论点赞数',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '评论时间',
+  `source_lang` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_comment_post`(`post_id`) USING BTREE,
+  INDEX `idx_comment_user`(`user_id`) USING BTREE,
+  INDEX `idx_comment_parent`(`parent_id`) USING BTREE,
+  INDEX `fk_comment_reply_to_user`(`reply_to_user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '帖子评论' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of travel_post_comments
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for travel_post_history
+-- ----------------------------
+DROP TABLE IF EXISTS `travel_post_history`;
+CREATE TABLE `travel_post_history`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '历史记录ID',
+  `post_id` bigint(0) NOT NULL COMMENT '帖子ID',
+  `user_id` bigint(0) NOT NULL COMMENT '浏览用户ID',
+  `view_count` int(0) NULL DEFAULT 1 COMMENT '浏览次数',
+  `last_view_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '最后浏览时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_history_user_post`(`user_id`, `post_id`) USING BTREE,
+  INDEX `idx_history_user_time`(`user_id`, `last_view_time`) USING BTREE,
+  INDEX `fk_history_post`(`post_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 46 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '帖子浏览历史' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of travel_post_history
+-- ----------------------------
+INSERT INTO `travel_post_history` VALUES (31, 62, 10000, 1, '2026-04-28 05:16:15');
+INSERT INTO `travel_post_history` VALUES (32, 32, 10011, 1, '2026-04-28 09:51:59');
+INSERT INTO `travel_post_history` VALUES (33, 31, 10011, 1, '2026-04-28 09:52:04');
+INSERT INTO `travel_post_history` VALUES (34, 61, 10000, 1, '2026-04-28 10:11:01');
+INSERT INTO `travel_post_history` VALUES (35, 60, 10000, 1, '2026-04-28 10:11:03');
+INSERT INTO `travel_post_history` VALUES (36, 59, 10000, 1, '2026-04-28 10:11:05');
+INSERT INTO `travel_post_history` VALUES (37, 58, 10000, 1, '2026-04-28 10:11:06');
+INSERT INTO `travel_post_history` VALUES (38, 57, 10000, 1, '2026-04-28 10:11:08');
+INSERT INTO `travel_post_history` VALUES (39, 56, 10000, 1, '2026-04-28 10:11:10');
+INSERT INTO `travel_post_history` VALUES (40, 55, 10000, 1, '2026-04-28 10:11:12');
+INSERT INTO `travel_post_history` VALUES (41, 54, 10000, 1, '2026-04-28 10:11:14');
+INSERT INTO `travel_post_history` VALUES (42, 53, 10000, 1, '2026-04-28 10:11:16');
+INSERT INTO `travel_post_history` VALUES (43, 52, 10000, 1, '2026-04-28 10:11:18');
+INSERT INTO `travel_post_history` VALUES (45, 62, 10011, 1, '2026-04-28 20:36:13');
+
+-- ----------------------------
+-- Table structure for travel_posts
+-- ----------------------------
+DROP TABLE IF EXISTS `travel_posts`;
+CREATE TABLE `travel_posts`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '帖子ID',
+  `user_id` bigint(0) NOT NULL COMMENT '发布用户ID',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子标题',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子内容',
+  `post_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal' COMMENT 'normal/review/ai_video',
+  `category` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'travel' COMMENT '帖子分类',
+  `audit_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'pending',
+  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '审核备注',
+  `images` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '图片URL或Base64数组(JSON)',
+  `tags` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '标签数组(JSON)',
+  `visibility` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
+  `status` tinyint(1) NULL DEFAULT 1 COMMENT '帖子状态：1-正常，0-删除',
+  `view_count` int(0) NULL DEFAULT 0 COMMENT '浏览次数',
+  `comment_count` int(0) NULL DEFAULT 0 COMMENT '评论数',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '发布时间',
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+  `collection_count` int(0) NULL DEFAULT NULL,
+  `collect_count` int(0) NULL DEFAULT NULL,
+  `source_lang` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'normal' COMMENT '????????ormal-????????review-??????',
+  `activity_id` bigint(0) NULL DEFAULT NULL,
+  `score` int(0) NULL DEFAULT NULL,
+  `is_anonymous` tinyint(1) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_post_user`(`user_id`) USING BTREE,
+  INDEX `idx_post_category`(`category`) USING BTREE,
+  INDEX `idx_post_status`(`status`) USING BTREE,
+  INDEX `idx_post_create_time`(`create_time`) USING BTREE,
+  INDEX `idx_post_activity`(`activity_id`) USING BTREE,
+  INDEX `idx_travel_posts_activity_id`(`activity_id`) USING BTREE,
+  INDEX `idx_travel_posts_post_type`(`post_type`) USING BTREE,
+  INDEX `idx_travel_posts_user_type_status`(`user_id`, `post_type`, `status`) USING BTREE,
+  CONSTRAINT `fk_post_activity` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 64 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '发现页帖子' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of travel_posts
+-- ----------------------------
+INSERT INTO `travel_posts` VALUES (2, 10011, '福建游神——中式信仰美学', '曾以为神明住在云端\n直到走入福建的旧街巷\n迎上这场盛大的流动——\n原来最深的信仰\n就落在人间烟火里\n-\n当鼓点从青石板路深处传来\n神将巍峨的身姿转过巷角\n华服璀璨，眉目庄严\n却又带着一丝“人间气”——\n会接过孩童手中的糖果\n会为长者的祈福微微颔首\n那一刻突然懂得：\n所谓信仰\n不是高高在上的仰望\n而是人与神之间\n这份无声却厚重的连接\n-\n福州游神主要集中在长乐区，从正月初一开始到二月中，几乎每天都有，我追的这场是规模zui大的厚福游神：\n📍福州市长乐区潭头镇厚福乡\n📆正月初十、正月二十六\n⏰08:00-次日凌晨', 'normal', '民俗节气', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/2/1.jpg\", \"https://yayfolk.bhyy.online/posts/2/2.jpg\", \"https://yayfolk.bhyy.online/posts/2/3.jpg\"]', '[\"民俗节气\",\"非遗追年地图\",\"旅行中的非遗体验\",\"游神\",\"福建游神\",\"民俗\",\"新年\",\"春节\"]', 'public', 1, 8, 0, '2026-03-28 19:49:45', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (3, 10011, '老祖宗肩上的“时尚单品” 火了上千年', '一抹云霞落肩头，流转千年仍惊艳！\n云肩是中华民族服饰文化中历史悠久且独特的服饰瑰宝，既是古人“天人合一”的智慧凝结，更是东方美学的精神传承！\n云肩之美，在其极致工艺！\n✅ 形制考究：四合如意、柳叶式、八方云纹…每一片云肩的剪裁都暗含深意。四合如意象征“四方祥和”，柳叶式放射状纹样寓意“生命长青”，而八片垂云则对应传统节庆的平安祈愿 。\n✅ 纹样密码：石榴葡萄喻多子，蝙蝠葫芦兆福禄…云肩的刺绣每一针都承载着古人对生活的美好期许。\n✅ 工艺巅峰：立体剪裁贴合女子肩颈曲线，云肩针法竟有滚针、盘金等诸多针法，绣娘以线为笔，将四季花鸟、祥云瑞兽化作肩头画卷。\n传承与创新：让云肩走进日常\n如今，云肩不再只是博物馆的展品：中式婚纱、马面裙+云肩、毕业季学士服+云肩、巴黎奥运会体操服装等，现代日常服饰不断融入云肩这一传统元素，诠释出更多新中式可能。（图1-10源于大英博物馆；图11-17源于郑州博物馆）\n\n老祖宗肩上的“时尚单品” 火了上千年\n\n中国传统工艺振兴服务平台\n2025-04-21\n3292\n\n🪡八位掌灯人｜穿越千年女性非遗技艺图鉴\n\n元气小葫要早睡💤\n2025-12-17\n1198\n\n《探索100种东方美学》——㉙云肩\n\n言小柒MiaoMiao\n2025-07-15\n1840\n\n\n原味栗子（接稿版）\n2025-12-30\n1581\n\n时尚中国，非遗的fashion之路㈧\n\nShine耀\n2024-12-23\n7.9万\n\n一眼心动！藏在肩上的东方绝美“天空”✨\n\n云山有趣的非遗\n2025-12-06\n2.5万\n大家都在搜\n\n非遗文化服装\n\n中国十大非遗\n\n非遗服饰有哪些\n\n非遗拟人化绘画\n\nTHE SEA LIFE×傣锦：将热带生态景象织在身上\n\n非遗Plus\n2025-07-31\n547\n\n「锦序东方」服装效果图分享\n\n钰榕设计（约稿中）\n01-28\n199\n\n聆听传统美学｜非遗醒狮\n\n你说天空很美丽\n01-14\n233\n\n这不是国外大牌高定！\n\n毛豆\n2025-12-12\n3.6万\n\n一刀一剪一世界——带你领略非遗的魅力(02)\n\nAIGC杨太医\n2025-08-01\n703\n\n服设系列—非遗\n\n张小花花老师\n2025-03-24\n1057\n\n非遗服饰服装分层设计图\n\n漓月\n2025-12-12\n14\n\n🔥中国国际时装周｜非遗服饰文化惊艳秀场\n\n遗韵云游\n2025-12-09\n144\n\n把非遗绒花穿身上，那该有多美？\n\n宁心如\n02-13\n11.4万\n大家都在搜\n\n中国传统非遗服装\n\n非遗人物绘画素材\n\n非遗服饰图片\n\n非遗文化主题衣服\n\n广艺/毕业设计/把非遗穿身上\n\n一只小馒头\n2025-04-11\n2106\n发现\n直播\n发布\n通知\n我\n×\n拖拽到此处\n图片将完成下载\n由Fitkun图片批量下载提供\n\n中国传统工艺振兴服务平台\n关注\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n1/17\n老祖宗肩上的“时尚单品” 火了上千年\n一抹云霞落肩头，流转千年仍惊艳！\n云肩是中华民族服饰文化中历史悠久且独特的服饰瑰宝，既是古人“天人合一”的智慧凝结，更是东方美学的精神传承！\n云肩之美，在其极致工艺！\n✅ 形制考究：四合如意、柳叶式、八方云纹…每一片云肩的剪裁都暗含深意。四合如意象征“四方祥和”，柳叶式放射状纹样寓意“生命长青”，而八片垂云则对应传统节庆的平安祈愿 。\n✅ 纹样密码：石榴葡萄喻多子，蝙蝠葫芦兆福禄…云肩的刺绣每一针都承载着古人对生活的美好期许。\n✅ 工艺巅峰：立体剪裁贴合女子肩颈曲线，云肩针法竟有滚针、盘金等诸多针法，绣娘以线为笔，将四季花鸟、祥云瑞兽化作肩头画卷。\n传承与创新：让云肩走进日常\n如今，云肩不再只是博物馆的展品：中式婚纱、马面裙+云肩、毕业季学士服+云肩、巴黎奥运会体操服装等，现代日常服饰不断融入云肩这一传统元素，诠释出更多新中式可能。\n\n你喜欢什么样的云肩造型呢？评论区留言~', 'normal', '服饰妆造', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/3/1.jpg\", \"https://yayfolk.bhyy.online/posts/3/2.png\"]', '[\"服饰妆造\",\"非遗\",\"东方美学\",\"云肩\",\"大英博物馆\",\"郑州博物馆\",\"传统服饰\"]', 'public', 1, 3, 0, '2026-03-28 19:53:18', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (4, 10011, '唐三彩', '釉色承千年，匠心照古今——洛阳唐三彩的非遗传承与时代新生\n在中华文明的璀璨星河中，洛阳唐三彩是一颗独特的星辰。它诞生于盛唐的沃土，以绚烂釉色、恢弘气势，成为那个时代的文化图腾；它历经千年岁月洗礼，在传承与创新的交织中，依然焕发着蓬勃生机，成为连接古今的文化桥梁。\n缘起盛唐：时代风骨孕育的艺术瑰宝\n唐三彩的诞生，是历史的必然。盛唐时期，洛阳作为十三朝古都，既是政治经济中心，也是丝绸之路的东方枢纽。东西方文化在此碰撞交融，为艺术创作注入了多元灵感\n工匠们以细腻的高岭土为胎，以金属氧化物为着色剂，经“制胎—施釉—烧制”三道核心工序，在窑火中完成一场“色彩的魔术”。不同于传统陶瓷的单一釉色，唐三彩的釉料在高温下自由流淌，红如丹砂、绿似翡翠、黄若蜜蜡，交融处形成的“流釉”效果，如云雾缭绕、如霞光漫卷，尽显盛唐的豪迈与浪漫。\n从皇室贵族的陪葬重器，到文人雅士的赏玩之物，唐三彩的题材无一不展现着盛唐的社会风貌与精神气度。它不仅是陶瓷艺术的巅峰，更是大唐盛世的“立体史书”。\n守正创新：非遗传承人的“破局”之路\n时光流转，盛唐落幕，但唐三彩的窑火并未熄灭。然而，在现代工业的冲击下，这门古老技艺曾一度面临“无人传承、无人问津”的困境。直到一批非遗传承人的出现，用“守正”筑牢根基，用“创新”开拓未来。\n“守正”是对古法工艺的敬畏。传承人李松茂坚守“手工制胎、手工施釉、柴窑烧制”的传统，每一件作品都要经过数十道工序，从陶土筛选到釉料调配，从入窑温度到烧制时间，都严格遵循古法。“柴窑的火性是电窑替代不了的，只有这样，才能烧出唐三彩独有的温润质感。”李松茂的话，道出了匠人的坚守。\n“创新”是与时代的对话。年轻传承人将唐三彩的经典元素与现代审美结合，推出了一系列文创产品：将三彩马做成小巧玲珑的车载摆件，把釉色纹样印在笔记本上甚至开发出“唐三彩DIY体验套装”，让消费者亲手感受施釉的乐趣。\n文化出海：千年釉色讲述中国故事\n如今，洛阳唐三彩已不再是中国的“文化瑰宝”，更成为世界了解中国的“文化名片”。在海外展出时，唐三彩马的矫健、乐伎俑的灵动，让外国观众惊艳于中国古代艺术的魅力；非遗传承人带着技艺走出国门，让世界看见中国匠心。\n从盛唐的窑火到如今的国际舞台，从博物馆的陈列品到日常的文创产品，洛阳唐三彩的传承之路是中国非遗文化发展的缩影。它用绚烂的釉色，诉说着中华文明的博大精深；用不变的匠心，诠释着文化传承的力量。', 'normal', '美术造物', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/4/1.png\", \"https://yayfolk.bhyy.online/posts/4/2.jpg\", \"https://yayfolk.bhyy.online/posts/4/3.jpg\"]', '[\"美术造物\"]', 'public', 1, 10, 0, '2026-03-28 19:58:05', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (5, 10011, '傩戏|中国硬核非遗', '傩戏起源于商周时期的驱傩仪式，最初是古人通过歌舞祭祀驱鬼逐疫、祈福纳吉的宗教活动。汉代后逐渐融入娱人成分，宋代受民间歌舞影响发展为傩戏，元代至明清时期与地方戏曲融合，形成多样化流派。其历史可追溯至先秦的巫歌傩舞，被誉为“中国戏剧活化石”。\n	\n表演形式\n面具文化：演员佩戴木质或丝质面具（称“脸子”），造型夸张狰狞，直观区分角色性格，如贵州德江傩戏的面具多达上百种。\n宗教仪式融合：演出分“开坛”“开洞”“闭坛”三阶段，与祭祀活动一体，如湖北恩施傩戏需杀鸡请神、烧纸祭祖。\n傩技绝活：包含喷火、上刀梯、过火海等惊险技艺，体现原始巫术色彩。\n	\n音乐与剧目\n音乐以打击乐为主（锣、鼓、钹），辅以山歌、佛道乐曲，唱腔粗犷，多采用一唱众和形式。\n	\n剧目分三类：\n正戏：如《仙姑送子》《发五猖》，宗教色彩浓厚；\n傩堂小戏：如《采香》《陈州放粮》，娱乐性强；\n外台戏：吸收民间故事的《孟姜女》《三国演义》等。\n	\n傩戏主要分布于西南及长江流域，因地域文化差异形成多种流派：\n1.恩施傩戏（湖北）：分“傩愿戏”与“坛傩”，前者融入花鼓戏技巧，后者保留明代祭祖仪式，面具制作工艺独特。\n2.池州傩戏（安徽）：以宗族为单位演出，每年春秋两祭，保留《刘文龙》等古剧目，被誉为“无傩不成村”。\n3.侗族傩戏“咚咚推”（湖南）：舞蹈以“三角形”步伐模拟耕牛动作，剧目融合侗族生活与三国故事。\n4.德江傩堂戏（贵州）：被称为“中国戏剧活化石”，完整保留汉代傩仪传统，表演包含复杂法事。\n5.武安傩戏（河北）：具宋代宫廷傩遗风，角色“掌竹”为宋金杂剧引戏人遗存。', 'normal', '戏曲演绎', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/5/1.jpg\", \"https://yayfolk.bhyy.online/posts/5/2.jpg\"]', '[\"非遗\",\"傩戏\",\"非物质文化遗产\",\"非遗传承\",\"传统文化\",\"恩施傩戏\",\"池州傩戏\",\"戏曲演绎\",\"美术造物\"]', 'public', 1, 6, 0, '2026-03-28 20:01:41', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (6, 10011, '以针为笔，以丝为墨，绣出江南的呼吸', '苏绣，源于江苏苏州一带，以其独特的艺术魅力和精湛技艺位居“四大名绣”之首，素有“精、细、雅、洁”之称，并于2006年入选国家级非物质文化遗产。\n艺术特色：\n苏绣的灵魂在于“平、齐、细、密、匀、顺、和、光”八字。其最显著的特点是 “精微雅致” 。绣工们常将一根头发丝般粗细的丝线劈成更细的1/16甚至1/32来进行创作，使作品达到“不见针线痕迹，只觉画面生动”的境界。\n代表技艺：\n双面绣是苏绣皇冠上的明珠。绣娘们在同一块底料上，一次施针，正反两面却呈现出构图完整、针法相同而画面可能不同的完美图案，令人拍案叫绝。代表作《猫》更是将这一技艺发挥到极致，丝线天然的光泽将小猫蓬松的毛发、灵动的眼神表现得栩栩如生。\n文化内涵：\n苏绣深受吴地文化的熏陶，作品题材多取自江南文人画，充满诗情画意。它不仅是技艺的展现，更是江南水乡温婉、灵动、典雅气质的集中体现，是流动在指尖上的姑苏风情。', 'normal', '织物手工', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/6/1.jpg\", \"https://yayfolk.bhyy.online/posts/6/2.jpg\", \"https://yayfolk.bhyy.online/posts/6/3.jpg\"]', '[\"织物手工\",\"非遗文化\",\"苏绣\",\"刺绣\"]', 'public', 1, 15, 0, '2026-03-28 20:04:27', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (7, 10011, '认识一个非物质文化遗产——苗绣', '⭐️起源\n贵州苗绣，一部用针线书写的民族史诗。苗绣起源可回溯到上古时期，与古代濮人的雕题文身有着千丝万缕的联系。彼时，随着濮人后裔南蛮掌握蚕桑技术，雕题文身逐渐演变为“描” ，待骨针、铜针出现，挑花和织花工艺应运而生。战国时期，苗绣正式在苗族服饰上崭露头角。\n元明清时期，因各支系苗民以不同动物为图腾，苗绣纹样风格各异，氏族间的交流又促使苗绣不断融合发展。\n2006年5月20日，贵州苗绣被列为国家级非物质文化遗产，遗产编号为Ⅶ-22。近年来，不断创新，融入现代设计与时尚产业，在国际舞台大放异彩，实现传承与发展的新跨越 。\n⭐️价值\n苗族没有传统意义上的文字，苗绣充当了“史书”角色。绣品中大量的神话传说、英雄故事、迁徙历程等图案，记录着苗族起源、发展轨迹，承载民族记忆与文化基因，像蝴蝶妈妈传说绣样，展现苗族独特创世观。\n此外，苗绣针法极为丰富，有平绣、辫绣、缠绣等几十种，每种针法呈现不同肌理质感 。色彩搭配大胆热烈，多运用红、黄、蓝等对比强烈的原色，形成鲜明视觉冲击，几何纹、动植物纹等图案造型夸张抽象，充满想象力与艺术感染力，具有极高的艺术价值。', 'normal', '织物手工', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/7/1.png\", \"https://yayfolk.bhyy.online/posts/7/2.png\"]', '[\"织物手工\",\"苗绣\"]', 'public', 1, 10, 0, '2026-03-28 22:33:59', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (8, 10000, 'abc', 'The title and body have no clear topic. The text looks like random fragments with no useful information or readable value.', 'normal', 'other', 'rejected', 'Low quality and insufficient information', '[]', '[\"meaningless\",\"low_quality\",\"rejected\"]', 'public', 1, 4, 0, '2026-03-29 14:07:51', '2026-04-27 21:20:14', 0, 0, 'en', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (10, 10047, '加我wx', 'This post directly asks readers to add a contact account and contains obvious off-platform promotion and marketing intent.', 'normal', 'other', 'rejected', 'Contains contact info and promotional intent', '[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/10/1.jpg\"]', '[\"contact\",\"promotion\",\"marketing\"]', 'public', 1, 0, 0, '2026-03-29 14:57:27', '2026-04-27 21:20:14', 0, 0, 'en', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (11, 10047, '毒品', 'This post contains prohibited sensitive terms and inappropriate implications, creating a clear moderation risk.', 'normal', 'other', 'rejected', 'Contains prohibited sensitive words', '[\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/11/1.webp\",\"https://travelate.oss-cn-wuhan-lr.aliyuncs.com/yayfolk/posts/11/2.webp\"]', '[\"sensitive\",\"prohibited\",\"rejected\"]', 'public', 1, 2, 0, '2026-03-29 15:02:26', '2026-04-27 21:20:14', 0, 0, 'en', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (12, 10011, '非遗珍宝｜点翠：千年不褪色的蓝', '点翠，一项被誉为“首饰工艺绝唱”的国家级非物质文化遗产，以翠羽为墨，金银为骨，在方寸之间勾勒出千年不褪的华彩。它曾是帝王凤冠上的璀璨星辰，如今虽渐隐于时光，却仍是东方美学中一抹无法复制的幽蓝梦境。\n✨ 精工细作，巧夺天工\n点翠工艺的极致，在于“以羽为画”的匠心。工匠需先将金、银片捶揲成底托，再用金丝焊出图案轮廓，形成“嵌羽之槽”。随后，取翠鸟颈间最莹润的羽绒，以特制胶液轻贴于金属胎底。羽丝细软如尘，却需排列得密不透风，方能在光下流转出湖面波光般的幻彩。最后缀以珍珠、翡翠、珊瑚等宝玉石，方成一件雍容典雅的珍品。正如古籍所载：“虽无宝石炫亮，却自有一种艳丽拙朴之美。”\n👑 千年传承，宫廷绝色\n点翠工艺始于汉代，盛于乾隆。昔日的帝王衮服、皇后凤冠，皆以翠羽为饰，历经岁月仍鲜艳如初。一只翠鸟仅能取零星羽绒，修复一顶明代凤冠竟需十万翠羽，其珍贵可见一斑。这项工艺不仅象征着古代匠人的智慧，更承载着东方饰品对细节的执着——以工艺的精细、含蓄之美，诠释“富丽堂皇”的真正内涵。\n🌿 非遗新生，以今承古\n如今，翠鸟已成保护动物，传统点翠逐渐被孔雀羽、染绸等代用品取代。但这项工艺的生命力并未消逝——现代匠人以创新手法延续着点翠的魂韵，让这份“幽蓝幻彩”在当代首饰中重焕生机。非遗的点翠，不再是羽与金的简单结合，而是对千年美学的敬畏与传承。\n点翠的蓝，是时光浸染的诗意，更是工匠指尖流淌的星河。愿这份“永不褪色”的浪漫，能被更多人看见、铭记。', 'normal', '服饰妆造', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/12/1.jpg\", \"https://yayfolk.bhyy.online/posts/12/2.jpg\", \"https://yayfolk.bhyy.online/posts/12/3.jpg\"]', '[\"点翠\",\"非遗传承\",\"东方美学\",\"传统工艺美学\"]', 'public', 1, 11, 1, '2026-03-30 15:51:34', '2026-04-28 22:07:59', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (13, 10023, '窗边一亮，氛围感直接拉满', '最先吸引我的是窗边那盏黄灯，布纹透光后很有晚霞感。成品不只是摆件，晚上开灯会把整个角落都照得很温柔。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/13/1.jpg\"]', '[\"手作灯\",\"布头拼接\",\"氛围感\"]', 'public', 1, 49, 0, '2026-04-24 18:20:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (14, 10000, '拼布排版比想象中还治愈', '拼布排版真的比想象中难，但也最有成就感。每一块碎布颜色都不一样，拼在一起反而很耐看，像把记忆缝进了一张图案里。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/14/1.jpg\"]', '[\"拼布\",\"色块搭配\",\"手作\"]', 'public', 1, 31, 0, '2026-04-24 17:45:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (15, 10020, '缝纫机一响就很有成品感', '老师先让我看缝纫机走线，再教我把布边收平。第一次踩踏板还有点紧张，不过看到针脚一条条出来，立刻就有了自己做出来的踏实感。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/15/1.jpg\"]', '[\"缝纫机\",\"收边\",\"手作过程\"]', 'public', 1, 30, 0, '2026-04-24 17:10:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 4, 1);
+INSERT INTO `travel_posts` VALUES (16, 10044, '老师手把手帮我调了配色', '调整布片位置的时候，才发现细微的错位会影响整体气质。老师帮我把蓝色和粉色重新搭了一下，原本普通的拼片一下子就顺眼了。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/16/1.jpg\"]', '[\"配色\",\"拼布\",\"老师指导\"]', 'public', 1, 30, 0, '2026-04-23 20:30:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (17, 10045, '经纬线刚上好就很治愈', '经纬线刚拉好时还看不出什么，真正开始织之后层次就慢慢出来了。靠近看能看到线面的纹理和手工痕迹，很像把时间一点点织进框里。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/17/1.jpg\"]', '[\"织机\",\"经纬线\",\"纹理\"]', 'public', 1, 23, 0, '2026-04-23 18:15:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (18, 10007, '小手环做好那刻特别有成就感', '小手环虽然不大，但编完以后特别有满足感。毛线颜色一层层过渡，戴在手上轻轻的，像把今天的手作记忆带走了。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/18/1.jpg\"]', '[\"手环\",\"毛线编织\",\"成就感\"]', 'public', 1, 36, 0, '2026-04-22 21:00:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 4, 1);
+INSERT INTO `travel_posts` VALUES (19, 10023, '这个灯罩近看也很耐看', '这个灯罩近看特别惊喜，拼布边缘收得很利落。白天看是色块和纹理，晚上亮起来又完全变成另一种氛围，细节很耐看。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/19/1.jpg\"]', '[\"灯罩\",\"细节\",\"布纹\"]', 'public', 1, 21, 0, '2026-04-22 18:40:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (20, 10000, '成品配色很干净', '我最喜欢这组图案的配色，碎布块拼起来一点都不乱。成品看着简单，实际上每个颜色的位置都很讲究，最后效果很干净。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/20/1.jpg\"]', '[\"配色\",\"碎布\",\"成品\"]', 'public', 1, 24, 0, '2026-04-21 19:05:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 77, 5, 0);
+INSERT INTO `travel_posts` VALUES (21, 10023, '编好手链那一刻特别有成就感', '颜色搭配好以后，整条手链一下子就立住了。编织的时候看着绳线一点点成型，收尾完成后真的很想立刻戴上。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/21/1.jpg\"]', '[\"手链\",\"毛线编织\",\"成就感\"]', 'public', 1, 47, 1, '2026-04-24 19:10:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 78, 5, 0);
+INSERT INTO `travel_posts` VALUES (22, 10000, '配色一换，手链气质就变了', '同样是基础编织，换了颜色后气质完全不同。浅色更清爽，亮色更跳脱，最后成品小小一条却很显眼。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/22/1.jpg\"]', '[\"配色\",\"手链\",\"织机\"]', 'public', 1, 29, 0, '2026-04-24 18:45:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 78, 5, 0);
+INSERT INTO `travel_posts` VALUES (23, 10020, '老师带着一步一步编，节奏很舒服', '我原本担心自己跟不上，结果老师会一小步一小步带着做。织机和毛线的关系一下子就看明白了，整个过程特别顺。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/23/1.jpg\"]', '[\"老师指导\",\"织机\",\"手链\"]', 'public', 1, 23, 0, '2026-04-24 18:10:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 78, 4, 1);
+INSERT INTO `travel_posts` VALUES (24, 10044, '手腕上的小作品越看越喜欢', '成品不大，但戴上以后很有存在感。毛线的层次和纹理在光下会变得很明显，看着就很治愈。', 'review', '手作体验', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/24/1.jpg\"]', '[\"手环\",\"毛线\",\"成品\"]', 'public', 1, 19, 0, '2026-04-24 17:35:00', '2026-04-28 22:08:00', 0, 0, 'zh', 'review', 78, 5, 0);
+INSERT INTO `travel_posts` VALUES (28, 10023, '上午的工坊像一段慢镜头', '这是一篇普通分享，不是评价。把今天在工坊里拍到的细节整理成九宫格，灯光、桌面和工具都很有现场感。', 'normal', '旅行随记', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/28/1.jpg\"]', '[工坊,九宫格,分享]', 'public', 1, 12, 2, '2026-04-24 22:00:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (29, 10023, '把体验过程记成一条普通帖子', '有些内容更适合放在普通帖子里，先把路线、照片和心情发出来，之后再单独写评价贴。', 'normal', '生活记录', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/29/1.jpg\"]', '[生活记录,测试,分享]', 'public', 1, 10, 1, '2026-04-24 22:10:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (30, 10023, '普通动态也能显示在我的帖子里', '这个测试帖主要用来验证普通分享和评价贴的列表是否分开。现在数据补上后，两个页面应该都能看到内容。', 'normal', '非遗分享', 'passed', NULL, '[\"http://localhost:8080/uploads/demo/craft-showcase/这个国庆来玩儿毛线编织啊～_7_民艺商店_来自小红书网页版.jpg\"]', '[花絮,测试,分享]', 'private', 1, 10, 0, '2026-04-24 22:20:00', '2026-04-27 01:16:13', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (31, 10011, '纸雕层景 成品展示', '纸雕层景背景展示 · 橱窗光影', 'normal', '木版年画', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/31/1.jpg\"]', '[\"AI大片\",\"非遗国风\",\"木版年画\",\"橱窗光影\",\"纸雕层景\",\"自适应\"]', 'public', 1, 3, 0, '2026-04-26 00:17:30', '2026-04-28 22:08:01', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (32, 10011, '匠人工坊 AI大片', '以木版年画工坊为主题，木刻印版、朱砂、手工拓印和年节民俗桌面同框，画面朴拙热烈。 · 匠人工坊', 'normal', '服饰妆造', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/32/1.jpg\"]', '[\"AI大片\",\"非遗国风\",\"AI非遗大片\"]', 'public', 1, 1, 0, '2026-04-26 00:53:09', '2026-04-28 22:08:01', 0, 0, 'zh', 'normal', NULL, NULL, 0);
+INSERT INTO `travel_posts` VALUES (33, 10000, '面具上色很有仪式感', '傩面从打底、勾线到最后上色都很有步骤感，老师会先讲纹样寓意，再慢慢带着调整颜色。戴上成品的时候，感觉自己真的把一段民俗故事做出来了。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/33/1.jpg\"]', '[\"傩戏\",\"面具雕刻\",\"彩绘\",\"民俗体验\"]', 'public', 1, 12, 0, '2026-04-27 09:10:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 82, 5, 0);
+INSERT INTO `travel_posts` VALUES (34, 10007, '刀痕和彩绘细节都很扎实', '雕刻纹路看着细，但做起来节奏很顺，彩绘后层次一下子就出来了。成品很适合拍照，也能看出工艺里的认真劲。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/34/1.png\"]', '[\"傩戏\",\"上色\",\"传统工艺\",\"体验\"]', 'public', 1, 9, 0, '2026-04-27 09:14:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 82, 4, 0);
+INSERT INTO `travel_posts` VALUES (45, 10000, '青花纹样上手就很出片', '先打底再勾线，蓝白对比很清爽，老师还会提醒留白和落笔力度。做完以后杯面一样的纹样很耐看。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/45/1.jpg\"]', '[\"青花瓷\",\"彩绘\",\"蓝白\",\"纹样\"]', 'public', 1, 15, 0, '2026-04-27 09:58:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 88, 5, 0);
+INSERT INTO `travel_posts` VALUES (46, 10023, '颜色偏少但很考验手感', '青花看着简单，其实勾线和晕染都得稳住，稍微手抖就会影响线条。过程不算轻松，但能学到很多。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/46/1.jpg\"]', '[\"青花瓷\",\"勾线\",\"手感\",\"体验\"]', 'public', 1, 5, 0, '2026-04-27 10:02:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 88, 3, 0);
+INSERT INTO `travel_posts` VALUES (47, 10020, '傩面细节越看越有味道', '面具的线条和上色层次特别稳，做完以后回头看会发现每一刀都有讲究。成品很有舞台感，适合展示民俗审美。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/47/1.jpg\"]', '[\"傩戏\",\"面具\",\"彩绘\",\"展示\"]', 'public', 1, 6, 0, '2026-04-27 10:10:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 82, 4, 0);
+INSERT INTO `travel_posts` VALUES (48, 10023, '这门手艺很适合慢慢做', '雕刻和涂色都需要稳住节奏，最后完成的时候会特别有成就感。成品细看很扎实，能感受到传统工艺的耐心。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/48/1.jpg\"]', '[\"傩戏\",\"手作\",\"传统工艺\",\"耐心\"]', 'public', 1, 5, 0, '2026-04-27 10:14:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 82, 5, 0);
+INSERT INTO `travel_posts` VALUES (49, 10044, '青花的蓝很耐看', '青花瓷最吸引人的就是蓝白之间的干净感，勾线完成以后整个器型一下子就立住了。拍照和摆放都很出效果。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/49/1.jpg\"]', '[\"青花瓷\",\"蓝白\",\"纹样\",\"彩绘\"]', 'public', 1, 9, 0, '2026-04-27 10:18:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 88, 5, 0);
+INSERT INTO `travel_posts` VALUES (50, 10045, '上色过程比想象中更治愈', '一笔一笔把纹样补完整的过程很安静，也很解压。成品的线条很顺，放在灯下会更显温润。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/50/1.jpg\"]', '[\"青花瓷\",\"上色\",\"治愈\",\"体验\"]', 'public', 1, 4, 0, '2026-04-27 10:22:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 88, 4, 0);
+INSERT INTO `travel_posts` VALUES (51, 10000, '苏绣针法很细腻', '老师先带着看针法走向，再一点点做纹样层次。真正上手后会发现苏绣最迷人的地方就是细，做完以后很有江南气质。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/51/1.jpg\"]', '[\"苏绣\",\"针法\",\"刺绣\",\"江南\"]', 'public', 1, 8, 0, '2026-04-27 11:00:00', '2026-04-28 22:08:01', 0, 0, 'zh', 'review', 70, 5, 0);
+INSERT INTO `travel_posts` VALUES (52, 10007, '配色和收边都很讲究', '一针一线看着慢，但完成以后特别耐看。绣面收边很整齐，颜色也搭得很温柔，成品拿在手里很舒服。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/52/1.png\"]', '[\"苏绣\",\"配色\",\"收边\",\"手作\"]', 'public', 1, 6, 0, '2026-04-27 11:05:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 70, 4, 0);
+INSERT INTO `travel_posts` VALUES (53, 10020, '越做越能感受到耐心', '前面总担心自己做不整齐，后来跟着节奏慢慢就顺了。苏绣最打动人的不是快，而是那种沉下来的工夫。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/53/1.jpg\"]', '[\"苏绣\",\"耐心\",\"绣面\",\"体验\"]', 'public', 1, 5, 0, '2026-04-27 11:10:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 70, 4, 0);
+INSERT INTO `travel_posts` VALUES (54, 10023, '京剧脸谱一上色就很有戏', '勾线、填色、修正，每一步都很像在给角色“定神”。做完以后面具的气势立刻就出来了。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/54/1.jpg\"]', '[\"京剧脸谱\",\"上色\",\"戏曲\",\"面具\"]', 'public', 1, 8, 0, '2026-04-27 11:15:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 4, 5, 0);
+INSERT INTO `travel_posts` VALUES (55, 10044, '颜色对比很抓眼', '红蓝金的搭配特别出效果，老师会解释不同颜色在脸谱里的含义。不是单纯涂色，更像在读一张戏曲名片。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/55/1.jpg\", \"https://yayfolk.bhyy.online/posts/55/2.jpg\"]', '[\"京剧脸谱\",\"配色\",\"戏曲文化\",\"体验\"]', 'public', 1, 7, 0, '2026-04-27 11:20:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 4, 4, 0);
+INSERT INTO `travel_posts` VALUES (56, 10045, '昆山腔身段很优雅', '跟着老师做身段的时候，会明显感觉动作幅度和气息都要拿捏到位。整个体验特别有戏曲韵味。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/56/1.jpg\", \"https://yayfolk.bhyy.online/posts/56/2.jpg\"]', '[\"昆山腔\",\"身段\",\"戏曲\",\"体验\"]', 'public', 1, 7, 0, '2026-04-27 11:25:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 15, 5, 0);
+INSERT INTO `travel_posts` VALUES (57, 10000, '动作和唱腔都很有味道', '老师会先拆开讲每个动作的来由，再配着唱腔一起练。虽然不容易，但越学越能体会昆山腔的细腻。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/57/1.jpg\"]', '[\"昆山腔\",\"唱腔\",\"身段\",\"传统戏曲\"]', 'public', 1, 5, 0, '2026-04-27 11:30:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 15, 3, 0);
+INSERT INTO `travel_posts` VALUES (58, 10007, '川剧变脸现场感很强', '近距离看变脸真的很震撼，动作一气呵成。老师讲了脸谱和节奏的关系，体验完对川剧一下子就有概念了。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/58/1.jpg\"]', '[\"川剧变脸\",\"节奏\",\"戏曲\",\"舞台\"]', 'public', 1, 10, 0, '2026-04-27 11:35:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 28, 5, 0);
+INSERT INTO `travel_posts` VALUES (59, 10020, '看一遍还想再看', '变脸的切换很快，但细节又特别讲究。舞台感很足，整个过程看完会很想继续了解川剧。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/59/1.jpg\"]', '[\"川剧变脸\",\"舞台\",\"戏曲\",\"观演\"]', 'public', 1, 6, 0, '2026-04-27 11:40:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 28, 4, 0);
+INSERT INTO `travel_posts` VALUES (60, 10023, '节奏卡得特别准', '最喜欢的是老师对节奏的把控，表演和讲解穿插得刚好。就算是第一次看，也不会觉得距离感很强。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/60/1.jpg\"]', '[\"川剧变脸\",\"节奏\",\"讲解\",\"体验\"]', 'public', 1, 5, 0, '2026-04-27 11:45:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 28, 4, 0);
+INSERT INTO `travel_posts` VALUES (61, 10044, '唐三彩的釉色很漂亮', '器型和釉色搭在一起很有古意，尤其是黄绿之间的过渡很自然。做完之后会更理解唐三彩为什么这么耐看。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/61/1.jpg\", \"https://yayfolk.bhyy.online/posts/61/2.jpg\"]', '[\"唐三彩\",\"釉色\",\"器型\",\"彩绘\"]', 'public', 1, 8, 0, '2026-04-27 11:50:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 45, 5, 0);
+INSERT INTO `travel_posts` VALUES (62, 10045, '上手以后更有历史感', '一边上色一边听器型故事，感觉不是在做普通手工，而是在碰一段很具体的唐代审美。', 'review', '活动评价', 'passed', NULL, '[\"https://yayfolk.bhyy.online/posts/62/1.jpg\", \"https://yayfolk.bhyy.online/posts/62/2.jpg\"]', '[\"唐三彩\",\"历史感\",\"器型\",\"体验\"]', 'public', 1, 6, 0, '2026-04-27 11:55:00', '2026-04-28 22:08:02', 0, 0, 'zh', 'review', 45, 5, 0);
+INSERT INTO `travel_posts` VALUES (63, 10000, '123', 'qwe', 'normal', '服饰妆造', 'deleted', NULL, '[\"https://yayfolk.bhyy.online/posts/63/1.png\"]', '[]', 'public', 0, 1, 0, '2026-04-28 12:13:08', '2026-04-28 22:08:02', 0, 0, 'en', 'normal', NULL, 0, 0);
+
+-- ----------------------------
+-- Table structure for user_follows
+-- ----------------------------
+DROP TABLE IF EXISTS `user_follows`;
+CREATE TABLE `user_follows`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `follower_id` bigint(0) NOT NULL,
+  `following_id` bigint(0) NOT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_follow_pair`(`follower_id`, `following_id`) USING BTREE,
+  INDEX `idx_user_follows_following_id`(`following_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_follows
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for user_profile_visits
+-- ----------------------------
+DROP TABLE IF EXISTS `user_profile_visits`;
+CREATE TABLE `user_profile_visits`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `viewer_id` bigint(0) NOT NULL COMMENT 'profile viewer',
+  `profile_user_id` bigint(0) NOT NULL COMMENT 'visited profile owner',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT 'first visit time',
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT 'latest visit time',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_profile_visit_pair`(`viewer_id`, `profile_user_id`) USING BTREE,
+  INDEX `idx_user_profile_visits_profile_user_id`(`profile_user_id`) USING BTREE,
+  INDEX `idx_user_profile_visits_update_time`(`update_time`) USING BTREE,
+  CONSTRAINT `fk_user_profile_visits_profile_user` FOREIGN KEY (`profile_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_user_profile_visits_viewer` FOREIGN KEY (`viewer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'user profile visit footprints' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_profile_visits
+-- ----------------------------
+INSERT INTO `user_profile_visits` VALUES (8, 10011, 10045, '2026-04-28 20:36:17', '2026-04-28 20:36:17');
+
+-- ----------------------------
+-- Table structure for user_unban_applications
+-- ----------------------------
+DROP TABLE IF EXISTS `user_unban_applications`;
+CREATE TABLE `user_unban_applications`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(0) NOT NULL,
+  `apply_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `admin_id` bigint(0) NULL DEFAULT NULL,
+  `admin_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `handle_time` datetime(0) NULL DEFAULT NULL,
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_unban_user_status`(`user_id`, `status`) USING BTREE,
+  INDEX `idx_unban_status_create_time`(`status`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_unban_applications
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for users
+-- ----------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users`  (
+  `id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `country` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'China' COMMENT '国家/地区',
+  `location` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `language` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'zh',
+  `shop_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'none',
+  `shop_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `shop_cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `cover_photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `shop_intro` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `collection_visibility` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
+  `lang_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `region_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `bio` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `signature` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `follower_count` int(0) NULL DEFAULT 0,
+  `following_count` int(0) NULL DEFAULT 0,
+  `avatar` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'user',
+  `status` tinyint(1) NULL DEFAULT 1,
+  `last_login_time` datetime(0) NULL DEFAULT NULL,
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
+  `github_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `is_super_admin` tinyint(1) NOT NULL DEFAULT 0,
+  `is_merchant` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'effective merchant account flag',
+  `ban_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `ban_admin_id` bigint(0) NULL DEFAULT NULL,
+  `ban_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_username`(`username`) USING BTREE,
+  UNIQUE INDEX `uk_phone`(`phone`) USING BTREE,
+  UNIQUE INDEX `uk_email`(`email`) USING BTREE,
+  UNIQUE INDEX `UK_g9s8emobrgjmob2ty2va0l354`(`github_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10108 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of users
+-- ----------------------------
+INSERT INTO `users` VALUES (10000, '15171483964', '$2a$10$HVUF5YBQdeLGoYyPOcMYx.fUZSjCl8mlE4afIgaSUq83ajH9PZOpa', '15171483964', NULL, 'China', '', 'zh', 'none', '', '', 'https://yayfolk.bhyy.online/homepage/10000.png', '', 'private', 'ja', 'CN', 'y0', '', '', 2, 1, 'https://yayfolk.bhyy.online/avatars/10000.png', 'user', 1, '2026-04-29 19:01:21', '2026-03-10 02:52:02', '2026-04-29 19:01:21', NULL, 0, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10007, 'yenOmld', '$2a$10$cmYPMGS7d/wYCq.wnGbaTOBCM80X8T5Tpg62WnFz1ef6O0FL9KI4S', NULL, '2971549832@qq.com', 'China', NULL, 'zh', 'none', NULL, NULL, 'https://yayfolk.bhyy.online/homepage/10007.png', NULL, 'public', NULL, NULL, '用户6724', NULL, NULL, 0, 0, 'https://yayfolk.bhyy.online/avatars/10007.png', 'user', 1, '2026-03-10 12:27:06', '2026-03-10 12:11:21', '2026-04-28 22:01:36', '189572187', 0, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10011, 'qinjiayi_1106@qq.com', '$2a$10$Bw/vbiFWTIl0ermD7JF7e.CdWtBTTWUnRl34hWP/s2LFYB09df3W2', '13986074011', 'qinjiayi_1106@qq.com', 'China', '', 'zh', 'approved', '隽绣', 'https://yayfolk.bhyy.online/homepage/10011.png', 'https://yayfolk.bhyy.online/homepage/10011.png', '', 'public', 'zh', 'CN', '+1', '是我，隽绣店铺老板娘+1', '', 1, 1, 'https://yayfolk.bhyy.online/avatars/10011.png', 'merchant', 1, '2026-04-30 11:28:52', '2026-03-13 01:57:15', '2026-04-30 11:28:52', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10020, '2894717528@qq.com', '$2a$10$kb5zRuvBKTbthpHrGI8zyeCwvAbDbQWK8.iKLiQp89HUfmxGlihrW', NULL, '2894717528@qq.com', 'Japan', NULL, 'zh', 'none', NULL, NULL, 'https://yayfolk.bhyy.online/homepage/10020.png', NULL, 'public', 'zh', 'JP', '123', NULL, NULL, 0, 0, 'https://yayfolk.bhyy.online/avatars/10020.png', 'user', 1, '2026-03-21 03:16:11', '2026-03-21 03:16:08', '2026-04-28 22:01:36', NULL, 0, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10023, 'qianrui2006@qq.com', '$2a$10$920GHF7Gc5Prpfh2K0PRaeNJpF/sR9DuAbK/d0l3XvG7LDzhUccvS', NULL, 'qianrui2006@qq.com', 'China', NULL, 'zh', 'none', NULL, NULL, 'https://yayfolk.bhyy.online/homepage/10023.png', NULL, 'public', 'zh', 'CN', '用户8346', NULL, NULL, 0, 0, 'https://yayfolk.bhyy.online/avatars/10023.png', 'user', 1, '2026-03-22 07:19:36', '2026-03-22 07:19:34', '2026-04-28 22:01:37', NULL, 0, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10024, 'admin', '$2a$10$jPeVG0d./Wwx.UdVdJUM9egagcmwX.SmQa358BQGIaU.kucmhAzYS', NULL, 'admin@yayfolk.com', 'China', 'YayFolk Admin Center', 'zh', 'none', NULL, NULL, 'https://yayfolk.bhyy.online/homepage/10024.png', '平台管理员账号', 'public', 'zh', 'CN', '系统管理员', NULL, NULL, 0, 0, 'https://yayfolk.bhyy.online/avatars/10024.png', 'admin', 1, '2026-04-24 20:28:12', '2026-03-26 18:00:00', '2026-04-28 22:01:37', NULL, 1, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10025, '京华非遗工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000001', 'jinghua@yayfolk.cn', 'China', '北京·东城', 'zh', 'active', '京华非遗工坊', 'https://yayfolk.bhyy.online/homepage/10025.png', 'https://yayfolk.bhyy.online/homepage/10025.png', '聚焦京味民艺、节令手作与戏曲体验，涵盖面塑、灯彩、风筝、布艺和小型金工课程。', 'public', NULL, NULL, '京华非遗工坊', '京味民艺、节令手作与戏曲体验', '把老北京的手艺和节气带回日常。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10025.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10026, '苏作匠心馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000002', 'suzuo@yayfolk.cn', 'China', '江苏·苏州', 'zh', 'active', '苏作匠心馆', 'https://yayfolk.bhyy.online/homepage/10026.png', 'https://yayfolk.bhyy.online/homepage/10026.png', '以苏式织绣、昆曲、苏扇与缂丝体验为主，强调江南审美和细致手作。', 'public', NULL, NULL, '苏作匠心馆', '苏式织绣、昆曲与扇艺体验', '一针一线，都是江南的风雅。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10026.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10027, '金陵雅集馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000003', 'jinling@yayfolk.cn', 'China', '江苏·南京', 'zh', 'active', '金陵雅集馆', 'https://yayfolk.bhyy.online/homepage/10027.png', 'https://yayfolk.bhyy.online/homepage/10027.png', '围绕南京织绣、年画、灯彩和节俗导览展开，适合喜欢古都风雅体验的人。', 'public', NULL, NULL, '金陵雅集馆', '南京织绣、年画与节俗体验', '把金陵的风雅做成可带走的作品。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10027.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10028, '徽州四宝社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000004', 'huizhou@yayfolk.cn', 'China', '安徽·黄山', 'zh', 'active', '徽州四宝社', 'https://yayfolk.bhyy.online/homepage/10028.png', 'https://yayfolk.bhyy.online/homepage/10028.png', '专注宣纸、歙砚、徽墨等文房工艺，以及端午香包等徽州生活手作。', 'public', NULL, NULL, '徽州四宝社', '文房四宝与徽州生活手作', '笔墨纸砚之间，见徽州气韵。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10028.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10029, '蜀风非遗坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000005', 'shufeng@yayfolk.cn', 'China', '四川·成都', 'zh', 'active', '蜀风非遗坊', 'https://yayfolk.bhyy.online/homepage/10029.png', 'https://yayfolk.bhyy.online/homepage/10029.png', '汇集糖画、川剧、蜀绣、竹编等蜀地非遗体验，兼顾表演与手作。', 'public', NULL, NULL, '蜀风非遗坊', '蜀地手作与戏曲体验', '一城烟火，满桌手艺。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10029.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10030, '长安艺脉馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000006', 'changan@yayfolk.cn', 'China', '陕西·西安', 'zh', 'active', '长安艺脉馆', 'https://yayfolk.bhyy.online/homepage/10030.png', 'https://yayfolk.bhyy.online/homepage/10030.png', '主打长安壁画、传拓和宫灯等唐风美术体验，适合古都文化爱好者。', 'public', NULL, NULL, '长安艺脉馆', '唐风美术与古都路线', '把长安的盛唐气韵写进作品里。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10030.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10031, '苗岭锦绣社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000007', 'miaoling@yayfolk.cn', 'China', '贵州·黔东南', 'zh', 'active', '苗岭锦绣社', 'https://yayfolk.bhyy.online/homepage/10031.png', 'https://yayfolk.bhyy.online/homepage/10031.png', '专注苗绣与银饰等黔东南少数民族手作体验，强调针法与纹样。', 'public', NULL, NULL, '苗岭锦绣社', '苗绣与银饰手作体验', '把山地纹样绣进日常。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10031.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10032, '壮乡锦艺阁', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000008', 'zhuangxiang@yayfolk.cn', 'China', '广西·南宁', 'zh', 'active', '壮乡锦艺阁', 'https://yayfolk.bhyy.online/homepage/10032.png', 'https://yayfolk.bhyy.online/homepage/10032.png', '以壮锦织造与铜鼓民俗活动为核心，提供轻量化的体验课程。', 'public', NULL, NULL, '壮乡锦艺阁', '壮锦与铜鼓民俗体验', '织出壮乡的颜色。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10032.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10033, '津门年艺馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000009', 'jinmen@yayfolk.cn', 'China', '天津·天津', 'zh', 'active', '津门年艺馆', 'https://yayfolk.bhyy.online/homepage/10033.png', 'https://yayfolk.bhyy.online/homepage/10033.png', '围绕杨柳青年画、泥塑和彩塑等津门年俗手艺展开。', 'public', NULL, NULL, '津门年艺馆', '津门年俗美术体验', '年味、彩塑、纸艺都在这里。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10033.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10034, '齐鲁巧艺坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000010', 'qilu@yayfolk.cn', 'China', '山东·潍坊', 'zh', 'active', '齐鲁巧艺坊', 'https://yayfolk.bhyy.online/homepage/10034.png', 'https://yayfolk.bhyy.online/homepage/10034.png', '聚焦风筝、剪纸、花灯和鲁绣等齐鲁民艺体验。', 'public', NULL, NULL, '齐鲁巧艺坊', '风筝剪纸与鲁绣体验', '把齐鲁的热闹和细巧都做出来。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10034.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:37', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10035, '中原唐艺馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000011', 'zhongyuan@yayfolk.cn', 'China', '河南·洛阳', 'zh', 'active', '中原唐艺馆', 'https://yayfolk.bhyy.online/homepage/10035.png', 'https://yayfolk.bhyy.online/homepage/10035.png', '主打唐三彩与洛阳古都陶艺体验，兼顾器形彩绘和古都审美。', 'public', NULL, NULL, '中原唐艺馆', '唐三彩与古都陶艺', '把盛唐色彩装进器物里。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10035.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10036, '越地青瓷社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000012', 'yuedi@yayfolk.cn', 'China', '浙江·丽水', 'zh', 'active', '越地青瓷社', 'https://yayfolk.bhyy.online/homepage/10036.png', 'https://yayfolk.bhyy.online/homepage/10036.png', '围绕青瓷与宋韵器物美学展开，也提供扇面题字等文房体验。', 'public', NULL, NULL, '越地青瓷社', '青瓷与宋韵器物体验', '一盏青瓷，留住宋韵。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10036.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10037, '岭南绣作馆', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000013', 'lingnan@yayfolk.cn', 'China', '广东·广州', 'zh', 'active', '岭南绣作馆', 'https://yayfolk.bhyy.online/homepage/10037.png', 'https://yayfolk.bhyy.online/homepage/10037.png', '聚焦广绣、木雕、端砚和龙舟民俗等岭南手工艺。', 'public', NULL, NULL, '岭南绣作馆', '岭南绣作与木雕体验', '一针一刻，都是岭南气韵。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10037.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10044, '荆楚非遗工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000014', 'jingchu@yayfolk.cn', 'China', '湖北·武汉', 'zh', 'active', '荆楚非遗工坊', 'https://yayfolk.bhyy.online/homepage/10044.png', 'https://yayfolk.bhyy.online/homepage/10044.png', '以汉绣、皮影、黄鹤楼文创为核心，涵盖楚文化节俗与传统手工艺体验。', 'public', NULL, NULL, '荆楚非遗工坊', '汉绣、皮影与楚文化体验', '把荆楚风韵绣进生活。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10044.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10045, '闽南艺韵坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000015', 'minnan@yayfolk.cn', 'China', '福建·泉州', 'zh', 'active', '闽南艺韵坊', 'https://yayfolk.bhyy.online/homepage/10045.png', 'https://yayfolk.bhyy.online/homepage/10045.png', '专注漆线雕、提线木偶、闽南剪纸与南音体验，尽显闽南风情。', 'public', NULL, NULL, '闽南艺韵坊', '漆线雕与木偶体验', '把闽南韵味刻进作品。', 0, 0, 'https://yayfolk.bhyy.online/avatars/10045.png', 'merchant', 1, NULL, '2026-03-28 09:52:05', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10047, 'Jane', '$2a$10$J2K9yzmTUGrd2EBCIFC0vOfBt6486EQcziII1l1DAh7UVCAVP0n4i', NULL, 'Jane@yayfolk.com', 'China', NULL, NULL, 'none', NULL, NULL, 'https://yayfolk.bhyy.online/homepage/10047.png', NULL, 'public', NULL, NULL, 'Jane', NULL, NULL, 0, 1, 'https://yayfolk.bhyy.online/avatars/10047.png', 'admin', 1, '2026-04-28 11:49:49', '2026-03-28 21:33:22', '2026-04-28 22:01:38', NULL, 0, 0, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10048, '拓印版画社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13986074012', 'banhua_store@qq.com', 'China', NULL, 'zh', 'approved', '拓印版画社', 'https://yayfolk.bhyy.online/homepage/10048.png', 'https://yayfolk.bhyy.online/homepage/10048.png', '专注木刻版画、拓印与套色印刷的手作体验空间。', 'public', 'zh', 'CN', '拓印版画社', '版画拓印，让每一次压印都保留温度。', '把图案印进生活', 0, 0, 'https://yayfolk.bhyy.online/avatars/10048.png', 'merchant', 1, '2026-04-24 21:16:28', '2026-04-24 21:15:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10101, '黔韵傩面工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000101', 'nuoxi_vr@qq.com', 'China', NULL, 'zh', 'approved', '黔韵傩面工坊', 'https://yayfolk.bhyy.online/homepage/10101.png', 'https://yayfolk.bhyy.online/homepage/10101.png', '专注傩戏面具雕刻、彩绘与民俗讲解的体验工坊。', 'public', 'zh', 'CN', '黔韵傩面工坊', '把傩文化戴进生活里。', '守护面具里的仪式感', 0, 0, 'https://yayfolk.bhyy.online/avatars/10101.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10102, '长安布老虎社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000102', 'bulaohu_vr@qq.com', 'China', NULL, 'zh', 'approved', '长安布老虎社', 'https://yayfolk.bhyy.online/homepage/10102.png', 'https://yayfolk.bhyy.online/homepage/10102.png', '围绕布老虎缝制、填充和彩绘展开的亲子手作空间。', 'public', 'zh', 'CN', '长安布老虎社', '一针一线，缝出吉祥。', '让童年和非遗一起发光', 0, 0, 'https://yayfolk.bhyy.online/avatars/10102.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10103, '京翠非遗工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000103', 'diancui_vr@qq.com', 'China', NULL, 'zh', 'approved', '京翠非遗工坊', 'https://yayfolk.bhyy.online/homepage/10103.png', 'https://yayfolk.bhyy.online/homepage/10103.png', '体验点翠工艺的金属底座、羽毛拼贴与饰品装配。', 'public', 'zh', 'CN', '京翠非遗工坊', '一抹翠色，千年华光。', '把宫廷审美带回今天', 1, 0, 'https://yayfolk.bhyy.online/avatars/10103.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10104, '琉璃簪花工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000104', 'liulizanhua_vr@qq.com', 'China', NULL, 'zh', 'approved', '琉璃簪花工坊', 'https://yayfolk.bhyy.online/homepage/10104.png', 'https://yayfolk.bhyy.online/homepage/10104.png', '以琉璃花片、金属支架与簪花搭配为核心的手作课程。', 'public', 'zh', 'CN', '琉璃簪花工坊', '让花开在发间。', '把琉璃的通透感做出来', 0, 0, 'https://yayfolk.bhyy.online/avatars/10104.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10105, '扬州螺钿作坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000105', 'ludian_vr@qq.com', 'China', NULL, 'zh', 'approved', '扬州螺钿作坊', 'https://yayfolk.bhyy.online/homepage/10105.png', 'https://yayfolk.bhyy.online/homepage/10105.png', '聚焦贝壳切片、打磨、镶嵌的螺钿首饰盒体验。', 'public', 'zh', 'CN', '扬州螺钿作坊', '把海的光泽嵌进器物。', '一刀一片，镶出层次', 0, 0, 'https://yayfolk.bhyy.online/avatars/10105.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:38', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10106, '金陵绒花社', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000106', 'ronghua_vr@qq.com', 'China', NULL, 'zh', 'approved', '金陵绒花社', 'https://yayfolk.bhyy.online/homepage/10106.png', 'https://yayfolk.bhyy.online/homepage/10106.png', '围绕绒条捻制、塑形和发饰装配展开的南京绒花课程。', 'public', 'zh', 'CN', '金陵绒花社', '把春风做成发间花。', '一朵绒花，柔软却有力量', 0, 0, 'https://yayfolk.bhyy.online/avatars/10106.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:39', NULL, 0, 1, NULL, NULL, NULL);
+INSERT INTO `users` VALUES (10107, '景德青花工坊', '$2a$10$fWRGjKsoaV2jSLgF5T4Sn.8dJChZKVeutke5kIx0fVUkIxoEqWr6u', '13800000107', 'qinghuaci_vr@qq.com', 'China', NULL, 'zh', 'approved', '景德青花工坊', 'https://yayfolk.bhyy.online/homepage/10107.png', 'https://yayfolk.bhyy.online/homepage/10107.png', '提供青花纹样勾线、上色与釉下彩绘的入门体验。', 'public', 'zh', 'CN', '景德青花工坊', '一笔青花，万种风雅。', '把瓷上的蓝做得更温柔', 0, 0, 'https://yayfolk.bhyy.online/avatars/10107.png', 'merchant', 1, NULL, '2026-04-26 10:00:00', '2026-04-28 22:01:39', NULL, 0, 1, NULL, NULL, NULL);
+
+-- ----------------------------
+-- Triggers structure for table activities
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_activities_bi_fill_merchant_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_activities_bi_fill_merchant_profile` BEFORE INSERT ON `activities` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table activities
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_activities_bu_fill_merchant_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_activities_bu_fill_merchant_profile` BEFORE UPDATE ON `activities` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table merchant_applications
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_merchant_applications_bi_sync_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_merchant_applications_bi_sync_profile` BEFORE INSERT ON `merchant_applications` FOR EACH ROW BEGIN
+    CALL sp_upsert_merchant_profile_from_application(
+        NEW.id,
+        NEW.user_id,
+        NEW.real_name,
+        NEW.phone,
+        NEW.heritage_type,
+        NEW.heritage_description,
+        NEW.proof_images,
+        NEW.shop_name,
+        NEW.shop_address,
+        NEW.province,
+        NEW.city,
+        NEW.intro,
+        NEW.application_status
+    );
+
+    SET NEW.merchant_profile_id = (
+        SELECT mp.id
+        FROM merchant_profiles mp
+        WHERE mp.user_id = NEW.user_id
+        LIMIT 1
+    );
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table merchant_applications
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_merchant_applications_ai_fix_latest_application`;
+delimiter ;;
+CREATE TRIGGER `trg_merchant_applications_ai_fix_latest_application` AFTER INSERT ON `merchant_applications` FOR EACH ROW BEGIN
+    UPDATE merchant_profiles mp
+    SET mp.latest_application_id = NEW.id,
+        mp.business_status = CASE
+            WHEN NEW.application_status IN ('active', 'approved', 'rejected', 'disabled', 'closed', 'pending') THEN NEW.application_status
+            ELSE mp.business_status
+        END,
+        mp.update_time = CURRENT_TIMESTAMP
+    WHERE mp.user_id = NEW.user_id;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table merchant_applications
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_merchant_applications_bu_sync_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_merchant_applications_bu_sync_profile` BEFORE UPDATE ON `merchant_applications` FOR EACH ROW BEGIN
+    CALL sp_upsert_merchant_profile_from_application(
+        OLD.id,
+        NEW.user_id,
+        NEW.real_name,
+        NEW.phone,
+        NEW.heritage_type,
+        NEW.heritage_description,
+        NEW.proof_images,
+        NEW.shop_name,
+        NEW.shop_address,
+        NEW.province,
+        NEW.city,
+        NEW.intro,
+        NEW.application_status
+    );
+
+    SET NEW.merchant_profile_id = (
+        SELECT mp.id
+        FROM merchant_profiles mp
+        WHERE mp.user_id = NEW.user_id
+        LIMIT 1
+    );
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table orders
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_orders_bi_fill_merchant_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_orders_bi_fill_merchant_profile` BEFORE INSERT ON `orders` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table orders
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_orders_bu_fill_merchant_profile`;
+delimiter ;;
+CREATE TRIGGER `trg_orders_bu_fill_merchant_profile` BEFORE UPDATE ON `orders` FOR EACH ROW BEGIN
+    IF NEW.merchant_profile_id IS NULL AND NEW.merchant_id IS NOT NULL THEN
+        SET NEW.merchant_profile_id = (
+            SELECT mp.id
+            FROM merchant_profiles mp
+            WHERE mp.user_id = NEW.merchant_id
+            LIMIT 1
+        );
+    ELSEIF NEW.merchant_id IS NULL AND NEW.merchant_profile_id IS NOT NULL THEN
+        SET NEW.merchant_id = (
+            SELECT mp.user_id
+            FROM merchant_profiles mp
+            WHERE mp.id = NEW.merchant_profile_id
+            LIMIT 1
+        );
+    END IF;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table users
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_users_bi_set_is_merchant`;
+delimiter ;;
+CREATE TRIGGER `trg_users_bi_set_is_merchant` BEFORE INSERT ON `users` FOR EACH ROW BEGIN
+    SET NEW.is_merchant = CASE
+        WHEN COALESCE(NEW.role, 'user') = 'merchant' THEN 1
+        WHEN COALESCE(NEW.shop_status, 'none') IN ('approved', 'active') THEN 1
+        ELSE COALESCE(NEW.is_merchant, 0)
+    END;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table users
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_users_bu_set_is_merchant`;
+delimiter ;;
+CREATE TRIGGER `trg_users_bu_set_is_merchant` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN
+    SET NEW.is_merchant = CASE
+        WHEN COALESCE(NEW.role, 'user') = 'merchant' THEN 1
+        WHEN COALESCE(NEW.shop_status, 'none') IN ('approved', 'active') THEN 1
+        WHEN EXISTS (
+            SELECT 1
+            FROM merchant_profiles mp
+            WHERE mp.user_id = OLD.id
+              AND mp.business_status IN ('approved', 'active')
+        ) THEN 1
+        ELSE 0
+    END;
+END
+;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;

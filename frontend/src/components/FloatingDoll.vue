@@ -8,7 +8,7 @@
       @mousedown="dragStart"
       @touchstart="dragStart"
     >
-      <img src="../assets/醒狮.png" alt="醒狮" class="lion-image">
+      <img src="/醒狮.png" alt="醒狮" class="lion-image">
     </div>
 
     <!-- AI对话侧边栏 -->
