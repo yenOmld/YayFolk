@@ -44,6 +44,8 @@ public class ResultSerializer {
                 map.putAll(result.getMetadata());
             } else if (result.getIntent() == Intent.RESOURCE_RECOMMEND) {
                 map.put("activities", result.getActivityCards());
+                map.put("posts", result.getPostCards());
+                map.put("heritages", result.getHeritageCards());
                 map.put("total", result.getTotal());
             } else {
                 map.put("answer", result.getAnswerText());

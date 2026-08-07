@@ -33,7 +33,7 @@ public class KeywordIntentClassifier implements IntentClassifier {
     );
 
     private static final List<String> STRONG_KNOWLEDGE = Arrays.asList(
-            "帖子", "文章", "科普", "介绍", "历史", "工艺", "步骤", "特点", "是什么",
+            "文章", "科普", "介绍", "历史", "工艺", "步骤", "特点", "是什么",
             "怎么做", "由来", "故事", "文化", "传承", "制作"
     );
 

@@ -1,30 +1,30 @@
 package com.yayfolk.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import com.yayfolk.backend.ai.client.DeepSeekClient;
+import com.yayfolk.backend.ai.model.ChatRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
 
 import java.util.*;
 
 @Service
 public class MerchantAIService {
 
-    @Value("${deepseek.api-url}")
-    private String deepseekApiUrl;
+    private final DeepSeekClient deepSeekClient;
+    private final ObjectMapper objectMapper;
 
-    @Value("${deepseek.api-key}")
-    private String deepseekApiKey;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    public MerchantAIService(DeepSeekClient deepSeekClient, ObjectMapper objectMapper) {
+        this.deepSeekClient = deepSeekClient;
+        this.objectMapper = objectMapper;
+    }
 
     public Map<String, Object> generateMerchantSuggestions(Map<String, Object> merchantData) {
         try {
-            Map<String, Object> systemPrompt = new HashMap<>();
-            systemPrompt.put("role", "system");
-            systemPrompt.put("content", "你是一名专业的商业顾问，擅长分析商家运营数据并提供优化建议。\n请基于用户提供的真实数据，返回JSON格式的分析和建议。\nJSON必须包含analysis和suggestions字段，不要返回其他内容。\n请使用中文返回所有内容。");
+            String systemPrompt = "你是一名专业的商业顾问，擅长分析商家运营数据并提供优化建议。\n" +
+                    "请基于用户提供的真实数据，返回JSON格式的分析和建议。\n" +
+                    "JSON必须包含analysis和suggestions字段，不要返回其他内容。\n" +
+                    "请使用中文返回所有内容。";
 
             Map<String, Object> activitiesData = (Map<String, Object>) merchantData.getOrDefault("activities", new ArrayList<>());
             String activitiesStr = activitiesData.isEmpty() ? "无活动数据" :
@@ -54,48 +54,21 @@ public class MerchantAIService {
                 reviewsStr
             );
 
-            Map<String, Object> userMessage = new HashMap<>();
-            userMessage.put("role", "user");
-            userMessage.put("content", userPrompt);
+            ChatRequest request = ChatRequest.simple(systemPrompt, userPrompt)
+                    .withTemperature(0.5)
+                    .withMaxTokens(2500);
 
-            List<Map<String, Object>> messages = new ArrayList<>();
-            messages.add(systemPrompt);
-            messages.add(userMessage);
+            String aiContent = deepSeekClient.chat(request);
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "deepseek-chat");
-            requestBody.put("messages", messages);
-            requestBody.put("temperature", 0.5);
-            requestBody.put("max_tokens", 2500);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + deepseekApiKey);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.exchange(
-                deepseekApiUrl,
-                HttpMethod.POST,
-                entity,
-                String.class
-            );
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.getBody(), Map.class);
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
-                if (choices != null && !choices.isEmpty()) {
-                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                    String aiContent = (String) message.get("content");
-
-                    String jsonStr = aiContent.trim();
-                    int startIdx = jsonStr.indexOf("{");
-                    int endIdx = jsonStr.lastIndexOf("}");
-                    if (startIdx >= 0 && endIdx > startIdx) {
-                        jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-                    }
-
-                    return objectMapper.readValue(jsonStr, Map.class);
+            if (aiContent != null) {
+                String jsonStr = aiContent.trim();
+                int startIdx = jsonStr.indexOf("{");
+                int endIdx = jsonStr.lastIndexOf("}");
+                if (startIdx >= 0 && endIdx > startIdx) {
+                    jsonStr = jsonStr.substring(startIdx, endIdx + 1);
                 }
+
+                return objectMapper.readValue(jsonStr, Map.class);
             }
 
             return generateDefaultResult(merchantData);

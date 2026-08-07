@@ -133,7 +133,7 @@ public class AgentOrchestrator {
         if (result.getPostCards().size() > requestedLimit) {
             result.setPostCards(new ArrayList<>(result.getPostCards().subList(0, requestedLimit)));
         }
-        result.setTotal(result.getActivityCards().size());
+        result.setTotal(result.getActivityCards().size() + result.getPostCards().size() + result.getHeritageCards().size());
 
         // Step 7: LLM 汇总生成回复（现在看到的卡片已是截断后的数量）
         String answerText = synthesizeResponse(userInput, intent, toolResults, ctx, extractedParams,
@@ -199,17 +199,6 @@ public class AgentOrchestrator {
                 }
                 if (!params.containsKey("limit")) {
                     params.put("limit", 5);
-                }
-                // 根据 query_focus 控制搜索范围
-                if (!params.containsKey("search_type")) {
-                    String focus = params.get("query_focus") != null
-                            ? params.get("query_focus").toString() : null;
-                    if ("posts".equals(focus)) {
-                        params.put("search_type", "posts");
-                    } else if ("heritages".equals(focus)) {
-                        params.put("search_type", "heritages");
-                    }
-                    // 默认不设 = "both"
                 }
                 break;
             case "plan_itinerary":
@@ -472,7 +461,8 @@ public class AgentOrchestrator {
 
     /**
      * 根据意图和查询焦点筛选工具。
-     * 优化：不再无差别调用所有工具，而是根据用户具体需求选择。
+     * query_focus 仅在 RESOURCE_RECOMMEND 意图下细化工具选择，
+     * 其他意图（行程规划、知识问答）由意图本身决定工具，不受 query_focus 影响。
      */
     private List<Tool> filterTools(Intent intent, String queryFocus) {
         List<Tool> filtered = new ArrayList<>();
@@ -481,27 +471,9 @@ public class AgentOrchestrator {
             toolMap.put(t.getName(), t);
         }
 
-        // 如果有明确的查询焦点，优先按焦点选择
-        if (queryFocus != null) {
-            switch (queryFocus) {
-                case "activities":
-                    addIfExists(toolMap, filtered, "query_activities");
-                    return filtered;
-                case "heritages":
-                    addIfExists(toolMap, filtered, "search_posts_heritages");
-                    return filtered;
-                case "posts":
-                    addIfExists(toolMap, filtered, "search_posts_heritages");
-                    return filtered;
-                case "all":
-                    // 返回全部工具
-                    break;
-                case "follow_up":
-                    // 追问：不需要重新查询工具，直接返回空（由 synthesizeResponse 处理）
-                    return filtered;
-                default:
-                    break;
-            }
+        // 追问场景（任何意图）：不调用工具，由 synthesizeResponse 处理
+        if ("follow_up".equals(queryFocus)) {
+            return filtered;
         }
 
         // CHITCHAT 不调用任何工具
@@ -509,9 +481,29 @@ public class AgentOrchestrator {
             return filtered;
         }
 
+        // query_focus 仅在 RESOURCE_RECOMMEND 意图下细化工具选择
+        if (intent == Intent.RESOURCE_RECOMMEND && queryFocus != null) {
+            switch (queryFocus) {
+                case "activities":
+                    addIfExists(toolMap, filtered, "query_activities");
+                    return filtered;
+                case "heritages":
+                case "posts":
+                    addIfExists(toolMap, filtered, "search_posts_heritages");
+                    return filtered;
+                case "all":
+                    addIfExists(toolMap, filtered, "query_activities");
+                    addIfExists(toolMap, filtered, "search_posts_heritages");
+                    return filtered;
+                default:
+                    break;
+            }
+        }
+
         // 默认按意图筛选
         switch (intent) {
             case RESOURCE_RECOMMEND:
+                // 默认同时查询活动和帖子/非遗，确保覆盖全面
                 addIfExists(toolMap, filtered, "query_activities");
                 addIfExists(toolMap, filtered, "search_posts_heritages");
                 break;

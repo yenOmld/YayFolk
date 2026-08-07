@@ -2,6 +2,7 @@ package com.yayfolk.backend.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yayfolk.backend.ai.vector.VectorIndexBuilder;
 import com.yayfolk.backend.dto.TranslateRequest;
 import com.yayfolk.backend.dto.TranslateResponse;
 import com.yayfolk.backend.entity.*;
@@ -75,6 +76,7 @@ public class DiscoverService {
     private final TranslateService translateService;
     private final BaiduContentAuditService baiduContentAuditService;
     private final QiniuOssUtil ossUtil;
+    private final VectorIndexBuilder vectorIndexBuilder;
 
     public DiscoverService(DiscoverPostRepository postRepository,
                            DiscoverPostCollectionRepository collectionRepository,
@@ -89,7 +91,8 @@ public class DiscoverService {
                            StringRedisTemplate redisTemplate,
                            TranslateService translateService,
                            BaiduContentAuditService baiduContentAuditService,
-                           QiniuOssUtil ossUtil) {
+                           QiniuOssUtil ossUtil,
+                           VectorIndexBuilder vectorIndexBuilder) {
         this.postRepository = postRepository;
         this.collectionRepository = collectionRepository;
         this.commentRepository = commentRepository;
@@ -104,6 +107,7 @@ public class DiscoverService {
         this.translateService = translateService;
         this.baiduContentAuditService = baiduContentAuditService;
         this.ossUtil = ossUtil;
+        this.vectorIndexBuilder = vectorIndexBuilder;
     }
 
     public List<Map<String, Object>> getFeed(String username, String category, String keyword, String sortBy) {
@@ -275,6 +279,7 @@ public class DiscoverService {
         post.setVisibility(normalizePostVisibility(payload.get("visibility") == null ? null : String.valueOf(payload.get("visibility"))));
 
         DiscoverPost saved = postRepository.save(post);
+        indexPostAsync(saved);
         return toPostSummary(saved, author, false);
     }
 
@@ -332,6 +337,7 @@ public class DiscoverService {
         }
         DiscoverPost saved = postRepository.save(post);
         clearPostTranslateCache(postId);
+        indexPostAsync(saved);
 
         return toPostSummary(saved, author, false);
     }
@@ -597,6 +603,7 @@ public class DiscoverService {
         post.setAuditRemark(null);
         postRepository.save(post);
         clearPostTranslateCache(postId);
+        vectorIndexBuilder.removePostFromIndex(postId);
         collectionRepository.deleteByPostId(postId);
         commentRepository.deleteByPostId(postId);
         historyRepository.deleteByPostId(postId);
@@ -1438,6 +1445,17 @@ public class DiscoverService {
             return "en";
         }
         return "auto";
+    }
+
+    /**
+     * 异步索引帖子（失败不影响主流程）。
+     */
+    private void indexPostAsync(DiscoverPost post) {
+        try {
+            vectorIndexBuilder.indexPost(post);
+        } catch (Exception e) {
+            log.warn("Failed to index post {}: {}", post.getId(), e.getMessage());
+        }
     }
 }
 

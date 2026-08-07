@@ -145,13 +145,13 @@
                     </div>
                   </div>
                 </div>
-                <!-- 结构化查询 -->
-                <div v-if="message.resources.intent === 'STRUCTURED_QUERY'" class="resource-section">
+                <!-- 结构化查询 / 资源推荐 -->
+                <div v-if="message.resources.intent === 'STRUCTURED_QUERY' || message.resources.intent === 'RESOURCE_RECOMMEND'" class="resource-section">
                   <div v-if="message.resources.activities && message.resources.activities.length > 0">
                     <h4>为您找到 {{ message.resources.total }} 个活动</h4>
                     <div class="card-list">
-                      <div 
-                        v-for="(activity, idx) in message.resources.activities" 
+                      <div
+                        v-for="(activity, idx) in message.resources.activities"
                         :key="idx"
                         class="resource-card"
                         @click="navigateToResource('activity', activity.id)"
@@ -163,8 +163,36 @@
                       </div>
                     </div>
                   </div>
-                  <div v-else>
-                    <p>暂无符合条件的活动，试试其他条件吧~</p>
+                  <div v-if="message.resources.posts && message.resources.posts.length > 0">
+                    <h4>相关帖子</h4>
+                    <div class="card-list">
+                      <div
+                        v-for="(post, idx) in message.resources.posts"
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('post', post.id)"
+                      >
+                        <h5>{{ post.title }}</h5>
+                        <p>{{ post.createTime }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="message.resources.heritages && message.resources.heritages.length > 0" style="margin-top: 8px;">
+                    <h4>相关非遗项目</h4>
+                    <div class="card-list">
+                      <div
+                        v-for="(heritage, idx) in message.resources.heritages"
+                        :key="idx"
+                        class="resource-card"
+                        @click="navigateToResource('heritage', heritage.id)"
+                      >
+                        <h5>{{ heritage.name }}</h5>
+                        <p>{{ heritage.category }} · {{ heritage.region }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="(!message.resources.activities || message.resources.activities.length === 0) && (!message.resources.posts || message.resources.posts.length === 0) && (!message.resources.heritages || message.resources.heritages.length === 0)">
+                    <p>暂无符合条件的资源，试试其他条件吧~</p>
                   </div>
                 </div>
                 <!-- 知识问答 -->
@@ -274,7 +302,7 @@
 
 <script>
 import { useRoute } from 'vue-router'
-import { exploreResources, getExploreConversations, getExploreMessages, deleteExploreConversation, getDiscoverPostDetail, getPublicHeritageDetail, getKnowledgeConversations, createKnowledgeConversation, getKnowledgeMessages, sendKnowledgeMessage, deleteKnowledgeConversation, createCustomerServiceConversation, getMessages, sendMessage, getServiceMode, closeHumanService } from '../api/app'
+import { exploreResources, getExploreConversations, getExploreMessages, deleteExploreConversation, getDiscoverPostDetail, getPublicHeritageDetail, getKnowledgeConversations, createKnowledgeConversation, getKnowledgeMessages, deleteKnowledgeConversation, createCustomerServiceConversation, getMessages, sendMessage, getServiceMode } from '../api/app'
 import ConfirmModal from './ConfirmModal.vue'
 import PostDetailModal from './PostDetailModal.vue'
 import ActivityDetailModal from './ActivityDetailModal.vue'
@@ -685,15 +713,6 @@ export default {
         this.sendMessageExploreMode(messageContent);
       } else if (this.currentMode === 'service') {
         this.sendMessageServiceMode(messageContent);
-      } else {
-        // 其他模式使用模拟回复
-        this.messages.push({
-          type: 'user',
-          content: messageContent
-        });
-        // 滚动到底部
-        this.scrollToBottom();
-        this.sendMockResponse(messageContent);
       }
     },
     // 知识问答模式发送消息
@@ -916,14 +935,32 @@ export default {
     // 构建资源消息
     buildResourceMessage(data) {
       if (!data) return '暂无相关资源';
-      
-      if (data.intent === 'ITINERARY_PLANNING') {
+
+      // 优先使用 LLM 生成的 answerText（与数据库存储一致）
+      if (data.answerText && data.answerText.trim()) {
+        return data.answerText;
+      }
+
+      // 以下为降级模板逻辑（answerText 缺失时使用）
+      if (data.intent === 'CHITCHAT') {
+        return data.answerText || data.answer || '你好！有什么可以帮你的吗？';
+      } else if (data.intent === 'ITINERARY_PLANNING') {
         return `为您规划了${data.days}天的${data.destination}非遗之旅，详见下方行程卡片`;
-      } else if (data.intent === 'STRUCTURED_QUERY') {
+      } else if (data.intent === 'STRUCTURED_QUERY' || data.intent === 'RESOURCE_RECOMMEND') {
+        const parts = [];
         if (data.activities && data.activities.length > 0) {
-          return `为您找到 ${data.total} 个相关活动，详见下方卡片`;
+          parts.push(`${data.total || data.activities.length} 个相关活动`);
         }
-        return '暂无符合条件的活动，试试其他条件吧~';
+        if (data.posts && data.posts.length > 0) {
+          parts.push(`${data.posts.length} 篇相关帖子`);
+        }
+        if (data.heritages && data.heritages.length > 0) {
+          parts.push(`${data.heritages.length} 个相关非遗项目`);
+        }
+        if (parts.length > 0) {
+          return `为您找到 ${parts.join('、')}，详见下方卡片`;
+        }
+        return '暂无符合条件的资源，试试其他条件吧~';
       } else if (data.intent === 'KNOWLEDGE_QA') {
         if (data.answer) {
           return data.answer;
@@ -1053,28 +1090,6 @@ export default {
         clearInterval(this.servicePolling);
         this.servicePolling = null;
       }
-    },
-    // 发送模拟回复
-    sendMockResponse(messageContent) {
-      setTimeout(() => {
-        let response = '';
-        switch (this.currentMode) {
-          case 'explore':
-            response = '这是一个关于探索站内资源的回复。';
-            break;
-          case 'service':
-            response = '这是一个AI客服的回复。';
-            break;
-          default:
-            response = '这是一个默认回复。';
-        }
-        this.messages.push({
-          type: 'bot',
-          content: response
-        });
-        // 滚动到底部
-        this.scrollToBottom();
-      }, 1000);
     },
     scrollToBottom() {
       setTimeout(() => {

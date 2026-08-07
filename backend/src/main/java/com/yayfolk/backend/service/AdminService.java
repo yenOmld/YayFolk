@@ -2,6 +2,7 @@ package com.yayfolk.backend.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yayfolk.backend.ai.vector.VectorIndexBuilder;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.IntangibleCulturalHeritage;
@@ -66,6 +67,7 @@ public class AdminService {
     private final EmailService emailService;
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final VectorIndexBuilder vectorIndexBuilder;
 
     public AdminService(UserRepository userRepository,
                         MerchantProfileRepository merchantProfileRepository,
@@ -77,7 +79,8 @@ public class AdminService {
                         UserUnbanApplicationRepository userUnbanApplicationRepository,
                         IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository,
                         EmailService emailService,
-                        ObjectMapper objectMapper) {
+                        ObjectMapper objectMapper,
+                        VectorIndexBuilder vectorIndexBuilder) {
         this.userRepository = userRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.applicationRepository = applicationRepository;
@@ -90,6 +93,7 @@ public class AdminService {
         this.emailService = emailService;
         this.objectMapper = objectMapper;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.vectorIndexBuilder = vectorIndexBuilder;
     }
 
     private User requireAdmin(String username) {
@@ -949,6 +953,7 @@ public class AdminService {
         applyHeritagePayload(heritage, data, false);
         if (normalizeText(heritage.getName()) == null) throw new RuntimeException("非遗名称不能为空");
         intangibleCulturalHeritageRepository.save(heritage);
+        indexHeritageAsync(heritage);
         return heritageToAdminMap(heritage, Collections.<Long>emptyList());
     }
 
@@ -958,6 +963,7 @@ public class AdminService {
         applyHeritagePayload(heritage, data, true);
         if (normalizeText(heritage.getName()) == null) throw new RuntimeException("非遗名称不能为空");
         intangibleCulturalHeritageRepository.save(heritage);
+        indexHeritageAsync(heritage);
         return heritageToAdminMap(heritage, readPublishedIds(HOMEPAGE_HERITAGE_CATEGORY));
     }
 
@@ -965,6 +971,7 @@ public class AdminService {
         requireAdmin(adminUsername);
         IntangibleCulturalHeritage heritage = intangibleCulturalHeritageRepository.findById(id).orElseThrow(() -> new RuntimeException("非遗不存在"));
         intangibleCulturalHeritageRepository.delete(heritage);
+        vectorIndexBuilder.removeHeritageFromIndex(id);
     }
 
     public List<Map<String, Object>> getOfficialWorks(String adminUsername) {
@@ -1340,6 +1347,17 @@ public class AdminService {
 
     private int calculatePostHeat(DiscoverPost post) {
         return safeInt(post.getViewCount()) + safeInt(post.getCollectCount()) + safeInt(post.getCommentCount());
+    }
+
+    /**
+     * 异步索引非遗（失败不影响主流程）。
+     */
+    private void indexHeritageAsync(IntangibleCulturalHeritage heritage) {
+        try {
+            vectorIndexBuilder.indexHeritage(heritage);
+        } catch (Exception e) {
+            log.warn("Failed to index heritage {}: {}", heritage.getId(), e.getMessage());
+        }
     }
 }
 

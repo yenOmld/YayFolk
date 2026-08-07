@@ -78,6 +78,8 @@ public class LLMIntentClassifier implements IntentClassifier {
         sb.append("\n");
         sb.append("- RESOURCE_RECOMMEND：用户想要搜索、查找、推荐活动、帖子、非遗项目等平台资源。\n");
         sb.append("  例如：「推荐北京的非遗活动」「有什么刺绣相关的帖子」「有没有免费活动」「找3个苏州的活动」\n");
+        sb.append("  「有关刺绣的内容」「苏州有什么好玩的」「最近有什么非遗展览」「推荐几个剪纸大师」\n");
+        sb.append("  注意：只要用户想通过平台搜索查找资源，都归为此类。不要因为提到了\"帖子\"或\"项目\"就误判为KNOWLEDGE_QA。\n");
         sb.append("\n");
         sb.append("- ITINERARY_PLANNING：用户想要规划旅行路线、行程安排。\n");
         sb.append("  例如：「帮我规划3天苏州之旅」「南京2日游路线」「怎么玩」\n");

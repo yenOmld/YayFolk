@@ -463,8 +463,6 @@ async function submitDialog() {
     } else if (activeTab.value === 'heritages') {
       const payload = buildHeritagePayload()
       if (!payload.name) throw new Error('请输入非遗名称')
-      if (payload.images.length === 0) throw new Error('请至少上传一张非遗图片')
-      if (!payload.videoUrl) throw new Error('请上传非遗视频')
       if (dialogMode.value === 'create') unwrap(await createOfficialHeritage(payload), '创建非遗项目失败')
       else unwrap(await updateOfficialHeritage(editingId.value, payload), '更新非遗项目失败')
     } else {

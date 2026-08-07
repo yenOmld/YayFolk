@@ -1,5 +1,6 @@
 package com.yayfolk.backend.service;
 
+import com.yayfolk.backend.ai.vector.VectorStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -7,83 +8,61 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 基于 ConcurrentHashMap 的内存向量存储实现。
+ * 支持向量搜索（余弦相似度）和关键词降级搜索。
+ */
 @Component
-public class InMemoryVectorStore {
+public class InMemoryVectorStore implements VectorStore {
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryVectorStore.class);
 
     private final EmbeddingService embeddingService;
-
     private final Map<String, VectorEntry> store = new ConcurrentHashMap<>();
     private volatile boolean indexed = false;
-
-    public static class VectorEntry {
-        private final String id;
-        private final String type;
-        private final Long entityId;
-        private final String text;
-        private final float[] embedding;
-        private final Map<String, Object> metadata;
-
-        public VectorEntry(String id, String type, Long entityId, String text, float[] embedding, Map<String, Object> metadata) {
-            this.id = id;
-            this.type = type;
-            this.entityId = entityId;
-            this.text = text;
-            this.embedding = embedding;
-            this.metadata = metadata;
-        }
-
-        public String getId() { return id; }
-        public String getType() { return type; }
-        public Long getEntityId() { return entityId; }
-        public String getText() { return text; }
-        public float[] getEmbedding() { return embedding; }
-        public Map<String, Object> getMetadata() { return metadata; }
-    }
-
-    public static class SearchResult {
-        private final VectorEntry entry;
-        private final double score;
-
-        public SearchResult(VectorEntry entry, double score) {
-            this.entry = entry;
-            this.score = score;
-        }
-
-        public VectorEntry getEntry() { return entry; }
-        public double getScore() { return score; }
-    }
 
     public InMemoryVectorStore(EmbeddingService embeddingService) {
         this.embeddingService = embeddingService;
     }
 
+    @Override
     public void clear() {
         store.clear();
         indexed = false;
     }
 
-    public void addEntry(String id, String type, Long entityId, String text, float[] embedding, Map<String, Object> metadata) {
+    @Override
+    public void addEntry(String id, String type, Long entityId, String text,
+                         float[] embedding, Map<String, Object> metadata) {
         store.put(id, new VectorEntry(id, type, entityId, text, embedding, metadata));
     }
 
+    @Override
+    public void removeEntry(String id) {
+        store.remove(id);
+    }
+
+    @Override
     public int size() {
         return store.size();
     }
 
+    @Override
     public int sizeByType(String type) {
         return (int) store.values().stream().filter(e -> type.equals(e.getType())).count();
     }
 
+    @Override
     public boolean isIndexed() {
         return indexed;
     }
 
+    @Override
     public void setIndexed(boolean indexed) {
         this.indexed = indexed;
     }
 
+    @Override
     public List<SearchResult> search(String query, String type, int topK) {
         float[] queryEmbedding = embeddingService.getEmbedding(query);
 

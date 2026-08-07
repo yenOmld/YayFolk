@@ -206,7 +206,7 @@ export const uploadPostImage = (formData, postId, index) => {
 
 export const exploreResources = (data) => {
   return request({
-    url: '/ai/explore-resources',
+    url: '/explore/query',
     method: 'post',
     data
   })
@@ -214,21 +214,21 @@ export const exploreResources = (data) => {
 
 export const getExploreConversations = () => {
   return request({
-    url: '/ai/explore-conversations',
+    url: '/explore/conversations',
     method: 'get'
   })
 }
 
 export const getExploreMessages = (conversationId) => {
   return request({
-    url: `/ai/explore-conversations/${conversationId}/messages`,
+    url: `/explore/conversations/${conversationId}/messages`,
     method: 'get'
   })
 }
 
 export const deleteExploreConversation = (conversationId) => {
   return request({
-    url: `/ai/explore-conversations/${conversationId}`,
+    url: `/explore/conversations/${conversationId}`,
     method: 'delete'
   })
 }
@@ -252,14 +252,6 @@ export const getKnowledgeMessages = (conversationId) => {
   return request({
     url: `/knowledge/conversations/${conversationId}/messages`,
     method: 'get'
-  })
-}
-
-export const sendKnowledgeMessage = (conversationId, data) => {
-  return request({
-    url: `/knowledge/conversations/${conversationId}/message`,
-    method: 'post',
-    data
   })
 }
 

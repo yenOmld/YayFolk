@@ -16,8 +16,7 @@ public class EmbeddingService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmbeddingService.class);
 
-    /** 向量相似度阈值：低于此值的条目视为不相关（1024维余弦相似度，0.5为合理门槛） */
-    private static final double SIMILARITY_THRESHOLD = 0.5;
+    private static final double SIMILARITY_THRESHOLD = 0.3;
     public static final int EMBEDDING_DIMENSIONS = 1024;
 
     private final EmbeddingClient embeddingClient;

@@ -71,7 +71,25 @@ public class ExploreResult {
                 return "为您规划了" + metadata.getOrDefault("days", "?") + "天的"
                         + metadata.getOrDefault("destination", "") + "非遗之旅";
             case RESOURCE_RECOMMEND:
-                return total > 0 ? "为您找到 " + total + " 个相关活动" : "暂无符合条件的活动";
+                if (total > 0 || !activityCards.isEmpty() || !postCards.isEmpty() || !heritageCards.isEmpty()) {
+                    StringBuilder sb = new StringBuilder("为您找到 ");
+                    boolean first = true;
+                    if (!activityCards.isEmpty()) {
+                        sb.append(activityCards.size()).append(" 个相关活动");
+                        first = false;
+                    }
+                    if (!postCards.isEmpty()) {
+                        if (!first) sb.append("、");
+                        sb.append(postCards.size()).append(" 篇相关帖子");
+                        first = false;
+                    }
+                    if (!heritageCards.isEmpty()) {
+                        if (!first) sb.append("、");
+                        sb.append(heritageCards.size()).append(" 个相关非遗项目");
+                    }
+                    return sb.toString();
+                }
+                return "暂无符合条件的资源";
             case KNOWLEDGE_QA:
                 return postCards.isEmpty() && heritageCards.isEmpty()
                         ? "关于这个问题，平台暂未收录相关资料，请在社区提问或尝试其他关键词。"

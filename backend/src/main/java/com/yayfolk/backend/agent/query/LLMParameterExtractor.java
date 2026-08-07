@@ -39,19 +39,25 @@ public class LLMParameterExtractor {
      * @return 结构化的参数 Map
      */
     public Map<String, Object> extract(String userInput, Intent intent, ConversationContext ctx) {
+        Map<String, Object> result;
         try {
             String systemPrompt = buildExtractionPrompt(intent, ctx);
             String llmResponse = deepSeekClient.chat(systemPrompt, userInput);
 
             if (llmResponse != null) {
-                return parseLLMResponse(llmResponse);
+                result = parseLLMResponse(llmResponse);
+            } else {
+                result = fallbackExtract(userInput);
             }
         } catch (Exception e) {
             logger.warn("LLM parameter extraction failed, using keyword fallback", e);
+            result = fallbackExtract(userInput);
         }
 
-        // 降级到关键词提取
-        return fallbackExtract(userInput);
+        // 后处理增强：从原始输入中补充 LLM 可能遗漏的城市和类型
+        enhanceWithKeywordFallback(userInput, result);
+
+        return result;
     }
 
     /**
@@ -63,7 +69,7 @@ public class LLMParameterExtractor {
 
     private String buildExtractionPrompt(Intent intent, ConversationContext ctx) {
         StringBuilder sb = new StringBuilder();
-        sb.append("你是一个非遗活动搜索参数提取器。从用户输入中提取结构化搜索参数。\n\n");
+        sb.append("你是一个非遗资源搜索参数提取器。从用户输入中提取结构化搜索参数。\n\n");
 
         sb.append("请提取以下参数并以JSON格式返回（只返回JSON，不要其他内容）：\n");
         sb.append("{\n");
@@ -76,10 +82,22 @@ public class LLMParameterExtractor {
         sb.append("  \"search_keywords\": [\"搜索关键词列表，提取用户问题中的核心名词\"]\n");
         sb.append("}\n\n");
 
+        sb.append("【query_focus 判定规则】重要！\n");
+        sb.append("- 用户提到\"活动\"\"报名\"\"参加\"\"工作坊\"\"课程\"\"价格\"\"费用\"→ activities\n");
+        sb.append("- 用户提到\"帖子\"\"文章\"\"讨论\"\"分享\"\"社区\"\"论坛\"\"博客\"→ posts\n");
+        sb.append("- 用户提到\"非遗项目\"\"非遗名录\"\"遗产\"\"传承项目\"\"保护项目\"→ heritages\n");
+        sb.append("- 用户没有明确指定类型，只是说\"有什么\"\"推荐\"\"找一找\"→ all\n");
+        sb.append("- 用户说\"有关...的内容\"\"关于...的信息\"\"...相关的\"→ all\n");
+        sb.append("- 例如：「有什么刺绣相关的帖子」→ query_focus: \"posts\", heritage_type: \"刺绣\"\n");
+        sb.append("- 例如：「北京有什么非遗活动」→ query_focus: \"activities\", city: \"北京\"\n");
+        sb.append("- 例如：「推荐非遗项目」→ query_focus: \"heritages\"\n");
+        sb.append("- 例如：「有关刺绣的内容」→ query_focus: \"all\", heritage_type: \"刺绣\"\n");
+        sb.append("- 例如：「苏州有什么好玩的」→ query_focus: \"all\", city: \"苏州\"\n");
+        sb.append("\n");
         sb.append("注意：\n");
-        sb.append("1. 准确提取非遗类型。如「苏州刺绣」→ heritage_type: \"刺绣\"/\"苏绣\", city: \"苏州\"\n");
+        sb.append("1. 准确提取非遗类型。如「苏州刺绣」→ heritage_type: \"刺绣\", city: \"苏州\"\n");
         sb.append("2. 中文数字转换为阿拉伯数字。如「三个」→ 3\n");
-        sb.append("3. 识别追问场景。如果用户说「第一个在哪里」→ 这是关于上一轮结果的追问，设置 query_focus 为 \"follow_up\"\n");
+        sb.append("3. 识别追问场景。如果用户说「第一个在哪里」→ query_focus: \"follow_up\"\n");
         sb.append("4. 只返回JSON，不要加解释文字\n");
 
         // 添加对话历史
@@ -175,10 +193,12 @@ public class LLMParameterExtractor {
         params.put("query", userInput);
         params.put("limit", 5);
 
-        // 城市
+        // 城市（覆盖主要旅游城市和非遗热门城市）
         String[] cities = {"北京", "上海", "广州", "深圳", "杭州", "苏州", "成都", "西安",
                 "南京", "武汉", "重庆", "长沙", "厦门", "青岛", "大理", "昆明", "丽江",
-                "洛阳", "开封", "扬州", "天津", "大连", "福州", "泉州", "拉萨", "敦煌"};
+                "洛阳", "开封", "扬州", "天津", "大连", "福州", "泉州", "拉萨", "敦煌",
+                "济南", "合肥", "南昌", "南宁", "贵阳", "兰州", "银川", "太原", "沈阳",
+                "郑州", "石家庄", "呼和浩特", "乌鲁木齐", "哈尔滨", "长春", "海口"};
         for (String city : cities) {
             if (userInput.contains(city)) {
                 params.put("location_city", city);
@@ -235,6 +255,115 @@ public class LLMParameterExtractor {
             params.put("limit", 5);
         }
 
+        // ===== query_focus 关键词检测 =====
+        boolean wantsPosts = containsAny(userInput,
+                Arrays.asList("帖子", "文章", "讨论", "分享", "社区"));
+        boolean wantsHeritages = containsAny(userInput,
+                Arrays.asList("非遗项目", "非遗名录", "遗产", "传承项目", "保护项目"));
+        boolean wantsActivities = containsAny(userInput,
+                Arrays.asList("活动", "报名", "参加", "工作坊", "课程", "价格", "费用", "免费"));
+
+        if (wantsPosts || wantsHeritages) {
+            if (wantsActivities) {
+                params.put("query_focus", "all");
+            } else if (wantsPosts && wantsHeritages) {
+                params.put("query_focus", "all");
+            } else if (wantsPosts) {
+                params.put("query_focus", "posts");
+            } else {
+                params.put("query_focus", "heritages");
+            }
+        } else if (wantsActivities) {
+            // 用户只要活动，不查帖子/非遗
+            params.put("query_focus", "activities");
+        } else {
+            // 用户没有明确偏好 → 全部查询（排除纯知识问答）
+            boolean isKnowledgeQuery = containsAny(userInput,
+                    Arrays.asList("是什么", "怎么做", "历史", "由来", "步骤", "文化"));
+            if (!isKnowledgeQuery) {
+                params.put("query_focus", "all");
+            }
+        }
+
         return params;
+    }
+
+    private static boolean containsAny(String text, List<String> keywords) {
+        for (String kw : keywords) {
+            if (text.contains(kw)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 后处理增强：从原始输入中补充 LLM 可能遗漏的城市、非遗类型和查询焦点。
+     * 不覆盖 LLM 已正确提取的参数，只补充缺失的。
+     */
+    private void enhanceWithKeywordFallback(String userInput, Map<String, Object> params) {
+        // 补充城市（LLM 可能遗漏）
+        if (!params.containsKey("location_city")) {
+            String[] allCities = {"北京", "上海", "广州", "深圳", "杭州", "苏州", "成都", "西安",
+                    "南京", "武汉", "重庆", "长沙", "厦门", "青岛", "大理", "昆明", "丽江",
+                    "洛阳", "开封", "扬州", "天津", "大连", "福州", "泉州", "拉萨", "敦煌",
+                    "济南", "合肥", "南昌", "南宁", "贵阳", "兰州", "银川", "太原", "沈阳",
+                    "郑州", "石家庄", "呼和浩特", "乌鲁木齐", "哈尔滨", "长春", "海口"};
+            for (String city : allCities) {
+                if (userInput.contains(city)) {
+                    params.put("location_city", city);
+                    params.put("destination", city);
+                    // 更新 query 字段
+                    params.put("query", (params.getOrDefault("heritage_type", "") + " " + city).trim());
+                    logger.info("Enhanced params with city from input: {}", city);
+                    break;
+                }
+            }
+        }
+
+        // 补充非遗类型
+        if (!params.containsKey("heritage_type")) {
+            String[] heritageTypes = {"刺绣", "剪纸", "陶艺", "皮影", "京剧", "昆曲", "书法", "国画",
+                    "茶艺", "木雕", "泥塑", "扎染", "花灯", "糖画", "陶瓷", "织锦",
+                    "印染", "漆器", "玉雕", "竹编", "年画", "面塑", "苏绣", "蜀绣", "湘绣", "粤绣",
+                    "秧歌", "锡雕", "梆子", "芯子", "吕剧", "五音戏", "鼓子秧歌"};
+            for (String type : heritageTypes) {
+                if (userInput.contains(type)) {
+                    params.put("heritage_type", type);
+                    String city = params.getOrDefault("location_city", "").toString();
+                    params.put("query", (type + " " + city).trim());
+                    logger.info("Enhanced params with heritage_type from input: {}", type);
+                    break;
+                }
+            }
+        }
+
+        // 补充 query_focus（LLM 可能遗漏）
+        if (!params.containsKey("query_focus")) {
+            boolean wantsPosts = containsAny(userInput,
+                    Arrays.asList("帖子", "文章", "讨论", "分享", "社区"));
+            boolean wantsHeritages = containsAny(userInput,
+                    Arrays.asList("非遗项目", "非遗名录", "遗产", "传承项目", "保护项目"));
+            boolean wantsActivities = containsAny(userInput,
+                    Arrays.asList("活动", "报名", "参加", "工作坊", "课程", "价格", "费用", "免费"));
+
+            if (wantsPosts || wantsHeritages) {
+                if (wantsActivities) {
+                    params.put("query_focus", "all");
+                } else if (wantsPosts && wantsHeritages) {
+                    params.put("query_focus", "all");
+                } else if (wantsPosts) {
+                    params.put("query_focus", "posts");
+                } else {
+                    params.put("query_focus", "heritages");
+                }
+            } else if (wantsActivities) {
+                params.put("query_focus", "activities");
+            } else {
+                boolean isKnowledgeQuery = containsAny(userInput,
+                        Arrays.asList("是什么", "怎么做", "历史", "由来", "步骤", "文化"));
+                if (!isKnowledgeQuery) {
+                    params.put("query_focus", "all");
+                }
+            }
+        }
     }
 }
