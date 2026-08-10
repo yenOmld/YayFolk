@@ -438,8 +438,14 @@ onBeforeUnmount(() => {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 18px;
+}
+
+@media (min-width: 1200px) {
+  .workspace-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .preview-panel {

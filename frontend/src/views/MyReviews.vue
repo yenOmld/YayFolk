@@ -8,7 +8,7 @@
       <div class="hero-copy">
         <p class="eyebrow">个人中心</p>
         <h1>我的评价</h1>
-        <p>这里会展示你发布的活动评价，包含活动关联、评分和匿名状态。</p>
+        <p>这里会展示你发布的活动评价，包含活动关联和评分信息。</p>
       </div>
       <div class="hero-actions">
         <button class="refresh-btn" :disabled="reviewsLoading || bookingsLoading" @click="loadData">刷新</button>
@@ -27,10 +27,6 @@
       <button class="summary-card" :class="{ active: activeFilter === 'public' }" @click="setFilter('public')">
         <span class="summary-label">公开</span>
         <strong>{{ summary.publicCount }}</strong>
-      </button>
-      <button class="summary-card" :class="{ active: activeFilter === 'anonymous' }" @click="setFilter('anonymous')">
-        <span class="summary-label">匿名</span>
-        <strong>{{ summary.anonymousCount }}</strong>
       </button>
     </section>
 
@@ -72,7 +68,6 @@
               </div>
               <div class="badges">
                 <span class="badge">{{ post.visibility === 'private' ? '私密' : '公开' }}</span>
-                <span v-if="post.isAnonymous" class="badge subtle">匿名</span>
                 <span
                   v-if="post.activityId"
                   class="badge activity-badge"
@@ -160,16 +155,12 @@ const pendingActivities = computed(() => bookings.value.filter(item => item.canR
 const summary = computed(() => ({
   reviewed: reviewedPosts.value.length,
   pending: pendingActivities.value.length,
-  publicCount: reviewedPosts.value.filter(item => item.visibility !== 'private').length,
-  anonymousCount: reviewedPosts.value.filter(item => item.isAnonymous).length
+  publicCount: reviewedPosts.value.filter(item => item.visibility !== 'private').length
 }))
 
 const visibleReviewPosts = computed(() => {
   if (activeFilter.value === 'public') {
     return reviewedPosts.value.filter(item => item.visibility !== 'private')
-  }
-  if (activeFilter.value === 'anonymous') {
-    return reviewedPosts.value.filter(item => item.isAnonymous)
   }
   return reviewedPosts.value
 })
@@ -180,8 +171,7 @@ const panelTitle = computed(() => {
   const titleMap = {
     reviewed: '已发布的评价',
     pending: '待评价活动',
-    public: '公开评价',
-    anonymous: '匿名评价'
+    public: '公开评价'
   }
   return titleMap[activeFilter.value] || '我的评价'
 })
@@ -190,8 +180,7 @@ const panelHint = computed(() => {
   const hintMap = {
     reviewed: '展示你发布过的所有评价贴。',
     pending: '这里是已核销完成、还未发评价的活动。',
-    public: '仅展示公开发布的评价。',
-    anonymous: '仅展示设置了匿名发布的评价。'
+    public: '仅展示公开发布的评价。'
   }
   return hintMap[activeFilter.value] || ''
 })
@@ -485,7 +474,7 @@ onBeforeUnmount(() => {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 

@@ -8,7 +8,7 @@ import com.yayfolk.backend.entity.ActivityReserveParticipant;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.MerchantApplication;
 import com.yayfolk.backend.entity.MerchantProfile;
-import com.yayfolk.backend.entity.MerchantReview;
+
 import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.Product;
 import com.yayfolk.backend.entity.ReserveStatusLog;
@@ -19,7 +19,7 @@ import com.yayfolk.backend.repository.ActivityReserveParticipantRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.MerchantApplicationRepository;
 import com.yayfolk.backend.repository.MerchantProfileRepository;
-import com.yayfolk.backend.repository.MerchantReviewRepository;
+
 import com.yayfolk.backend.repository.OrderRepository;
 import com.yayfolk.backend.repository.ProductRepository;
 import com.yayfolk.backend.repository.ReserveStatusLogRepository;
@@ -60,7 +60,6 @@ public class MerchantService {
     private final ReserveStatusLogRepository reserveStatusLogRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final MerchantReviewRepository merchantReviewRepository;
     private final DiscoverPostRepository discoverPostRepository;
     private final ObjectMapper objectMapper;
     private final OfficialContentRepository officialContentRepository;
@@ -74,7 +73,6 @@ public class MerchantService {
                            ReserveStatusLogRepository reserveStatusLogRepository,
                            ProductRepository productRepository,
                            OrderRepository orderRepository,
-                           MerchantReviewRepository merchantReviewRepository,
                            DiscoverPostRepository discoverPostRepository,
                            OfficialContentRepository officialContentRepository,
                            ObjectMapper objectMapper) {
@@ -88,7 +86,6 @@ public class MerchantService {
         this.reserveStatusLogRepository = reserveStatusLogRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
-        this.merchantReviewRepository = merchantReviewRepository;
         this.officialContentRepository = officialContentRepository;
         this.objectMapper = objectMapper;
     }
@@ -768,7 +765,6 @@ public class MerchantService {
         User user = getUser(username);
         List<Activity> activities = activityRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
         List<ActivityReserve> bookings = activityReserveRepository.findByMerchantIdOrderByUpdateTimeDesc(user.getId());
-        List<MerchantReview> reviews = merchantReviewRepository.findByMerchantIdOrderByCreateTimeDesc(user.getId());
 
         Map<Long, Activity> activityMap = buildActivityMap(activities);
         Map<Long, ActivityReserve> bookingMap = new HashMap<Long, ActivityReserve>();
@@ -780,13 +776,23 @@ public class MerchantService {
             }
         }
 
+        // 从DiscoverPost获取评价数据
+        List<DiscoverPost> reviewPosts = new ArrayList<DiscoverPost>();
+        List<Long> activityIds = new ArrayList<Long>();
+        for (Activity activity : activities) {
+            activityIds.add(activity.getId());
+        }
+        if (!activityIds.isEmpty()) {
+            reviewPosts = discoverPostRepository.findByActivityIdInAndStatusAndAuditStatusOrderByCreateTimeDesc(activityIds, 1, "passed");
+        }
+
         Map<String, Object> summary = new LinkedHashMap<String, Object>();
         summary.put("activityCount", activities.size());
         summary.putAll(buildMerchantBookingSummary(bookings));
-        summary.put("reviewCount", reviews.size());
+        summary.put("reviewCount", reviewPosts.size());
         summary.put("totalRevenue", totalRevenue);
         summary.put("bookingRevenue", totalRevenue);
-        summary.put("averageScore", resolveAverageScore(reviews));
+        summary.put("averageScore", resolveAverageScoreFromPosts(reviewPosts));
         summary.put("followerCount", resolveFollowerCount(user));
 
         Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -794,7 +800,7 @@ public class MerchantService {
         result.put("bookingStatus", buildBookingStatusStats(bookings));
         result.put("salesTrend", buildSalesTrend(bookings));
         result.put("topActivities", buildTopActivities(bookings, activityMap));
-        result.put("recentReviews", buildMerchantReviews(reviews, bookingMap, activityMap));
+        result.put("recentReviews", buildMerchantReviewPosts(reviewPosts, activityMap));
         return result;
     }
 
@@ -1172,8 +1178,7 @@ public class MerchantService {
 
     public Map<String, Object> getMyActivityBookingDetail(String username, Long bookingId) {
         ActivityReserve booking = requireUserBooking(username, bookingId);
-        MerchantReview review = merchantReviewRepository.findFirstByReserveIdAndUserIdOrderByCreateTimeDesc(booking.getId(), booking.getUserId()).orElse(null);
-        return buildUserBookingDetailMap(booking, review);
+        return buildUserBookingDetailMap(booking, findBookingReview(booking));
     }
 
     public Map<String, Object> payForActivityBooking(String username, Long bookingId, Map<String, Object> data) {
@@ -1182,7 +1187,7 @@ public class MerchantService {
             throw new RuntimeException("Only active bookings can be paid");
         }
         if (Integer.valueOf(1).equals(booking.getPayStatus())) {
-            return buildUserBookingDetailMap(booking, merchantReviewRepository.findFirstByReserveIdAndUserIdOrderByCreateTimeDesc(booking.getId(), booking.getUserId()).orElse(null));
+            return buildUserBookingDetailMap(booking, findBookingReview(booking));
         }
         if (intValue(booking.getPayAmount(), 0) <= 0) {
             throw new RuntimeException("This booking does not require payment");
@@ -1192,7 +1197,7 @@ public class MerchantService {
         booking.setPaymentTime(new Date());
         booking.setPaymentType(StringUtils.hasText(stringValue(data == null ? null : data.get("paymentType"))) ? stringValue(data.get("paymentType")) : "simulated");
         activityReserveRepository.save(booking);
-        return buildUserBookingDetailMap(booking, merchantReviewRepository.findFirstByReserveIdAndUserIdOrderByCreateTimeDesc(booking.getId(), booking.getUserId()).orElse(null));
+        return buildUserBookingDetailMap(booking, findBookingReview(booking));
     }
 
     public ActivityReserve prepareUserBookingForExternalPayment(String username, Long bookingId, String paymentType) {
@@ -1233,21 +1238,30 @@ public class MerchantService {
             throw new RuntimeException("Review content cannot exceed 500 characters");
         }
 
-        MerchantReview review = merchantReviewRepository.findFirstByReserveIdAndUserIdOrderByCreateTimeDesc(booking.getId(), booking.getUserId())
-                .orElseGet(new java.util.function.Supplier<MerchantReview>() {
-                    @Override
-                    public MerchantReview get() {
-                        return new MerchantReview();
-                    }
-                });
-        review.setMerchantId(booking.getMerchantId());
-        review.setUserId(booking.getUserId());
-        review.setReserveId(booking.getId());
-        review.setOrderId(null);
-        review.setReviewType("activity");
-        review.setScore(score);
-        review.setContent(content);
-        MerchantReview saved = merchantReviewRepository.save(review);
+        // 检查是否已有评价
+        DiscoverPost existing = findBookingReview(booking);
+        if (existing != null) {
+            throw new RuntimeException("You have already reviewed this activity");
+        }
+
+        Activity activity = activityRepository.findById(booking.getActivityId()).orElse(null);
+        DiscoverPost reviewPost = new DiscoverPost();
+        reviewPost.setUserId(booking.getUserId());
+        reviewPost.setActivityId(booking.getActivityId());
+        reviewPost.setTitle(activity != null ? activity.getTitle() : "活动评价");
+        reviewPost.setContent(content);
+        reviewPost.setType("review");
+        reviewPost.setCategory(activity != null && activity.getHeritageType() != null ? activity.getHeritageType() : "culture");
+        reviewPost.setAuditStatus("passed");
+        reviewPost.setImages("[]");
+        reviewPost.setTags("[]");
+        reviewPost.setVisibility("public");
+        reviewPost.setStatus(1);
+        reviewPost.setScore(score.intValue());
+        reviewPost.setSourceLang("zh");
+        reviewPost.setCreateTime(new Date());
+        reviewPost.setUpdateTime(new Date());
+        DiscoverPost saved = discoverPostRepository.save(reviewPost);
         return buildUserBookingDetailMap(booking, saved);
     }
 
@@ -1597,20 +1611,26 @@ public class MerchantService {
             map.put("merchantIntro", preferredShopIntro(merchant, profile));
             map.put("shopName", preferredShopName(merchant, profile));
         });
-        MerchantReview review = merchantReviewRepository.findFirstByReserveIdAndUserIdOrderByCreateTimeDesc(booking.getId(), booking.getUserId()).orElse(null);
-        if (review != null) {
-            map.put("reviewId", review.getId());
-            map.put("reviewScore", review.getScore());
-            map.put("reviewContent", review.getContent());
-            map.put("reviewType", review.getReviewType());
-            map.put("reviewTime", review.getCreateTime());
+        DiscoverPost reviewPost = findBookingReview(booking);
+        if (reviewPost != null) {
+            map.put("reviewId", reviewPost.getId());
+            map.put("reviewScore", reviewPost.getScore());
+            map.put("reviewContent", reviewPost.getContent());
+            map.put("reviewTime", reviewPost.getCreateTime());
         }
-        map.put("canReview", review == null && canReviewActivityBooking(booking));
+        map.put("canReview", reviewPost == null && canReviewActivityBooking(booking));
         map.put("qrContent", buildBookingQrContent(booking));
         return map;
     }
 
-    private Map<String, Object> buildUserBookingDetailMap(ActivityReserve booking, MerchantReview review) {
+    private DiscoverPost findBookingReview(ActivityReserve booking) {
+        if (booking == null || booking.getActivityId() == null || booking.getUserId() == null) return null;
+        List<DiscoverPost> reviews = discoverPostRepository.findByActivityIdAndUserIdAndTypeAndStatusAndAuditStatusOrderByCreateTimeDesc(
+            booking.getActivityId(), booking.getUserId(), "review", 1, "passed");
+        return reviews.isEmpty() ? null : reviews.get(0);
+    }
+
+    private Map<String, Object> buildUserBookingDetailMap(ActivityReserve booking, DiscoverPost review) {
         Map<String, Object> map = userBookingToMap(booking);
         map.put("timeline", buildTimeline(booking.getId()));
         
@@ -1630,7 +1650,6 @@ public class MerchantService {
             map.put("reviewId", review.getId());
             map.put("reviewScore", review.getScore());
             map.put("reviewContent", review.getContent());
-            map.put("reviewType", review.getReviewType());
             map.put("reviewTime", review.getCreateTime());
             map.put("canReview", false);
         }
@@ -1670,12 +1689,11 @@ public class MerchantService {
             map.put("customerEmail", customer.getEmail());
             map.put("customerLocation", customer.getLocation());
         });
-        MerchantReview review = merchantReviewRepository.findFirstByReserveIdOrderByCreateTimeDesc(booking.getId()).orElse(null);
-        if (review != null) {
-            map.put("reviewScore", review.getScore());
-            map.put("reviewContent", review.getContent());
-            map.put("reviewType", review.getReviewType());
-            map.put("reviewTime", review.getCreateTime());
+        DiscoverPost reviewPost = findBookingReview(booking);
+        if (reviewPost != null) {
+            map.put("reviewScore", reviewPost.getScore());
+            map.put("reviewContent", reviewPost.getContent());
+            map.put("reviewTime", reviewPost.getCreateTime());
         }
         map.put("timeline", buildTimeline(booking.getId()));
         return map;
@@ -2014,42 +2032,11 @@ public class MerchantService {
         }
         return activityMap;
     }
-    private List<Map<String, Object>> buildMerchantReviews(List<MerchantReview> reviews,
-                                                            Map<Long, ActivityReserve> bookingMap,
-                                                            Map<Long, Activity> activityMap) {
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        int limit = Math.min(reviews.size(), 5);
-        for (int index = 0; index < limit; index++) {
-            MerchantReview review = reviews.get(index);
-            Map<String, Object> item = new LinkedHashMap<String, Object>();
-            item.put("id", review.getId());
-            item.put("score", review.getScore());
-            item.put("content", review.getContent());
-            item.put("reviewType", review.getReviewType());
-            item.put("createTime", review.getCreateTime());
-            ActivityReserve booking = review.getReserveId() == null ? null : bookingMap.get(review.getReserveId());
-            if (booking != null) {
-                item.put("reserveId", booking.getId());
-                item.put("activityId", booking.getActivityId());
-                item.put("targetName", StringUtils.hasText(booking.getActivityTitle()) ? booking.getActivityTitle() : "Activity Review");
-            }
-            if (!item.containsKey("targetName") && booking != null && booking.getActivityId() != null) {
-                Activity activity = activityMap.get(booking.getActivityId());
-                if (activity != null && StringUtils.hasText(activity.getTitle())) {
-                    item.put("targetName", activity.getTitle());
-                }
-            }
-            if (!item.containsKey("targetName")) {
-                item.put("targetName", "activity".equalsIgnoreCase(defaultString(review.getReviewType())) ? "Activity Review" : "Product Review");
-            }
-            userRepository.findById(review.getUserId()).ifPresent(user -> {
-                item.put("userId", user.getId());
-                item.put("userName", displayName(user));
-                item.put("userAvatar", resolveUserAvatar(user));
-            });
-            result.add(item);
-        }
-        return result;
+    private List<Map<String, Object>> buildMerchantReviewsFromPosts(List<DiscoverPost> posts,
+                                                                     Map<Long, ActivityReserve> bookingMap,
+                                                                     Map<Long, Activity> activityMap) {
+        // Kept for potential use, but currently not called. Uses DiscoverPost instead of MerchantReview.
+        return buildMerchantReviewPosts(posts, activityMap);
     }
     private List<Map<String, Object>> buildBookingStatusStats(List<ActivityReserve> bookings) {
         int registeredCount = 0;
@@ -2168,23 +2155,21 @@ public class MerchantService {
         }
         return result;
     }
-    private BigDecimal resolveAverageScore(List<MerchantReview> reviews) {
-        if (reviews.isEmpty()) {
+    private BigDecimal resolveAverageScoreFromPosts(List<DiscoverPost> posts) {
+        List<DiscoverPost> scoredPosts = new ArrayList<DiscoverPost>();
+        for (DiscoverPost post : posts) {
+            if (post.getScore() != null && post.getScore() > 0) {
+                scoredPosts.add(post);
+            }
+        }
+        if (scoredPosts.isEmpty()) {
             return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
         }
         BigDecimal total = BigDecimal.ZERO;
-        int counted = 0;
-        for (MerchantReview review : reviews) {
-            if (review.getScore() == null) {
-                continue;
-            }
-            total = total.add(review.getScore());
-            counted++;
+        for (DiscoverPost post : scoredPosts) {
+            total = total.add(BigDecimal.valueOf(post.getScore()));
         }
-        if (counted <= 0) {
-            return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
-        }
-        return total.divide(BigDecimal.valueOf(counted), 1, RoundingMode.HALF_UP);
+        return total.divide(BigDecimal.valueOf(scoredPosts.size()), 1, RoundingMode.HALF_UP);
     }
     private int resolveFollowerCount(User user) {
         if (user == null) {

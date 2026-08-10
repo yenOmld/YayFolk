@@ -1197,7 +1197,12 @@ public class DiscoverService {
         if (user == null || !StringUtils.hasText(user.getAvatar())) {
             return "https://api.dicebear.com/7.x/avataaars/svg?seed=travelate-user";
         }
-        return user.getAvatar();
+        String avatar = user.getAvatar();
+        // 过滤 base64 数据 URI（可能高达 16MB），避免响应体膨胀
+        if (avatar.startsWith("data:") || avatar.length() > 500) {
+            return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (StringUtils.hasText(user.getUsername()) ? user.getUsername() : "travelate-user");
+        }
+        return avatar;
     }
 
     private int safeInt(Integer value) {

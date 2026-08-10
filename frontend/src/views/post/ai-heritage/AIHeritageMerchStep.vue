@@ -212,9 +212,10 @@ const selectedMerchType = computed(() => getMerchTypeById(draft.value.merchType)
 const selectedMerchColor = computed(() => {
   const preset = getMerchColorById(draft.value.merchColor)
   if (preset) return preset
+  // custom 或未匹配时，返回自定义颜色对象
   return {
-    id: 'custom',
-    name: '自定义',
+    id: draft.value.merchColor || 'white',
+    name: draft.value.merchColor === 'custom' ? '自定义' : (draft.value.merchColor || '白色'),
     hex: draft.value.merchCustomColor || '#FFFFFF'
   }
 })
@@ -513,7 +514,7 @@ onMounted(() => {
   if (!draft.value.merchType && merchTypePresets.length > 0) {
     draft.value = writeAiHeritageDraft({
       merchType: merchTypePresets[0].id,
-      merchColor: merchColorPresets[0].id
+      merchColor: draft.value.merchColor || merchColorPresets[0].id
     })
   }
   if (draft.value.merchColor === 'custom' && draft.value.merchCustomColor) {

@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yayfolk.backend.entity.Activity;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.IntangibleCulturalHeritage;
-import com.yayfolk.backend.entity.MerchantReview;
+
 import com.yayfolk.backend.entity.OfficialContent;
 import com.yayfolk.backend.entity.Product;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.repository.ActivityRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
 import com.yayfolk.backend.repository.IntangibleCulturalHeritageRepository;
-import com.yayfolk.backend.repository.MerchantReviewRepository;
+
 import com.yayfolk.backend.repository.OfficialContentRepository;
 import com.yayfolk.backend.repository.ProductRepository;
 import com.yayfolk.backend.repository.UserRepository;
@@ -45,8 +45,7 @@ public class PublicContentService {
     private final UserRepository userRepository;
     private final IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository;
     private final DiscoverPostRepository discoverPostRepository;
-    private final MerchantReviewRepository merchantReviewRepository;
-    private final ObjectMapper objectMapper;
+private final ObjectMapper objectMapper;
 
     public PublicContentService(ActivityRepository activityRepository,
                                 ProductRepository productRepository,
@@ -54,7 +53,6 @@ public class PublicContentService {
                                 UserRepository userRepository,
                                 IntangibleCulturalHeritageRepository intangibleCulturalHeritageRepository,
                                 DiscoverPostRepository discoverPostRepository,
-                                MerchantReviewRepository merchantReviewRepository,
                                 ObjectMapper objectMapper) {
         this.activityRepository = activityRepository;
         this.productRepository = productRepository;
@@ -62,13 +60,25 @@ public class PublicContentService {
         this.userRepository = userRepository;
         this.intangibleCulturalHeritageRepository = intangibleCulturalHeritageRepository;
         this.discoverPostRepository = discoverPostRepository;
-        this.merchantReviewRepository = merchantReviewRepository;
         this.objectMapper = objectMapper;
     }
 
     public List<Map<String, Object>> getPublicActivities(String keyword, String city, Long merchantId) {
         List<Activity> activities = activityRepository.findByAuditStatusOrderByCreateTimeDesc("approved");
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+
+        // 批量查询所有商户信息，避免 N+1
+        java.util.Set<Long> merchantIds = activities.stream()
+                .map(Activity::getMerchantId)
+                .collect(Collectors.toSet());
+        Map<Long, User> merchantMap = new HashMap<>();
+        if (!merchantIds.isEmpty()) {
+            List<User> merchants = userRepository.findAllById(merchantIds);
+            for (User u : merchants) {
+                merchantMap.put(u.getId(), u);
+            }
+        }
+
         for (Activity a : activities) {
             syncActivityStatus(a);
             if (keyword != null && !keyword.isEmpty()) {
@@ -89,11 +99,12 @@ public class PublicContentService {
                 }
             }
             Map<String, Object> m = activityToMap(a);
-            userRepository.findById(a.getMerchantId()).ifPresent(u -> {
-                m.put("merchantName", u.getShopName() != null ? u.getShopName() : u.getNickname());
-                m.put("merchantAvatar", u.getAvatar());
-                m.put("merchantIntro", u.getShopIntro());
-            });
+            User merchant = merchantMap.get(a.getMerchantId());
+            if (merchant != null) {
+                m.put("merchantName", merchant.getShopName() != null ? merchant.getShopName() : merchant.getNickname());
+                m.put("merchantAvatar", safeAvatar(merchant));
+                m.put("merchantIntro", merchant.getShopIntro());
+            }
             result.add(m);
         }
         result.sort(Comparator.comparing(item -> {
@@ -113,7 +124,7 @@ public class PublicContentService {
         Map<String, Object> result = activityToMap(activity);
         userRepository.findById(activity.getMerchantId()).ifPresent(u -> {
             result.put("merchantName", u.getShopName() != null ? u.getShopName() : u.getNickname());
-            result.put("merchantAvatar", u.getAvatar());
+            result.put("merchantAvatar", safeAvatar(u));
             result.put("merchantIntro", u.getShopIntro());
             result.put("merchantCover", u.getShopCover());
         });
@@ -146,6 +157,19 @@ public class PublicContentService {
     public List<Map<String, Object>> getPublicProducts(String keyword) {
         List<Product> products = productRepository.findByStatusOrderByCreateTimeDesc("on_sale");
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+
+        // 批量查询所有商户信息，避免 N+1
+        java.util.Set<Long> merchantIds = products.stream()
+                .map(Product::getMerchantId)
+                .collect(Collectors.toSet());
+        Map<Long, User> merchantMap = new HashMap<>();
+        if (!merchantIds.isEmpty()) {
+            List<User> merchants = userRepository.findAllById(merchantIds);
+            for (User u : merchants) {
+                merchantMap.put(u.getId(), u);
+            }
+        }
+
         for (Product p : products) {
             if (keyword != null && !keyword.isEmpty()) {
                 boolean match = (p.getName() != null && p.getName().contains(keyword))
@@ -155,11 +179,12 @@ public class PublicContentService {
                 }
             }
             Map<String, Object> m = productToMap(p);
-            userRepository.findById(p.getMerchantId()).ifPresent(u -> {
-                m.put("merchantName", u.getShopName() != null ? u.getShopName() : u.getNickname());
-                m.put("merchantAvatar", u.getAvatar());
-                m.put("merchantIntro", u.getShopIntro());
-            });
+            User merchant = merchantMap.get(p.getMerchantId());
+            if (merchant != null) {
+                m.put("merchantName", merchant.getShopName() != null ? merchant.getShopName() : merchant.getNickname());
+                m.put("merchantAvatar", safeAvatar(merchant));
+                m.put("merchantIntro", merchant.getShopIntro());
+            }
             result.add(m);
         }
         result.sort(Comparator.comparing(item -> {
@@ -184,7 +209,7 @@ public class PublicContentService {
         Map<String, Object> result = productToMap(product);
         userRepository.findById(product.getMerchantId()).ifPresent(u -> {
             result.put("merchantName", u.getShopName() != null ? u.getShopName() : u.getNickname());
-            result.put("merchantAvatar", u.getAvatar());
+            result.put("merchantAvatar", safeAvatar(u));
             result.put("merchantIntro", u.getShopIntro());
             result.put("merchantCover", u.getShopCover());
         });
@@ -436,6 +461,21 @@ public class PublicContentService {
         }
     }
 
+    private String safeAvatar(User user) {
+        if (user == null) {
+            return null;
+        }
+        String avatar = user.getAvatar();
+        if (avatar == null || avatar.isEmpty()) {
+            return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (user.getUsername() != null ? user.getUsername() : "default");
+        }
+        // 过滤 base64 数据 URI（可能高达 16MB），避免响应体膨胀
+        if (avatar.startsWith("data:") || avatar.length() > 500) {
+            return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (user.getUsername() != null ? user.getUsername() : "default");
+        }
+        return avatar;
+    }
+
     private Map<String, Object> activityToMap(Activity a) {
         Map<String, Object> m = new HashMap<String, Object>();
         String resolvedStatus = resolveActivityStatus(a);
@@ -518,16 +558,19 @@ public class PublicContentService {
     public List<Map<String, Object>> getActivityReviews(Long activityId) {
         List<DiscoverPost> posts = discoverPostRepository.findByActivityIdAndStatusAndAuditStatusOrderByCreateTimeDesc(activityId, 1, "passed");
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        
-        Map<Long, User> userMap = new HashMap<Long, User>();
-        for (DiscoverPost post : posts) {
-            if (!userMap.containsKey(post.getUserId())) {
-                userRepository.findById(post.getUserId()).ifPresent(user -> {
-                    userMap.put(post.getUserId(), user);
-                });
+
+        // 批量查询所有评论用户，避免 N+1
+        java.util.Set<Long> userIds = posts.stream()
+                .map(DiscoverPost::getUserId)
+                .collect(Collectors.toSet());
+        Map<Long, User> userMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            List<User> users = userRepository.findAllById(userIds);
+            for (User user : users) {
+                userMap.put(user.getId(), user);
             }
         }
-        
+
         for (DiscoverPost post : posts) {
             Map<String, Object> review = new HashMap<String, Object>();
             review.put("id", post.getId());
@@ -535,17 +578,17 @@ public class PublicContentService {
             review.put("score", post.getScore());
             review.put("createTime", post.getCreateTime());
             review.put("images", parseStringList(post.getImages()));
-            
+
             User author = userMap.get(post.getUserId());
             if (author != null) {
                 review.put("authorId", author.getId());
                 review.put("authorName", author.getNickname() != null ? author.getNickname() : author.getUsername());
-                review.put("authorAvatar", author.getAvatar());
+                review.put("authorAvatar", safeAvatar(author));
             }
-            
+
             result.add(review);
         }
-        
+
         return result;
     }
 }

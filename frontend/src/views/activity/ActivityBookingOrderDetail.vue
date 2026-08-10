@@ -108,28 +108,10 @@
             <p>{{ booking.reviewContent || '未提供文字评价。' }}</p>
             <small>评价时间: {{ formatTime(booking.reviewTime) }}</small>
           </div>
-          <div v-else-if="booking.canReview" class="review-form">
-            <div class="star-row">
-              <button
-                v-for="star in 5"
-                :key="star"
-                type="button"
-                class="star-btn"
-                :class="{ active: reviewForm.score >= star }"
-                @click="reviewForm.score = star"
-              >
-                <i class="bx bxs-star"></i>
-              </button>
-            </div>
-            <textarea
-              ref="reviewTextarea"
-              v-model.trim="reviewForm.content"
-              rows="4"
-              maxlength="500"
-              placeholder="分享您的活动体验"
-            ></textarea>
-            <button class="submit-btn" :disabled="submittingReview" @click="submitReview">
-              {{ submittingReview ? '提交中...' : '提交评价' }}
+          <div v-else-if="booking.canReview" class="review-redirect">
+            <p class="redirect-hint">您的活动已完成，可以在发现页发布一篇图文并茂的评价帖子。</p>
+            <button class="primary-btn review-nav-btn" @click="goToReviewPage">
+              <i class="bx bxs-edit"></i> 去发布评价
             </button>
           </div>
           <p v-else class="muted-text">
@@ -160,9 +142,9 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getActivityBookingDetail, submitActivityBookingReview } from '../../api/app'
+import { getActivityBookingDetail } from '../../api/app'
 import { hasReviewedActivityBooking, resolveActivityBookingDisplayStatus } from '../../utils/activityBooking'
 
 const { appContext } = getCurrentInstance()
@@ -171,13 +153,7 @@ const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
-const submittingReview = ref(false)
 const booking = ref(null)
-const reviewTextarea = ref(null)
-const reviewForm = ref({
-  score: 5,
-  content: ''
-})
 
 const displayStatus = computed(() => resolveActivityBookingDisplayStatus(booking.value))
 const hasReviewed = computed(() => hasReviewedActivityBooking(booking.value))
@@ -233,10 +209,6 @@ const loadBooking = async () => {
       throw new Error(response.message || '加载订单详情失败')
     }
     booking.value = response.data
-    if (!hasReviewed.value && route.query.focus === 'review') {
-      await nextTick()
-      reviewTextarea.value?.focus()
-    }
   } catch (error) {
     booking.value = null
     showError(error.message || '加载订单详情失败')
@@ -256,27 +228,16 @@ const payNow = () => {
   })
 }
 
-const submitReview = async () => {
-  if (!booking.value?.canReview || submittingReview.value) {
-    return
-  }
-
-  submittingReview.value = true
-  try {
-    const response = await submitActivityBookingReview(booking.value.id, {
-      score: reviewForm.value.score,
-      content: reviewForm.value.content || ''
-    })
-    if (response.code !== 200) {
-      throw new Error(response.message || '提交评价失败')
+const goToReviewPage = () => {
+  if (!booking.value) return
+  router.push({
+    path: '/post/create/review',
+    query: {
+      activityId: booking.value.activityId,
+      bookingId: booking.value.id,
+      backTo: route.fullPath
     }
-    showSuccess('评价已提交')
-    await loadBooking()
-  } catch (error) {
-    showError(error.message || '提交评价失败')
-  } finally {
-    submittingReview.value = false
-  }
+  })
 }
 
 const openCheckin = () => {
@@ -363,7 +324,10 @@ onMounted(loadBooking)
 .timeline-item strong { color: #9d2929; }
 .timeline-item span, .timeline-item small { color: #5a5045; }
 .review-box { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 14px; background: #fff7ed; color: #92400e; }
-.review-form { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.review-redirect { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 14px; padding: 24px 16px; border-radius: 14px; background: #f8fafc; border: 1px dashed #cbd5e1; }
+.redirect-hint { color: #64748b; font-size: 14px; text-align: center; line-height: 1.6; }
+.review-nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; background: linear-gradient(135deg, #1661ab, #1e88e5); color: #fff; cursor: pointer; transition: transform .15s; }
+.review-nav-btn:hover { transform: translateY(-1px); }
 .star-row { display: flex; gap: 10px; }
 .star-btn { width: 40px; height: 40px; border: none; border-radius: 50%; background: #f1f5f9; color: #94a3b8; cursor: pointer; }
 .star-btn.active { background: #fef3c7; color: #d97706; }

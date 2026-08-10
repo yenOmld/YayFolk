@@ -117,10 +117,11 @@
               @click="openPostModal(post)"
             >
             <div class="image-grid" v-if="post.images && post.images.length > 0">
-              <img 
-                v-for="(image, index) in post.images" 
+              <img
+                v-for="(image, index) in post.images"
                 :key="index"
-                :src="image"
+                :src="cardThumb(image)"
+                loading="lazy"
                 alt="Post image"
                 class="post-image"
                 :class="{ 'single-image': post.images.length === 1 }"
@@ -134,7 +135,7 @@
 
             <div class="post-footer">
               <div class="author-info" @click.stop="goToUserHomepage(post.author?.id)">
-                <img :src="post.author.avatar" alt="Avatar" class="author-avatar" />
+                <img :src="avatarThumb(post.author.avatar)" alt="Avatar" class="author-avatar" loading="lazy" />
                 <span class="author-name">{{ post.author.name }}</span>
               </div>
               <div class="post-stats">
@@ -223,6 +224,7 @@ import {
   toggleDiscoverPostCollect
 } from '../api/app'
 import { readAiHeritageDraft } from '../utils/aiHeritage'
+import { cardThumb, avatarThumb } from '../utils/image'
 import PostDetailModal from '../components/PostDetailModal.vue'
 import PostCreator from './post/PostCreator.vue'
 

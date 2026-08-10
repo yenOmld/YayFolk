@@ -213,35 +213,41 @@ const activityOptions = computed(() => {
   ]
 })
 
+// 仅按活动筛选（不依赖 stats，供 stats 自身使用，避免循环依赖）
+const activityFilteredReviews = computed(() => {
+  const selected = String(selectedActivityId.value || 'all')
+  if (selected === 'all') return props.reviews
+  return props.reviews.filter(r => String(r.activityId || '') === selected)
+})
+
 const stats = computed(() => {
-  const total = props.reviews.length
+  const source = activityFilteredReviews.value
+  const total = source.length
   const average = total
-    ? props.reviews.reduce((sum, item) => sum + Number(item.score || 0), 0) / total
+    ? source.reduce((sum, item) => sum + Number(item.score || 0), 0) / total
     : 0
 
   return {
     total,
     averageScore: total ? average.toFixed(1) : '--',
     averageValue: total ? average : 0,
-    highScoreCount: props.reviews.filter(item => Number(item.score || 0) >= 4.5).length,
+    highScoreCount: source.filter(item => Number(item.score || 0) >= 4.5).length,
     activityCount: new Set(props.reviews.map(item => item.activityId).filter(Boolean)).size || props.activities.length || 0
   }
 })
 
 const visibleReviews = computed(() => {
-  const selected = String(selectedActivityId.value || 'all')
   const keywordValue = keyword.value.toLowerCase()
   const avg = stats.value.averageValue
 
-  const filtered = props.reviews.filter((review) => {
+  const filtered = activityFilteredReviews.value.filter((review) => {
     const score = Number(review.score || 0)
-    const matchesActivity = selected === 'all' || String(review.activityId || '') === selected
     const matchesScore =
       scorePreset.value === 'all' ||
       (scorePreset.value === 'high' && score >= 4.5) ||
       (scorePreset.value === 'average' && avg > 0 && score >= Math.max(0, avg - 0.5) && score <= avg + 0.5)
 
-    if (!matchesActivity || !matchesScore) {
+    if (!matchesScore) {
       return false
     }
     if (!keywordValue) {

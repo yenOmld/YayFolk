@@ -195,7 +195,7 @@
         <div v-else class="activity-grid">
           <article v-for="item in paginatedActivities" :key="item.id" class="activity-card" @click="openDetail(item)">
             <div class="image-wrapper">
-              <img :src="item.coverImage || placeholderCover" :alt="item.title" loading="lazy" />
+              <img :src="cardThumb(item.coverImage || placeholderCover)" :alt="item.title" loading="lazy" />
               <span v-if="Number(item.merchantId || 0) === currentUserId" class="owner-badge">我的活动</span>
               <span class="status-badge" :class="item.status">{{ statusLabel(item.status) }}</span>
             </div>
@@ -264,6 +264,7 @@
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getPublicActivities } from '../../api/app'
+import { cardThumb } from '../../utils/image'
 import ActivityDetailModal from '@/components/ActivityDetailModal.vue'
 
 const { appContext } = getCurrentInstance()

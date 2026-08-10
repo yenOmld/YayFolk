@@ -7,7 +7,7 @@ import com.yayfolk.backend.entity.ActivityReserve;
 import com.yayfolk.backend.entity.DiscoverPost;
 import com.yayfolk.backend.entity.DiscoverPostCollection;
 import com.yayfolk.backend.entity.DiscoverPostHistory;
-import com.yayfolk.backend.entity.MerchantReview;
+
 import com.yayfolk.backend.entity.Order;
 import com.yayfolk.backend.entity.User;
 import com.yayfolk.backend.entity.UserFollow;
@@ -17,7 +17,7 @@ import com.yayfolk.backend.repository.ActivityReserveRepository;
 import com.yayfolk.backend.repository.DiscoverPostCollectionRepository;
 import com.yayfolk.backend.repository.DiscoverPostHistoryRepository;
 import com.yayfolk.backend.repository.DiscoverPostRepository;
-import com.yayfolk.backend.repository.MerchantReviewRepository;
+
 import com.yayfolk.backend.repository.OrderRepository;
 import com.yayfolk.backend.repository.UserFollowRepository;
 import com.yayfolk.backend.repository.UserProfileVisitRepository;
@@ -49,8 +49,7 @@ public class UserCenterService {
     private final DiscoverPostHistoryRepository historyRepository;
     private final UserFollowRepository userFollowRepository;
     private final UserProfileVisitRepository userProfileVisitRepository;
-    private final com.yayfolk.backend.repository.MerchantReviewRepository merchantReviewRepository;
-    private final ObjectMapper objectMapper;
+private final ObjectMapper objectMapper;
 
     public UserCenterService(UserRepository userRepository,
                              OrderRepository orderRepository,
@@ -61,7 +60,6 @@ public class UserCenterService {
                              DiscoverPostHistoryRepository historyRepository,
                              UserFollowRepository userFollowRepository,
                              UserProfileVisitRepository userProfileVisitRepository,
-                             com.yayfolk.backend.repository.MerchantReviewRepository merchantReviewRepository,
                              ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
@@ -72,7 +70,6 @@ public class UserCenterService {
         this.historyRepository = historyRepository;
         this.userFollowRepository = userFollowRepository;
         this.userProfileVisitRepository = userProfileVisitRepository;
-        this.merchantReviewRepository = merchantReviewRepository;
         this.objectMapper = objectMapper;
     }
 

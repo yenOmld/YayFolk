@@ -47,7 +47,7 @@
         
         <div class="modal-right">
           <div class="modal-header">
-            <img :src="post?.author.avatar" alt="Avatar" class="modal-author-avatar clickable-user" @click="goToUserHomepage(post?.author?.id)" />
+            <img :src="avatarThumb(post?.author.avatar)" alt="Avatar" class="modal-author-avatar clickable-user" @click="goToUserHomepage(post?.author?.id)" />
             <div class="modal-author-info clickable-user" @click="goToUserHomepage(post?.author?.id)">
               <h4>{{ post?.author.name }}</h4>
               <p>{{ post?.time }} · {{ post?.author.location || '未知' }}</p>
@@ -108,42 +108,43 @@
               
               <div class="modal-comments">
                 <h4>评论 ({{ post?.comments || 0 }})</h4>
-                <div 
-                  class="comment-item" 
-                  v-for="(comment, index) in post?.commentList || []" 
-                  :key="index" 
-                  :ref="el => { if (el) commentRefs[comment.id] = el }"
-                  :class="{ 'reply-comment': comment.parentId, 'comment-highlight': highlightCommentId === String(comment.id) }"
+                <div
+                  class="comment-item"
+                  v-for="item in commentTree"
+                  :key="item.comment.id"
+                  :ref="el => { if (el) commentRefs[item.comment.id] = el }"
+                  :class="{ 'comment-highlight': highlightCommentId === String(item.comment.id) }"
+                  :style="{ paddingLeft: item.depth * 36 + 'px' }"
                 >
-                  <img :src="comment.avatar" alt="Comment avatar" class="comment-avatar clickable-user" @click="goToUserHomepage(comment.userId)" />
+                  <img :src="avatarThumb(item.comment.avatar)" alt="Comment avatar" class="comment-avatar clickable-user" loading="lazy" @click="goToUserHomepage(item.comment.userId)" />
                   <div class="comment-content">
                     <div class="comment-header">
-                      <span class="comment-author clickable-user" @click="goToUserHomepage(comment.userId)">{{ comment.author }}</span>
-                      <span class="comment-time">{{ comment.time }}</span>
+                      <span class="comment-author clickable-user" @click="goToUserHomepage(item.comment.userId)">{{ item.comment.author }}</span>
+                      <span class="comment-time">{{ item.comment.time }}</span>
                     </div>
                     <p class="comment-text">
-                      <span v-if="comment.replyTo" class="reply-to">回复 {{ comment.replyTo }}</span>
-                      {{ comment.content }}
+                      <span v-if="item.comment.replyTo" class="reply-to">回复 {{ item.comment.replyTo }}</span>
+                      {{ item.comment.content }}
                     </p>
-                    <p v-if="isCommentTranslationVisible(comment)" class="comment-translation-text">{{ getCommentTranslatedText(comment) }}</p>
+                    <p v-if="isCommentTranslationVisible(item.comment)" class="comment-translation-text">{{ getCommentTranslatedText(item.comment) }}</p>
                     <div class="comment-actions">
-                      <span class="comment-like" @click="toggleCommentLike(comment)">
-                        <i class='bx bx-heart' :class="{ liked: comment.liked }"></i>
-                        <span>{{ comment.likes }}</span>
+                      <span class="comment-like" @click="toggleCommentLike(item.comment)">
+                        <i class='bx bx-heart' :class="{ liked: item.comment.liked }"></i>
+                        <span>{{ item.comment.likes }}</span>
                       </span>
-                      <span class="comment-reply" @click="replyToComment(comment)">回复</span>
+                      <span class="comment-reply" @click="replyToComment(item.comment)">回复</span>
                       <span
-                        v-if="canTranslateComment(comment)"
+                        v-if="canTranslateComment(item.comment)"
                         class="comment-translate"
-                        @click="toggleCommentTranslate(comment)"
+                        @click="toggleCommentTranslate(item.comment)"
                       >
-                        <i v-if="isCommentTranslating(comment)" class='bx bx-loader-alt bx-spin'></i>
-                        <span>{{ isCommentTranslating(comment) ? '翻译中...' : (isCommentTranslationVisible(comment) ? '查看原文' : '翻译') }}</span>
+                        <i v-if="isCommentTranslating(item.comment)" class='bx bx-loader-alt bx-spin'></i>
+                        <span>{{ isCommentTranslating(item.comment) ? '翻译中...' : (isCommentTranslationVisible(item.comment) ? '查看原文' : '翻译') }}</span>
                       </span>
-                      <span 
-                        v-if="canDeleteComment(comment)" 
-                        class="comment-delete" 
-                        @click="handleDeleteComment(comment, index)"
+                      <span
+                        v-if="canDeleteComment(item.comment)"
+                        class="comment-delete"
+                        @click="handleDeleteComment(item.comment)"
                       >删除</span>
                     </div>
                   </div>
@@ -280,7 +281,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, getCurrentInstance } from 'vue'
+import { ref, watch, nextTick, getCurrentInstance, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   createDiscoverPostComment,
@@ -295,6 +296,7 @@ import {
   getFollowStatus
 } from '../api/app'
 import ReportModal from './ReportModal.vue'
+import { avatarThumb } from '../utils/image'
 
 // 获取通知实例
 const { appContext } = getCurrentInstance()
@@ -333,6 +335,47 @@ const commentTranslationState = ref({})
 const preferredLanguage = ref('zh-CN')
 const highlightCommentId = ref(null)
 const commentRefs = ref({})
+
+// 将平铺评论列表转为按树形结构排列（带深度），使回复紧跟在父评论下方
+const commentTree = computed(() => {
+  const list = props.post?.commentList || []
+  if (!list.length) return []
+
+  // id → 原始评论对象引用
+  const idToComment = new Map()
+  list.forEach(c => idToComment.set(String(c.id), c))
+
+  // parentId → 子评论列表
+  const childrenMap = new Map()
+  const roots = []
+
+  list.forEach(c => {
+    const parentId = c.parentId ? String(c.parentId) : null
+    if (parentId && idToComment.has(parentId)) {
+      if (!childrenMap.has(parentId)) {
+        childrenMap.set(parentId, [])
+      }
+      childrenMap.get(parentId).push(c)
+    } else {
+      roots.push(c)
+    }
+  })
+
+  // 先根遍历展平，保留原始引用以确保点赞/翻译等操作直接生效
+  const result = []
+  function flatten(nodes, depth) {
+    nodes.forEach(node => {
+      result.push({ comment: node, depth })
+      const children = childrenMap.get(String(node.id)) || []
+      if (children.length) {
+        // 按创建时间升序排列子评论
+        flatten(children, depth + 1)
+      }
+    })
+  }
+  flatten(roots, 0)
+  return result
+})
 
 const shareUrl = ref('')
 const isFollowing = ref(false)
@@ -650,20 +693,11 @@ const submitComment = async () => {
     const response = await createDiscoverPostComment(props.post.id, payload)
     if (response.code === 200) {
       const comment = response.data
-      const list = Array.isArray(props.post.commentList) ? props.post.commentList : []
-      let updatedList
-      
-      if (replyToCommentId.value) {
-        const parentIndex = list.findIndex(c => String(c.id) === String(replyToCommentId.value))
-        if (parentIndex !== -1) {
-          updatedList = [...list.slice(0, parentIndex + 1), comment, ...list.slice(parentIndex + 1)]
-        } else {
-          updatedList = [...list, comment]
-        }
-      } else {
-        updatedList = [...list, comment]
-      }
-      
+      const list = Array.isArray(props.post.commentList) ? [...props.post.commentList] : []
+
+      // 树形渲染下只需追加到平铺列表，commentTree computed 会自动处理嵌套位置
+      const updatedList = [...list, comment]
+
       const updatedPost = {
         ...props.post,
         comments: (props.post.comments || 0) + 1,
@@ -713,7 +747,7 @@ const canDeleteComment = (comment) => {
   return currentUser.id === comment.userId || currentUser.id === props.post.author?.id
 }
 
-const handleDeleteComment = async (comment, index) => {
+const handleDeleteComment = async (comment) => {
   confirm({
     title: '确认删除评论',
     message: '确定要删除这条评论吗？',
@@ -1378,10 +1412,6 @@ const copyLink = async () => {
 
 .comment-delete:hover {
   color: #ff2442;
-}
-
-.reply-comment {
-  margin-left: 42px;
 }
 
 .reply-to {

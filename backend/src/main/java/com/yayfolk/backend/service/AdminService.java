@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -892,9 +893,14 @@ public class AdminService {
     }
 
     public List<Map<String, Object>> getOfficialActivities(String adminUsername) {
-        requireAdmin(adminUsername);
+        User admin = requireAdmin(adminUsername);
         List<Long> publishedIds = readPublishedIds(HOMEPAGE_ACTIVITY_CATEGORY);
-        List<Activity> activities = activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended");
+        List<Activity> activities;
+        if (isSuperAdmin(admin)) {
+            activities = activityRepository.findAll(Sort.by(Sort.Order.desc("createTime")));
+        } else {
+            activities = activityRepository.findByAuditStatusAndStatusNotOrderByStartTimeAsc("approved", "ended");
+        }
         List<Map<String, Object>> result = new ArrayList<>();
         for (Activity activity : activities) {
             Map<String, Object> item = activityToMap(activity);
@@ -975,17 +981,24 @@ public class AdminService {
     }
 
     public List<Map<String, Object>> getOfficialWorks(String adminUsername) {
-        requireAdmin(adminUsername);
+        User admin = requireAdmin(adminUsername);
         List<Long> publishedIds = readPublishedIds(HOMEPAGE_WORK_CATEGORY);
-        List<DiscoverPost> posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
+        List<DiscoverPost> posts;
+        if (isSuperAdmin(admin)) {
+            posts = postRepository.findAll(Sort.by(Sort.Order.desc("createTime")));
+        } else {
+            posts = postRepository.findByStatusAndAuditStatusInOrderByCreateTimeDesc(1, APPROVED_POST_AUDIT_STATUSES);
+        }
         List<Map<String, Object>> result = new ArrayList<>();
         for (DiscoverPost post : posts) {
-            if (isPublicVisibleWork(post)) {
+            if (isSuperAdmin(admin) || isPublicVisibleWork(post)) {
                 result.add(workToAdminMap(post, publishedIds));
             }
         }
-        result.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
-        if (result.size() > 20) return new ArrayList<>(result.subList(0, 20));
+        if (!isSuperAdmin(admin)) {
+            result.sort((left, right) -> Integer.valueOf(safeInt(right.get("heat"))).compareTo(safeInt(left.get("heat"))));
+            if (result.size() > 20) return new ArrayList<>(result.subList(0, 20));
+        }
         return result;
     }
 

@@ -221,16 +221,26 @@ export function getMerchTypeById(typeId) {
 }
 
 export function getMerchColorById(colorId) {
-  return merchColorPresets.find(item => item.id === colorId) || merchColorPresets[0]
+  if (!colorId) return null
+  return merchColorPresets.find(item => item.id === colorId) || null
 }
 
 export function buildMerchPrompt(merchTypeId, merchColorId, merchType, merchColor) {
   const basePrompt = merchType?.prompt || '将参考图中的图案设计印制在指定商品上。'
   let colorContext = ''
+  const colorHex = merchColor?.hex || ''
+  const colorName = merchColor?.name || ''
+
   if (merchColorId === 'custom') {
-    colorContext = `商品主体颜色为${merchColor?.hex || '#FFFFFF'}，`
-  } else if (merchColorId !== 'white') {
-    colorContext = `商品主体颜色为${merchColor?.name || '白色'}，`
+    colorContext = `商品主体颜色为 ${colorHex}，`
+  } else if (merchColorId && merchColorId !== 'white') {
+    // 同时传颜色名和色值，AI 更容易准确理解
+    colorContext = `商品主体颜色为${colorName}（色值 ${colorHex}），`
+  } else if (merchColorId === 'white') {
+    colorContext = '商品主体颜色为纯白色（#f5f5f0），'
+  } else {
+    // 未选择颜色时，明确告知 AI 使用白色
+    colorContext = '商品主体颜色为纯白色，'
   }
   return `${colorContext}${basePrompt}保持图案细节清晰，颜色饱和度适中，整体效果真实自然。`
 }

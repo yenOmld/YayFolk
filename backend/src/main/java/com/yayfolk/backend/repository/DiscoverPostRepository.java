@@ -24,4 +24,8 @@ public interface DiscoverPostRepository extends JpaRepository<DiscoverPost, Long
     List<DiscoverPost> findByActivityIdAndStatusAndAuditStatusOrderByCreateTimeDesc(Long activityId, Integer status, String auditStatus);
 
     List<DiscoverPost> findByActivityIdInAndStatusAndAuditStatusOrderByCreateTimeDesc(List<Long> activityIds, Integer status, String auditStatus);
+
+    List<DiscoverPost> findByActivityIdAndUserIdAndTypeAndStatusAndAuditStatusOrderByCreateTimeDesc(Long activityId, Long userId, String type, Integer status, String auditStatus);
+
+    long countByActivityIdInAndTypeAndStatusAndAuditStatus(List<Long> activityIds, String type, Integer status, String auditStatus);
 }

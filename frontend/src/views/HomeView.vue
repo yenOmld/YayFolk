@@ -113,7 +113,7 @@ watch(() => route.path, () => {
 
 onMounted(() => {
   updateCurrentRoute()
-  loadUnreadCount()
+  // loadUnreadCount 由 route watcher 触发，无需重复调用
 })
 </script>
 

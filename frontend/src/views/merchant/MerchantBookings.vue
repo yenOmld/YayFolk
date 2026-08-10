@@ -192,7 +192,7 @@ const pageTitle = computed(() => (isRecordPage.value ? '预订记录' : '预订�
 const pageDescription = computed(() => (
   isRecordPage.value
     ? '查看已完成、已拒绝、已取消和历史预订记录。'
-    : '处理活跃预订，扫描二维码，退款或阻止参与。'
+    : '处理待签到预订，扫描二维码，退款或阻止参与。'
 ))
 const pageSummary = computed(() => {
   if (!total.value) {
@@ -212,7 +212,7 @@ const emptySummary = () => ({
 })
 
 const tabs = computed(() => [
-  { key: 'registered', label: '活跃', count: Number(summary.value.pendingCheckinCount || 0) },
+  { key: 'registered', label: '待签到', count: Number(summary.value.pendingCheckinCount || 0) },
   { key: 'checked_in', label: '已签到', count: Number(summary.value.checkedInCount || 0) },
   { key: 'rejected', label: '已拒绝', count: Number(summary.value.rejectedCount || 0) },
   { key: 'cancelled', label: '已取消', count: Number(summary.value.cancelledCount || 0) },
@@ -502,7 +502,7 @@ const formatRange = (booking) => {
 }
 const formatLocation = (booking) => [booking.locationProvince, booking.locationCity, booking.locationDistrict, booking.locationDetail].filter(Boolean).join(' / ') || '待定'
 const paymentText = (status) => ({ paid: '已支付', unpaid: '未支付', refunded: '已退款' }[status] || status || '未支付')
-const statusText = (status) => ({ registered: '活跃', checked_in: '已签到', rejected: '已拒绝', cancelled: '已取消' }[status] || status)
+const statusText = (status) => ({ registered: '待签到', checked_in: '已签到', rejected: '已拒绝', cancelled: '已取消' }[status] || status)
 
 watch(
   () => route.fullPath,

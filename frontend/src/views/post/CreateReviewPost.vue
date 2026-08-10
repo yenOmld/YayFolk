@@ -133,19 +133,12 @@
           </div>
         </div>
 
-        <div class="toggle-row">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="postForm.isAnonymous" />
-            <span class="checkbox-custom"></span>
-            <span>匿名评价</span>
-          </label>
-        </div>
       </div>
 
       <aside class="review-rail">
         <div class="rail-card">
           <span class="rail-label">发布说明</span>
-          <p>评价贴会保留评分与活动关联，匿名和私密只影响前台展示。</p>
+          <p>评价贴会保留评分与活动关联，发布后可在我的评价中查看和编辑。</p>
         </div>
 
         <div v-if="postForm.activityInfo" class="rail-card rail-card--highlight">
@@ -229,8 +222,7 @@ const postForm = ref({
   images: [],
   activityId: null,
   activityInfo: null,
-  score: 0,
-  isAnonymous: false
+  score: 0
 })
 const imageInput = ref(null)
 const videoInput = ref(null)
@@ -348,7 +340,6 @@ const loadEditingPost = async (postId) => {
     location: post.activityInfo?.location || ''
   } : null)
   postForm.value.score = Number(post.score || 0)
-  postForm.value.isAnonymous = Boolean(post.isAnonymous)
   selectedBookingId.value = String(route.query.bookingId || '')
 }
 
@@ -502,7 +493,6 @@ const submitPost = async () => {
       activityId: postForm.value.activityId,
       bookingId: selectedBookingId.value || undefined,
       score: postForm.value.score,
-      isAnonymous: postForm.value.isAnonymous,
       visibility: 'public'
     }
 
@@ -938,59 +928,6 @@ textarea {
   background: #9d2929;
   color: #fff;
   min-width: 70px;
-}
-
-.toggle-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  grid-column: 1 / -1;
-}
-
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.checkbox-label input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.checkbox-label span {
-  flex-shrink: 0;
-}
-
-.checkbox-custom {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #e7ddd3;
-  border-radius: 4px;
-  background: #fff;
-  flex-shrink: 0;
-}
-
-.checkbox-label input:checked + .checkbox-custom {
-  background: #9d2929;
-  border-color: #9d2929;
-  position: relative;
-}
-
-.checkbox-label input:checked + .checkbox-custom::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 5px;
-  width: 4px;
-  height: 8px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
 }
 
 .submit-btn {

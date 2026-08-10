@@ -113,8 +113,9 @@
                 <div class="merchant-header">
                   <img
                     class="merchant-avatar-link"
-                    :src="detail.merchantAvatar || placeholderAvatar"
+                    :src="avatarThumb(detail.merchantAvatar || placeholderAvatar)"
                     :alt="detail.merchantName || '商家'"
+                    loading="lazy"
                     @error="handleAvatarError"
                     @click="goMerchantHomepage"
                   >
@@ -234,10 +235,10 @@
                   @click="openReviewDetail(review)"
                   @keydown.enter.prevent="openReviewDetail(review)"
                 >
-                  <img :src="review.authorAvatar || placeholderAvatar" :alt="review.authorName" class="comment-avatar" @error="handleAvatarError">
+                  <img :src="avatarThumb(review.authorAvatar || placeholderAvatar)" :alt="review.authorName" class="comment-avatar" loading="lazy" @error="handleAvatarError">
                   <div class="comment-content">
                     <div class="comment-header">
-                      <span class="comment-author">{{ review.isAnonymous ? '匿名用户' : (review.authorName || '匿名用户') }}</span>
+                      <span class="comment-author">{{ review.authorName || '匿名用户' }}</span>
                       <span class="comment-time">{{ formatReviewTime(review.createTime) }}</span>
                     </div>
 
@@ -256,7 +257,7 @@
                     <p class="comment-text">{{ review.contentVisible === false ? '仅作者可见' : getReviewExcerpt(review) }}</p>
 
                     <div v-if="review.images && review.images.length > 0" class="review-images">
-                      <img v-for="(img, index) in review.images.slice(0, 3)" :key="index" :src="img" :alt="`评价图片 ${index + 1}`">
+                      <img v-for="(img, index) in review.images.slice(0, 3)" :key="index" :src="cardThumb(img)" :alt="`评价图片 ${index + 1}`" loading="lazy">
                       <span v-if="review.images.length > 3" class="more-images">+{{ review.images.length - 3 }}</span>
                     </div>
                   </div>
@@ -293,6 +294,7 @@ import { createConversation, getPublicActivityDetail, getActivityReviews, getDis
 import PostDetailModal from '@/components/PostDetailModal.vue'
 import VRViewerModal from '@/components/VRViewerModal.vue'
 import { isVideoUrl, normalizeMediaList } from '@/utils/media'
+import { cardThumb, avatarThumb } from '@/utils/image'
 
 const props = defineProps({
   visible: {
